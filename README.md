@@ -1,2 +1,3 @@
-# search-engine
-This is my API search engine.
+# API Search Engine
+
+A new model for an API search engine.
