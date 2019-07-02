@@ -2,6 +2,29 @@
 layout: default
 title: API Search Engine
 ---
+
+<style>
+	.values{
+	padding: 10px;
+	margin: 5px;
+  background: #FFF;
+	border: 1px solid #000;
+	border-top-right-radius:15px;
+	border-top-left-radius:15px;
+	border-bottom-right-radius:15px;
+	border-bottom-left-radius:15px;
+	}
+
+	.urlnav{
+	display: inline;
+	padding-right: 10px;
+	padding-left: 10px;
+	}
+
+	.search-bar input{
+	  width: 100%;
+	}
+</style>
 <!-- News -->
 <a name="Search"></a>
 {% assign search = site.data.apis | sort %}
@@ -10,9 +33,81 @@ title: API Search Engine
 		<h2>API Search</h2>
 	</header>
 	<form class="form-inline">
-	  <div class="form-group mx-sm-3 mb-2">
-	    <input type="text" class="form-control" id="inputSearch" placeholder="APIs">
-	  </div>
-	  <button type="submit" class="btn btn-primary mb-2">Search</button>
+		<div class="search-bar">
+		  <input type="text" id="seeker">
+		</div>
+		<div id="content"></div>
 	</form>
 </section>
+
+{% assign search_index = site.data.apis | sort | jsonify %}
+
+<script>
+	var items = {{ search_index }}
+
+	/* SEEKER FUNCTION */
+	 if (!RegExp.escape) {
+	   RegExp.escape = function (s) {
+	     return s.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&")
+	   };
+	 }
+
+	 jQuery(function(){
+
+	  var $rows = $('.values');
+
+	  $('#seeker').keyup(function () {
+
+			query = $('#seeker').val();
+			console.log("searching..."+query);
+
+			output = "";
+			$.each(items, function(key, val){
+				$.each(val, function(key2, val2){
+				if(val2.apis){
+
+					//console.log('2: ' + JSON.stringify(val2.apis));
+
+					name = val2.apis.name;
+					description = val2.apis.description;
+					common = val2.apis['x-common'];
+
+					website_url = '';
+					twitter_url = '';
+					github_url = '';
+
+					for (i = 0; i < common.length; i++) {
+						if(common[i].type == 'x-twitter'){
+							twitter_url = common[i].url;
+						}
+						if(common[i].type == 'x-github'){
+							github_url = common[i].url;
+						}
+						if(common[i].type == 'x-website'){
+							website_url = common[i].url;
+						}
+					}
+
+					if(name.includes(query) || description.includes(query)){
+						output += '<div class="values">';
+					  output += '<h5 class="value-id">' + name + '</h5>';
+					  output += '<p class="value-description">' + description + '</p>';
+						output += '<center><ul align="center" style="display: inline;">';
+						output += '<li align="center" class="urlnav"><a href="' + website_url + '">website</a></li>';
+						output += '<li align="center" class="urlnav"><a href="' + twitter_url + '">twitter</a></li>';
+						output += '<li align="center" class="urlnav"><a href="' + github_url + '">github</a></li>';
+						output += '</ul></center>';
+					  output += "</div>";
+					}
+
+					}
+				});
+			});
+
+			$('#content').html(output);
+
+
+	  });
+
+	});
+</script>
