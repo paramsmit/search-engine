@@ -43,6 +43,18 @@ title: API Search Engine
 {% assign search_index = site.data.apis | sort | jsonify %}
 
 <script>
+
+	function convertCase(str) {
+	  var lower = String(str).toLowerCase();
+	  return lower.replace(/(^| )(\w)/g, function(x) {
+	    return x.toUpperCase();
+	  });
+	}
+
+	function followLink(url){
+		location.href = url;
+	}
+
 	var items = {{ search_index }}
 
 	/* SEEKER FUNCTION */
@@ -71,32 +83,26 @@ title: API Search Engine
 					name = val2.apis.name;
 					description = val2.apis.description;
 					common = val2.apis['x-common'];
+					slug = val2.apis['x-slug'];
+					common.sort();
 
-					website_url = '';
-					twitter_url = '';
-					github_url = '';
-
-					for (i = 0; i < common.length; i++) {
-						if(common[i].type == 'x-twitter'){
-							twitter_url = common[i].url;
-						}
-						if(common[i].type == 'x-github'){
-							github_url = common[i].url;
-						}
-						if(common[i].type == 'x-website'){
-							website_url = common[i].url;
-						}
-					}
-
-					if(name.includes(query) || description.includes(query)){
+					var name_search = name.toLowerCase();
+					var description_search = description.toLowerCase();
+					var query_search = query.toLowerCase();
+					if(name_search.includes(query_search) || description_search.includes(query_search)){
 						output += '<div class="values">';
 					  output += '<h5 class="value-id">' + name + '</h5>';
 					  output += '<p class="value-description">' + description + '</p>';
-						output += '<center><ul align="center" style="display: inline;">';
-						output += '<li align="center" class="urlnav"><a href="' + website_url + '">website</a></li>';
-						output += '<li align="center" class="urlnav"><a href="' + twitter_url + '">twitter</a></li>';
-						output += '<li align="center" class="urlnav"><a href="' + github_url + '">github</a></li>';
-						output += '</ul></center>';
+						output += '<p align="center"><strong>Links:</strong><select id="' + slug + '-links" style="text-align:center; width: 250px;" name="links">';
+						for (i = 0; i < common.length; i++) {
+							url = common[i].url;
+							type = common[i].type;
+							type = type.replace("x-",'');
+							type = type.split("-").join(" ").toLowerCase();
+							type = convertCase(type);
+							output += '<option><a href="' + url + '">' + type + '</a></option>';
+						}
+						output += '</select><button onclick="location.href=&apos;' + url + '&apos;" type="button" class="btn btn-default">Go</button></p>';
 					  output += "</div>";
 					}
 
