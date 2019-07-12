@@ -1,0 +1,526 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:7:\"version\";s:5:\"0.1.0\";s:5:\"title\";s:20:\"eBaoCloud
+  LI OpenAPI\";s:14:\"termsOfService\";s:26:\"http://api.ebaocloud.life/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:24:\"liliang.zhu@ebaotech.com\";}s:11:\"description\";s:3393:\"This
+  document is the API specification for the SingLife. To practice and run the APIs
+  in this document, you need to apply an eBaoCloud tenant account(starting from a
+  sandbox account instead of production account) first.<br>\nContact liliang.zhu@ebaotech.com
+  for more information.\n\nPS: we have created an account for SingLife. Please refer
+  to the email\n\n# Built on\nTue Mar 13 2018, 17:54:18 +08:00\n\n# Versioning\nAPI
+  version| Date  |Comments\n--|---|--\n1.0  | 2018-01-10  | Initial version\n\n# Authentication\n\n##
+  Overview\n\neBaoCloud offers 3rd party applications the ability to issue authenticated
+  requests on behalf of the eBaoCloud itself. eBaoCloud's implementation is based
+  on the [Client Credentials Grant](http://tools.ietf.org/html/rfc6749#section-4.4)
+  flow of the [oauth 2 specification](http://tools.ietf.org/html/rfc6749).\n\n## Auth
+  Flow\n\nThe oauth2 / token authentication flow follows these 3 major steps:\n\n1.
+  An application (backend) encodes its consumer key and secret (provided by eBaoCloud
+  as an authorized vender) into a specially encoded set of credentials.\n2. An application
+  (backend) makes a request to the POST oauth2 / token endpoint to exchange these
+  credentials for a bearer token.\n3. When accessing the REST API, the application
+  (the APP or website) uses the bearer token to authenticate.\n\n## Step by step\n\n*
+  Send request to auth end point\n\n```js\nPOST: /cas/ebao/v1/json/tickets\nBody:
+  {\"username\":\"SINGLIFE_CP.admin\", \"password\":\"adminPWD!\"}\nResponse: {\"access_token\":
+  \"xxxx\"}\n```\n\n* Send request with access_token in header\n\n```js\nPOST: /rest/products\nHeader:
+  {\n  \"authorization\":\"Bearer \"+access_token,\n  \"X-ebao-tenant-id\": \"SINGLIFE\"\n}\n```\n\n##
+  End Points\n\n| | Sandbox |\n| :--- | :--- |\n| auth / take token | [https://sandbox.ebaocloud.com.cn/cas/ebao/v1/json/tickets](https://sandbox.ebaocloud.com.cn/cas/ebao/v1/json/tickets)
+  |\n| APIs | [http://sandbox.singlife.ebaocloud.life/eBao/1.0](http://sandbox.singlife.ebaocloud.life/eBao/1.0)
+  |\n\n\n## Sample\n\n#### Request auth from application\n\n```bash\ncurl --request
+  POST \\\n  --url https://url/cas/ebao/v1/json/tickets \\\n  --header 'content-type:
+  application/json' \\\n  --data '{\\n \\n \"username\":\"SINGLIFE_CP.admin\",\\n
+  \"password\":\"adminPWD!\"\\n}'\n```\n\nNote:\n. the **X-ebao-tenant-id** is the
+  unique id provided by eBaoCloud to identify the tenant.\n. the **username** and
+  **password** are provided by eBaoCloud when you registered as an authorized vendor.\n\n\n####
+  Response from API Gateway\n\n* Success\n\n```js\n{\n\"access_token\" : \"TGT-233-e7Zuc5FlSAa0SShO3B1f2iugYzRQGQrSSoGwAi0VnWbnBNDwHg\"\n}\n```\n\n*
+  Failed\n\n```js\n{\n\"access_token\" : null\n}\n```\n\n#### App call (Java code
+  sample)\n\n```java\nHttpResponse<String> response = Unirest.post(url) // url\uFF1Athe
+  UAT/product URL\n  .header(\"content-type\", \"application/json\") // application/json\n
+  \ .header(\"authorization\", \"Bearer \" + accessToken) // oauth2 access token\uFF1Athe
+  accessToken\n  .header(\"X-ebao-tenant-id\", \"SINGLIFE\")\n  .body(body) // body:
+  http body\n  .asString();\n```\n\n## Others\n\n### Tokens are passwords\n\nKeep
+  in mind that the consumer key & secret, bearer token credentials, and the bearer
+  token itself grant access to make requests on behalf of an application. These values
+  should be considered as sensitive as passwords, and must not be shared or distributed
+  to untrusted parties.\n\n### SSL required\n\nAll requests (both to obtain and use
+  the tokens) **must use** HTTPS endpoints.\n\";}"
+host: sandbox.singlife.ebaocloud.life
+basePath: /eBao/1.0/
+paths:
+  /eBao/1.0/customers/corresponding/{customerId}:
+    post:
+      tags:
+      - Party
+      summary: Modify an existing customer's contact and address information
+      operationId: CustomerAlterationPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CorrespondingInput'
+      responses:
+        200:
+          description: Status 200
+          schema:
+            $ref: '#/definitions/CorrespondingResultInfo'
+  /eBao/1.0/customers/{customerId}:
+    get:
+      tags:
+      - Party
+      summary: Get specified customer data by customer ID
+      description: Get specified customer data by customer ID
+      operationId: CustomerInfoGET
+      produces:
+      - application/json
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: Status 200
+          schema:
+            $ref: '#/definitions/CustomerInfo'
+  /eBao/1.0/policy/policies/{insurerCode}/search:
+    post:
+      tags:
+      - Policy
+      summary: PolicySummaryQuerying
+      description: Search Policy by Criteria
+      operationId: searchUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: insurerCode
+        in: path
+        description: insurerCode
+        required: true
+        type: string
+      - name: X-ebao-tenant-id
+        in: header
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/PageablePolicyCriteria'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PolicySummaryInfo'
+        201:
+          description: Created
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+  /eBao/1.0/policy/policies/{insurerCode}/{policyNumber}:
+    get:
+      tags:
+      - Policy
+      summary: PolicyDetailGetting
+      description: Get Policy by Policy No.
+      operationId: getUsingGET
+      produces:
+      - '*/*'
+      parameters:
+      - name: insurerCode
+        in: path
+        description: insurerCode
+        required: true
+        type: string
+      - name: policyNumber
+        in: path
+        description: policyNumber
+        required: true
+        type: string
+      - name: X-ebao-tenant-id
+        in: header
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PolicyInfo'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+produces: []
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":68:{s:22:\"PageablePolicyCriteria\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:13:\"applyDateFrom\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"Search
+  criteria: application date from\";}s:11:\"applyDateTo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:36:\"Search
+  criteria: application date to\";}s:9:\"certiCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Search
+  criteria: id no. of policy customer (policy holder or insured)\";}s:17:\"masterProductCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Search
+  criteria: code of master product\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"Search
+  criteria: name of policy customer (policy holder or insured)\";}s:4:\"page\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:47:\"Page
+  criteria: target page number, start from 0\";}s:12:\"policyNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Search
+  criteria: policy no.\";}s:14:\"proposalNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Search
+  criteria: application code\";}s:13:\"quotationCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Search
+  criteria: order no.\";}s:4:\"size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:55:\"Page
+  criteria: how many records per page, default as 10\";}}}s:17:\"PolicySummaryInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:13:\"quotationCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Quotation
+  calculation request number\";}s:12:\"policyNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Policy
+  number\";}s:14:\"proposalNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Proposal
+  number\";}s:9:\"applyDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:63:\"Application
+  date, non-empty, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"inceptionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:57:\"Policy
+  effective date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:9:\"issueDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:53:\"Policy
+  issue date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:10:\"expiryDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:52:\"Termination
+  date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:16:\"policyHolderName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Policy
+  holder's name\";}s:15:\"mainInsuredName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Main
+  insured name\";}s:17:\"masterProductCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Main
+  product code\";}s:17:\"masterProductName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Main
+  product name\";}s:11:\"installPrem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:14:\"Policy
+  premium\";}s:14:\"proposalStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Proposal
+  status\";}s:10:\"riskStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"Policy
+  status<br>0 - not inforce<br>1 - inforce<br>2 - lapsed<br>3 - terminated\";}}}s:10:\"PolicyInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":28:{s:10:\"policyType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:78:\"Policy
+  type<br>1 - Individual policy<br>2 - Group policy<br>3 - Banc assurance\";}s:10:\"riskStatus\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:79:\"Policy
+  status<br>0 - not inforce<br>1 - inforce<br>2 - lapsed<br>3 - terminated\";}s:9:\"applyDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:58:\"Application
+  Date, mandatory, format: yyyy-MM-dd'T'HH:mm:ss\";}s:9:\"issueDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:53:\"Policy
+  issue date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:11:\"installPrem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:14:\"Policy
+  premium\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:30:\"Currency,
+  non empty<br>1 - CNY\";}s:18:\"ePolicyDownloadUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Electronic
+  policy download address\";}s:19:\"groupProposalNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Group
+  proposal No.\";}s:13:\"inceptionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:57:\"Policy
+  effective date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:10:\"expiryDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:52:\"Termination
+  date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:14:\"proposalNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Proposal
+  number\";}s:11:\"deliverType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"Policy
+  delivery method<br>H - by people<br>M - by mail\";}s:12:\"policyNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Policy
+  number\";}s:13:\"quotationCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Quotation
+  calculation request number\";}s:14:\"submissionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:54:\"Date
+  of submission, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:16:\"serviceAgentCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Policy
+  agent code\";}s:16:\"salesChannelCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Sales
+  channel code\";}s:24:\"preprintedProposalNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Pre-printed
+  proposal number\";}s:12:\"proposalInfo\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/PolicyProposalInfo\";s:11:\"description\";s:15:\"Proposal
+  detail\";}s:13:\"policyPackage\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:31:\"#/definitions/PolicyPackageInfo\";s:11:\"description\";s:15:\"Product
+  package\";}s:9:\"coverages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:22:\"Policy's
+  coverage list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CoverageInfo\";}}s:12:\"policyHolder\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/PolicyHolderInfo\";s:11:\"description\";s:13:\"Policy
+  holder\";}s:8:\"insureds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:19:\"Policy
+  insured list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/InsuredInfo\";}}s:13:\"beneficiaries\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:21:\"List
+  of beneficiaries\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/BeneficiaryInfo\";}}s:13:\"payerAccounts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:12:\"Payment
+  list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/PayerAccountInfo\";}}s:12:\"declarations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Customer
+  declaration list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/CustomerDeclarationInfo\";}}s:17:\"agentDeclarations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Agent
+  declarations\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/AgentDeclarationInfo\";}}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:38:\"#/definitions/PolicyInfo_ExtendedProps\";}}}s:18:\"PolicyProposalInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"proposalStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Proposal
+  status\";}}}s:17:\"PolicyPackageInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"packageCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Product
+  package code\";}s:4:\"unit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:38:\"Product
+  package unit, the default is 1\";}}}s:12:\"CoverageInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:12:\"chargePeriod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:100:\"Payment
+  period type, non-empty<br>1 - single<br>2 - per year<br>3 to a certain age<br>4
+  - whole life\";}s:10:\"chargeYear\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:132:\"Payment
+  period, non-empty<br>0 - single;<br>by age: till which age or to pay the payment
+  period: the pay years;<br>whole life is 100\";}s:14:\"coveragePeriod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"Coverage
+  type<br>1 - whole life<br>2 - per year<br>3 - Cover to a certain age<br>4 - per
+  month<br>5 - per day\";}s:12:\"coverageYear\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:340:\"Coverage
+  Term. Meaning of this property is associated with property \"coveragePeriod\" (\"type\"
+  for short). when covers whole life, value of this property is 9999;<br>and if type
+  is 2, means years covered;<br>and if type is 3, means age when coverage expired;<br>and
+  if type is 4, means months covered;<br>and if type is 5, means days covered.\";}s:14:\"currentPremium\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/CoveragePremium\";s:11:\"description\";s:26:\"The
+  current period premium\";}s:11:\"productCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Product
+  code\";}s:17:\"masterProductCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Main
+  product code\";}s:9:\"waiverExt\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:31:\"#/definitions/CoverageExtWaiver\";s:11:\"description\";s:23:\"Waiver
+  plan information\";}s:11:\"nextPremium\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/CoveragePremium\";s:11:\"description\";s:28:\"Renew
+  premium (next premium)\";}s:14:\"coverageAgents\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:36:\"List
+  of performance sharing of agent\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CoverageAgentInfo\";}}s:8:\"payPlans\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Payment
+  plan list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PayPlanInfo\";}}s:8:\"insureds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:15:\"List
+  of insured\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CoverageInsuredInfo\";}}s:15:\"premInvestRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:42:\"The
+  ratio of premium and investment amount\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PremInvestRateInfo\";}}s:14:\"recurringTopup\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/RecurringTopupInfo\";s:11:\"description\";s:16:\"Recurring
+  top-up\";}s:15:\"contractInvests\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"Policy
+  investment information\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ContractInvestInfo\";}}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:40:\"#/definitions/CoverageInfo_ExtendedProps\";}}}s:15:\"CoveragePremium\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"benefitLevel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:65:\"Plan
+  benefit level, the product insured by the level of non-empty\";}s:11:\"paymentFreq\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:132:\"Pay
+  frequency<br>1 - yearly payment<br>2 - half yearly payment<br>3 - quarterly payment<br>4
+  - monthly payment<br>5 - single premium\";}s:10:\"sumAssured\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:57:\"Insurance
+  SA, non empty when calculate premium base on SA\";}s:7:\"premium\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:62:\"Insurance
+  premium, non empty when calculate SA base on premium\";}s:4:\"unit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:46:\"Product
+  unit, non empty when by unit insurance\";}}}s:17:\"CoverageExtWaiver\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"waivedSa\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:156:\"Exempt
+  from the amount of insurance, 0 that a full exemption, not 0 that exemption from
+  the specified amount, can not exceed the insurance premium is exempt\";}s:6:\"waiver\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Is
+  waiver<br>Y - yes<br>N - no\";}}}s:11:\"PayPlanInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"endPeriod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:203:\"Year
+  to receive the type of annuity, the type of annuity / variable annuity / GMWB should
+  not be empty<br>1 to receive a fixed number of years<br>2 to receive till a certain
+  age<br>3 - receive whole life\";}s:7:\"endYear\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:27:\"The
+  number of payment years\";}s:11:\"gurntPeriod\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:39:\"Annuity
+  guarantee period (years or age)\";}s:9:\"payOption\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:232:\"The
+  annuity receive payment options: 1 - to receive payment by cash<br>2 - to pay premium<br>3
+  - accumulated interest<br>4 - accumulated interest x years after the transfer to
+  pay premium<br>5 - to buy an additional payment of rider\";}s:13:\"payOptionTerm\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:75:\"Years,
+  only when payOption is 4, this field has value, for others are empty\";}s:9:\"payPeriod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:188:\"The
+  annuity begins to receive the type of period<br>1 - is immediately received<br>2
+  - till a certain age to receive<br>3 - years after the collection<br>4 - after a
+  certain age to receive\";}s:7:\"payYear\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:55:\"The
+  annuity begins to receive the period (years or age)\";}s:8:\"planFreq\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:100:\"To
+  receive frequency<br>1 - yearly<br>2 - half yearly<br>3 - quarterly <br>4 - monthly<br>5
+  - single\";}s:8:\"planType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:200:\"Payment
+  plan type<br>1 - cash payment<br>2 - annuity<br>3 - survival benefit<br>4 - maturity
+  \ 5 - GMWB (guaranteed minimum benefit)<br>6 - variable annuity<br>7 - partial surrender<br>8
+  - SA dividends\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:39:\"#/definitions/PayPlanInfo_ExtendedProps\";}}}s:19:\"CoverageInsuredInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:14:\"insuredPartyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Insured
+  internal ID\";}s:7:\"orderId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:162:\"Insurance
+  type of the insured person, the default is 1, if one plan applied by more than one
+  insured (family policy or personal risk), the value is greater than 1\";}s:15:\"occupationClass\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:16:\"Occupation
+  level\";}s:3:\"age\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:3:\"Age\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:47:\"#/definitions/CoverageInsuredInfo_ExtendedProps\";}}}s:18:\"PremInvestRateInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"fundCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Fund
+  code\";}s:10:\"assignRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:17:\"Fund
+  assign ratio\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:46:\"#/definitions/PremInvestRateInfo_ExtendedProps\";}}}s:18:\"RecurringTopupInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"investRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:20:\"Investment
+  rate list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/RecurringTopupInvestRateInfo\";}}s:14:\"topupStartDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:17:\"Top-up
+  start date\";}s:11:\"topupAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Top-up
+  amount\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:46:\"#/definitions/RecurringTopupInfo_ExtendedProps\";}}}s:28:\"RecurringTopupInvestRateInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"fundCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Fund
+  code\";}s:10:\"assignRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:17:\"Fund
+  assign ratio\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:56:\"#/definitions/RecurringTopupInvestRateInfo_ExtendedProps\";}}}s:18:\"ContractInvestInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"fundCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Fund
+  code\";}s:10:\"accumUnits\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:10:\"Fund
+  units\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:46:\"#/definitions/ContractInvestInfo_ExtendedProps\";}}}s:17:\"CoverageAgentInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"agentCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Policy
+  agent code\";}s:10:\"assignRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:41:\"Performance
+  rating, the maximum for the 1\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:45:\"#/definitions/CoverageAgentInfo_ExtendedProps\";}}}s:16:\"PolicyHolderInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"partyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  number, UUID type\";}s:14:\"policyCustomer\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/PolicyCustomerInfo\";s:11:\"description\";s:15:\"Customer
+  detail\";}s:12:\"relationToLA\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:136:\"The
+  relationship between the insured and the insured, the number type<br>1 - own<br>2
+  - parent<br>3 - spouse<br>10 - child<br>7 - others\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:44:\"#/definitions/PolicyHolderInfo_ExtendedProps\";}}}s:18:\"PolicyCustomerInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";s:11:\"description\";s:16:\"Customer
+  address\";}s:9:\"partyType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:67:\"The
+  type of the party<br>1 - the personal party<br>2 - organization\";}s:6:\"person\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Person\";s:11:\"description\";s:29:\"Personal
+  customer information\";}s:12:\"organization\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";s:11:\"description\";s:33:\"Organization
+  customer information\";}s:12:\"partyContact\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/PartyContact\";s:11:\"description\";s:25:\"Party
+  contact information\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:46:\"#/definitions/PolicyCustomerInfo_ExtendedProps\";}}}s:11:\"InsuredInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"partyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  number, UUID type\";}s:14:\"policyCustomer\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/PolicyCustomerInfo\";s:11:\"description\";s:15:\"Customer
+  detail\";}s:12:\"relationToPH\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:134:\"The
+  relationship between the insured and the insured, integer type<br>1 - self<br>2
+  - child<br>3 - spouse<br>10 - parent<br>7 - others\";}s:15:\"medicalExamIndi\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Whether
+  physical exam is required<br>Y - yes;<br>N - no\";}s:11:\"medicalIndi\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"Whether
+  there is medical insurance coverage<br>Y - yes<br>N - no\";}s:18:\"socialSecurityIndi\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:71:\"Whether
+  there is social medical insurance coverage<br>Y - yes<br>N - no\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:39:\"#/definitions/InsuredInfo_ExtendedProps\";}}}s:15:\"BeneficiaryInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"partyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  number, UUID type\";}s:14:\"policyCustomer\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Customer
+  detail\";s:4:\"$ref\";s:32:\"#/definitions/PolicyCustomerInfo\";}s:14:\"insuredPartyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Beneficiaries'
+  according insured Id\";}s:8:\"beneType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:80:\"Beneficiaries,
+  1 beneficiaries<br>2 - beneficiaries<br>3 - insured beneficiaries\";}s:11:\"designation\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:276:\"The
+  relationship to the insured<br>1 - wife<br>2 - husband<br>3 - child<br>4 - father<br>5
+  - mother<br>6 - Grand father<br>7 - Grandparent<br>8 - brother<br>9 - sister<br>10
+  - uncle<br>11 - untie<br>12 - cousin<br>13 - nephew(niece)<br>14 - employer<br>15
+  - other<br>16 - self\";}s:10:\"shareOrder\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:13:\"Benefit
+  order\";}s:9:\"shareRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:22:\"Benefit
+  ratio, up to 1\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:43:\"#/definitions/BeneficiaryInfo_ExtendedProps\";}}}s:16:\"PayerAccountInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"paymentMethod\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:100:\"First
+  time payment method, integer<br>1 - cash<br>2 - check<br>3 - bank transfer<br>30
+  - credit card\";}s:17:\"paymentMethodNext\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:97:\"Renewal
+  payment method, integer<br>1 - cash<br>2 - check<br>3 - bank transfer<br>30 - credit
+  card\";}s:11:\"bankAccount\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/BankAccountInfo\";s:11:\"description\";s:30:\"The
+  first premium bank account\";}s:15:\"nextBankAccount\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/BankAccountInfo\";s:11:\"description\";s:28:\"Renewal
+  premium bank account\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:44:\"#/definitions/PayerAccountInfo_ExtendedProps\";}}}s:23:\"CustomerDeclarationInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"partyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  number, UUID type\";}s:15:\"declarationDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:52:\"Declaration
+  date, date format: yyyy-MM-dd'T'HH:mm:ss\";}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:19:\"Declaration
+  details\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/CustomerDeclarationDetailInfo\";}}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:51:\"#/definitions/CustomerDeclarationInfo_ExtendedProps\";}}}s:29:\"CustomerDeclarationDetailInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:6:\"declId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:36:\"Declaration
+  item number, number type\";}s:5:\"fill1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 1, character type, the content with the different items
+  and different\";}s:5:\"fill2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 2, character type, the content with the different items
+  and different\";}s:5:\"fill3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 3, character type, the content with the different items
+  and different\";}s:5:\"fill4\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 4, character type, the content with the different items
+  and different\";}s:5:\"fill5\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 5, character type, the content with the different items
+  and different\";}s:5:\"fill6\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 6, character type, the content with the different items
+  and different\";}s:5:\"fill7\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 7, character type, the content with the different items
+  and different\";}s:5:\"fill8\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 8, character type, the content with the different items
+  and different\";}s:5:\"fill9\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 9, character type, the content with the different items
+  and different\";}s:6:\"fill10\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"Declaration
+  item to answer the content 10, character type, the content with the different items
+  and different\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:57:\"#/definitions/CustomerDeclarationDetailInfo_ExtendedProps\";}}}s:20:\"AgentDeclarationInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:9:\"agentCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Agent
+  code\";}s:8:\"declCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Declaration
+  item code\";}s:5:\"fill1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 1, character type, the content with the different items
+  and different\";}s:5:\"fill2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 2, character type, the content with the different items
+  and different\";}s:5:\"fill3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 3, character type, the content with the different items
+  and different\";}s:5:\"fill4\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 4, character type, the content with the different items
+  and different\";}s:5:\"fill5\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 5, character type, the content with the different items
+  and different\";}s:5:\"fill6\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 6, character type, the content with the different items
+  and different\";}s:5:\"fill7\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 7, character type, the content with the different items
+  and different\";}s:5:\"fill8\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 8, character type, the content with the different items
+  and different\";}s:5:\"fill9\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Declaration
+  item to answer the content 9, character type, the content with the different items
+  and different\";}s:6:\"fill10\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"Declaration
+  item to answer the content 10, character type, the content with the different items
+  and different\";}s:13:\"extendedProps\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Extended
+  information, Map type, Key / Value, should be character\";s:4:\"$ref\";s:48:\"#/definitions/AgentDeclarationInfo_ExtendedProps\";}}}s:12:\"ContactInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"email\";i:1;s:6:\"mobile\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"Email\";}s:6:\"mobile\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Mobile
+  No.\";}}}s:6:\"Person\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":18:{s:6:\"gender\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Sex<br>M
+  - male<br>F - female\";}s:9:\"birthdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:44:\"Birthday,
+  non-empty, date format: yyyy-MM-dd\";}s:9:\"certiType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:117:\"ID
+  type, number type<br>1 - ID card<br>2 - military certificate<br>3 - passport<br>4
+  - birth certificate<br>9 - other\";}s:9:\"certiCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"ID
+  Number\";}s:10:\"certiStart\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:47:\"Certificate
+  start date, date format: yyyy-MM-dd\";}s:8:\"certiEnd\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:35:\"Valid
+  date, date format: yyyy-MM-dd\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"First
+  name\";}s:7:\"midName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Middle
+  name of prospect\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Last
+  name of prospect\";}s:11:\"nationality\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Nationality<br>7
+  - China\";}s:17:\"preferredLifeIndi\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:150:\"Insurance
+  risk classifications <br>0 - N/A<br>1 - Prefer plus<br>2 - Prefer<br>3 - Standard
+  plus<br>4 - Standard<br>5 - Sub-prefer<br>6 - Sub-standard\";}s:7:\"smoking\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Whether
+  smoking<br>Y - yes;<br>N - no\";}s:14:\"occupationCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Professional
+  code\";}s:6:\"income\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:13:\"Annual
+  income\";}s:14:\"marriageStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"Marital
+  status<br>1 - married<br>2 - unmarried<br>3 - divorced<br>4 - widowed<br>5 - separated\";}s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:17:\"Height
+  e.g. 172cm\";}s:6:\"weight\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:11:\"Weight
+  (kg)\";}s:10:\"salutation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Title<br>1
+  - Mr.<br>2 - Mrs.\";}}}s:15:\"BankAccountInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:10:\"branchCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Branch
+  code\";}s:8:\"bankCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Bank
+  code\";}s:19:\"bankAccountProvince\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  province, the bank account belongs to\";}s:15:\"bankAccountCity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"The
+  city, the bank account belongs to\";}s:13:\"issueBankName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Card
+  issue bank\";}s:11:\"bankAccount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Bank
+  Account\";}s:8:\"accoName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Account
+  holder name\";}s:11:\"accountType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Account
+  type, 2 debit card<br>8 - credit card\";}s:15:\"debitCreditType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Account
+  use<br>0 - pay and use<br>1 - fee<br>2 - refund\";}s:14:\"creditCardType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"Credit
+  card type, if not credit card, be empty<br>1 - Master<br>2 - Visa<br>3 - BCA<br>4
+  - JCB\";}s:10:\"expireDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:34:\"Account
+  expiration date, MM / yyyy\";}}}s:12:\"PartyContact\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"homeTel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Home
+  telephone\";}s:9:\"mobileTel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Phone
+  number\";}s:9:\"officeTel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Work
+  phone\";}s:12:\"officeTelExt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Work
+  phone extension\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"E-mail:\";}s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Contact
+  person\";}s:10:\"contactTel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Contact
+  Phone\";}s:3:\"fax\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Fax:
+  (+86) {0}022 - 24143117{/0}\";}}}s:11:\"AddressInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"address1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Province\";}s:8:\"address2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"City\";}s:8:\"address3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"District\";}s:8:\"address4\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"Address\";}s:8:\"postCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Post
+  code\";}}}s:12:\"Organization\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"registerType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Company
+  certificate type, 1001 - company registration number\";}s:12:\"registerCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Company
+  ID\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Registered
+  country, 156 - China\";}s:11:\"companyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Name
+  of company\";}s:9:\"organCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Organization
+  code\";}}}s:12:\"CustomerInfo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:14:\"CustomerDetail\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"CustomerDetail\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Person\";}s:11:\"AddressInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:12:\"Address
+  list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/CustomerInfo_AddressInfo\";}}s:11:\"ContactInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PartyContact\";}}s:11:\"description\";s:63:\"Customer
+  related information with basic info, contact and so on\";}s:18:\"CorrespondingInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:15:\"clientRequestId\";i:1;s:17:\"clientRequestTime\";i:2;s:13:\"effectiveDate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:11:\"AddressInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";}}s:11:\"ContactInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PartyContact\";}}}s:23:\"CorrespondingResultInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:15:\"clientRequestId\";i:1;s:17:\"clientRequestTime\";i:2;s:10:\"customerId\";i:3;s:13:\"effectiveDate\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:10:\"customerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"definitions.CorrespondingResultInfo.properties.customerId.description\";}s:11:\"AddressInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";}}s:11:\"ContactInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PartyContact\";}s:13:\"RelatedPolicy\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"Policy
+  code list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"result\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:95:\"Result.
+  <br>1 - Success<br>0 - Failed with business issue<br>-1 - Failed with unknown exception\";}}}s:19:\"CreateCustomerInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:12:\"CustomerInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CustomerInfo\";}}}s:24:\"CreateCustomerResultInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:12:\"CustomerInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CustomerInfo\";}s:6:\"result\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:95:\"Result.
+  <br>1 - Success<br>0 - Failed with business issue<br>-1 - Failed with unknown exception\";}}}s:15:\"RegisterRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:9:\"claimType\";i:1;s:8:\"claimant\";i:2;s:5:\"event\";i:3;s:7:\"insured\";i:4;s:8:\"policyNo\";i:5;s:17:\"relationToInsured\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:8:\"policyNo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Claim
+  policy number\";}s:8:\"claimant\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/ClaimantInput\";s:11:\"description\";s:23:\"Information
+  of claimant\";}s:7:\"insured\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/InsuredInput\";s:11:\"description\";s:22:\"Information
+  of insured\";}s:17:\"relationToInsured\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:137:\"Claimant
+  relation to insured <br>1 - Spouse <br>2 - Child <br>3 - Parent <br>4 - Relative
+  <br>6 - others <br>7 - Employer <br>1001 - self\";}s:5:\"event\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/ClaimEventInput\";s:11:\"description\";s:26:\"Information
+  of claim event\";}s:9:\"claimType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:81:\"Claim
+  type <br>1 - Accident <br>2 - Death <br>5 - Hospitalization<br>8 - Medical \";}}}s:16:\"RegisterResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"claimCaseNo\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:6:\"result\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:95:\"Result.
+  <br>1 - Success<br>0 - Failed with business issue<br>-1 - Failed with unknown exception\";}s:8:\"messages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:27:\"Messages
+  of business issues\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/GenericValidationResult\";}}s:10:\"exceptions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Exception
+  messages\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"claimCaseNo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Claim
+  case number\";}}}s:13:\"ClaimantInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:12:\"partyContact\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"Name\";}s:12:\"partyContact\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/ContactInput\";s:11:\"description\";s:19:\"Contact
+  information\";}}}s:15:\"ClaimEventInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"eventDetail\";i:1;s:11:\"eventNature\";i:2;s:9:\"eventTime\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"reportType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:77:\"Report
+  by <br>1 - phone <br>2 - fax <br>4 - sms <br>5 - network <br>6 - email\";}s:11:\"eventNature\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:45:\"Event
+  nature <br>1 - illness <br>2 - accident\";}s:9:\"eventTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:60:\"Date
+  when claim event happens, format: yyyy-MM-dd'T'HH:mm:ss\";}s:11:\"eventDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Detail
+  of claim event\";}}}s:12:\"InsuredInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:9:\"certiCode\";i:1;s:9:\"certiType\";i:2;s:6:\"gender\";i:3;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"Name\";}s:6:\"gender\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Insured's
+  sex, M - male;<br>F - female\";}s:9:\"certiType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:117:\"ID
+  type, number type<br>1 - ID card<br>2 - military certificate<br>3 - passport<br>4
+  - birth certificate<br>9 - other\";}s:9:\"certiCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"ID
+  Number\";}}}s:26:\"PolicyAlterationResultInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"changeId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:22:\"Alteration
+  internal id\";}s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:10:\"exceptions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Exception
+  messages\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"finishTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:56:\"Alteration
+  finishing time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:11:\"itemResults\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"Alteration
+  items\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/AlterationItemResultInfo\";}}s:6:\"result\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:95:\"Result.
+  <br>1 - Success<br>0 - Failed with business issue<br>-1 - Failed with unknown exception\";}}}s:24:\"AlterationItemResultInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:18:\"freelookResultInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/FreelookResultInfo\";}s:7:\"orderId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:30:\"Alteration
+  order, default is 1\";}s:11:\"policyChgId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"Policy
+  alteration internal id\";}s:8:\"policyId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:18:\"Policy
+  internal id\";}s:9:\"serviceId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"Alteration
+  type id<br>201 - Freelook\";}s:14:\"submissionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"Submission
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}}}s:21:\"PolicyAlterationInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:15:\"Alteration
+  item\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AlterationItemInput\";}}}}s:19:\"AlterationItemInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"freelookInput\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/FreelookInput\";}s:7:\"orderId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:30:\"Alteration
+  order, default is 1\";}s:11:\"policyChgId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"Policy
+  alteration internal id\";}s:8:\"policyId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"Policy
+  alteration internal id\";}s:9:\"serviceId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"Alteration
+  type id<br>201 - Freelook\";}s:14:\"submissionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"Submission
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}}}s:24:\"AlterationQuotationInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"freelookInput\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/FreelookInput\";}s:8:\"policyId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"Policy
+  alteration internal id\";}s:9:\"serviceId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"Alteration
+  type id<br>201 - Freelook\";}s:14:\"submissionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"Submission
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}}}s:29:\"AlterationQuotationResultInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:15:\"clientRequestId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Client
+  request id, to identify a request\";}s:17:\"clientRequestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:50:\"Client
+  request time, format: yyyy-MM-dd'T'HH:mm:ss\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"Effective
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}s:10:\"exceptions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Exception
+  messages\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"policyId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"Policy
+  alteration internal id\";}s:18:\"freelookResultInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/FreelookResultInfo\";}s:6:\"result\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:95:\"Result.
+  <br>1 - Success<br>0 - Failed with business issue<br>-1 - Failed with unknown exception\";}s:9:\"serviceId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"Alteration
+  type id<br>201 - Freelook\";}s:14:\"submissionDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"Submission
+  date, format: yyyy-MM-dd'T'HH:mm:ss\";}}}s:13:\"FreelookInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"alteredCoverages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Coverage
+  to be alternated\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CoverageInput\";}}s:14:\"freelookReason\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:147:\"Freelook
+  reason<br>51 - Financial Difficulty<br>52 - Agent Misrepresented<br>53 - Poor Service
+  from Agent<br>54 - Mismatched Product<br>55 - Others\";}}}s:18:\"FreelookResultInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"adminFee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:29:\"Alteration
+  administration fee\";}s:14:\"advancePremium\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:15:\"Advance
+  premium\";}s:10:\"medicalFee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:11:\"Medical
+  fee\";}s:8:\"suspense\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:16:\"Premium
+  suspense\";}s:17:\"totalExtraPremium\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:24:\"Total
+  additional premium\";}s:17:\"totalGrossPremium\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:19:\"Total
+  gross premium\";}s:17:\"totalRefundAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:19:\"Total
+  refund amount\";}}}s:13:\"CoverageInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"coverageId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"Coverage
+  internal id to be alternated\";}}}s:9:\"GenericVO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"extObject\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/GenericVO\";}}}s:23:\"GenericValidationResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"ruleType\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:24:\"PolicyInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:26:\"CoverageInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:25:\"PayPlanInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:33:\"CoverageInsuredInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:32:\"PremInvestRateInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:32:\"RecurringTopupInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:42:\"RecurringTopupInvestRateInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:32:\"ContractInvestInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:31:\"CoverageAgentInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:30:\"PolicyHolderInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:32:\"PolicyCustomerInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:25:\"InsuredInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:29:\"BeneficiaryInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:30:\"PayerAccountInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:37:\"CustomerDeclarationInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:43:\"CustomerDeclarationDetailInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:34:\"AgentDeclarationInfo_ExtendedProps\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:24:\"CustomerInfo_AddressInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"Address\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"Address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";}}}}"
+...
