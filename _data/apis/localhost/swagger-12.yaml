@@ -1,0 +1,891 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:33:\"Description for
+  the API Services.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:32:\"CredAgility
+  RESTful API Services\";s:14:\"termsOfService\";s:16:\"Terms of Service\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Team
+  CMC\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:19:\"Licensed to CMC Inc\";s:3:\"url\";s:20:\"http://cmcagile.com/\";}}"
+host: localhost:9000
+basePath: /
+paths:
+  /api/fundingaccounts:
+    post:
+      tags:
+      - funding-account-controller
+      summary: Create a Funding Account with the data in the request body
+      description: Create a new Funding Account with the given data
+      operationId: createFundingAccountUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: far
+        description: far
+        required: true
+        schema:
+          $ref: '#/definitions/CreateFundingAccountRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateFundingAccountResponse'
+        201:
+          description: Successfully Created a new Funding Account and returned a new
+            funding account id
+          schema:
+            $ref: '#/definitions/CreateFundingAccountResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/fundingaccounts/customer/{ucid}/account/{originalAccountNumber}:
+    get:
+      tags:
+      - funding-account-controller
+      summary: Returns the Funding Accounts for a customer with customer id as {ucid}
+        and account number as {originalAccountNumber} (encrypted)
+      description: Get Funding Accounts by Customer id and Account Number
+      operationId: getFundingAccountsByCustomerIdAndOriginalAccountNumberUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: ucid
+        in: path
+        description: Unique Customer Id
+        required: true
+        type: integer
+        format: int64
+      - name: originalAccountNumber
+        in: path
+        description: Original Account Number
+        required: true
+        type: string
+      - name: fundingSummaryOnly
+        in: query
+        description: true or false
+        required: false
+        type: boolean
+        default: "true"
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: false
+        type: integer
+        format: int32
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: false
+        type: integer
+        default: "1"
+        format: int32
+      - name: sortField
+        in: query
+        description: sortField
+        required: false
+        type: string
+        default: id
+      - name: direction
+        in: query
+        description: direction
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful retrieval of Funding Accounts for customer and account
+          schema:
+            $ref: '#/definitions/FundingAccountPagedModelResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Accounts for the given customer id and account number
+            does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/fundingaccounts/customer/{ucid}/{level}:
+    get:
+      tags:
+      - funding-account-controller
+      summary: Returns the Funding Accounts for a customer with customer id as {ucid}
+      description: Get Funding Accounts by Customer id
+      operationId: getFundingAccountsByCustomerIdUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: ucid
+        in: path
+        description: Unique Customer Id
+        required: true
+        type: integer
+        format: int64
+      - name: level
+        in: path
+        description: customer or all
+        required: false
+        type: integer
+        default: all
+        format: int64
+      - name: fundingSummaryOnly
+        in: query
+        description: true or false
+        required: false
+        type: boolean
+        default: "true"
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: false
+        type: integer
+        format: int32
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: false
+        type: integer
+        default: "1"
+        format: int32
+      - name: sortField
+        in: query
+        description: sortField
+        required: false
+        type: string
+        default: id
+      - name: direction
+        in: query
+        description: direction
+        required: false
+        type: string
+        default: asc
+      responses:
+        200:
+          description: Successful retrieval of Funding Accounts for customer
+          schema:
+            $ref: '#/definitions/FundingAccountPagedModelResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Accounts for the given customer id does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/fundingaccounts/{fundingAccountId}:
+    get:
+      tags:
+      - funding-account-controller
+      summary: Returns the Funding Account with {fundingAccountId}
+      description: Get Funding Account by (internal) id
+      operationId: getFundingAccountUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: fundingAccountId
+        in: path
+        description: Funding Account Id
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Successful retrieval of Funding Account
+          schema:
+            $ref: '#/definitions/GetFundingAccountResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Account with the given id does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+    delete:
+      tags:
+      - funding-account-controller
+      summary: Delete the funding account with {fundingAccountId}
+      description: Delete the funding account with internal id as {fundingAccountId}
+      operationId: deleteFundingAccountUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: fundingAccountId
+        in: path
+        description: fundingAccountId
+        required: true
+        type: integer
+        format: int64
+      - name: id
+        in: path
+        description: Internal Funding Account Id
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+        202:
+          description: Successfully deleted the Funding Account with {fundingAccountId}
+          schema:
+            type: object
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Account with the given id does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+    patch:
+      tags:
+      - funding-account-controller
+      summary: Make the funding account with {fundingAccountId} as Primary
+      description: Make the funding account with {fundingAccountId} as Primary
+      operationId: makePrimaryFundingAccountUsingPATCH
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: fundingAccountId
+        in: path
+        description: Internal Funding Account Id
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+        202:
+          description: Successfully marked the Funding Account with {fundingAccountId}
+            as Primary
+          schema:
+            type: object
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Account with the given id does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/account/{originalAccountNumber}:
+    get:
+      tags:
+      - payment-controller
+      summary: Get payments by OriginalAccountNumber
+      operationId: getPaymentsByOriginalAccountNumberUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: originalAccountNumber
+        in: path
+        description: originalAccountNumber
+        required: false
+        type: string
+        default: "0"
+      - name: fundingSummaryOnly
+        in: query
+        description: true or false
+        required: false
+        type: boolean
+        default: "true"
+      - name: startDate
+        in: query
+        description: startDate
+        required: false
+        type: string
+        format: date
+      - name: endDate
+        in: query
+        description: endDate
+        required: false
+        type: string
+        format: date
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: false
+        type: integer
+        format: int32
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: false
+        type: integer
+        format: int32
+      - name: direction
+        in: query
+        description: direction
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetPaymentPagedModelResponse'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Invalid URI
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/combined:
+    post:
+      tags:
+      - payment-controller
+      summary: Create combined  payments with the data in the request body
+      description: Create combined payments with the data in the request body
+      operationId: createCombinedPaymentUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: combinedPaymentRequest
+        description: combinedPaymentRequest
+        required: true
+        schema:
+          $ref: '#/definitions/CreateCombinedPaymentRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateCombinedPaymentResponse'
+        201:
+          description: Successfully created payment
+          schema:
+            $ref: '#/definitions/CreateCombinedPaymentSingleModelResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/combined/{paymentGroupId}:
+    get:
+      tags:
+      - payment-controller
+      summary: Get payments by PaymentGroupId.
+      operationId: getPaymentsByPaymentGroupIDUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: paymentGroupID
+        in: path
+        description: paymentGroupID
+        required: true
+        type: string
+      - name: fundingSummaryOnly
+        in: query
+        description: true or false
+        required: false
+        type: boolean
+        default: "true"
+      responses:
+        200:
+          description: Successfully retrieved all the payments for the given PaymentGroupId
+          schema:
+            $ref: '#/definitions/GetPaymentListModelResponse'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Invalid URI
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+    delete:
+      tags:
+      - payment-controller
+      summary: Delete the payment with the given {paymentGroupId}
+      description: Delete the payment with internal paymentGroupId as {paymentGroupId}
+      operationId: deleteCombinedPaymentUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: paymentGroupId
+        in: path
+        description: paymentGroupId
+        required: true
+        type: integer
+        format: int64
+      - name: id
+        in: path
+        description: Internal PaymentGroupId
+        required: true
+        type: integer
+        default: "0"
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+        202:
+          description: Successfully deleted all the Payments for the given paymentGroupId
+            {paymentGroupId}
+          schema:
+            type: object
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Account with the given id does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/customer/{ucId}:
+    get:
+      tags:
+      - payment-controller
+      summary: Get payments by CustomerId(ucId)
+      operationId: getPaymentsByCustomerIdUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: ucId
+        in: path
+        description: ucId
+        required: true
+        type: string
+      - name: fundingSummaryOnly
+        in: query
+        description: true or false
+        required: false
+        type: boolean
+        default: "true"
+      - name: startDate
+        in: query
+        description: startDate
+        required: false
+        type: string
+        format: date
+      - name: endDate
+        in: query
+        description: endDate
+        required: false
+        type: string
+        format: date
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: false
+        type: integer
+        format: int32
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: false
+        type: integer
+        format: int32
+      - name: direction
+        in: query
+        description: direction
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetPaymentPagedModelResponse'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Invalid URI
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/multiple:
+    post:
+      tags:
+      - payment-controller
+      summary: Create multiple payments with the data in the request body
+      description: Create multiple payments with the data in the request body
+      operationId: createMultiplePaymentUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: paymentInfo
+        description: paymentInfo
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/CreatePaymentRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ListItemResponseOfCreatePaymentResponse'
+        201:
+          description: Successfully created  payments
+          schema:
+            $ref: '#/definitions/CreatePaymentListModelResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/single:
+    post:
+      tags:
+      - payment-controller
+      summary: Create a Payment with the data in the request body
+      description: Create a new Payment with the given data
+      operationId: createPaymentUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: paymentInfo
+        description: paymentInfo
+        required: true
+        schema:
+          $ref: '#/definitions/CreatePaymentRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreatePaymentResponse'
+        201:
+          description: Successfully created a new Payment
+          schema:
+            $ref: '#/definitions/CreatePaymentSingleModelResponse'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+  /api/payments/{paymentId}:
+    get:
+      tags:
+      - payment-controller
+      summary: Get payment by (internal) paymentId.
+      operationId: getPaymentUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: paymentId
+        in: path
+        description: paymentId
+        required: true
+        type: integer
+        default: "0"
+        format: int64
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetPaymentSingleModelResponse'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Invalid URI
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+    put:
+      tags:
+      - payment-controller
+      summary: Update the payment {paymentId} with provided paymentId
+      description: Update the Payment using the data provided in request body
+      operationId: updatePaymentUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: pi
+        description: pi
+        required: true
+        schema:
+          $ref: '#/definitions/UpdatePaymentRequest'
+      - name: id
+        in: path
+        description: Internal PaymentId
+        required: true
+        type: integer
+        default: "0"
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+        202:
+          description: Successfully updated the Payment with {paymentId} using the
+            data provided
+          schema:
+            type: object
+        400:
+          description: Invalid Data provided in the request body. Please refer to
+            the Error object for more details
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Payment with the given paymentId does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+    delete:
+      tags:
+      - payment-controller
+      summary: Delete the payment with {paymentId}
+      description: Delete the payment with internal paymentId as {paymentId}
+      operationId: deletePaymentUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: integer
+        format: int64
+      - name: paymentId
+        in: path
+        description: Internal Payment Id
+        required: true
+        type: integer
+        default: "0"
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+        202:
+          description: Successfully deleted the Payment with {paymentId}
+          schema:
+            type: object
+        401:
+          description: Unauthorized access to use this resource
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        403:
+          description: Forbidden operation
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        404:
+          description: Funding Account with the given paymentId does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponseInfo'
+definitions: !php/object "O:8:\"stdClass\":25:{s:25:\"GetFundingAccountResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"customerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:21:\"fundingAccountDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountDetailsInfo\";}s:16:\"fundingAccountId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:21:\"fundingAccountSummary\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountSummaryInfo\";}s:5:\"level\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"originalAccountNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:25:\"FundingAccountSummaryInfo\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"bankName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"last4FundingAccountNum\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"nickName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:28:\"CreateFundingAccountResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:16:\"fundingAccountId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:21:\"fundingAccountSummary\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountSummaryInfo\";}s:5:\"level\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:36:\"ListItemResponseOfGetPaymentResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GetPaymentResponse\";}}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"GetPaymentResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":11:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"fundingAccountDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountDetailsInfo\";}s:16:\"fundingAccountId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:21:\"fundingAccountSummary\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountSummaryInfo\";}s:21:\"originalAccountNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"paymentDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:14:\"paymentGroupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"paymentId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"paymentSource\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"paymentStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"CreatePaymentResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:23:\"externalReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"fundingAccountResponse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/CreateFundingAccountResponse\";}s:9:\"paymentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"paymentStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"paymentStatusCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"paymentStatusDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:40:\"CreateCombinedPaymentSingleModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/CreateCombinedPaymentResponse\";}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:29:\"CreateCombinedPaymentResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:23:\"externalReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"fundingAccountResponse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/CreateFundingAccountResponse\";}s:14:\"paymentGroupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"paymentStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"paymentStatusCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"paymentStatusDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"ErrorResponseInfo\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"errorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"errorDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorDetails\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"httpStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:66:{i:0;s:3:\"100\";i:1;s:3:\"101\";i:2;s:3:\"102\";i:3;s:3:\"103\";i:4;s:3:\"200\";i:5;s:3:\"201\";i:6;s:3:\"202\";i:7;s:3:\"203\";i:8;s:3:\"204\";i:9;s:3:\"205\";i:10;s:3:\"206\";i:11;s:3:\"207\";i:12;s:3:\"208\";i:13;s:3:\"226\";i:14;s:3:\"300\";i:15;s:3:\"301\";i:16;s:3:\"302\";i:17;s:3:\"302\";i:18;s:3:\"303\";i:19;s:3:\"304\";i:20;s:3:\"305\";i:21;s:3:\"307\";i:22;s:3:\"308\";i:23;s:3:\"400\";i:24;s:3:\"401\";i:25;s:3:\"402\";i:26;s:3:\"403\";i:27;s:3:\"404\";i:28;s:3:\"405\";i:29;s:3:\"406\";i:30;s:3:\"407\";i:31;s:3:\"408\";i:32;s:3:\"409\";i:33;s:3:\"410\";i:34;s:3:\"411\";i:35;s:3:\"412\";i:36;s:3:\"413\";i:37;s:3:\"413\";i:38;s:3:\"414\";i:39;s:3:\"414\";i:40;s:3:\"415\";i:41;s:3:\"416\";i:42;s:3:\"417\";i:43;s:3:\"418\";i:44;s:3:\"419\";i:45;s:3:\"420\";i:46;s:3:\"421\";i:47;s:3:\"422\";i:48;s:3:\"423\";i:49;s:3:\"424\";i:50;s:3:\"426\";i:51;s:3:\"428\";i:52;s:3:\"429\";i:53;s:3:\"431\";i:54;s:3:\"500\";i:55;s:3:\"501\";i:56;s:3:\"502\";i:57;s:3:\"503\";i:58;s:3:\"504\";i:59;s:3:\"505\";i:60;s:3:\"506\";i:61;s:3:\"507\";i:62;s:3:\"508\";i:63;s:3:\"509\";i:64;s:3:\"510\";i:65;s:3:\"511\";}}s:19:\"supplementErrorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:26:\"supplementErrorDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timeStamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"trace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"validationErrors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:29:\"GetPaymentSingleModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GetPaymentResponse\";}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"GetPaymentListModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GetPaymentResponse\";}}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:25:\"FundingAccountDetailsInfo\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"achInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/AchInfo\";}s:8:\"cardInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/CardInfo\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Account
+  Type is required with Max Length 20\";s:4:\"enum\";a:7:{i:0;s:10:\"CreditCard\";i:1;s:9:\"DebitCard\";i:2;s:11:\"BankAccount\";i:3;s:4:\"Card\";i:4;s:11:\"MoneyMarket\";i:5;s:7:\"Unknown\";i:6;s:7:\"Maestro\";}}}}s:27:\"CreateFundingAccountRequest\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:10:\"customerId\";i:1;s:5:\"level\";i:2;s:7:\"primary\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"customerId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:42:\"Customer
+  Id is required with Max Length 20\";}s:21:\"fundingAccountDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/FundingAccountDetailsInfo\";}s:5:\"level\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:189:\"To
+  specify which level the new funding account will be created for. If level is customer,
+  customerId is mandatory. If level is account, both customerId & originalAccountNumber
+  are required.\";s:4:\"enum\";a:2:{i:0;s:8:\"customer\";i:1;s:7:\"account\";}}s:21:\"originalAccountNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Original
+  Account Number (probably encrypted) with Max Length 20\";}s:7:\"primary\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:36:\"Make
+  this as Primary Funding Account\";}}}s:30:\"CreatePaymentListModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/CreatePaymentResponse\";}}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"CardInfo\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:20:\"fundingAccountNumber\";i:1;s:14:\"holderFullName\";i:2;s:7:\"subType\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"addressInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";}s:3:\"cvv\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"CVV
+  number for Credit / Debit Cards with Max Length 5\";}s:10:\"expiryDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:51:\"Expiration
+  Date is required for Credit / Debit Card\";}s:20:\"fundingAccountNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Account
+  Number for ACH (or) Credit / Debit Card Number Max Length: 80\";}s:14:\"holderFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Account
+  Holder Full Name is required with Max Length 102\";}s:8:\"nickName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Nick
+  Name to use for the Account with Max Length 60\";}s:7:\"subType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Card
+  or Account Sub Type is required with Max Length 20\";s:4:\"enum\";a:15:{i:0;s:8:\"Checking\";i:1;s:6:\"Saving\";i:2;s:11:\"MoneyMarket\";i:3;s:7:\"Banking\";i:4;s:7:\"Current\";i:5;s:6:\"Cheque\";i:6;s:4:\"Visa\";i:7;s:10:\"MasterCard\";i:8;s:8:\"Bankcard\";i:9;s:15:\"AmericanExpress\";i:10;s:8:\"Discover\";i:11;s:10:\"DinersClub\";i:12;s:3:\"JCB\";i:13;s:12:\"VisaElectron\";i:14;s:9:\"VisaDebit\";}}}}s:20:\"CreatePaymentRequest\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:20:\"fundingAccountSource\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:31:\"createFundingAccountRequestInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";s:4:\"$ref\";s:41:\"#/definitions/CreateFundingAccountRequest\";}s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"fundingAccountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:64:\"This
+  field needs to be filled if fundingAccountSource = existing\";}s:20:\"fundingAccountSource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Funding
+  account source\";s:4:\"enum\";a:2:{i:0;s:8:\"existing\";i:1;s:3:\"new\";}}s:21:\"originalAccountNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"paymentDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";}s:13:\"saveForFuture\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:72:\"To
+  specify whether the new funding account is to be saved for future use\";}}}s:19:\"CombinedPaymentItem\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:21:\"originalAccountNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"AddressInfo\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:8:\"address1\";i:1;s:4:\"city\";i:2;s:8:\"postCode\";i:3;s:8:\"province\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"address1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Address
+  Line 1 is required with Max Length 150\";}s:8:\"address2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Address
+  Line 2 with Max Length 150\";}s:8:\"address3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Address
+  Line 3 with Max Length 150\";}s:8:\"address4\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Address
+  Line 4 with Max Length 150\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"City
+  is required with Max Length 50\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Country
+  with Max Length 150\";}s:8:\"postCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Postal
+  Code is required with Max Length 25\";}s:8:\"province\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Province
+  is required with Max Length 100\";}}}s:28:\"CreateCombinedPaymentRequest\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:20:\"fundingAccountSource\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:20:\"combinedPaymentItems\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CombinedPaymentItem\";}}s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"fundingAccountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:64:\"This
+  field needs to be filled if fundingAccountSource = existing\";}s:21:\"fundingAccountRequest\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";s:4:\"$ref\";s:41:\"#/definitions/CreateFundingAccountRequest\";}s:20:\"fundingAccountSource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Funding
+  account source\";s:4:\"enum\";a:2:{i:0;s:8:\"existing\";i:1;s:3:\"new\";}}s:11:\"paymentDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";}s:13:\"saveForFuture\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:72:\"To
+  specify whether the new funding account is to be saved for future use\";}}}s:39:\"ListItemResponseOfCreatePaymentResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/CreatePaymentResponse\";}}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"UpdatePaymentRequest\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:20:\"fundingAccountSource\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:31:\"createFundingAccountRequestInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";s:4:\"$ref\";s:41:\"#/definitions/CreateFundingAccountRequest\";}s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"fundingAccountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:64:\"This
+  field needs to be filled if fundingAccountSource = existing\";}s:20:\"fundingAccountSource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Funding
+  account source\";s:4:\"enum\";a:2:{i:0;s:8:\"existing\";i:1;s:3:\"new\";}}s:21:\"originalAccountNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"paymentDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:59:\"This
+  field needs to be filled if fundingAccountSource = new\";}s:13:\"saveForFuture\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:72:\"To
+  specify whether the new funding account is to be saved for future use\";}}}s:7:\"AchInfo\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:20:\"fundingAccountNumber\";i:1;s:14:\"holderFullName\";i:2;s:7:\"subType\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:15:\"bankAccountName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"bankName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"fundingAccountNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Account
+  Number for ACH (or) Credit / Debit Card Number Max Length: 80\";}s:14:\"holderFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Account
+  Holder Full Name is required with Max Length 102\";}s:8:\"nickName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Nick
+  Name to use for the Account with Max Length 60\";}s:13:\"routingNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Routing
+  Number is required for ACH type with Max Length 20\";}s:7:\"subType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Card
+  or Account Sub Type is required with Max Length 20\";s:4:\"enum\";a:15:{i:0;s:8:\"Checking\";i:1;s:6:\"Saving\";i:2;s:11:\"MoneyMarket\";i:3;s:7:\"Banking\";i:4;s:7:\"Current\";i:5;s:6:\"Cheque\";i:6;s:4:\"Visa\";i:7;s:10:\"MasterCard\";i:8;s:8:\"Bankcard\";i:9;s:15:\"AmericanExpress\";i:10;s:8:\"Discover\";i:11;s:10:\"DinersClub\";i:12;s:3:\"JCB\";i:13;s:12:\"VisaElectron\";i:14;s:9:\"VisaDebit\";}}}}s:32:\"FundingAccountPagedModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/GetFundingAccountResponse\";}}s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"startAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:28:\"GetPaymentPagedModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GetPaymentResponse\";}}s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"startAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:32:\"CreatePaymentSingleModelResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/CreatePaymentResponse\";}s:22:\"requestReferenceNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

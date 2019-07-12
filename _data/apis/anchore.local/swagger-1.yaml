@@ -1,0 +1,1326 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":2:{s:5:\"email\";s:17:\"nurmi@anchore.com\";s:9:\"x-twitter\";s:7:\"anchore\";}s:11:\"description\";s:91:\"This
+  is the Anchore Engine API. Provides the primary external API for users of the service.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:5:\"title\";s:25:\"Anchore
+  Engine API Server\";s:7:\"version\";s:5:\"0.1.6\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:15:\"developer_tools\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:80:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_anchore_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:115:\"https://raw.githubusercontent.com/anchore/anchore-engine/master/anchore_engine/services/apiext/swagger/swagger.yaml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:10:\"anchore.io\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"anchore\";s:4:\"type\";s:7:\"openapi\";}}"
+host: anchore.local
+basePath: /
+paths:
+  /:
+    get:
+      description: Simple status check
+      operationId: ping
+      responses:
+        200:
+          description: Version check response
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /imageimport:
+    post:
+      operationId: import_image
+      parameters:
+      - in: body
+        name: analysis_report
+        required: true
+        schema:
+          $ref: '#/definitions/ImageAnalysisReport'
+      responses:
+        200:
+          description: Import task accepted
+          schema:
+            items:
+              $ref: '#/definitions/AnchoreImage'
+            type: array
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Import and image analysis directly
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images:
+    get:
+      description: List all images visible to the user
+      operationId: list_images
+      parameters:
+      - description: Include image history in the response
+        in: query
+        name: history
+        required: false
+        type: boolean
+      - in: body
+        name: image_to_get
+        required: false
+        schema:
+          $ref: '#/definitions/ImageFilter'
+        x-nullable: true
+      - description: Full docker-pull string to filter results by (e.g. docker.io/library/nginx:latest,
+          or myhost.com:5000/testimages:v1.1.1)
+        in: query
+        name: fulltag
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            description: List of AnchoreImage objects
+            items:
+              $ref: '#/definitions/AnchoreImage'
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List all visible images
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+    post:
+      description: Creates a new analysis task that is executed asynchronously
+      operationId: add_image
+      parameters:
+      - description: Override any existing entry in the system
+        in: query
+        name: force
+        required: false
+        type: boolean
+      - description: Instruct engine to automatically begin watching the added tag
+          for updates from registry
+        in: query
+        name: autosubscribe
+        required: false
+        type: boolean
+      - in: body
+        name: image
+        required: true
+        schema:
+          $ref: '#/definitions/ImageAnalysisRequest'
+      responses:
+        200:
+          description: Successfully added image to analysis queue
+          schema:
+            description: List of AnchoreImage objects, should be of length 1
+            items:
+              $ref: '#/definitions/AnchoreImage'
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Submit a new image for analysis by the engine
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}:
+    delete:
+      operationId: delete_image_by_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      - in: query
+        name: force
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Image deletion success
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Delete image by docker imageId
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+    get:
+      operationId: get_image_by_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Image lookup success
+          schema:
+            items:
+              $ref: '#/definitions/AnchoreImage'
+            type: array
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Lookup image by docker imageId
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}/check:
+    get:
+      description: Get the policy evaluation for the given image
+      operationId: get_image_policy_check_by_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      - in: query
+        name: policyId
+        required: false
+        type: string
+      - in: query
+        name: tag
+        required: true
+        type: string
+      - in: query
+        name: detail
+        required: false
+        type: boolean
+      - in: query
+        name: history
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Policy evaluation success
+          schema:
+            $ref: '#/definitions/PolicyEvaluation'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Check policy evaluation status for image
+      tags:
+      - Images
+      - Policy Evaluation
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}/content:
+    get:
+      operationId: list_image_content_by_imageid
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Content of specified type from the image
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List image content types
+      tags:
+      - Images
+      - Image Content
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}/content/{ctype}:
+    get:
+      operationId: get_image_content_by_type_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      - in: path
+        name: ctype
+        required: true
+        type: string
+      responses:
+        200:
+          description: Content of specified type from the image
+          schema:
+            $ref: '#/definitions/ContentResponse'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get the content of an image by type
+      tags:
+      - Images
+      - Image Content
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}/vuln:
+    get:
+      operationId: get_image_vulnerability_types_by_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Vulnerability listing for the image
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get vulnerability types
+      tags:
+      - Images
+      - Vulnerabilities
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/by_id/{imageId}/vuln/{vtype}:
+    get:
+      operationId: get_image_vulnerabilities_by_type_imageId
+      parameters:
+      - in: path
+        name: imageId
+        required: true
+        type: string
+      - in: path
+        name: vtype
+        required: true
+        type: string
+      responses:
+        200:
+          description: Vulnerability listing for the image
+          schema:
+            $ref: '#/definitions/VulnerabilityList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get vulnerabilities by type
+      tags:
+      - Images
+      - Vulnerabilities
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}:
+    delete:
+      operationId: delete_image
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      responses:
+        200:
+          description: Image deletion success
+      summary: Delete an image analysis
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+    get:
+      operationId: get_image
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      responses:
+        200:
+          description: Image lookup success
+          schema:
+            description: List of length 1 of AnchoreImage
+            items:
+              $ref: '#/definitions/AnchoreImage'
+            type: array
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get image metadata
+      tags:
+      - Images
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/check:
+    get:
+      description: Get the policy evaluation for the given image
+      operationId: get_image_policy_check
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      - in: query
+        name: policyId
+        required: false
+        type: string
+      - in: query
+        name: tag
+        required: true
+        type: string
+      - in: query
+        name: detail
+        required: false
+        type: boolean
+      - in: query
+        name: history
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Policy evaluation success
+          schema:
+            $ref: '#/definitions/PolicyEvaluation'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Check policy evaluation status for image
+      tags:
+      - Images
+      - Policy Evaluation
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/content:
+    get:
+      operationId: list_image_content
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      responses:
+        200:
+          description: Content listing for the image
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List image content types
+      tags:
+      - Images
+      - Image Content
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/content/{ctype}:
+    get:
+      operationId: get_image_content_by_type
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      - in: path
+        name: ctype
+        required: true
+        type: string
+      responses:
+        200:
+          description: Content of specified type from the image
+          schema:
+            $ref: '#/definitions/ContentResponse'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get the content of an image by type
+      tags:
+      - Images
+      - Image Content
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/metadata:
+    get:
+      operationId: list_image_metadata
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      responses:
+        200:
+          description: Metadata listing for the image
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List image metadata types
+      tags:
+      - Images
+      - Image Metadata
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/metadata/{mtype}:
+    get:
+      operationId: get_image_metadata_by_type
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      - in: path
+        name: mtype
+        required: true
+        type: string
+      responses:
+        200:
+          description: Metadata of specified type from the image
+          schema:
+            $ref: '#/definitions/MetadataResponse'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get the metadata of an image by type
+      tags:
+      - Images
+      - Image Metadata
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/vuln:
+    get:
+      operationId: get_image_vulnerability_types
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      responses:
+        200:
+          description: Vulnerability listing for the image
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get vulnerability types
+      tags:
+      - Images
+      - Vulnerabilities
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /images/{imageDigest}/vuln/{vtype}:
+    get:
+      operationId: get_image_vulnerabilities_by_type
+      parameters:
+      - in: path
+        name: imageDigest
+        required: true
+        type: string
+      - in: path
+        name: vtype
+        required: true
+        type: string
+      - in: query
+        name: force_refresh
+        required: false
+        type: boolean
+      - in: query
+        name: vendor_only
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Vulnerability listing for the image
+          schema:
+            $ref: '#/definitions/VulnerabilityList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get vulnerabilities by type
+      tags:
+      - Images
+      - Vulnerabilities
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /policies:
+    get:
+      description: List all saved policy bundles
+      operationId: list_policies
+      parameters:
+      - description: Include policy bundle detail in the form of the full bundle content
+          for each entry
+        in: query
+        name: detail
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Policy listing
+          schema:
+            $ref: '#/definitions/PolicyBundleList'
+      summary: List policies
+      tags:
+      - Policies
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.policies
+    post:
+      description: Adds a new policy bundle to the system
+      operationId: add_policy
+      parameters:
+      - in: body
+        name: bundle
+        required: true
+        schema:
+          $ref: '#/definitions/PolicyBundle'
+      responses:
+        200:
+          description: Saved bundle
+          schema:
+            $ref: '#/definitions/PolicyBundleRecord'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Add a new policy
+      tags:
+      - Policies
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.policies
+  /policies/{policyId}:
+    delete:
+      description: Delete the specified policy
+      operationId: delete_policy
+      parameters:
+      - in: path
+        name: policyId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Delete success
+        404:
+          description: Policy not found to delete
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Delete policy
+      tags:
+      - Policies
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.policies
+    get:
+      description: Get the policy bundle content
+      operationId: get_policy
+      parameters:
+      - in: path
+        name: policyId
+        required: true
+        type: string
+      - description: Include policy bundle detail in the form of the full bundle content
+          for each entry
+        in: query
+        name: detail
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: A policy bundle
+          schema:
+            $ref: '#/definitions/PolicyBundleRecord'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get specific policy
+      tags:
+      - Policies
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.policies
+    put:
+      description: Update/replace and existing policy
+      operationId: update_policy
+      parameters:
+      - in: body
+        name: bundle
+        required: true
+        schema:
+          $ref: '#/definitions/PolicyBundleRecord'
+      - in: path
+        name: policyId
+        required: true
+        type: string
+      - description: Mark policy as active
+        in: query
+        name: active
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: A policy bundle
+          schema:
+            $ref: '#/definitions/PolicyBundleRecord'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Update policy
+      tags:
+      - Policies
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.policies
+  /registries:
+    get:
+      description: List all configured registries the system can/will watch
+      operationId: list_registries
+      responses:
+        200:
+          description: Registry listing
+          schema:
+            $ref: '#/definitions/RegistryConfigurationList'
+      summary: List configured registries
+      tags:
+      - Registries
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.registries
+    post:
+      description: Adds a new registry to the system
+      operationId: create_registry
+      parameters:
+      - description: flag to determine whether or not to validate registry/credential
+          at registry add time
+        in: query
+        name: validate
+        required: false
+        type: boolean
+      - in: body
+        name: registrydata
+        required: true
+        schema:
+          $ref: '#/definitions/RegistryConfiguration'
+      responses:
+        200:
+          description: Saved registry configuration
+          schema:
+            $ref: '#/definitions/RegistryConfiguration'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Add a new registry
+      tags:
+      - Registries
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.registries
+  /registries/{registry}:
+    delete:
+      description: Delete a registry configuration record from the system. Does not
+        remove any images.
+      operationId: delete_registry
+      parameters:
+      - in: path
+        name: registry
+        required: true
+        type: string
+      responses:
+        200:
+          description: Delete success
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Delete a registry configuration
+      tags:
+      - Registries
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.registries
+    get:
+      description: Get information on a specific registry
+      operationId: get_registry
+      parameters:
+      - in: path
+        name: registry
+        required: true
+        type: string
+      responses:
+        200:
+          description: Registry configuration
+          schema:
+            $ref: '#/definitions/RegistryConfiguration'
+      summary: Get a specific registry configuration
+      tags:
+      - Registries
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.registries
+    put:
+      description: Replaces an existing registry record with the given record
+      operationId: update_registry
+      parameters:
+      - in: path
+        name: registry
+        required: true
+        type: string
+      - description: flag to determine whether or not to validate registry/credential
+          at registry update time
+        in: query
+        name: validate
+        required: false
+        type: boolean
+      - in: body
+        name: registrydata
+        required: true
+        schema:
+          $ref: '#/definitions/RegistryConfiguration'
+      responses:
+        200:
+          description: Updated registry configuration
+          schema:
+            $ref: '#/definitions/RegistryConfiguration'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Update/replace a registry configuration
+      tags:
+      - Registries
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.registries
+  /repositories:
+    post:
+      description: ""
+      operationId: add_repository
+      parameters:
+      - description: full repository to add e.g. docker.io/library/alpine
+        in: query
+        name: repository
+        required: true
+        type: string
+      - description: flag to enable/disable auto tag_update activation when new images
+          from a repo are added
+        in: query
+        name: autosubscribe
+        required: false
+        type: boolean
+      - description: use specified existing tag to perform repo scan (default is 'latest')
+        in: query
+        name: lookuptag
+        required: false
+        type: string
+      responses:
+        200:
+          description: Repository and discovered tags added
+          schema:
+            $ref: '#/definitions/RepositoryTagList'
+      summary: Add repository to watch
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /status:
+    get:
+      description: Get the API service status
+      operationId: get_status
+      responses:
+        200:
+          description: Status listing
+          schema:
+            $ref: '#/definitions/StatusResponse'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Service status
+      tags:
+      - System
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /subscriptions:
+    get:
+      operationId: list_subscriptions
+      parameters:
+      - description: filter only subscriptions matching key
+        in: query
+        name: subscription_key
+        required: false
+        type: string
+      - description: filter only subscriptions matching type
+        in: query
+        name: subscription_type
+        required: false
+        type: string
+      responses:
+        200:
+          description: Subscription listing
+          schema:
+            $ref: '#/definitions/SubscriptionList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List all subscriptions
+      tags:
+      - Subscriptions
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.subscriptions
+    post:
+      description: Create a new subscription to watch a tag and get notifications
+        of changes
+      operationId: add_subscription
+      parameters:
+      - in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/SubscriptionRequest'
+      responses:
+        200:
+          description: Subscription add success
+          schema:
+            $ref: '#/definitions/Subscription'
+      summary: Add a subscription of a specific type
+      tags:
+      - Subscriptions
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.subscriptions
+  /subscriptions/{subscriptionId}:
+    delete:
+      operationId: delete_subscription
+      parameters:
+      - in: path
+        name: subscriptionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Delete success
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Delete subscriptions of a specific type
+      tags:
+      - Subscriptions
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.subscriptions
+    get:
+      operationId: get_subscription
+      parameters:
+      - in: path
+        name: subscriptionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Filtered subscription list by type
+          schema:
+            $ref: '#/definitions/SubscriptionList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get a specific subscription set
+      tags:
+      - Subscriptions
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.subscriptions
+    put:
+      operationId: update_subscription
+      parameters:
+      - in: path
+        name: subscriptionId
+        required: true
+        type: string
+      - in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/SubscriptionUpdate'
+      responses:
+        200:
+          description: Subscription add success
+          schema:
+            $ref: '#/definitions/Subscription'
+      summary: Update an existing and specific subscription
+      tags:
+      - Subscriptions
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.subscriptions
+  /summaries/imagetags:
+    get:
+      description: List all image tags visible to the user
+      operationId: list_imagetags
+      responses:
+        200:
+          description: successful operation
+          schema:
+            description: List of AnchoreImageTagSummary objects
+            items:
+              $ref: '#/definitions/AnchoreImageTagSummary'
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List all visible image digests and tags
+      tags:
+      - ImageTags
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.images
+  /system:
+    get:
+      description: Get the system status including queue lengths
+      operationId: get_service_detail
+      responses:
+        200:
+          description: Status listing
+          schema:
+            $ref: '#/definitions/SystemStatusResponse'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: System status
+      tags:
+      - System
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/feeds:
+    get:
+      description: ""
+      operationId: get_system_feeds
+      responses:
+        200:
+          description: success
+          schema:
+            items:
+              $ref: '#/definitions/FeedMetadata'
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: list feeds operations and information
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+    post:
+      description: ""
+      operationId: post_system_feeds
+      parameters:
+      - description: instruct system to flush existing data feeds records from anchore-engine
+        in: query
+        name: flush
+        required: false
+        type: boolean
+      - description: instruct system to re-sync data feeds
+        in: query
+        name: sync
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Feeds operation success
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: trigger feeds operations
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/policy_spec:
+    get:
+      description: Get the policy language spec for this service
+      operationId: describe_policy
+      responses:
+        200:
+          description: Policy Language Description
+          schema:
+            description: List of Gate specifications
+            items:
+              $ref: '#/definitions/GateSpec'
+            type: array
+      summary: Describe the policy language spec implemented by this service.
+      tags:
+      - System
+      - Policy
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/prune:
+    get:
+      description: ""
+      operationId: get_system_prune_resourcetypes
+      responses:
+        200:
+          description: success
+          schema:
+            items:
+              type: string
+            type: array
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get list of resources that can be pruned
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/prune/{resourcetype}:
+    get:
+      description: ""
+      operationId: get_system_prune_candidates
+      parameters:
+      - description: resource type
+        in: path
+        name: resourcetype
+        required: true
+        type: string
+      - description: filter only disconnected resources
+        in: query
+        name: dangling
+        required: false
+        type: boolean
+      - description: filter only resources older than specified number of seconds
+        in: query
+        name: olderthan
+        required: false
+        type: integer
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PruneCandidateList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get list of candidates for pruning
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+    post:
+      description: ""
+      operationId: post_system_prune_candidates
+      parameters:
+      - description: resource type
+        in: path
+        name: resourcetype
+        required: true
+        type: string
+      - description: resource objects to prune
+        in: body
+        name: bodycontent
+        required: true
+        schema:
+          $ref: '#/definitions/PruneCandidate'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PruneCandidateList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Perform pruning on input resource name
+      tags:
+      - catalog
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/services:
+    get:
+      operationId: list_services
+      responses:
+        200:
+          description: Service listing
+          schema:
+            $ref: '#/definitions/ServiceList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: List system services
+      tags:
+      - System
+      - Services
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/services/{servicename}:
+    get:
+      operationId: get_services_by_name
+      parameters:
+      - in: path
+        name: servicename
+        required: true
+        type: string
+      responses:
+        200:
+          description: Service Info
+          schema:
+            $ref: '#/definitions/ServiceList'
+        500:
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get a service configuration and state
+      tags:
+      - System
+      - Services
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+  /system/services/{servicename}/{hostid}:
+    delete:
+      operationId: delete_service
+      parameters:
+      - in: path
+        name: servicename
+        required: true
+        type: string
+      - in: path
+        name: hostid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Delete success
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Delete the service config
+      tags:
+      - System
+      - Services
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+    get:
+      operationId: get_services_by_name_and_host
+      parameters:
+      - in: path
+        name: servicename
+        required: true
+        type: string
+      - in: path
+        name: hostid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Listing of registered services
+          schema:
+            $ref: '#/definitions/ServiceList'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+      summary: Get service config for a specific host
+      tags:
+      - System
+      - Services
+      x-swagger-router-controller: anchore_engine.services.apiext.api.controllers.system
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":42:{s:12:\"AnchoreImage\";O:8:\"stdClass\":3:{s:11:\"description\";s:129:\"A
+  unique image in the engine. May have multiple tags or references. Unique to an image
+  content across registries or repositories.\";s:10:\"properties\";O:8:\"stdClass\":8:{s:15:\"analysis_status\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"A
+  state value for the current status of the analysis progress of the image\";s:4:\"enum\";a:4:{i:0;s:12:\"not_analyzed\";i:1;s:9:\"analyzing\";i:2;s:8:\"analyzed\";i:3;s:15:\"analysis_failed\";}s:4:\"type\";s:6:\"string\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"imageDigest\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"image_content\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ImageContent\";}s:12:\"image_detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:76:\"Details
+  specific to an image reference and type such as tag and image source\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ImageDetail\";}s:4:\"type\";s:5:\"array\";}s:12:\"image_status\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"State
+  of the image\";s:4:\"enum\";a:3:{i:0;s:6:\"active\";i:1;s:8:\"inactive\";i:2;s:8:\"disabled\";}s:4:\"type\";s:6:\"string\";}s:12:\"last_updated\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"AnchoreImageList\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"A
+  list of Anchore Images\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AnchoreImage\";}s:4:\"type\";s:5:\"array\";}s:22:\"AnchoreImageTagSummary\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"A
+  unique image in the engine.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"analysis_status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"fulltag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"imageDigest\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"imageId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"ApiErrorResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Generic
+  HTTP API error response\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"code\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"detail\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Details
+  structure for additional information about the error if available. Content and structure
+  will be error specific.\";s:4:\"type\";s:6:\"object\";}s:10:\"error_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"ContentResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Generic
+  wrapper for content listings from images\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"content\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:12:\"content_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"imageDigest\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"FeedGroupMetadata\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"last_sync\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"record_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:12:\"FeedMetadata\";O:8:\"stdClass\":3:{s:11:\"description\";s:84:\"Metadata
+  on a single feed based on what the engine finds from querying the endpoints\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"created_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:69:\"Date
+  the metadata record was created in engine (first seen on source)\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"groups\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FeedGroupMetadata\";}s:4:\"type\";s:5:\"array\";}s:14:\"last_full_sync\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"name
+  of the feed\";s:4:\"type\";s:6:\"string\";}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Date
+  the metadata was last updated\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"GateSpec\";O:8:\"stdClass\":3:{s:11:\"description\";s:100:\"A
+  description of the set of gates available in this engine and the triggers and parameters
+  supported\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Description
+  of the gate\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Gate
+  name, as it would appear in a policy document\";s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":3:{s:11:\"description\";s:75:\"State
+  of the gate and transitively all triggers it contains if not 'active'\";s:4:\"enum\";a:3:{i:0;s:6:\"active\";i:1;s:10:\"deprecated\";i:2;s:3:\"eol\";}s:4:\"type\";s:6:\"string\";}s:13:\"superceded_by\";O:8:\"stdClass\":2:{s:11:\"description\";s:86:\"The
+  name of another trigger that supercedes this on functionally if this is deprecated\";s:4:\"type\";s:6:\"string\";}s:8:\"triggers\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"List
+  of the triggers that can fire for this Gate\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/TriggerSpec\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:19:\"ImageAnalysisReport\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Analysis
+  report json to be imported\";s:4:\"type\";s:6:\"object\";}s:20:\"ImageAnalysisRequest\";O:8:\"stdClass\":3:{s:11:\"description\";s:147:\"A
+  request to add an image to be watched and analyzed by the engine. Optionally include
+  the dockerfile content. Either digest or tag must be present\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"annotations\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"Annotations
+  to be associated with the added image in key/value form\";s:4:\"type\";s:6:\"object\";}s:6:\"digest\";O:8:\"stdClass\":2:{s:11:\"description\";s:81:\"A
+  full pullable digest reference for an image. e.g. docker.io/nginx@sha256:abc123\";s:4:\"type\";s:6:\"string\";}s:10:\"dockerfile\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"Content
+  of the dockerfile for the image, if available\";s:4:\"type\";s:6:\"string\";}s:10:\"image_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  type of image this is adding, defaults to \"docker\"\";s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Full
+  pullable tag reference for image. e.g. docker.io/nginx:latest\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"ImageContent\";O:8:\"stdClass\":2:{s:11:\"description\";s:89:\"A
+  metadata content record for a specific image, containing different content type
+  entries\";s:4:\"type\";s:6:\"object\";}s:11:\"ImageDetail\";O:8:\"stdClass\":3:{s:11:\"description\";s:102:\"A
+  metadata detail record for a specific image. Multiple detail records may map a single
+  catalog image.\";s:10:\"properties\";O:8:\"stdClass\":10:{s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:10:\"dockerfile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"fullDigest\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"Full
+  docker-pullable digest string including the registry url and repository necessary
+  get the image\";s:4:\"type\";s:6:\"string\";}s:7:\"fulltag\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"Full
+  docker-pullalbe tag string referencing the image\";s:4:\"type\";s:6:\"string\";}s:11:\"imageDigest\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  parent Anchore Image record to which this detail maps\";s:4:\"type\";s:6:\"string\";}s:7:\"imageId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"last_updated\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"registry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"repo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:11:\"ImageFilter\";O:8:\"stdClass\":3:{s:11:\"description\";s:60:\"Filter
+  for an image list by id, tag, or digest, but not both\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"digest\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"ImageRef\";O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"A
+  reference to an image\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"enum\";a:3:{i:0;s:3:\"tag\";i:1;s:6:\"digest\";i:2;s:2:\"id\";}}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:18:\"ImageSelectionRule\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ImageRef\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"registry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"repository\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"name\";i:1;s:8:\"registry\";i:2;s:10:\"repository\";i:3;s:5:\"image\";}s:4:\"type\";s:6:\"object\";}s:11:\"MappingRule\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ImageRef\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"policy_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:177:\"Optional
+  single policy to evalute, if set will override any value in policy_ids, for backwards
+  compatibility. Generally, policy_ids should be used even with a array of length
+  1.\";s:4:\"type\";s:6:\"string\";}s:10:\"policy_ids\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"List
+  of policyIds to evaluate in order, to completion\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"PolicyId
+  to evaluate\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"registry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"repository\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"whitelist_ids\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:4:{i:0;s:4:\"name\";i:1;s:8:\"registry\";i:2;s:10:\"repository\";i:3;s:5:\"image\";}s:4:\"type\";s:6:\"object\";}s:16:\"MetadataResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"Generic
+  wrapper for metadata listings from images\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"imageDigest\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:13:\"metadata_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Policy\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"rules\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/PolicyRule\";}s:4:\"type\";s:5:\"array\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:7:\"version\";}s:4:\"type\";s:6:\"object\";}s:12:\"PolicyBundle\";O:8:\"stdClass\":4:{s:11:\"description\";s:96:\"A
+  bundle containing a set of policies, whitelists, and rules for mapping them to specific
+  images\";s:10:\"properties\";O:8:\"stdClass\":9:{s:18:\"blacklisted_images\";O:8:\"stdClass\":3:{s:11:\"description\";s:159:\"List
+  of mapping rules that define which images should always result in a STOP/FAIL policy
+  result regardless of policy content or presence in whitelisted_images\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ImageSelectionRule\";}s:4:\"type\";s:5:\"array\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Description
+  of the bundle, human readable\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Id
+  of the bundle\";s:4:\"type\";s:6:\"string\";}s:8:\"mappings\";O:8:\"stdClass\":3:{s:11:\"description\";s:138:\"Mapping
+  rules for defining which policy and whitelist(s) to apply to an image based on a
+  match of the image tag or id. Evaluated in order.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/MappingRule\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Human
+  readable name for the bundle\";s:4:\"type\";s:6:\"string\";}s:8:\"policies\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"Policies
+  which define the go/stop/warn status of an image using rule matches on image properties\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Policy\";}s:4:\"type\";s:5:\"array\";}s:7:\"version\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Version
+  id for this bundle format\";s:4:\"type\";s:6:\"string\";}s:18:\"whitelisted_images\";O:8:\"stdClass\":3:{s:11:\"description\";s:131:\"List
+  of mapping rules that define which images should always be passed (unless also on
+  the blacklist), regardless of policy result.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ImageSelectionRule\";}s:4:\"type\";s:5:\"array\";}s:10:\"whitelists\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"Whitelists
+  which define which policy matches to disregard explicitly in the final policy decision\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Whitelist\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:7:\"version\";i:2;s:8:\"policies\";i:3;s:8:\"mappings\";}s:4:\"type\";s:6:\"object\";}s:16:\"PolicyBundleList\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"List
+  of PolicyBundleRecord objects\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PolicyBundleRecord\";}s:4:\"type\";s:5:\"array\";}s:18:\"PolicyBundleRecord\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"A
+  policy bundle plus some metadata\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"active\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"True
+  if the bundle is currently defined to be used automatically\";s:4:\"type\";s:7:\"boolean\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:12:\"last_updated\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"policyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  bundle's identifier\";s:4:\"type\";s:6:\"string\";}s:13:\"policy_source\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"Source
+  location of where the policy bundle originated\";s:4:\"type\";s:6:\"string\";}s:12:\"policybundle\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PolicyBundle\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"UserId
+  of the user that owns the bundle\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"PolicyEvaluation\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Evaluation
+  response object\";s:4:\"type\";s:6:\"object\";}s:10:\"PolicyRule\";O:8:\"stdClass\":4:{s:11:\"description\";s:84:\"A
+  rule that defines and decision value if the match is found true for a given image.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"enum\";a:3:{i:0;s:2:\"GO\";i:1;s:4:\"STOP\";i:2;s:4:\"WARN\";}}s:4:\"gate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"params\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"trigger\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"gate\";i:1;s:7:\"trigger\";i:2;s:6:\"action\";}s:4:\"type\";s:6:\"object\";}s:14:\"PruneCandidate\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"A
+  resource that can be pruned\";s:4:\"type\";s:6:\"object\";}s:18:\"PruneCandidateList\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"A
+  list of prune candidate resources\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PruneCandidate\";}s:4:\"type\";s:5:\"array\";}s:21:\"RegistryConfiguration\";O:8:\"stdClass\":3:{s:11:\"description\";s:91:\"A
+  registry entry describing the endpoint and credentials for a registry to pull images
+  from\";s:10:\"properties\";O:8:\"stdClass\":8:{s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"last_upated\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"registry\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"hostname:port
+  string for accessing the registry, as would be used in a docker pull operation\";s:4:\"type\";s:6:\"string\";}s:13:\"registry_pass\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Password
+  portion of credential to use for this registry\";s:4:\"type\";s:6:\"string\";}s:13:\"registry_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Type
+  of registry\";s:4:\"type\";s:6:\"string\";}s:13:\"registry_user\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Username
+  portion of credential to use for this registry\";s:4:\"type\";s:6:\"string\";}s:15:\"registry_verify\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Use
+  TLS/SSL verification for the registry URL\";s:4:\"type\";s:7:\"boolean\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Engine
+  user that owns this registry entry\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"RegistryConfigurationList\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"List
+  of registry configurations\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/RegistryConfiguration\";}s:4:\"type\";s:5:\"array\";}s:17:\"RepositoryTagList\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"List
+  of discovered tags in a repository\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"Service\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"A
+  service status record\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"base_url\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  url to reach the service, including port as needed\";s:4:\"type\";s:6:\"string\";}s:7:\"host_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"The
+  unique id of the host on which the service is executing\";s:4:\"type\";s:6:\"string\";}s:12:\"service_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Registered
+  service name\";s:4:\"type\";s:6:\"string\";}s:14:\"status_message\";O:8:\"stdClass\":2:{s:11:\"description\";s:81:\"A
+  state indicating the condition of the service. Normal operation is 'registered'\";s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"The
+  version of the service as reported by the service implementation on registration\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:11:\"ServiceList\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"A
+  list of service objects\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Service\";}s:4:\"type\";s:5:\"array\";}s:14:\"StatusResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"System
+  status response\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"busy\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"up\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:12:\"Subscription\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Subscription
+  entry\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"active\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Is
+  the subscription currently active\";s:4:\"type\";s:7:\"boolean\";}s:15:\"subscription_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"the
+  unique id for this subscription record\";s:4:\"type\";s:6:\"string\";}s:16:\"subscription_key\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"The
+  key value that the subscription references. E.g. a tag value or a repo name.\";s:4:\"type\";s:6:\"string\";}s:17:\"subscription_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"The
+  type of the subscription\";s:4:\"enum\";a:4:{i:0;s:11:\"policy_eval\";i:1;s:10:\"tag_update\";i:2;s:11:\"vuln_update\";i:3;s:11:\"repo_update\";}s:4:\"type\";s:6:\"string\";}s:18:\"subscription_value\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  value of the subscription target\";s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  userId of the subscribed user\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"SubscriptionList\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"List
+  of subscriptions\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Subscription\";}s:4:\"type\";s:5:\"array\";}s:19:\"SubscriptionRequest\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"A
+  subscription entry to add to the system\";s:10:\"properties\";O:8:\"stdClass\":3:{s:16:\"subscription_key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"subscription_type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:4:{i:0;s:11:\"policy_eval\";i:1;s:10:\"tag_update\";i:2;s:11:\"vuln_update\";i:3;s:11:\"repo_update\";}s:4:\"type\";s:6:\"string\";}s:18:\"subscription_value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"SubscriptionUpdate\";O:8:\"stdClass\":3:{s:11:\"description\";s:68:\"A
+  modification to a subscription entry to change its status or value\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"active\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Toggle
+  the subscription processing on or off\";s:4:\"type\";s:7:\"boolean\";}s:18:\"subscription_value\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  new subscription value, e.g. the new tag to be subscribed to\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"SystemStatusResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"System
+  status response\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"busy\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"detail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"up\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:16:\"TriggerParamSpec\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"An
+  example value for the parameter (encoded as a string if the parameter is an object
+  or list type)\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Parameter
+  name as it appears in policy document\";s:4:\"type\";s:6:\"string\";}s:8:\"required\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Is
+  this a required parameter or optional\";s:4:\"type\";s:7:\"boolean\";}s:5:\"state\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"State
+  of the trigger parameter\";s:4:\"enum\";a:3:{i:0;s:6:\"active\";i:1;s:10:\"deprecated\";i:2;s:3:\"eol\";}s:4:\"type\";s:6:\"string\";}s:13:\"superceded_by\";O:8:\"stdClass\":2:{s:11:\"description\";s:86:\"The
+  name of another trigger that supercedes this on functionally if this is deprecated\";s:4:\"type\";s:6:\"string\";}s:9:\"validator\";O:8:\"stdClass\":2:{s:11:\"description\";s:126:\"If
+  present, a definition for validation of input. Typically a jsonschema object that
+  can be used to validate an input against.\";s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:11:\"TriggerSpec\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"Definition
+  of a trigger and its parameters\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Trigger
+  description for what it tests and when it will fire during evaluation\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"Name
+  of the trigger as it would appear in a policy document\";s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"The
+  list of parameters that are valid for this trigger\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/TriggerParamSpec\";}s:4:\"type\";s:5:\"array\";}s:5:\"state\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"State
+  of the trigger\";s:4:\"enum\";a:3:{i:0;s:6:\"active\";i:1;s:10:\"deprecated\";i:2;s:3:\"eol\";}s:4:\"type\";s:6:\"string\";}s:13:\"superceded_by\";O:8:\"stdClass\":2:{s:11:\"description\";s:86:\"The
+  name of another trigger that supercedes this on functionally if this is deprecated\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:13:\"Vulnerability\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"feed\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  name of the feed where vulnerability match was made\";s:4:\"type\";s:6:\"string\";}s:10:\"feed_group\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"The
+  name of the feed group where vulnerability match was made\";s:4:\"type\";s:6:\"string\";}s:3:\"fix\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  package containing a fix, if available\";s:4:\"type\";s:6:\"string\";}s:7:\"package\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"The
+  package name and version that are vulnerable in the image\";s:4:\"type\";s:6:\"string\";}s:11:\"package_cpe\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  CPE string (if applicable) describing the package to vulnerability match\";s:4:\"type\";s:6:\"string\";}s:12:\"package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  name of the vulnerable package artifact\";s:4:\"type\";s:6:\"string\";}s:12:\"package_path\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"The
+  location (if applicable) of the vulnerable package in the container filesystem\";s:4:\"type\";s:6:\"string\";}s:12:\"package_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  type of vulnerable package\";s:4:\"type\";s:6:\"string\";}s:15:\"package_version\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  version of the vulnerable package artifact\";s:4:\"type\";s:6:\"string\";}s:8:\"severity\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  severity of the vulnerability\";s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"The
+  url for more information about the vulnerability\";s:4:\"type\";s:6:\"string\";}s:4:\"vuln\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  vulnerability identifier, such as CVE-2017-100, or RHSA-2017123\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"VulnerabilityList\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"List
+  of Vulnerability objects\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Vulnerability\";}s:4:\"type\";s:5:\"array\";}s:9:\"Whitelist\";O:8:\"stdClass\":4:{s:11:\"description\";s:69:\"A
+  collection of whitelist items to match a policy evaluation against.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/WhitelistItem\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:7:\"version\";}s:4:\"type\";s:6:\"object\";}s:13:\"WhitelistItem\";O:8:\"stdClass\":4:{s:11:\"description\";s:136:\"Identifies
+  a specific gate and trigger match from a policy against an image and indicates it
+  should be ignored in final policy decisions\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"gate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"trigger_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"gate\";i:1;s:10:\"trigger_id\";}s:4:\"type\";s:6:\"object\";}}"
+...

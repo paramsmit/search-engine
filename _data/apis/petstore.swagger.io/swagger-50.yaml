@@ -1,0 +1,559 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:270:\"This is a sample
+  server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io)
+  or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you
+  can use the api key `special-key` to test the authorization filters.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:16:\"Swagger
+  Petstore\";s:14:\"termsOfService\";s:24:\"http://swagger.io/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:18:\"apiteam@swagger.io\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: petstore.swagger.io
+basePath: /v2
+paths:
+  /pet:
+    post:
+      tags:
+      - pet
+      summary: Add a new pet to the store
+      description: ""
+      operationId: addPet
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Pet object that needs to be added to the store
+        required: true
+        schema:
+          $ref: '#/definitions/Pet'
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+    put:
+      tags:
+      - pet
+      summary: Update an existing pet
+      description: ""
+      operationId: updatePet
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Pet object that needs to be added to the store
+        required: true
+        schema:
+          $ref: '#/definitions/Pet'
+      responses:
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Pet not found
+        405:
+          description: Validation exception
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+  /pet/findByStatus:
+    get:
+      tags:
+      - pet
+      summary: Finds Pets by status
+      description: Multiple status values can be provided with comma separated strings
+      operationId: findPetsByStatus
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: status
+        in: query
+        description: Status values that need to be considered for filter
+        required: true
+        type: array
+        items:
+          type: string
+          default: available
+          enum:
+          - available
+          - pending
+          - sold
+        collectionFormat: csv
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
+        400:
+          description: Invalid status value
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+  /pet/findByTags:
+    get:
+      tags:
+      - pet
+      summary: Finds Pets by tags
+      description: Multiple tags can be provided with comma separated strings. Use
+        tag1, tag2, tag3 for testing.
+      operationId: findPetsByTags
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: tags
+        in: query
+        description: Tags to filter by
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
+        400:
+          description: Invalid tag value
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+  /pet/{petId}:
+    get:
+      tags:
+      - pet
+      summary: Find pet by ID
+      description: Returns a single pet
+      operationId: getPetById
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: petId
+        in: path
+        description: ID of pet to return
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Pet'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Pet not found
+      security:
+      - api_key: []
+    post:
+      tags:
+      - pet
+      summary: Updates a pet in the store with form data
+      description: ""
+      operationId: updatePetWithForm
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: petId
+        in: path
+        description: ID of pet that needs to be updated
+        required: true
+        type: integer
+        format: int64
+      - name: name
+        in: formData
+        description: Updated name of the pet
+        required: false
+        type: string
+      - name: status
+        in: formData
+        description: Updated status of the pet
+        required: false
+        type: string
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+    delete:
+      tags:
+      - pet
+      summary: Deletes a pet
+      description: ""
+      operationId: deletePet
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: api_key
+        in: header
+        required: false
+        type: string
+      - name: petId
+        in: path
+        description: Pet id to delete
+        required: true
+        type: integer
+        format: int64
+      responses:
+        400:
+          description: Invalid pet value
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+  /pet/{petId}/uploadImage:
+    post:
+      tags:
+      - pet
+      summary: uploads an image
+      description: ""
+      operationId: uploadFile
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - name: petId
+        in: path
+        description: ID of pet to update
+        required: true
+        type: integer
+        format: int64
+      - name: additionalMetadata
+        in: formData
+        description: Additional data to pass to server
+        required: false
+        type: string
+      - name: file
+        in: formData
+        description: file to upload
+        required: false
+        type: file
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+      security:
+      - petstore_auth:
+        - write:pets
+        - read:pets
+  /store/inventory:
+    get:
+      tags:
+      - store
+      summary: Returns pet inventories by status
+      description: Returns a map of status codes to quantities
+      operationId: getInventory
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+      security:
+      - api_key: []
+  /store/order:
+    post:
+      tags:
+      - store
+      summary: Place an order for a pet
+      description: ""
+      operationId: placeOrder
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: order placed for purchasing the pet
+        required: true
+        schema:
+          $ref: '#/definitions/Order'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Order'
+        400:
+          description: Invalid Order
+  /store/order/{orderId}:
+    get:
+      tags:
+      - store
+      summary: Find purchase order by ID
+      description: For valid response try integer IDs with value <= 5 or > 10. Other
+        values will generated exceptions
+      operationId: getOrderById
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: orderId
+        in: path
+        description: ID of pet that needs to be fetched
+        required: true
+        type: integer
+        maximum: 5
+        minimum: 1
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Order'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Order not found
+    delete:
+      tags:
+      - store
+      summary: Delete purchase order by ID
+      description: For valid response try integer IDs with value < 1000. Anything
+        above 1000 or nonintegers will generate API errors
+      operationId: deleteOrder
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: orderId
+        in: path
+        description: ID of the order that needs to be deleted
+        required: true
+        type: string
+      responses:
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Order not found
+  /user:
+    post:
+      tags:
+      - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Created user object
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/createWithArray:
+    post:
+      tags:
+      - user
+      summary: Creates list of users with given input array
+      description: ""
+      operationId: createUsersWithArrayInput
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List of user object
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/createWithList:
+    post:
+      tags:
+      - user
+      summary: Creates list of users with given input array
+      description: ""
+      operationId: createUsersWithListInput
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List of user object
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/login:
+    get:
+      tags:
+      - user
+      summary: Logs user into the system
+      description: ""
+      operationId: loginUser
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: username
+        in: query
+        description: The user name for login
+        required: true
+        type: string
+      - name: password
+        in: query
+        description: The password for login in clear text
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: string
+          headers:
+            X-Rate-Limit:
+              type: integer
+              format: int32
+              description: calls per hour allowed by the user
+            X-Expires-After:
+              type: string
+              format: date-time
+              description: date in UTC when toekn expires
+        400:
+          description: Invalid username/password supplied
+  /user/logout:
+    get:
+      tags:
+      - user
+      summary: Logs out current logged in user session
+      description: ""
+      operationId: logoutUser
+      produces:
+      - application/xml
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+  /user/{username}:
+    get:
+      tags:
+      - user
+      summary: Get user by user name
+      description: ""
+      operationId: getUserByName
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: username
+        in: path
+        description: 'The name that needs to be fetched. Use user1 for testing. '
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        400:
+          description: Invalid username supplied
+        404:
+          description: User not found
+    put:
+      tags:
+      - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: username
+        in: path
+        description: name that need to be deleted
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Updated user object
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        400:
+          description: Invalid user supplied
+        404:
+          description: User not found
+    delete:
+      tags:
+      - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: username
+        in: path
+        description: The name that needs to be deleted
+        required: true
+        type: string
+      responses:
+        400:
+          description: Invalid username supplied
+        404:
+          description: User not found
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":6:{s:5:\"Order\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"petId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"shipDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Order
+  Status\";s:4:\"enum\";a:3:{i:0;s:6:\"placed\";i:1;s:8:\"approved\";i:2;s:9:\"delivered\";}}s:8:\"complete\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:5:\"title\";s:9:\"Pet
+  Order\";s:11:\"description\";s:38:\"An order for a pets from the pet store\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"Order\";}}s:8:\"Category\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:12:\"Pet
+  catehgry\";s:11:\"description\";s:20:\"A category for a pet\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Category\";}}s:4:\"User\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"userStatus\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:11:\"User
+  Status\";}}s:5:\"title\";s:6:\"a User\";s:11:\"description\";s:43:\"A User who is
+  purchasing from the pet store\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"User\";}}s:3:\"Tag\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:7:\"Pet
+  Tag\";s:11:\"description\";s:15:\"A tag for a pet\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"Tag\";}}s:3:\"Pet\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"photoUrls\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"doggie\";}s:9:\"photoUrls\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"photoUrl\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"tag\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tag\";}}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"pet
+  status in the store\";s:4:\"enum\";a:3:{i:0;s:9:\"available\";i:1;s:7:\"pending\";i:2;s:4:\"sold\";}}}s:5:\"title\";s:5:\"a
+  Pet\";s:11:\"description\";s:31:\"A pet for sale in the pet store\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"Pet\";}}s:11:\"ApiResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:20:\"An
+  uploaded response\";s:11:\"description\";s:51:\"Describes the result of uploading
+  an image resource\";}}"
+...

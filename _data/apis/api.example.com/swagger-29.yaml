@@ -1,0 +1,1113 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:186:\"Use the Oracle
+  Integration Cloud Service REST API to manage and monitor integrations, connections,
+  lookups, and packages. You can also display environment, status, and usage information.\";s:7:\"version\";s:10:\"2016.10.05\";s:5:\"title\";s:56:\"REST
+  API for Oracle Integration Cloud Service, Version 1\";s:9:\"x-summary\";s:121:\"Use
+  the Oracle Integration Cloud Service REST API to manage and monitor integrations,
+  connections, lookups, and packages.\";}"
+basePath: /icsapis
+paths:
+  /v1/lookups:
+    get:
+      tags:
+      - lookups
+      summary: Retrieve Lookups
+      description: Retrieves a list of lookups.
+      operationId: getDVMS
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name or last updated time.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/DVMS'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-lookups-get
+  /v1/integrations:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve Integrations
+      description: Retrieves a list of integrations.
+      operationId: getProjects
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name, status, and type.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name or last updated time.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSProjects'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-get
+  /v1/integrations/import:
+    post:
+      tags:
+      - integrations
+      summary: Import (Add) an Integration
+      description: Imports (adds) an integration that was exported previously. Importing
+        an integration under a different user name or version that was exported is
+        not supported. If you are using cURL, use the -F option to specify the file
+        to import.
+      operationId: importProjectToCreate
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported integration file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSProjectResource'
+        400:
+          description: Incomplete or invalid integration
+        409:
+          description: Integration already exists
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-import-post
+    put:
+      tags:
+      - integrations
+      summary: Import (Replace) an Integration
+      description: Imports (replaces) an integration with the same name that was exported
+        previously. If you are using cURL, use the -F option to specify the file to
+        import.
+      operationId: importProjectToUpdate
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported integration file
+        required: false
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSProjectResource'
+        400:
+          description: Incomplete or invalid integration
+        409:
+          description: Integration already exists
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-import-put
+  /v1/integrations/{code}/{version}:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve an Integration
+      description: Retrieves an integration. Results include the extended metadata
+        for the integration, but do not include the integration in its entirety (refer
+        to the export API).
+      operationId: getProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSProjectResource'
+        404:
+          description: Integration not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-get
+    delete:
+      tags:
+      - integrations
+      summary: Delete an Integration
+      description: Deletes an integration.
+      operationId: deleteProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Integration not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-delete
+  /v1/integrations/{code}/{version}/activate:
+    post:
+      tags:
+      - integrations
+      summary: Activate an Integration
+      description: Activates an integration.
+      operationId: activateProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Integration not found
+        412:
+          description: Integration is currently activated or is not in a proper state
+            to be activated
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-activate-post
+  /v1/integrations/{code}/{version}/clone:
+    post:
+      tags:
+      - integrations
+      summary: Clone an Integration
+      description: Clones an integration.
+      operationId: cloneProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ProjectItem'
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Integration not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-clone-post
+  /v1/integrations/{code}/{version}/deactivate:
+    post:
+      tags:
+      - integrations
+      summary: Deactivate an Integration
+      description: Deactivates an integration.
+      operationId: deactivateProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Integration not found
+        412:
+          description: Integration is currently deactivated or is not in a proper
+            state to be deactivated
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-deactivate-post
+  /v1/integrations/{code}/{version}/export:
+    get:
+      tags:
+      - integrations
+      summary: Export an Integration
+      description: Exports an integration. This operation returns a byte stream that
+        is output to the display by default. If you are using cURL, use the -o option
+        to save the response to a file.
+      operationId: exportProject
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+        404:
+          description: Integration not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-export-get
+  /v1/integrations/{code}/{version}/schedule/state/{id}:
+    get:
+      tags:
+      - integrations
+      summary: Fetch ESS Job Status
+      description: Fetches the ESS job status.
+      operationId: getEssJobRequestState
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: Request ID for the ESS job
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Resource not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-schedule-state-{id}-get
+  /v1/integrations/{code}/{version}/schedulenow:
+    post:
+      tags:
+      - integrations
+      summary: Run an Integration Flow
+      description: Runs an integration flow.
+      operationId: runNow
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Resource not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-integrations-{code}-{version}-schedulenow-post
+  /v1/environment:
+    get:
+      tags:
+      - environment
+      summary: Retrieve ICS Environment Information
+      description: Retrieves information about the installed ICS environment, such
+        as the version and feature mode.
+      operationId: getICSEnvironmentDetails
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Environment'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-environment-get
+  /v1/environment/compresswsdls:
+    get:
+      tags:
+      - environment
+      summary: Retrieve Compression Status
+      description: Retrieves the status of a compression operation.
+      operationId: getCompressionStatus
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/CompressionStatusResource'
+        500:
+          description: Internal server error.
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-environment-compresswsdls-get
+    post:
+      tags:
+      - environment
+      summary: Start Compression
+      description: Starts an operation to compress all XML files. Compressing XML
+        files improves ICS performance.
+      operationId: startCompression
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/UUIDResource'
+      responses:
+        204:
+          description: Compression has been started
+        409:
+          description: Conflict, the compression has already been started.
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-environment-compresswsdls-post
+  /v1/packages:
+    get:
+      tags:
+      - packages
+      summary: Retrieve Packages
+      description: Retrieves a list of packages.
+      operationId: getPackages
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSPackages'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-packages-get
+  /v1/packages/import:
+    post:
+      tags:
+      - packages
+      summary: Import (Add) a Package
+      description: Imports (adds) a package that was exported previously. If you are
+        using cURL, use the -F option to specify the file to import.
+      operationId: importPackage
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported package file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSPackages'
+        400:
+          description: Incomplete or invalid Package
+        409:
+          description: Package already exists
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-packages-import-post
+  /v1/packages/{packagename}:
+    get:
+      tags:
+      - packages
+      summary: Retrieve a Package
+      description: Retrieves a package.
+      operationId: getPackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PackageItem'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-packages-{packagename}-get
+    delete:
+      tags:
+      - packages
+      summary: Delete a Package
+      description: Deletes a package.
+      operationId: deletePackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PackageItem'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-packages-{packagename}-delete
+  /v1/packages/{packagename}/export:
+    get:
+      tags:
+      - packages
+      summary: Export a Package
+      description: Exports a package. This operation returns a byte stream that is
+        output to the display by default. If you are using cURL, use the -o option
+        to save the response to a file.
+      operationId: exportPackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-packages-{packagename}-export-get
+  /v1/connections:
+    get:
+      tags:
+      - connections
+      summary: Retrieve Connections
+      description: Retrieves a list of connections.
+      operationId: getConnections
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name and status.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name, last updated time, or type.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Connections'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-get
+  /v1/connections/{code}:
+    get:
+      tags:
+      - connections
+      summary: Retrieve a Connection
+      description: Retrieves a connection. Results include the extended metadata for
+        the connection, but do not include the connection in its entirety.
+      operationId: getConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionItem'
+        404:
+          description: Connection not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-{code}-get
+    put:
+      tags:
+      - connections
+      summary: Update a Connection
+      description: Updates a Connection.
+      operationId: updateConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ConnectionItem'
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionItem'
+        404:
+          description: Connection not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-{code}-put
+    delete:
+      tags:
+      - connections
+      summary: Delete a Connection
+      description: Deletes a connection.
+      operationId: deleteConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Connection not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-{code}-delete
+  /v1/connections/{id}/attachments/{connPropName}:
+    get:
+      tags:
+      - connections
+      summary: Retrieve an Attachment
+      description: Retrieves an attachment for a connection property. This operation
+        returns a byte stream that is output to the display by default. If you are
+        using cURL, use the -o option to save the response to a file.
+      operationId: getAttachment
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: id
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      - name: connPropName
+        in: path
+        description: Connection property name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+        404:
+          description: Not found
+        423:
+          description: Connection is locked
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-{id}-attachments-{connPropName}-get
+    post:
+      tags:
+      - connections
+      summary: Upload an Attachment
+      description: ' Uploads an attachment (such as a WSDL file) to a connection and
+        associates the attachment with a specific connection property. If you are
+        using cURL, use the -F option to specify the file to import.'
+      operationId: uploadAttachment
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      - name: connPropName
+        in: path
+        description: Connection property name
+        required: true
+        type: string
+      - name: file
+        in: formData
+        description: Connection attachment file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionItem'
+        400:
+          description: No file is uploaded
+        404:
+          description: Connection not found
+        423:
+          description: Connection is locked
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-connections-{id}-attachments-{connPropName}-post
+  /v1/status:
+    get:
+      tags:
+      - status
+      summary: Retrieve ICS Status Information
+      description: Retrieves information about the runtime health of ICS, such as
+        whether a component is up or down.
+      operationId: status
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ApplicationStatus'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-status-get
+  /v1/usage:
+    get:
+      tags:
+      - usage
+      summary: Retrieve ICS Usage Information
+      description: Retrieves metrics about ICS artifacts, such as how many integrations
+        are configured and how many packages they have.
+      operationId: usage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UsageMetrics'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-usage-get
+  /v1/monitoring/errors:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Error Instances
+      description: Retrieves a list of error instances.
+      operationId: getErrors
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Time window (1h,6h,1d,2d,3d)
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ErrorsResource'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-errors-get
+  /v1/monitoring/errors/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve an Error Instance
+      description: Retrieves an error instance.
+      operationId: getErrorInstance
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Error instance identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ErrorResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-errors-{id}-get
+  /v1/monitoring/instances:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Instances
+      description: Retrieves a list of flow instances.
+      operationId: getInstances
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Time window (1h,6h,1d,2d,3d)
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/InstancesResource'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-instances-get
+  /v1/monitoring/instances/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve an Instance
+      description: Retrieves a flow instance.
+      operationId: getInstance
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Instance identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/InstanceResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-instances-{id}-get
+  /v1/monitoring/integrations:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Integration Monitoring Metrics
+      description: Retrieves monitoring metrics (statistics) for all integrations.
+      operationId: getMonitoringRecords
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationFlowHealthRecords'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-integrations-get
+  /v1/monitoring/integrations/{code}/{version}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Single Integration Monitoring Metrics
+      description: Retrieves the monitoring metrics for a single integration.
+      operationId: getFlowHealth
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: code
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationFlowHealthRecords'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-integrations-{code}-{version}-get
+  /v1/monitoring/logs:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve the Monitoring Log
+      description: Retrieves the monitoring log.
+      operationId: getICSLog
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/MonitoringLogList'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-logs-get
+  /v1/monitoring/logs/export:
+    get:
+      tags:
+      - monitoring
+      summary: Export the Monitoring Log
+      description: Exports the monitoring log. This operation returns a byte stream
+        that is output to the display by default. If you are using cURL, use the -o
+        option to save the response to a file.
+      operationId: exportICSLog
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v1-monitoring-logs-export-get
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":49:{s:7:\"DVMItem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"rowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"columnNames\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"lockedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lockedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"newDVM\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"new\";}s:7:\"default\";b:0;}s:9:\"lockedDVM\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"locked\";}s:7:\"default\";b:0;}}}s:4:\"DVMS\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/DVMItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"lookups\";}}s:4:\"Link\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"rel\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:23:\"ApplicationTypeResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"appTypeName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"appTypeSmallIconUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"appTypeMediumIconUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"appTypeLargeIconUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"appTypeMediumGrayIconUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:25:\"appTypeMediumWhiteIconUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:25:\"supportedSecurityPolicies\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"vedorInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/VendorInfo\";}s:21:\"appTypeConnProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionProperty\";}}s:21:\"appTypeCredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionProperty\";}}}}s:10:\"Attachment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"attachmentName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"localFilePath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"signature\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"attachmentPropertyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"decodedContent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"decodedContentBytes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"byte\";}}}}s:14:\"ConnectionItem\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:21:\"appInstConnProperties\";i:1;s:21:\"appInstCredProperties\";i:2;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:21:\"appInstConnProperties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:20:\"connectionproperties\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionProperty\";}}s:21:\"appInstCredProperties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:18:\"securityproperties\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionProperty\";}}s:14:\"securityPolicy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:14:{i:0;s:10:\"BASIC_AUTH\";i:1;s:23:\"USERNAME_PASSWORD_TOKEN\";i:2;s:34:\"USERNAME_PASSWORD_IGNORE_TIMESTAMP\";i:3;s:24:\"OAUTH_CLIENT_CREDENTIALS\";i:4;s:41:\"OAUTH_RESOURCE_OWNER_PASSWORD_CREDENTIALS\";i:5;s:4:\"SAML\";i:6;s:5:\"OAUTH\";i:7;s:6:\"CUSTOM\";i:8;s:11:\"TOKEN_BASED\";i:9;s:4:\"NONE\";i:10;s:36:\"OAUTH_AUTHORIZATION_CODE_CREDENTIALS\";i:11;s:19:\"CUSTOM_THREE_LEGGED\";i:12;s:17:\"CUSTOM_TWO_LEGGED\";i:13;s:35:\"PAAS_INTEGRATION_USING_OWSM_OAUTH20\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"percentageComplete\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"supportsCache\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"imageURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"appType\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"adaptertype\";}s:4:\"$ref\";s:37:\"#/definitions/ApplicationTypeResource\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"connection\";}}s:18:\"ConnectionProperty\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:12:\"propertyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"propertyValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:12:\"propertyType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:13:{i:0;s:6:\"STRING\";i:1;s:6:\"NUMBER\";i:2;s:3:\"URL\";i:3;s:8:\"WSDL_URL\";i:4;s:7:\"XSD_URL\";i:5;s:8:\"WADL_URL\";i:6;s:4:\"FILE\";i:7;s:8:\"PASSWORD\";i:8;s:11:\"URL_OR_FILE\";i:9;s:4:\"LIST\";i:10;s:3:\"MAP\";i:11;s:4:\"TEXT\";i:12;s:6:\"CHOICE\";}}s:6:\"length\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"propertyGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:11:\"CREDENTIALS\";i:1;s:16:\"SOURCE_ARTIFACTS\";i:2;s:16:\"CONNECTION_PROPS\";i:3;s:5:\"OTHER\";}}s:19:\"propertyDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"propertyShortDesc\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"acceptableKeys\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Key\";}}s:16:\"customProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionProperty\";}}s:10:\"attachment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Attachment\";}s:13:\"hasAttachment\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"integrationRole\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"SOURCE\";i:1;s:6:\"TARGET\";i:2;s:17:\"SOURCE_AND_TARGET\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:18:\"connectionproperty\";}}s:11:\"Connections\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"connections\";}}s:15:\"ICSFileArtifact\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:8:\"fileType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"fileByteArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"byte\";}}}}s:16:\"ICSFileArtifacts\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:13:\"fileArtifacts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ICSFileArtifact\";}}}}s:18:\"ICSProjectResource\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":40:{s:21:\"sourceApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"sourceConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:21:\"targetApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"targetConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:32:\"enrichmentRequestApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:27:\"enrichmentRequestConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:33:\"enrichmentResponseApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:28:\"enrichmentResponseConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:7:\"invokes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Connections\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:18:\"percentageComplete\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:7:\"newIntg\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"new\";}s:7:\"default\";b:0;}s:10:\"lockedIntg\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"locked\";}s:7:\"default\";b:0;}s:8:\"lockedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lockedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"endPointURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"proxyWSDL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"tracingEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"packageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"projectType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"type\";}}s:9:\"modelType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"modelTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"mepType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"mepTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"trackingInstanceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"trackingVariables\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TrackingVariableType\";}}s:18:\"scheduleApplicable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"scheduleDefined\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:19:\"projectModelVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"icsFileArtifacts\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ICSFileArtifacts\";}s:17:\"exportProjectName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"integration\";}}s:11:\"ICSProjects\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ProjectItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:12:\"integrations\";}}s:3:\"Key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"keyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"SOURCE\";i:1;s:6:\"TARGET\";i:2;s:17:\"SOURCE_AND_TARGET\";}}}}s:11:\"ProjectItem\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":39:{s:21:\"sourceApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"sourceConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:21:\"targetApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"targetConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:32:\"enrichmentRequestApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:27:\"enrichmentRequestConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:33:\"enrichmentResponseApplicationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:28:\"enrichmentResponseConnection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionItem\";}s:7:\"invokes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Connections\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:18:\"percentageComplete\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:7:\"newIntg\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"new\";}s:7:\"default\";b:0;}s:10:\"lockedIntg\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"locked\";}s:7:\"default\";b:0;}s:8:\"lockedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lockedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"endPointURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"proxyWSDL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"tracingEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"packageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"projectType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"type\";}}s:9:\"modelType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"modelTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"mepType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"mepTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"trackingInstanceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"trackingVariables\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TrackingVariableType\";}}s:18:\"scheduleApplicable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"scheduleDefined\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:19:\"projectModelVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"exportProjectName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"projectitem\";}}s:12:\"PropertyType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ReferenceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subRole\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PropertyType\";}}s:6:\"refUri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"TrackingVariableType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:17:\"messageContextRef\";i:1;s:4:\"name\";i:2;s:5:\"xpath\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subRole\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"xpath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"messageContextRef\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ReferenceType\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PropertyType\";}}}}s:10:\"VendorInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"supportURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"contactUS\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"documentationURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"releaseNotes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:25:\"CompressionStatusResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:11:\"NOT_STARTED\";i:1;s:7:\"RUNNING\";i:2;s:9:\"COMPLETED\";i:3;s:6:\"FAILED\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:17:\"compressionstatus\";}}s:4:\"Enum\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:11:\"Environment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"originalVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"buildLabel\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"edition\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"mode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"installLastModifiedDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"upgradeType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"previewModeFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"featureMode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:10:\"Production\";i:1;s:11:\"EarlyUptake\";i:2;s:7:\"Preview\";}}s:23:\"agentFeatureEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:38:\"recommendationEnginePublishEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:25:\"designTimePersistenceMode\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Enum\";}}}s:12:\"UUIDResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"uuid\";}}s:11:\"ICSPackages\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PackageItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:8:\"itemSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:11:\"PackageItem\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"items\";i:1;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"packageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:14:\"packageContent\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PackageItemContent\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:17:\"exportPackageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"itemSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"packageitem\";}}s:18:\"PackageItemContent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}}s:17:\"ApplicationStatus\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:12:\"availability\";i:1;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:17:\"componentStatuses\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:9:\"AVAILABLE\";i:1;s:11:\"UNAVAILABLE\";i:2;s:7:\"UNKNOWN\";}}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:9:\"available\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:12:\"availability\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:9:\"available\";}}s:7:\"unknown\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:12:\"AdapterCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:17:\"totalAdapterCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:19:\"privateAdapterCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:24:\"preInstalledAdapterCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:23:\"marketPlaceAdapterCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:19:\"AdapterUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"adapterCount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AdapterCount\";}s:8:\"privates\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:12:\"preinstalled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"marketplace\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:17:\"AgentUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"totalAgents\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:16:\"countAgentGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"countConnAgents\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"countExecAgents\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"agentsByGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:18:\"agentsByGroupArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:23:\"AppInstanceUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"inProgress\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"configured\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"used\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"inUse\";}}s:11:\"typeNumbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"totalByType\";}s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:16:\"typeNumbersArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:15:\"DVMUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"numberInUse\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"inUse\";}}}}s:23:\"IntegrationUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"inProgress\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"configured\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"activated\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:16:\"failedActivation\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:17:\"activeAppInstance\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:16:\"numberOfMEPTypes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"activedMEPs\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"totalByMEP\";}s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:15:\"activeMEPsArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:22:\"integrationsByAdapters\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:15:\"totalByAdapters\";}s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:27:\"integrationsByAdaptersArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:14:\"MessageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"failed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:18:\"MessageSystemUsage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"jmscount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"omscount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:19:\"PackageUsageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"preBuilt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"nonPreBuilt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:12:\"UsageMetrics\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:26:\"domainValueMapUsageMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DVMUsageMetrics\";}s:31:\"applicationInstanceUsageMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/AppInstanceUsageMetrics\";}s:23:\"integrationUsageMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/IntegrationUsageMetrics\";}s:15:\"pkgUsageMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/PackageUsageMetrics\";}s:14:\"messageMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/MessageMetrics\";}s:12:\"agentMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/AgentUsageMetrics\";}s:14:\"adapterMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdapterUsageMetrics\";}s:20:\"messageSystemMetrics\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/MessageSystemUsage\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}}s:13:\"CompositeData\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"compositeType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CompositeType\";}}}s:13:\"CompositeType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"typeName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"array\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:13:\"ErrorResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"integrationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"integrationVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"pkName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"pkValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"secondaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"secondaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"tertiaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"tertiaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"faults\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Faults\";}s:10:\"actionable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:20:\"trackingFaultPayload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:15:\"errorresourcev1\";}}s:14:\"ErrorsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ErrorResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"timeWindow\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:16:\"errorsresourcev1\";}}s:11:\"FaultDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"connectionName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"errordateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"retryCount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"faultId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"detailErrorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Faults\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"fault\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FaultDetail\";}}}}s:16:\"InstanceResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:11:\"IN_PROGRESS\";i:1;s:6:\"FAILED\";i:2;s:9:\"COMPLETED\";i:3;s:18:\"PARTIAL_COMPLETION\";i:4;s:7:\"ABORTED\";i:5;s:10:\"RECOVERING\";i:6;s:11:\"RESUBMITTED\";}}s:6:\"pkName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"pkValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"secondaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"secondaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"tertiaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"tertiaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"flowName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"auditTrail\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:18:\"instanceresourcev1\";}}s:17:\"InstancesResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/InstanceResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"timeWindow\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:19:\"instanceresourcesv1\";}}s:24:\"IntegrationFlowErrorItem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"flowId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"flowName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"flowCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorObjects\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:25:\"IntegrationFlowHealthItem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":21:{s:6:\"flowId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"flowName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"flowCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"flowVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"optimizedVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"noOfMsgsReceived\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:17:\"noOfMsgsProcessed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"noOfErrors\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"noOfSuccess\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:14:\"errorsInQueues\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/IntegrationFlowErrorItem\";}s:11:\"successRate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:11:\"avgRespTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:10:\"Deprecated\";}s:11:\"endPointURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"proxyWSDL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"scheduleApplicable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"scheduleDefined\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"mepType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}}s:28:\"IntegrationFlowHealthRecords\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/IntegrationFlowHealthItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:17:\"totalSuccessCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:17:\"totalMessageCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:15:\"totalErrorCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"pushFlowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:18:\"scheduledFlowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:17:\"suspenedFlowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:14:\"totalFlowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:27:\"totalMessagesProcessedCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"successRate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}}}s:3:\"Log\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:7:\"logName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"flowVersion\";}}s:11:\"projectCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"flowCode\";}}s:8:\"flowName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"operationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"logMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timeStamp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"messageId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"size\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"absolutePath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"server\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"logFile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CompositeData\";}s:8:\"logLines\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:17:\"MonitoringLogList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"items\";i:1;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"logs\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Log\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}}}"
+...

@@ -1,0 +1,702 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:17:\"Zomato Public API\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:10:\"Zomato
+  API\";s:14:\"termsOfService\";s:33:\"https://www.zomato.com/conditions\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:14:\"api@zomato.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: developers.zomato.com
+basePath: /api/v2.1
+paths:
+  /locations:
+    get:
+      tags:
+      - Location
+      summary: Search for locations
+      description: Search for Zomato locations by keyword. Provide coordinates to
+        get better search results
+      operationId: locations
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: query
+        in: query
+        description: suggestion for location name
+        required: true
+        type: string
+      - name: lat
+        in: query
+        description: latitude
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: longitude
+        required: false
+        type: number
+      - name: count
+        in: query
+        description: max number of results to fetch
+        required: false
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/Location'
+        403:
+          description: Invalid API key
+  /location_details:
+    get:
+      tags:
+      - Location
+      summary: Get Zomato location details
+      description: Get Foodie Index, Nightlife Index, Top Cuisines and Best rated
+        restaurants in a given location
+      operationId: location_details
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: entity_id
+        in: query
+        description: location id obtained from locations api
+        required: true
+        type: integer
+      - name: entity_type
+        in: query
+        description: location type obtained from locations api
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/LocationDetails'
+        403:
+          description: Invalid API key
+  /cuisines:
+    get:
+      tags:
+      - Common
+      summary: Get list of all cuisines in a city
+      description: Get a list of all cuisines of restaurants listed in a city. The
+        location/city input can be provided in the following ways -<br><ol><li>Using
+        Zomato City ID<li>Using coordinates of any location within a city</ol><p>List
+        of all restaurants serving a particular cuisine can be obtained using '/search'
+        API with cuisine ID and location details</p>
+      operationId: cuisines
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: city_id
+        in: query
+        description: id of the city for which cuisines are needed
+        required: false
+        type: integer
+        collectionFormat: csv
+      - name: lat
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cuisine'
+        403:
+          description: Invalid API key
+  /collections:
+    get:
+      tags:
+      - Common
+      summary: Get Zomato collections in a city
+      description: Returns Zomato Restaurant Collections in a City. The location/City
+        input can be provided in the following ways -<br><ol><li>Using Zomato City
+        ID <li>Using coordinates of any location within a city</ol><p>List of all
+        restaurants listed in any particular Zomato Collection can be obtained using
+        the '/search' API with Collection ID and Zomato City ID as the input</p>
+      operationId: collections
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: city_id
+        in: query
+        description: id of the city for which collections are needed
+        required: false
+        type: integer
+      - name: lat
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      - name: count
+        in: query
+        description: max number of results needed
+        required: false
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Collection'
+        403:
+          description: Invalid city_id
+  /cities:
+    get:
+      tags:
+      - Common
+      summary: Get city details
+      description: Find the Zomato ID and other details for a city . You can obtain
+        the Zomato City ID in one of the following ways:<br><ol> <li>City Name in
+        the Search Query - Returns list of cities matching the query<li>Using coordinates
+        - Identifies the city details based on the coordinates of any location inside
+        a city</ol><p>If you already know the Zomato City ID, this API can be used
+        to get other details of the city.</p>
+      operationId: cities
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: q
+        in: query
+        description: query by city name
+        required: false
+        type: string
+        collectionFormat: csv
+      - name: lat
+        in: query
+        description: latitude
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: longitude
+        required: false
+        type: number
+      - name: city_ids
+        in: query
+        description: comma separated city_id values
+        required: false
+        type: string
+        collectionFormat: csv
+      - name: count
+        in: query
+        description: number of max results to display
+        required: false
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/City'
+        400:
+          description: Invalid input
+  /establishments:
+    get:
+      tags:
+      - Common
+      summary: Get list of restaurant types in a city
+      description: Get a list of restaurant types in a city. The location/City input
+        can be provided in the following ways -<br><ol><li>Using Zomato City ID<li>Using
+        coordinates of any location within a city</ol><p>List of all restaurants categorized
+        under a particular restaurant type can  obtained using /Search API with Establishment
+        ID and location details as inputs</p>
+      operationId: establishments
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: city_id
+        in: query
+        description: id of the city
+        required: false
+        type: integer
+      - name: lat
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: latitude / longitude of any point within a city
+        required: false
+        type: number
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Establishment'
+        403:
+          description: Invalid API key
+  /geocode:
+    get:
+      tags:
+      - Common
+      summary: Get location details based on coordinates
+      description: Get Foodie and Nightlife Index, list of popular cuisines and nearby
+        restaurants around the given coordinates
+      operationId: geocode
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: lat
+        in: query
+        description: latitude
+        required: true
+        type: number
+      - name: lon
+        in: query
+        description: longitude
+        required: true
+        type: number
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/Geocode'
+  /categories:
+    get:
+      tags:
+      - Common
+      summary: Get list of Categories
+      description: Get a list of categories. List of all restaurants categorized under
+        a particular restaurant type can  be obtained using /Search API with Category
+        ID as inputs</p>
+      operationId: categories
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Categories'
+        403:
+          description: Invalid  key
+  /restaurant:
+    get:
+      tags:
+      - Restaurant
+      summary: Get restaurant details
+      description: Get detailed restaurant information using Zomato restaurant ID.
+        Partner Access is required to access photos and reviews.
+      operationId: restaurant
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - in: query
+        name: res_id
+        description: id of restaurant whose details are requested
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/RestaurantL3'
+        400:
+          description: Invalid res_id
+  /dailymenu:
+    get:
+      tags:
+      - Restaurant
+      summary: Get daily menu of a restaurant
+      description: Get daily menu using Zomato restaurant ID.
+      operationId: dailymenu
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user_key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - in: query
+        name: res_id
+        description: id of restaurant whose details are requested
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/DailyMenu'
+        400:
+          description: Invalid res_id
+  /reviews:
+    get:
+      tags:
+      - Restaurant
+      summary: Get restaurant reviews
+      description: Get restaurant reviews using the Zomato restaurant ID. Only 5 latest
+        reviews are available under the Basic API plan.
+      operationId: reviews
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - in: query
+        name: res_id
+        description: id of restaurant whose details are requested
+        required: true
+        type: integer
+      - in: query
+        name: start
+        description: fetch results after this offset
+        required: false
+        type: integer
+      - in: query
+        name: count
+        description: max number of results to retrieve
+        required: false
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Review'
+        400:
+          description: Invalid res_id
+  /search:
+    get:
+      tags:
+      - Restaurant
+      summary: Search for restaurants
+      description: The location input can be specified using Zomato location ID or
+        coordinates. Cuisine / Establishment / Collection IDs can be obtained from
+        respective api calls. Get up to 100 restaurants by changing the 'start' and
+        'count' parameters with the maximum value of count being 20. Partner Access
+        is required to access photos and reviews.<br>Examples:<ol> <li> To search
+        for 'Italian' restaurants in 'Manhattan, New York City', set cuisines = 55,
+        entity_id = 94741 and entity_type = zone</li><li>To search for 'cafes' in
+        'Manhattan, New York City', set establishment_type = 1, entity_type = zone
+        and entity_id = 94741 </li><li>Get list of all restaurants in 'Trending this
+        Week' collection in 'New York City' by using entity_id = 280, entity_type
+        = city and collection_id = 1</ol>
+      operationId: search
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: user-key
+        in: header
+        description: your API key
+        required: true
+        type: string
+      - name: entity_id
+        in: query
+        description: location id
+        required: false
+        type: integer
+      - name: entity_type
+        in: query
+        description: location type
+        required: false
+        type: string
+        enum:
+        - city
+        - subzone
+        - zone
+        - landmark
+        - metro
+        - group
+      - name: q
+        in: query
+        description: search keyword
+        required: false
+        type: string
+      - name: start
+        in: query
+        description: fetch results after offset
+        required: false
+        type: integer
+      - name: count
+        in: query
+        description: max number of results to display
+        required: false
+        type: integer
+      - name: lat
+        in: query
+        description: latitude
+        required: false
+        type: number
+      - name: lon
+        in: query
+        description: longitude
+        required: false
+        type: number
+      - name: radius
+        in: query
+        description: radius around (lat,lon); to define search area, defined in meters(M)
+        required: false
+        type: number
+      - name: cuisines
+        in: query
+        description: list of cuisine id's separated by comma
+        type: string
+        collectionFormat: csv
+      - name: establishment_type
+        in: query
+        description: estblishment id obtained from establishments call
+        type: string
+        collectionFormat: csv
+      - name: collection_id
+        in: query
+        description: collection id obtained from collections call
+        required: false
+        type: string
+      - name: category
+        in: query
+        description: category ids obtained from categories call
+        required: false
+        type: string
+      - name: sort
+        in: query
+        description: sort restaurants by ...
+        required: false
+        type: string
+        enum:
+        - cost
+        - rating
+        - real_distance
+      - name: order
+        in: query
+        description: used with 'sort' parameter to define ascending / descending
+        required: false
+        type: string
+        enum:
+        - asc
+        - desc
+      responses:
+        200:
+          description: successful
+          schema:
+            type: object
+            $ref: '#/definitions/Search'
+        400:
+          description: failed
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":29:{s:5:\"Order\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"petId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"shipDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Order
+  Status\";s:4:\"enum\";a:3:{i:0;s:6:\"placed\";i:1;s:8:\"approved\";i:2;s:9:\"delivered\";}}s:8:\"complete\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"Order\";}}s:8:\"Category\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Category\";}}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"John
+  Doe\";s:11:\"description\";s:11:\"User's name\";}s:13:\"zomato_handle\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"John\";s:11:\"description\";s:52:\"User's
+  @handle; uniquely identifies a user on Zomato\";}s:12:\"foodie_level\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Super
+  Foodie\";s:11:\"description\";s:28:\"Text for user's foodie level\";}s:16:\"foodie_level_num\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"9\";s:11:\"description\";s:59:\"Number
+  to identify user's foodie level; ranges from 0 to 10\";}s:12:\"foodie_color\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"f58552\";s:11:\"description\";s:47:\"Color
+  hex code used with foodie level on Zomato\";}s:11:\"profile_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"https://www.zomato.com/john\";s:11:\"description\";s:32:\"URL
+  for user's profile on Zomato\";}s:16:\"profile_deeplink\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"zoma.to/u/1170245\";s:11:\"description\";s:73:\"short
+  URL for user's profile on Zomato; for use in apps or social sharing\";}s:13:\"profile_image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"URL
+  for user's profile image\";}}}s:3:\"Tag\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"Tag\";}}s:7:\"Cuisine\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"cuisine_id\";i:1;s:12:\"cuisine_name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"cuisine_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"25\";s:11:\"description\";s:17:\"ID
+  of the cuisine\";}s:12:\"cuisine_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Chinese\";s:11:\"description\";s:19:\"Name
+  of the cuisine\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"Cuisine\";}}s:13:\"Establishment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:16:\"establishment_id\";i:1;s:18:\"establishment_name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"establishment_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"31\";s:11:\"description\";s:28:\"ID
+  of the establishment type\";}s:18:\"establishment_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Bakery\";s:11:\"description\";s:30:\"Name
+  of the establishment type\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:13:\"Establishment\";}}s:8:\"Locality\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"city_name\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Chelsea\";s:11:\"description\";s:26:\"Name
+  of locality (subzone)\";}s:9:\"city_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"New
+  York City\";s:11:\"description\";s:12:\"Name of city\";}s:14:\"real_city_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"New
+  York City\";s:11:\"description\";s:63:\"Actual city name; can be different from
+  city_name in some cases\";}s:7:\"city_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"280\";s:11:\"description\";s:36:\"ID
+  of city; corresponds to city_name\";}s:10:\"subzone_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:6:\"114178\";s:11:\"description\";s:24:\"ID
+  of locality (subzone)\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:13:\"Establishment\";}}s:11:\"ResLocation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"1
+  5th Avenue, New York, NY 10003\";s:11:\"description\";s:34:\"Complete address of
+  the restaurant\";}s:8:\"locality\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Greenwich
+  Village\";s:11:\"description\";s:20:\"Name of the locality\";}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"New
+  York City\";s:11:\"description\";s:16:\"Name of the city\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:9:\"40.732013\";s:11:\"description\";s:29:\"Coordinates
+  of the restaurant\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:10:\"-73.996155\";s:11:\"description\";s:29:\"Coordinates
+  of the restaurant\";}s:7:\"zipcode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"10003\";s:11:\"description\";s:7:\"Zipcode\";}s:10:\"country_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"216\";s:11:\"description\";s:17:\"ID
+  of the country\";}}}s:8:\"Location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"entity_type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"group\";s:11:\"description\";s:78:\"Type
+  of location; one of [city, zone, subzone, landmark, group, metro, street]\";}s:9:\"entity_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:5:\"36932\";s:11:\"description\";s:77:\"ID
+  of location; (entity_id, entity_type) tuple uniquely identifies a location\";}s:5:\"title\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:38:\"Chelsea
+  Market, Chelsea, New York City\";s:11:\"description\";s:20:\"Name of the location\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:9:\"40.742051\";s:11:\"description\";s:39:\"Coordinates
+  of the (centre of) location\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:10:\"-74.004821\";s:11:\"description\";s:39:\"Coordinates
+  of the (centre of) location\";}s:7:\"city_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"280\";s:11:\"description\";s:10:\"ID
+  of city\";}s:9:\"city_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"New
+  York City\";s:11:\"description\";s:16:\"Name of the city\";}s:10:\"country_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"216\";s:11:\"description\";s:13:\"ID
+  of country\";}s:12:\"country_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"United
+  States\";s:11:\"description\";s:19:\"Name of the country\";}}}s:10:\"Popularity\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"popularity\";i:1;s:15:\"nightlife_index\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"popularity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:4:\"4.92\";s:11:\"description\";s:38:\"Foodie
+  index of a location out of 5.00\";}s:15:\"nightlife_index\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:4:\"4.95\";s:11:\"description\";s:41:\"Nightlife
+  index of a location out of 5.00\";}s:12:\"top_cuisines\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"cafe\";}s:11:\"description\";s:37:\"Most
+  popular cuisines in the locality\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:13:\"Establishment\";}}s:7:\"Geocode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"locality\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:10:\"popularity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/Popularity\";}s:4:\"link\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:56:\"https://www.zomato.com/new-york-city/chelsea-restaurants\";s:11:\"description\";s:42:\"URL
+  of the web search page of the locality\";}s:18:\"nearby_restaurants\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RestaurantL3\";}s:11:\"description\";s:26:\"list
+  of nearby restaurants\";}}}s:10:\"Categories\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"category_id\";i:1;s:13:\"category_name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"category_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"3\";s:11:\"description\";s:23:\"ID
+  of the category type\";}s:13:\"category_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Nightlife\";s:11:\"description\";s:25:\"Name
+  of the category type\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"Categories\";}}s:15:\"LocationDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"popularity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/Popularity\";}s:8:\"location\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:22:\"#/definitions/Location\";s:11:\"description\";s:15:\"location
+  struct\";}s:22:\"best_rated_restaurants\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RestaurantL3\";}s:11:\"description\";s:41:\"list
+  of top rated restaurants in location\";}}}s:13:\"PopularityLoc\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Popularity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"nearby_restaurants\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RestaurantL3\";}s:11:\"description\";s:51:\"popular
+  restaurants around the provided coordinates\";}s:4:\"link\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:56:\"https://www.zomato.com/new-york-city/chelsea-restaurants\";s:11:\"description\";s:34:\"URL
+  to web search page of locality\";}}}}}s:6:\"Search\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"results_found\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"53\";s:11:\"description\";s:23:\"Number
+  of results found\";}s:13:\"results_start\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"11\";s:11:\"description\";s:95:\"The
+  starting location within results from which the results were fetched (used for pagination)
+  \";}s:13:\"results_shown\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"10\";s:11:\"description\";s:51:\"The
+  number of results fetched (used for pagination)\";}s:11:\"restaurants\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RestaurantL3\";}}}}s:10:\"Restaurant\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":17:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:8:\"16774318\";s:11:\"description\";s:20:\"ID
+  of the restaurant\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"Otto
+  Enoteca & Pizzeria\";s:11:\"description\";s:22:\"Name of the restaurant\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:76:\"https://www.zomato.com/new-york-city/otto-enoteca-pizzeria-greenwich-village\";s:11:\"description\";s:26:\"URL
+  of the restaurant page\";}s:8:\"location\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:25:\"#/definitions/ResLocation\";s:11:\"description\";s:27:\"Restaurant
+  location details\";}s:20:\"average_cost_for_two\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"60\";s:11:\"description\";s:38:\"Average
+  price of a meal for two people\";}s:11:\"price_range\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"2\";s:11:\"description\";s:83:\"Price
+  bracket of the restaurant (1 being pocket friendly and 4 being the costliest)\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"$\";s:11:\"description\";s:44:\"Local
+  currency symbol; to be used with price\";}s:5:\"thumb\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:104:\"https://b.zmtcdn.com/data/pictures/chains/8/16774318/a54deb9e4dbb79dd7c8091b30c642077_featured_thumb.png\";s:11:\"description\";s:52:\"URL
+  of the low resolution header image of restaurant\";}s:14:\"featured_image\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:101:\"https://d.zmtcdn.com/data/pictures/chains/8/16774318/a54deb9e4dbb79dd7c8091b30c642077_featured_v2.png\";s:11:\"description\";s:53:\"URL
+  of the high resolution header image of restaurant\";}s:10:\"photos_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:90:\"https://www.zomato.com/new-york-city/otto-enoteca-pizzeria-greenwich-village/photos#tabtop\";s:11:\"description\";s:35:\"URL
+  of the restaurant's photos page\";}s:8:\"menu_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:88:\"https://www.zomato.com/new-york-city/otto-enoteca-pizzeria-greenwich-village/menu#tabtop\";s:11:\"description\";s:33:\"URL
+  of the restaurant's menu page\";}s:10:\"events_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:90:\"https://www.zomato.com/new-york-city/otto-enoteca-pizzeria-greenwich-village/events#tabtop\";s:11:\"description\";s:35:\"URL
+  of the restaurant's events page\";}s:11:\"user_rating\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserRating\";s:11:\"description\";s:25:\"Restaurant
+  rating details\";}s:19:\"has_online_delivery\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:57:\"Whether
+  the restaurant has online delivery enabled or not\";}s:17:\"is_delivering_now\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:98:\"Valid
+  only if has_online_delivery = 1; whether the restaurant is accepting online orders
+  right now\";}s:17:\"has_table_booking\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:59:\"Whether
+  the restaurant has table reservation enabled or not\";}s:8:\"deeplink\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"zomato://r/16774318\";s:11:\"description\";s:66:\"Short
+  URL of the restaurant page; for use in apps or social shares\";}}}s:12:\"RestaurantL3\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Restaurant\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"cuisines\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Cafe\";s:11:\"description\";s:55:\"List
+  of cuisines served at the restaurant in csv format\";}s:17:\"all_reviews_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"15\";s:11:\"description\";s:60:\"<b>[Partner
+  access]</b> Number of reviews for the restaurant\";}s:11:\"photo_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"18\";s:11:\"description\";s:102:\"<b>[Partner
+  access]</b> Total number of photos for the restaurant, at max 10 photos for partner
+  access\";}s:13:\"phone_numbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"(212)
+  228-2930\";s:11:\"description\";s:66:\"<b>[Partner access]</b> Restaurant's contact
+  numbers in csv format\";}s:6:\"photos\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Photo\";}s:11:\"description\";s:49:\"<b>[Partner
+  access]</b> List of restaurant photos\";}s:11:\"all_reviews\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Review\";}s:11:\"description\";s:50:\"<b>[Partner
+  access]</b> List of restaurant reviews\";}}}}}s:17:\"DailyMenuCategory\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"daily_menu_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:8:\"16507624\";s:11:\"description\";s:20:\"ID
+  of the restaurant\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"Vinohradsk\xFD
+  pivovar\";s:11:\"description\";s:22:\"Name of the restaurant\";}s:10:\"start_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"2016-03-08
+  11:00\";s:11:\"description\";s:26:\"Daily Menu start timestamp\";}s:8:\"end_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"2016-03-08
+  15:00\";s:11:\"description\";s:24:\"Daily Menu end timestamp\";}s:6:\"dishes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/DailyMenuItem\";}s:11:\"description\";s:25:\"Menu
+  item in the category\";}}}s:13:\"DailyMenuItem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"dish_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:9:\"104089345\";s:11:\"description\";s:13:\"Menu
+  Item ID \";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"Tatar\xE1k
+  ze sumce s toustem\";s:11:\"description\";s:15:\"Menu Item Title\";}s:5:\"price\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"149
+  K\u010D\";s:11:\"description\";s:15:\"Menu Item Price\";}}}s:9:\"DailyMenu\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"daily_menu\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/DailyMenuCategory\";}s:11:\"description\";s:34:\"
+  List of restaurant's menu details\";}}}s:5:\"Photo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"u_MjA5MjY1OTk5OT\";s:11:\"description\";s:15:\"ID
+  of the photo\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:106:\"https://b.zmtcdn.com/data/reviews_photos/c15/9eb13ceaf6e90129c276ce6ff980bc15_1435111695_640_640_thumb.JPG\";s:11:\"description\";s:21:\"URL
+  of the image file\";}s:9:\"thumb_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:102:\"https://b.zmtcdn.com/data/reviews_photos/c15/9eb13ceaf6e90129c276ce6ff980bc15_1435111695_200_thumb.JPG\";s:11:\"description\";s:34:\"URL
+  for 200 X 200 thumb image file\";}s:4:\"user\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:18:\"#/definitions/User\";s:11:\"description\";s:27:\"User
+  who uploaded the photo\";}s:6:\"res_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:8:\"16782899\";s:11:\"description\";s:49:\"ID
+  of restaurant for which the image was uploaded\";}s:7:\"caption\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"#awesome\";s:11:\"description\";s:20:\"Caption
+  of the photo\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:10:\"1435111770\";s:11:\"description\";s:42:\"Unix
+  timestamp when the photo was uploaded\";}s:13:\"friendly_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"3
+  months ago\";s:11:\"description\";s:62:\"User friendly time string; denotes when
+  the photo was uploaded\";}s:5:\"width\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"640\";s:11:\"description\";s:33:\"Image
+  width in pixel; usually 640\";}s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"640\";s:11:\"description\";s:34:\"Image
+  height in pixel; usually 640\";}s:14:\"comments_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:27:\"Number
+  of comments on photo\";}s:11:\"likes_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:24:\"Number
+  of likes on photo\";}}}s:6:\"Review\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:6:\"rating\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:1:\"5\";s:11:\"description\";s:46:\"Rating
+  on scale of 0 to 5 in increments of 0.5\";}s:11:\"review_text\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:54:\"The
+  best latte I've ever had. It tasted a little sweet\";s:11:\"description\";s:11:\"Review
+  text\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:8:\"24127336\";s:11:\"description\";s:16:\"ID
+  of the review\";}s:12:\"rating_color\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"305D02\";s:11:\"description\";s:45:\"Color
+  hex code used with the rating on Zomato\";}s:20:\"review_time_friendly\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"2
+  months ago\";s:11:\"description\";s:65:\"User friendly time string corresponding
+  to time of review posting\";}s:11:\"rating_text\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Insane!\";s:11:\"description\";s:31:\"Short
+  description of the rating\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:10:\"1435507367\";s:11:\"description\";s:39:\"Unix
+  timestamp for review_time_friendly\";}s:5:\"likes\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:31:\"No
+  of likes received for review\";}s:4:\"user\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:18:\"#/definitions/User\";s:11:\"description\";s:32:\"User
+  details of author of review\";}s:14:\"comments_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:24:\"No
+  of comments on review\";}}}s:10:\"UserRating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:16:\"aggregate_rating\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:3:\"3.7\";s:11:\"description\";s:63:\"Restaurant
+  rating on a scale of 0.0 to 5.0 in increments of 0.1\";}s:11:\"rating_text\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Very
+  Good\";s:11:\"description\";s:31:\"Short description of the rating\";}s:12:\"rating_color\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"5BA829\";s:11:\"description\";s:45:\"Color
+  hex code used with the rating on Zomato\";}s:5:\"votes\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:4:\"1046\";s:11:\"description\";s:26:\"Number
+  of ratings received\";}}}s:4:\"Zone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"zone_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"31\";s:11:\"description\";s:10:\"ID
+  of zone\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"South
+  Delhi\";s:11:\"description\";s:16:\"Name of the zone\";}s:7:\"city_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"1\";s:11:\"description\";s:26:\"ID
+  of city where zone lies\";}}}s:7:\"Subzone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"subzone_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"23\";s:11:\"description\";s:13:\"ID
+  of subzone\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Saket\";s:11:\"description\";s:19:\"Name
+  of the subzone\";}s:7:\"zone_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"4\";s:11:\"description\";s:33:\"ID
+  of the zone where subzone lies\";}}}s:10:\"Collection\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"collection_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:1:\"1\";s:11:\"description\";s:35:\"ID
+  of the collection of restaurants\";}s:5:\"title\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"Trending
+  this week\";s:11:\"description\";s:15:\"Collection name\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:52:\"https://www.zomato.com/new-york-city/top-restaurants\";s:11:\"description\";s:26:\"URL
+  of the collection page\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:46:\"The
+  most popular restaurants in town this week\";s:11:\"description\";s:35:\"Short description
+  of the collection\";}s:9:\"image_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:87:\"https://b.zmtcdn.com/data/collections/e40960514831cb9b74c552d69eceee0f_1418387628_l.jpg\";s:11:\"description\";s:38:\"URL
+  for header image of the collection\";}s:9:\"res_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:2:\"30\";s:11:\"description\";s:39:\"Number
+  of restaurants in the collection\";}s:9:\"share_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"http://www.zoma.to/c-280/1\";s:11:\"description\";s:37:\"short
+  URL for apps and social sharing\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"Collection\";}}s:4:\"City\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"280\";s:11:\"description\";s:14:\"ID
+  of the city\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"New
+  York City, NY\";s:11:\"description\";s:9:\"City name\";}s:10:\"country_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"216\";s:11:\"description\";s:17:\"ID
+  of the country\";}s:12:\"country_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"United
+  States\";s:11:\"description\";s:19:\"Name of the country\";}s:8:\"is_state\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:1:\"0\";s:11:\"description\";s:32:\"Whether
+  this location is a state\";}s:8:\"state_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:3:\"103\";s:11:\"description\";s:15:\"ID
+  of the state\";}s:10:\"state_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"New
+  York State\";s:11:\"description\";s:17:\"Name of the state\";}s:10:\"state_code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"NY\";s:11:\"description\";s:24:\"Short
+  code for the state\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"City\";}}s:3:\"Pet\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"photoUrls\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"doggie\";}s:9:\"photoUrls\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"photoUrl\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"tag\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tag\";}}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"pet
+  status in the store\";s:4:\"enum\";a:3:{i:0;s:9:\"available\";i:1;s:7:\"pending\";i:2;s:4:\"sold\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"Pet\";}}s:11:\"ApiResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

@@ -1,0 +1,1079 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:64:\"This is an api
+  doc for `seda configurator` in sap cloud foundry.\";s:7:\"version\";s:5:\"0.0.1\";s:5:\"title\";s:17:\"Seda
+  Configurator\";s:14:\"termsOfService\";s:0:\"\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:24:\"gokulraj.ramdass@sap.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"MIT\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: localhost:3000
+basePath: /api/v1
+paths:
+  /oauth/token:
+    post:
+      tags:
+      - app-auth
+      summary: OAUTH Token URL
+      description: JWT Token generator for the application based on credentials( client
+        id and clientsecret)
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - plain/text
+      parameters:
+      - in: formData
+        name: clientid
+        description: client id from the application.
+        type: string
+        required: true
+      - in: formData
+        name: clientsecret
+        description: clientsecret from the application
+        type: string
+        required: true
+      responses:
+        201:
+          description: Success token generated !
+        405:
+          description: Invalid credentials
+        500:
+          description: Error Occurred during processing
+  /parse:
+    post:
+      tags:
+      - app-parser
+      summary: Input Parser
+      description: Input Parser using Recast NLP along with configurations.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: Authorization
+        description: Bearer jwttoken
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Input Text source
+        required: true
+        schema:
+          $ref: '#/definitions/textsource'
+      responses:
+        201:
+          description: Success  !!
+        405:
+          description: Invalid Token
+        500:
+          description: Error Occurred during processing
+  /apps/create:
+    post:
+      tags:
+      - apps
+      summary: Add a new app
+      description: ""
+      operationId: addnewapp
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: App object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/app'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/all:
+    get:
+      tags:
+      - apps
+      summary: get all apps from the db
+      operationId: getallapps
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success data retrived !!
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}:
+    get:
+      tags:
+      - apps
+      summary: get app by application id
+      description: returns a single application based on the ID
+      operationId: getappbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data retrived !!
+        500:
+          description: Error Occurred during processing
+    put:
+      tags:
+      - apps
+      summary: get app by application id
+      description: returns a single application based on the ID
+      operationId: updateappbyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: App object that needs to be updated to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/app'
+      responses:
+        201:
+          description: Updated data successfully !!
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - apps
+      summary: delete the application and follow up docs  by application ID
+      description: deletes the complete action and its follow up documents from the
+        db for the given app ID.
+      operationId: deleteappbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      responses:
+        200:
+          description: deleted successfully !!
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/create:
+    post:
+      tags:
+      - intents
+      summary: Add a new intent for the application
+      description: create new intent for the application
+      operationId: addnewintent
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Intent object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/intents'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/all:
+    get:
+      tags:
+      - intents
+      summary: get all intents
+      description: get all intents for the given application ID.
+      operationId: getallintents
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/name/{name}:
+    get:
+      tags:
+      - intents
+      summary: get intent by name
+      description: get the intent by its name
+      operationId: getIntentbyName
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: name
+        description: name of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID or Intent ID
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}:
+    get:
+      tags:
+      - intents
+      summary: get intent by id
+      description: get all intents for the given application ID.
+      operationId: getintentbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID or Intent ID
+        500:
+          description: Error Occurred during processing
+    put:
+      tags:
+      - intents
+      summary: update intent
+      description: update the intent by the intent id
+      operationId: updateintentbyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Intent object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/intents'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intents
+      summary: delete intent
+      description: delete intent by id of the intent
+      operationId: deleteintentbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        201:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input or App ID or Intent ID
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/responses/create:
+    post:
+      tags:
+      - intent-responses
+      summary: Add a new intent for the application
+      description: create new intent for the application
+      operationId: addnewresponse
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Intent object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/responses'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/responses/all:
+    get:
+      tags:
+      - intent-responses
+      summary: get all responses
+      description: get all responses for the given intent and application.
+      operationId: getallresponses
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-responses
+      summary: delete all responses
+      description: delete all responses for the given intent and application.
+      operationId: deleteallresponses
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input or App ID
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/responses/{responseid}:
+    put:
+      tags:
+      - intent-responses
+      summary: update response
+      description: update the response for the response id / intent id / app id
+      operationId: updateresponsebyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: responseid
+        description: id of the response
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Intent object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/responses'
+      responses:
+        201:
+          description: updated data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-responses
+      summary: delete response
+      description: delete the response for the response id / intent id / app id
+      operationId: deleteresponsebyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: responseid
+        description: id of the response
+        required: true
+        type: string
+      responses:
+        201:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/actions/create:
+    post:
+      tags:
+      - intent-actions
+      summary: Add a new actions for the intents
+      description: create new actions for the intents
+      operationId: addnewactions
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: actions object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/actions'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/actions/all:
+    get:
+      tags:
+      - intent-actions
+      summary: get all actions
+      description: get all actions for the given intent and application.
+      operationId: getallactions
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-actions
+      summary: delete all actions
+      description: delete all actions for the given intent and application.
+      operationId: deleteallactions
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/actions/{actionid}:
+    put:
+      tags:
+      - intent-actions
+      summary: update actions
+      description: update the actions for the action id / intent id / app id
+      operationId: updateactionbyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: actionid
+        description: id of the action
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: action object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/actions'
+      responses:
+        201:
+          description: updated data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-actions
+      summary: delete action
+      description: delete the action for the action id / intent id / app id
+      operationId: deleteactionbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: actionid
+        description: id of the action
+        required: true
+        type: string
+      responses:
+        201:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/entities/create:
+    post:
+      tags:
+      - intent-entities
+      summary: Add a new entities for the intents
+      description: create new entities for the intents
+      operationId: addnewentities
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: entities object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/entities'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/entities/all:
+    get:
+      tags:
+      - intent-entities
+      summary: get all entities
+      description: get all entities for the given intent and application.
+      operationId: getallentities
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-entities
+      summary: delete all entities
+      description: delete all entities for the given intent and application.
+      operationId: deleteallentities
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/entities/{entityid}:
+    put:
+      tags:
+      - intent-entities
+      summary: update entities
+      description: update the entities for the entity id / intent id / app id
+      operationId: updateentitybyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: entityid
+        description: id of the entity
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: entity object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/entities'
+      responses:
+        201:
+          description: updated data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-entities
+      summary: delete entity
+      description: delete the entity for the entity id / intent id / app id
+      operationId: deleteentitybyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: entityid
+        description: id of the entity
+        required: true
+        type: string
+      responses:
+        201:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/convsteps/create:
+    post:
+      tags:
+      - intent-conversations-steps
+      summary: Add a new conv steps for the intents
+      description: create new conv steps for the intents
+      operationId: addnewconvsteps
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Conv steps thats need to be added
+        required: true
+        schema:
+          $ref: '#/definitions/convsteps'
+      responses:
+        201:
+          description: Success data created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/convsteps/all:
+    get:
+      tags:
+      - intent-conversations-steps
+      summary: get all conversation steps
+      description: get all conv.steps for the given intent and application.
+      operationId: getallconvsteps
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success data fetched !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-conversations-steps
+      summary: delete all conv steps
+      description: delete all conv steps for the given intent and application.
+      operationId: deleteallconvsteps
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      responses:
+        200:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input or App ID or intent id
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/intents/{intentid}/convsteps/{convid}:
+    put:
+      tags:
+      - intent-conversations-steps
+      summary: update conversation steps
+      description: update the conv steps for the conv id / intent id / app id
+      operationId: updateconvstepbyid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: convid
+        description: id of the convstep
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: conv steps object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/convsteps'
+      responses:
+        201:
+          description: updated data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+    delete:
+      tags:
+      - intent-conversations-steps
+      summary: delete conversation step
+      description: delete the conversation for the conv id / intent id / app id
+      operationId: deleteconvstepbyid
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: path
+        name: intentid
+        description: id of the intent
+        required: true
+        type: string
+      - in: path
+        name: convid
+        description: id of the convstep
+        required: true
+        type: string
+      responses:
+        201:
+          description: deleted data successfully !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during processing
+  /apps/{appid}/logs/create:
+    post:
+      tags:
+      - app-logs
+      summary: application logs create
+      description: application logs for the apps while parsing the input.
+      operationId: addappparserlogs
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: entities object that needs to be added to the DB
+        required: true
+        schema:
+          $ref: '#/definitions/parserlogs'
+      responses:
+        201:
+          description: Success logs created !
+        405:
+          description: Invalid Input
+        500:
+          description: Error Occurred during log processing
+  /apps/{appid}/logs/all:
+    get:
+      tags:
+      - app-logs
+      summary: application logs get
+      description: get all logs for the application
+      operationId: getappparserlogs
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success logs retreived !
+        405:
+          description: Invalid App
+        500:
+          description: Error Occurred during log processing
+    delete:
+      tags:
+      - app-logs
+      summary: delete application logs
+      description: delete all the application logs
+      operationId: deleteapprpaserlogs
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: appid
+        description: id of the application
+        required: true
+        type: string
+      responses:
+        201:
+          description: Success logs deleted !
+        405:
+          description: Invalid App
+        500:
+          description: Error Occurred during log processing
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":10:{s:3:\"app\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"testapp\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"test
+  app description\";}s:6:\"recast\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/recast\";}s:9:\"is_active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:8:\"required\";a:3:{i:0;s:11:\"description\";i:1;s:9:\"is_active\";i:2;s:6:\"recast\";}}s:6:\"recast\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Recast
+  OAuth Token\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"37429275984759285729\";}s:9:\"threshold\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Confidence
+  of Intent threshold which is allowed\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:75;}}s:8:\"required\";a:1:{i:0;s:5:\"token\";}}s:8:\"entities\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"object
+  id\";s:11:\"description\";s:49:\"entity name which will be dervied from recast nlp\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"example
+  object id\";}s:11:\"is_required\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;s:7:\"example\";b:0;s:11:\"description\";s:45:\"parameter
+  to is the entity is required entity\";}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:11:\"description\";}}s:7:\"actions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"destination\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"hcp
+  destination name\";s:11:\"description\";s:44:\"Destination name from the sap cloud
+  platform\";}s:4:\"path\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"/deals\";s:11:\"description\";s:54:\"url
+  prefix path which will be added to the destination\";}s:6:\"method\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"get
+  or post or put\";s:11:\"description\";s:36:\"HTTP protocol methods for REST comm.\";}}s:8:\"required\";a:2:{i:0;s:4:\"path\";i:1;s:6:\"method\";}}s:10:\"textsource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"text\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"any
+  text\";s:11:\"description\";s:27:\"request text from chatbots.\";}}}s:9:\"responses\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"text\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"any
+  text\";s:11:\"description\";s:47:\"response text for chatbots to give it endusers.\";}}s:8:\"required\";a:1:{i:0;s:4:\"text\";}}s:13:\"namevaluepair\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"any
+  name\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"any
+  value\";}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:5:\"value\";}}s:9:\"convsteps\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"step_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"getsomething\";s:11:\"description\";s:49:\"more
+  unique for the intent to identify the action\";}s:8:\"ok_param\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"something_found\";s:11:\"description\";s:78:\"it
+  tells the conversation modeler to find the next step or close conversation.\";}s:9:\"step_type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:1;s:11:\"description\";s:99:\"step_type
+  tells us what to define for the step..either action = 1 or dropdowns = 2 or just
+  text = 3\";}s:15:\"belongstoentity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"organization\";s:11:\"description\";s:121:\"based
+  on this settings the entity from nlp is binded with the step. if the actions url
+  has entity mapped., it will parse.\";}s:16:\"execonnullentity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:120:\"based
+  on the \"belongstoentity\" param., if the nlp output entity  is not null or null
+  then only the step will be executed\";}s:7:\"actions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/actions\";}s:9:\"dropdowns\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/namevaluepair\";}s:5:\"texts\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/responses\";}}s:8:\"required\";a:5:{i:0;s:9:\"step_name\";i:1;s:8:\"ok_param\";i:2;s:9:\"step_type\";i:3;s:15:\"belongstoentity\";i:4;s:16:\"execonnullentity\";}}s:7:\"intents\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"intent_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"getdeals\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:45:\"intent
+  description or short note about intent\";}s:15:\"is_conversation\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;s:11:\"description\";s:52:\"Flag
+  to determine the intent belongs to conversation\";}s:8:\"entities\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/entities\";}}s:7:\"actions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/actions\";}}s:9:\"responses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/responses\";}}s:13:\"conversations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/convsteps\";}}}s:8:\"required\";a:2:{i:0;s:11:\"intent_name\";i:1;s:11:\"description\";}}s:10:\"parserlogs\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"input\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"text
+  to be processed\";}s:6:\"output\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"output
+  text (JSON object stringify)\";}s:7:\"logtype\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"c
+  or p\";}}}}"
+...

@@ -1,0 +1,1069 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:154:\"Documented API
+  for continuous online hearing.To use the API calls generate an Authorization JWT
+  Tokens (user and service) which is required in the header.\";s:7:\"version\";s:5:\"0.0.1\";s:5:\"title\";s:29:\"Continuous
+  Online Hearing API\";}"
+host: localhost:8080
+basePath: /
+paths:
+  /continuous-online-hearings:
+    get:
+      tags:
+      - online-hearing-controller
+      summary: Filter for Online Hearings
+      description: A GET request with query string containing one or more instances
+        of case_id e.g. case_id=foo&case_id=bar
+      operationId: retrieveOnlineHearingsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: case_id
+        in: query
+        description: case_id
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/OnlineHearingsResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+    post:
+      tags:
+      - online-hearing-controller
+      summary: Create Online Hearing
+      description: A POST request is used to create an online hearing
+      operationId: createOnlineHearingUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: body
+        description: body
+        required: true
+        schema:
+          $ref: '#/definitions/OnlineHearingRequest'
+      - in: body
+        name: case_id
+        description: The Case id
+        required: true
+        schema:
+          type: string
+      - in: body
+        name: jurisdiction
+        description: Accepted value is SSCS
+        required: true
+        schema:
+          type: string
+      - in: body
+        name: start_date
+        description: ISO 8601 Start Date of Online Hearing
+        required: true
+        schema:
+          type: string
+      - in: body
+        name: panel
+        description: Panel members
+        required: true
+        schema:
+          type: string
+      - in: body
+        name: panel.name
+        description: Name of Panel Member
+        required: true
+        schema:
+          type: string
+      - in: body
+        name: panel.identity_token
+        description: IDAM Token of Panel Member
+        required: false
+        schema:
+          type: string
+      - in: body
+        name: panel.role
+        description: The role of the Panel Member
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateOnlineHearingResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        409:
+          description: Duplicate case id found
+        422:
+          description: Validation error
+  /continuous-online-hearings/events/register:
+    post:
+      tags:
+      - event-forwarding-controller
+      summary: Register for event notifications
+      description: A POST request is used to register for event notifications
+      operationId: registerForEventNotificationsUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: body
+        description: body
+        required: true
+        schema:
+          $ref: '#/definitions/EventRegistrationRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        409:
+          description: Conflict
+        422:
+          description: Validation error
+    put:
+      tags:
+      - event-forwarding-controller
+      summary: Update event registration notification
+      description: A PUT request is used to update the event registration
+      operationId: updateEventNotificationsUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/EventRegistrationRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        424:
+          description: Failed dependency
+    delete:
+      tags:
+      - event-forwarding-controller
+      summary: Delete event registration notification
+      description: A DELETE request is used delete to update the event registration
+      operationId: deleteEventNotificationsUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/SessionEventRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        204:
+          description: No Content
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        424:
+          description: Failed dependency
+  /continuous-online-hearings/events/reset:
+    put:
+      tags:
+      - event-queue-controller
+      summary: Reset session events
+      description: A PUT request is used to reset the events
+      operationId: resetSessionEventsUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/SessionEventRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+        424:
+          description: Failed dependency
+  /continuous-online-hearings/{onlineHearingId}:
+    get:
+      tags:
+      - online-hearing-controller
+      summary: Get Online Hearing
+      description: A GET request with a request body is used to retrieve an online
+        hearing
+      operationId: retrieveOnlineHearingUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/OnlineHearingResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /continuous-online-hearings/{onlineHearingId}/conversations:
+    get:
+      tags:
+      - conversations-controller
+      summary: Get a conversation
+      description: A GET request to retrieve an online hearing conversation
+      operationId: getConversationsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ConversationResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /continuous-online-hearings/{onlineHearingId}/decisionreplies:
+    get:
+      tags:
+      - decision-controller
+      summary: Get all replies to decision
+      description: A GET request is used to get all replies to a decision
+      operationId: getAllDecisionRepliesUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/AllDecisionRepliesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Online hearing not found
+    post:
+      tags:
+      - decision-controller
+      summary: Reply to a decision
+      description: A POST request is used to reply to a decision
+      operationId: replyToDecisionUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Authorization
+        required: true
+        type: string
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/DecisionReplyRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/CreateDecisionReplyResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Online hearing not found
+  /continuous-online-hearings/{onlineHearingId}/decisionreplies/{decisionReplyId}:
+    get:
+      tags:
+      - decision-controller
+      summary: Get a replies to decision
+      description: A GET request is used to get a reply to a decision
+      operationId: getADecisionReplyUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: decisionReplyId
+        in: path
+        description: decisionReplyId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DecisionReplyResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Online hearing not found
+  /continuous-online-hearings/{onlineHearingId}/decisions:
+    get:
+      tags:
+      - decision-controller
+      summary: Get decision
+      description: A GET request to retrieve a decision
+      operationId: retrieveDecisionUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DecisionResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+    post:
+      tags:
+      - decision-controller
+      summary: Create decision
+      description: A POST request is used to create a decision
+      operationId: createDecisionUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Authorization
+        required: true
+        type: string
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/DecisionRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/CreateDecisionResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Online hearing not found
+        409:
+          description: Online hearing already contains a decision
+        422:
+          description: Validation error
+    put:
+      tags:
+      - decision-controller
+      summary: Update a decision
+      description: A PUT request to update replace a decision
+      operationId: updateDecisionUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Authorization
+        required: true
+        type: string
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateDecisionRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        409:
+          description: Conflict
+        422:
+          description: Validation Error
+  /continuous-online-hearings/{onlineHearingId}/questionrounds:
+    get:
+      tags:
+      - question-round-controller
+      summary: Get all question rounds
+      operationId: getQuestionRoundsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/QuestionRoundsResponse'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/questionrounds/{roundId}:
+    get:
+      tags:
+      - question-round-controller
+      summary: Get a question round
+      operationId: getQuestionRoundUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: roundId
+        in: path
+        description: roundId
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/QuestionRoundResponse'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+    put:
+      tags:
+      - question-round-controller
+      summary: Update a question round
+      operationId: updateQuestionRoundUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: roundId
+        in: path
+        description: roundId
+        required: true
+        type: integer
+        format: int32
+      - in: body
+        name: body
+        description: body
+        required: true
+        schema:
+          $ref: '#/definitions/QuestionRoundRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Question'
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/questions:
+    get:
+      tags:
+      - question-controller
+      summary: Get all questions for an online hearing
+      operationId: getQuestionsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/AllQuestionsResponse'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+    post:
+      tags:
+      - question-controller
+      summary: Add a new question
+      operationId: createQuestionUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/QuestionRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateQuestionResponse'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/questions-deadline-extension:
+    put:
+      tags:
+      - deadline-controller
+      summary: Request deadline extension
+      description: A PUT request to extend the deadline of questions.
+      operationId: requestExtensionForQuestionUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        424:
+          description: Failed dependency
+        500:
+          description: General request failure
+  /continuous-online-hearings/{onlineHearingId}/questions/{questionId}:
+    get:
+      tags:
+      - question-controller
+      summary: Get a question
+      operationId: getQuestionUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/QuestionResponse'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+    put:
+      tags:
+      - question-controller
+      summary: Edit a question
+      operationId: editQuestionUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateQuestionRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Question'
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+    delete:
+      tags:
+      - question-controller
+      summary: Delete a question
+      operationId: deleteQuestionUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        204:
+          description: No Content
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/questions/{questionId}/answers:
+    get:
+      tags:
+      - answer-controller
+      summary: Get Answers
+      description: A GET request without a body is used to retrieve all answers to
+        a question
+      operationId: retrieveAnswersUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AnswerResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+    post:
+      tags:
+      - answer-controller
+      summary: Add Answer
+      description: A POST request is used to create an answer
+      operationId: createAnswerUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/AnswerRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CreateAnswerResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        409:
+          description: Question already contains an answer
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/questions/{questionId}/answers/{answerId}:
+    get:
+      tags:
+      - answer-controller
+      summary: Get Answer
+      description: A GET request with a request body is used to retrieve an answer
+      operationId: retrieveAnswerUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: answerId
+        in: path
+        description: answerId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/AnswerResponse'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+    put:
+      tags:
+      - answer-controller
+      summary: Update Answers
+      description: A PUT request is used to update an answer
+      operationId: updateAnswerUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - name: questionId
+        in: path
+        description: questionId
+        required: true
+        type: string
+      - name: answerId
+        in: path
+        description: answerId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/AnswerRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Validation error
+  /continuous-online-hearings/{onlineHearingId}/relist:
+    put:
+      tags:
+      - online-hearing-controller
+      summary: Set re-listing reason and state
+      description: A PUT request with a request body is used to update re-listing
+        of online hearing.
+      operationId: setRelistingUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: onlineHearingId
+        in: path
+        description: onlineHearingId
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: body
+        required: true
+        schema:
+          $ref: '#/definitions/RelistingRequest'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        201:
+          description: Created
+        202:
+          description: Accepted
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        401:
+          description: Unauthorised
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        409:
+          description: Conflict
+definitions: !php/object "O:8:\"stdClass\":37:{s:26:\"AllDecisionRepliesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:16:\"decision_replies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/DecisionReplyResponse\";}}}}s:20:\"AllQuestionsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"questions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/QuestionResponse\";}}}}s:6:\"Answer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"answerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"answer_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"current_answer_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AnswerState\";}}}s:13:\"AnswerRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:12:\"answer_state\";i:1;s:11:\"answer_text\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"answer_state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:14:\"answer_drafted\";i:1;s:16:\"answer_submitted\";}}s:11:\"answer_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"AnswerResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"answer_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"answer_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"current_answer_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"AnswerState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"state_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"ConversationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"online_hearing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/OnlineHearingResponse\";}}}s:20:\"CreateAnswerResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"answer_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"CreateDecisionReplyResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"decision_reply_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"CreateDecisionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"decision_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"CreateOnlineHearingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"online_hearing_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"CreateQuestionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"question_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"DecisionReplyRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:14:\"decision_reply\";i:1;s:21:\"decision_reply_reason\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"decision_reply\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:17:\"decision_accepted\";i:1;s:17:\"decision_rejected\";}}s:21:\"decision_reply_reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"DecisionReplyResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:16:\"author_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"decision_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"decision_reply\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"decision_reply_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"decision_reply_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"decision_reply_reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"DecisionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:14:\"decision_award\";i:1;s:15:\"decision_header\";i:2;s:15:\"decision_reason\";i:3;s:13:\"decision_text\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"decision_award\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_header\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"decision_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"DecisionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:20:\"deadline_expiry_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"decision_award\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_header\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"decision_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"decision_replies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/DecisionReplyResponse\";}}s:14:\"decision_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}s:13:\"decision_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}}s:17:\"online_hearing_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:24:\"EventRegistrationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:8:\"endpoint\";i:1;s:10:\"event_type\";i:2;s:12:\"jurisdiction\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"endpoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"An
+  absolute URL corresponding to the callback endpoint for the event\";}s:10:\"event_type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"The
+  event type\";s:4:\"enum\";a:8:{i:0;s:21:\"question_round_issued\";i:1;s:25:\"question_deadline_elapsed\";i:2;s:26:\"question_deadline_extended\";i:3;s:34:\"question_deadline_extension_denied\";i:4;s:35:\"question_deadline_extension_granted\";i:5;s:17:\"answers_submitted\";i:6;s:17:\"decision_rejected\";i:7;s:15:\"decision_issued\";}}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  Jurisdiction interested in the event\";s:4:\"enum\";a:1:{i:0;s:4:\"SSCS\";}}s:15:\"maximum_retries\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:69:\"The
+  number of retry attempt to send a notification message. Default 3\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:5;}}}s:20:\"OnlineHearingRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"case_id\";i:1;s:12:\"jurisdiction\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"case_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"jurisdiction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:4:\"SSCS\";}}s:10:\"start_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:39:\"The
+  start date of the online resolution\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"OnlineHearingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:7:\"case_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"current_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}s:8:\"decision\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/DecisionResponse\";}s:8:\"end_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}}s:17:\"online_hearing_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"questions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/QuestionResponse\";}}s:9:\"relisting\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/RelistingResponse\";}s:17:\"relisting_history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/RelistingHistoryResponse\";}}s:10:\"start_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"OnlineHearingsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"online_hearings\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/OnlineHearingResponse\";}}}}s:8:\"Question\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Answer\";}}s:17:\"authorReferenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"deadlineExpiryDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:16:\"deadlineExtCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"linkedQuestions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:16:\"ownerReferenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"questionHeaderText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"questionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"questionOrdinal\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"questionRound\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"questionState\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/QuestionState\";}s:22:\"questionStateHistories\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/QuestionStateHistory\";}}s:12:\"questionText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"QuestionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:15:\"owner_reference\";i:1;s:18:\"question_body_text\";i:2;s:20:\"question_header_text\";i:3;s:16:\"question_ordinal\";i:4;s:14:\"question_round\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:18:\"linked_question_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"owner_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"question_body_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"question_header_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"question_ordinal\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}s:14:\"question_round\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}}}s:16:\"QuestionResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:15:\"owner_reference\";i:1;s:18:\"question_body_text\";i:2;s:20:\"question_header_text\";i:3;s:16:\"question_ordinal\";i:4;s:14:\"question_round\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/AnswerResponse\";}}s:22:\"current_question_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}s:20:\"deadline_expiry_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"deadline_extension_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/StateResponse\";}}s:18:\"linked_question_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"owner_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"question_body_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"question_header_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"question_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"question_ordinal\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}s:14:\"question_round\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"QuestionRoundRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"state_name\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"state_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:22:\"question_issue_pending\";}}}}s:21:\"QuestionRoundResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:24:\"deadline_extension_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:19:\"question_references\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/QuestionResponse\";}}s:21:\"question_round_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"question_round_state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/QuestionRoundState\";}}}s:18:\"QuestionRoundState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"state_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"QuestionRoundsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:22:\"current_question_round\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:29:\"max_number_of_question_rounds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:19:\"next_question_round\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:23:\"previous_question_round\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"question_rounds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/QuestionRoundResponse\";}}}}s:13:\"QuestionState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"state_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"QuestionStateHistory\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"dateOccurred\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"questionstate\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/QuestionState\";}}}s:24:\"RelistingHistoryResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"date_occurred\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"DRAFTED\";i:1;s:13:\"ISSUE_PENDING\";i:2;s:6:\"ISSUED\";}}}}s:16:\"RelistingRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"state\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:7:\"drafted\";i:1;s:6:\"issued\";}}}}s:17:\"RelistingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"ISO-8601
+  format: yyyy-MM-dd'T'HH:mm:ss'Z'\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"DRAFTED\";i:1;s:13:\"ISSUE_PENDING\";i:2;s:6:\"ISSUED\";}}s:7:\"updated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"ISO-8601
+  format: yyyy-MM-dd'T'HH:mm:ss'Z'\";}}}s:14:\"ResponseEntity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:10:\"statusCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:64:{i:0;s:3:\"100\";i:1;s:3:\"101\";i:2;s:3:\"102\";i:3;s:3:\"103\";i:4;s:3:\"200\";i:5;s:3:\"201\";i:6;s:3:\"202\";i:7;s:3:\"203\";i:8;s:3:\"204\";i:9;s:3:\"205\";i:10;s:3:\"206\";i:11;s:3:\"207\";i:12;s:3:\"208\";i:13;s:3:\"226\";i:14;s:3:\"300\";i:15;s:3:\"301\";i:16;s:3:\"302\";i:17;s:3:\"303\";i:18;s:3:\"304\";i:19;s:3:\"305\";i:20;s:3:\"307\";i:21;s:3:\"308\";i:22;s:3:\"400\";i:23;s:3:\"401\";i:24;s:3:\"402\";i:25;s:3:\"403\";i:26;s:3:\"404\";i:27;s:3:\"405\";i:28;s:3:\"406\";i:29;s:3:\"407\";i:30;s:3:\"408\";i:31;s:3:\"409\";i:32;s:3:\"410\";i:33;s:3:\"411\";i:34;s:3:\"412\";i:35;s:3:\"413\";i:36;s:3:\"414\";i:37;s:3:\"415\";i:38;s:3:\"416\";i:39;s:3:\"417\";i:40;s:3:\"418\";i:41;s:3:\"419\";i:42;s:3:\"420\";i:43;s:3:\"421\";i:44;s:3:\"422\";i:45;s:3:\"423\";i:46;s:3:\"424\";i:47;s:3:\"426\";i:48;s:3:\"428\";i:49;s:3:\"429\";i:50;s:3:\"431\";i:51;s:3:\"451\";i:52;s:3:\"500\";i:53;s:3:\"501\";i:54;s:3:\"502\";i:55;s:3:\"503\";i:56;s:3:\"504\";i:57;s:3:\"505\";i:58;s:3:\"506\";i:59;s:3:\"507\";i:60;s:3:\"508\";i:61;s:3:\"509\";i:62;s:3:\"510\";i:63;s:3:\"511\";}}s:15:\"statusCodeValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:19:\"SessionEventRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"event_type\";i:1;s:12:\"jurisdiction\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"event_type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"The
+  event type\";s:4:\"enum\";a:8:{i:0;s:21:\"question_round_issued\";i:1;s:25:\"question_deadline_elapsed\";i:2;s:26:\"question_deadline_extended\";i:3;s:34:\"question_deadline_extension_denied\";i:4;s:35:\"question_deadline_extension_granted\";i:5;s:17:\"answers_submitted\";i:6;s:17:\"decision_rejected\";i:7;s:15:\"decision_issued\";}}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  Jurisdiction interested in the event\";s:4:\"enum\";a:1:{i:0;s:4:\"SSCS\";}}}}s:13:\"StateResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"state_datetime\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"state_desc\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"state_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"UpdateDecisionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:14:\"decision_award\";i:1;s:15:\"decision_header\";i:2;s:15:\"decision_reason\";i:3;s:14:\"decision_state\";i:4;s:13:\"decision_text\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:14:\"decision_award\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_header\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"decision_reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"decision_state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:16:\"decision_drafted\";i:1;s:22:\"decision_issue_pending\";}}s:13:\"decision_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"UpdateQuestionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:15:\"owner_reference\";i:1;s:18:\"question_body_text\";i:2;s:20:\"question_header_text\";i:3;s:16:\"question_ordinal\";i:4;s:14:\"question_round\";i:5;s:14:\"question_state\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:18:\"linked_question_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"owner_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"question_body_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"question_header_text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"question_ordinal\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}s:14:\"question_round\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Positive
+  integer\";s:4:\"enum\";a:4:{i:0;s:1:\"0\";i:1;s:1:\"1\";i:2;s:1:\"2\";i:3;s:3:\"...\";}}s:14:\"question_state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:16:\"question_drafted\";}}}}}"
+...

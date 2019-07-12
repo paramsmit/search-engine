@@ -1,0 +1,931 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:9:\"1908.0001\";s:5:\"title\";s:8:\"cellsite\";}"
+host: ""
+basePath: /cellsite
+paths:
+  /v1/loopbacktest/calendar:
+    get:
+      summary: ""
+      description: Returns a list of Scheduler Requests based upon the filter criteria.
+      operationId: searchScheduleRequests
+      produces:
+      - application/json
+      parameters:
+      - name: domain
+        in: query
+        description: Schedule domain.
+        required: false
+        type: string
+      - name: scheduleId
+        in: query
+        description: Schedule identifier
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: scheduleName
+        in: query
+        description: Schedule name
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: userId
+        in: query
+        description: Schedule User id of creator
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: status
+        in: query
+        description: Schedule status
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: createDateTime
+        in: query
+        description: Creation date and time (<low date>[,<hi date>])
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: optimizerStatus
+        in: query
+        description: Optimizer status
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: dd
+        in: query
+        description: Domain data name:Value dd=name:value
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+        400:
+          description: Invalid query scheduler details request.
+        404:
+          description: No records found
+        500:
+          description: Unexpected Runtime error
+    put:
+      summary: ""
+      description: This can be used to mimic calling Calendar to create a schedule.
+        This will just create a SchedulerCalendarEvent for immediate execution
+      operationId: postCalendar
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: CalendarEvent
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        500:
+          description: Unexpected Runtime error
+  /v1/loopbacktest/calendar/{scheduleId}:
+    post:
+      summary: ""
+      description: Creates a schedule request for scheduleId
+      operationId: createScheduleRequest
+      produces:
+      - application/json
+      parameters:
+      - name: scheduleId
+        in: path
+        description: Schedule id to uniquely identify the schedule request being created.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Data for creating a schedule request for the given schedule id
+        required: false
+        schema:
+          $ref: '#/definitions/ScheduleMessage'
+      responses:
+        202:
+          description: Schedule request accepted.
+        400:
+          description: Invalid schedule create request.
+        412:
+          description: Schedule request already exists for this schedule id.
+        500:
+          description: Unexpected Runtime error
+    delete:
+      summary: ""
+      description: Deletes a schedule requests for scheduleId
+      operationId: deleteScheduleRequest
+      produces:
+      - application/json
+      parameters:
+      - name: scheduleId
+        in: path
+        description: Schedule id to uniquely identify the schedule request being deleted.
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        404:
+          description: No record found
+        500:
+          description: Unexpected Runtime error
+  /v1/loopbacktest/dmaapmr/events/{topic}:
+    post:
+      summary: ""
+      description: Test SNIRO connection in loopback mode.
+      operationId: postDmaap
+      produces:
+      - application/json
+      parameters:
+      - name: topic
+        in: path
+        description: Topic
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: CalendarEvent
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        500:
+          description: Unexpected Runtime error
+  /v1/loopbacktest/dmaapmr/events/{topic}/{group}/{id}:
+    get:
+      summary: ""
+      description: Test DmaaP Consumer.
+      operationId: getDmaap
+      produces:
+      - application/json
+      parameters:
+      - name: topic
+        in: path
+        description: Topic
+        required: true
+        type: string
+      - name: group
+        in: path
+        description: Group
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: Id
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              type: string
+        202:
+          description: OK
+        500:
+          description: Unexpected Runtime error
+  /v1/loopbacktest/dmaapmr/topics:
+    get:
+      summary: ""
+      description: Test DmaaP Consumer.
+      operationId: getDmaapTopics
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+        500:
+          description: Unexpected Runtime error
+  /{apiVersion}/dmaapsub/{fileName}:
+    put:
+      tags:
+      - cellsite
+      summary: ""
+      description: Processies inventory feed..
+      operationId: getFeedFile
+      consumes:
+      - application/octet-stream
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: fileName
+        in: path
+        description: fileName
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/health:
+    get:
+      tags:
+      - status
+      summary: ""
+      description: Returns health status of server.
+      operationId: healthCheck
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: checkInterfaces
+        in: query
+        description: Check Interfaces
+        required: false
+        type: array
+        items:
+          type: boolean
+          default: true
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Health Check Message'
+        400:
+          description: Not healthy
+          schema:
+            $ref: '#/definitions/Health Check Message'
+  /{apiVersion}/mw:
+    get:
+      tags:
+      - admin
+      summary: ""
+      description: API to get configured maintenance windows
+      operationId: getMaintenanceWindow
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: name
+        in: query
+        description: name
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Maintenance Window config details'
+    put:
+      tags:
+      - admin
+      summary: ""
+      description: Api to create a maintenance window
+      operationId: createMaintenenceWindow
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - in: body
+        name: body
+        description: create maintenance window for eNodeB
+        required: false
+        schema:
+          $ref: '#/definitions/Maintenance Window config details'
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/mw/{name}:
+    delete:
+      tags:
+      - admin
+      summary: ""
+      description: Api to delte maintenance window
+      operationId: deleteMaintenanceWindow
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: name
+        in: path
+        description: name
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/request/immediate:
+    put:
+      tags:
+      - cellsite
+      summary: ""
+      description: Schedules in incoming augmenter message
+      operationId: scheduleImmediateRequest
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - in: body
+        name: body
+        description: request
+        required: false
+        schema:
+          $ref: '#/definitions/Augmenter Publish Immediate Message'
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/schedule:
+    get:
+      tags:
+      - admin
+      summary: ""
+      description: API to get schedules
+      operationId: getSchedules
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: scheduleId
+        in: query
+        description: scheduleId
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CalendarSchedule'
+  /{apiVersion}/schedule/{id}:
+    put:
+      tags:
+      - admin
+      summary: ""
+      description: API to create a new schedule
+      operationId: createSchedule
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: id
+        in: path
+        description: Schedule id to uniquely identify the schedule request being created.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: create a new schedule
+        required: false
+        schema:
+          $ref: '#/definitions/CalendarSchedule'
+      responses:
+        204:
+          description: OK
+    delete:
+      tags:
+      - admin
+      summary: ""
+      description: Api to delete Schedules
+      operationId: deleteSchedule
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: id
+        in: path
+        description: scheduleId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/status/mwi/{id}:
+    get:
+      tags:
+      - status
+      summary: ""
+      description: API to retrieve mainentance window instance details
+      operationId: getMaintenanceWindowInstance
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      - name: archived
+        in: query
+        description: archived
+        required: false
+        type: boolean
+        default: true
+      - name: pending
+        in: query
+        description: pending
+        required: false
+        type: boolean
+        default: true
+      - name: active
+        in: query
+        description: active
+        required: false
+        type: boolean
+        default: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CellSiteMwi'
+  /{apiVersion}/status/schedule/{id}:
+    get:
+      tags:
+      - status
+      summary: ""
+      description: API to retrieve schedule instance and list maintenance window instances
+      operationId: getScheduleInstance
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      - name: archived
+        in: query
+        description: archived
+        required: false
+        type: boolean
+        default: false
+      - name: pending
+        in: query
+        description: pending
+        required: false
+        type: boolean
+        default: false
+      - name: active
+        in: query
+        description: active
+        required: false
+        type: boolean
+        default: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CellSiteSchedule'
+    delete:
+      tags:
+      - status
+      summary: ""
+      description: API to terminate an active schedule instance
+      operationId: deleteScheduleInstance
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/status/schedules:
+    get:
+      tags:
+      - status
+      summary: ""
+      description: API to search schedule instances
+      operationId: searchScheduleInstances
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: archived
+        in: query
+        description: archived
+        required: false
+        type: boolean
+        default: false
+      - name: pending
+        in: query
+        description: pending
+        required: false
+        type: boolean
+        default: false
+      - name: active
+        in: query
+        description: active
+        required: false
+        type: boolean
+        default: false
+      - name: mwi
+        in: query
+        description: Include MWIs
+        required: false
+        type: boolean
+        default: true
+      - name: id
+        in: query
+        description: Schedule id
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: status
+        in: query
+        description: Schedule status
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: startTime
+        in: query
+        description: Schedule start time
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: scheduleId
+        in: query
+        description: Calendar Schedule Id
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.Id
+        in: query
+        description: MWI Id
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.timeZoneOffset
+        in: query
+        description: MWI Time Zone Offset
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.startOfCycle
+        in: query
+        description: MWI Start of Cycle Timw
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.startTime
+        in: query
+        description: MWI Start Time
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.endTime
+        in: query
+        description: MWI End Time
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.durationInSeconds
+        in: query
+        description: MWI Duration In Seconds
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.spansDST
+        in: query
+        description: MWI Spans DST Transition
+        required: false
+        type: boolean
+      - name: mwi.status
+        in: query
+        description: MWI Status
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.requiredConcurrency
+        in: query
+        description: MWI Required Concurrency
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.totalNumberNodes
+        in: query
+        description: MWI Number of Nodes
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: mwi.timeoutInSeconds
+        in: query
+        description: MWI Timeout in Seconds
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CellSiteSchedule'
+  /{apiVersion}/submarket:
+    get:
+      tags:
+      - admin
+      summary: ""
+      description: Returns health status of server.
+      operationId: getSubmarket
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: submarket
+        in: query
+        description: Sub market
+        required: false
+        type: array
+        items:
+          type: string
+          default: '*'
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Submarket include/exclude status'
+  /{apiVersion}/submarket/{include}/{submarket}:
+    put:
+      tags:
+      - admin
+      summary: ""
+      description: Returns health status of server.
+      operationId: putSubmarket
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: include
+        in: path
+        description: include|exclude
+        required: true
+        type: string
+        default: include
+      - name: submarket
+        in: path
+        description: Sub market
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+    delete:
+      tags:
+      - admin
+      summary: ""
+      description: Deletes the submarket from the include or exclude list.
+      operationId: deleteSubmarket
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: include
+        in: path
+        description: include|exclude
+        required: true
+        type: string
+        default: include
+      - name: submarket
+        in: path
+        description: Sub market
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /{apiVersion}/test/submarket:
+    get:
+      tags:
+      - admin
+      summary: ""
+      description: API to test the results of the submarket include/exclude lists
+      operationId: testSubmarket
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: apiVersion
+        in: path
+        description: v1
+        required: true
+        type: string
+        default: v1
+      - name: submarket
+        in: query
+        description: Sub market
+        required: false
+        type: array
+        items:
+          type: string
+          default: '*'
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Submarket include/exclude test status'
+definitions: !php/object "O:8:\"stdClass\":16:{s:35:\"Augmenter Publish Immediate
+  Message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:9:\"requestID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"elementId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"namespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"ems\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"description\";s:46:\"Message
+  published to the Augmenter immediately\";}s:16:\"CalendarSchedule\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"rrule\";i:1;s:9:\"starttime\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Cellsite
+  schedule id provided by the client.\";}s:10:\"scheduleId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Calendar
+  schedule id generated by cellsite\";}s:5:\"rrule\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"FREQ=WEEKLY;BYDAY=MO,WE,FR\";s:11:\"description\";s:18:\"rrule
+  for schedule\";}s:9:\"starttime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2018-06-24T12:00:00Z\";s:11:\"description\";s:10:\"start
+  time\";}}s:11:\"description\";s:27:\"Calender Schedule details .\";}s:14:\"CellSiteActive\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"requestId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"elementId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"ems\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"namespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"leftoverCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"timestampString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"cellSiteMwiId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"CellSiteArchive\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"requestId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"elementId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"ems\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"namespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"leftoverCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"timestampString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"cellSiteMwiId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"CellSiteMwi\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":22:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"cellSiteScheduleId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"durationInSecs\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"endTime\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:19:\"requiredConcurrency\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"spansDst\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"startOfCycle\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"startTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"startOfCycleString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"endTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"timeoutSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:14:\"timezoneOffset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:16:\"totalNumberNodes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"actualStartTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"actualEndTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:15:\"cellSiteActives\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CellSiteActive\";}}s:16:\"cellSiteArchives\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CellSiteArchive\";}}s:16:\"cellSitePendings\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CellSitePending\";}}s:19:\"actualEndTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"actualStartTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"CellSitePending\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"requestId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"elementId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"ems\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"namespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"leftoverCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"cellSiteMwiId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"CellSiteSchedule\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"calendarEvent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"scheduleId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:15:\"actualStartTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"actualEndTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:15:\"startTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"cellSiteMwis\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CellSiteMwi\";}}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"actualEndTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"actualStartTimeString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"EventMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:9:\"eventJson\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:9:\"eventTime\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"reminder\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"timeSensitive\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"rrule\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"eventData\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/NameValue\";}}}}s:22:\"Health
+  Check Component\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Componnent/interface
+  name\";s:4:\"enum\";a:5:{i:0;s:8:\"Database\";i:1;s:8:\"Calendar\";i:2;s:7:\"DMaaPMR\";i:3;s:15:\"CalendarDMaaPMR\";i:4;s:3:\"AAF\";}}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"URL
+  representing component/interface\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"'OK'
+  or error status message\";}s:7:\"healthy\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:16:\"Component
+  health\";}}s:11:\"description\";s:44:\"Health of a single component of the instance\";}s:20:\"Health
+  Check Message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"healthy\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:76:\"Overall
+  health of instance. false if even one component reports not healthy.\";}s:9:\"buildInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Build
+  info (docker image name)\";}s:11:\"currentTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Current
+  time on the instance.\";}s:8:\"hostname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Hostname
+  (in k8s = pod name)\";}s:10:\"components\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/Health
+  Check Component\";}}}s:11:\"description\";s:43:\"Returns status of calendar service
+  instance\";}s:33:\"Maintenance Window config details\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"config\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"configName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"GLOBAL\";s:11:\"description\";s:27:\"name
+  of maintenance window.\";}s:6:\"config\";O:8:\"stdClass\":3:{s:7:\"example\";s:5:\"12600\";s:11:\"description\";s:45:\"start
+  time for the eNodeB maintenance window.\";s:4:\"$ref\";s:37:\"#/definitions/MaintenanceWindowConfig\";}}s:11:\"description\";s:41:\"start
+  and end time for maintenance window\";}s:23:\"MaintenanceWindowConfig\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:16:\"startTimeSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:14:\"endTimeSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:21:\"requestTimeoutSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:24:\"emsMaxConcurrentRequests\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:25:\"emsMaxConsecutiveTimeouts\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:21:\"emsQuiesceTimeSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:23:\"scheduleRetentionInDays\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:9:\"NameValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"ScheduleMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"scheduleId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"scheduleName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"domainData\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/NameValue\";}}s:11:\"globalRrule\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"events\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EventMessage\";}}}}s:32:\"Submarket
+  include/exclude status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"submarket\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Name
+  of the sub market.\";}s:7:\"include\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:33:\"Sub
+  market is in the include list\";}s:7:\"exclude\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Sub
+  market is in the exclude list.\";}}s:11:\"description\";s:27:\"Returns status of
+  submarket\";}s:37:\"Submarket include/exclude test status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"submarket\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Name
+  of the sub market.\";}s:8:\"included\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:27:\"Sub
+  market will be included\";}}s:11:\"description\";s:32:\"Returns status of submarket
+  test\";}}"
+...

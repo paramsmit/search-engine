@@ -1,0 +1,600 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":9:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:6:\"tyk_io\";}s:5:\"title\";s:7:\"Gateway\";s:7:\"version\";s:3:\"1.9\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:10:\"enterprise\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:79:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_tyk_io_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:100:\"https://raw.githubusercontent.com/TykTechnologies/tyk-swagger-definitions/master/tyk_gateway_api.yml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:7:\"tyk.com\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"tyk\";s:4:\"type\";s:7:\"openapi\";}}"
+host: tyk.local
+paths:
+  /tyk/apis/:
+    get:
+      description: Gets a list of *API Definition* objects that are currently live
+        on the gateway n
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful list response
+          schema:
+            $ref: '#/definitions/APIDefinitionList'
+      operationId: tyk.apis.get
+    post:
+      description: Create an *API Definition* objectn
+      parameters:
+      - in: body
+        name: api_definition
+        schema:
+          $ref: '#/definitions/APIDefinition'
+      responses:
+        200:
+          description: Succesful API Deletion
+          schema:
+            properties:
+              action:
+                enum:
+                - updated
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.apis.post
+  /tyk/apis/{apiID}:
+    delete:
+      description: Deletes an *API Definition* object, if it existsn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID
+        in: path
+        name: apiID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful API Deletion
+          schema:
+            properties:
+              action:
+                enum:
+                - deleted
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.apis.apiID.delete
+    get:
+      description: Gets an *API Definition* object, if it existsn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID
+        in: path
+        name: apiID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful API response
+          schema:
+            $ref: '#/definitions/APIDefinition'
+      operationId: tyk.apis.apiID.get
+    put:
+      description: Updates an *API Definition* object, if it existsn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID
+        in: path
+        name: apiID
+        required: true
+        type: string
+      - in: body
+        name: api_definition
+        schema:
+          $ref: '#/definitions/APIDefinition'
+      responses:
+        200:
+          description: Succesful API Deletion
+          schema:
+            properties:
+              action:
+                enum:
+                - updated
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.apis.apiID.put
+  /tyk/health/:
+    get:
+      description: Gets the health check values for an API if it is being recordedn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID to query
+        format: string
+        in: query
+        name: api_id
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful healthcheck response
+          schema:
+            properties:
+              average_requests_per_second:
+                type: number
+              average_upstream_latency:
+                type: number
+              key_failures_per_second:
+                type: number
+              quota_violations_per_second:
+                type: number
+              throttle_requests_per_second:
+                type: number
+            type: object
+      operationId: tyk.health.get
+  /tyk/keys/:
+    get:
+      description: Gets a list of *key* IDs (will only work with non-hashed installations)n
+      parameters:
+      - description: Back-end to target
+        format: string
+        in: query
+        name: api_id
+        required: true
+        type: string
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful response
+          schema:
+            properties:
+              keys:
+                items:
+                  type: string
+                type: array
+            type: object
+      operationId: tyk.keys.get
+  /tyk/keys/create:
+    post:
+      description: Create a new *API token* with the *session object* defined in the
+        bodyn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Adding the `suppress_reset` parameter and setting it to `1`,
+          will cause Tyk to not reset the quota limit that is in the current live
+          quota manager. By default Tyk will reset the quota in the live quota manager
+          (initialising it) when ADDing a key. Adding the `suppress_reset` flag to
+          the URL parameters will avoid this behaviour.
+        format: integer
+        in: query
+        name: suppress_reset
+        required: false
+        type: number
+      - in: body
+        name: session_object
+        schema:
+          $ref: '#/definitions/SessionObject'
+      responses:
+        200:
+          description: Key Created Response
+          schema:
+            properties:
+              action:
+                enum:
+                - create
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.keys.create.post
+  /tyk/keys/{keyId}:
+    delete:
+      description: Remove this *API token* from the gateway, this will completely
+        destroy the token and metadata associated with the token and instantly stop
+        access from being grantedn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Access Token
+        in: path
+        name: keyId
+        required: true
+        type: string
+      - description: Back-end to target
+        format: string
+        in: query
+        name: api_id
+        required: true
+        type: string
+      responses:
+        200:
+          description: Key Deleted Response
+          schema:
+            properties:
+              action:
+                enum:
+                - deleted
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.keys.keyId.delete
+    post:
+      description: Add a pre-specified *API token* with the *session object* defined
+        in the body, this operatin creates a custom token that dsoes not use the gateway
+        naming convention for tokensn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Access Token
+        in: path
+        name: keyId
+        required: true
+        type: string
+      - in: body
+        name: session_object
+        schema:
+          $ref: '#/definitions/SessionObject'
+      responses:
+        200:
+          description: Key Added Response
+          schema:
+            properties:
+              action:
+                enum:
+                - added
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.keys.keyId.post
+    put:
+      description: Update an *API token* with the *session object* defined in the
+        body, this operatin overwrites the existing objectn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Access Token
+        in: path
+        name: keyId
+        required: true
+        type: string
+      - description: Adding the `suppress_reset` parameter and setting it to `1`,
+          will cause Tyk to not reset the quota limit that is in the current live
+          quota manager. By default Tyk will reset the quota in the live quota manager
+          (initialising it) when ADDing a key. Adding the `suppress_reset` flag to
+          the URL parameters will avoid this behaviour.
+        format: integer
+        in: query
+        name: suppress_reset
+        required: false
+        type: number
+      - in: body
+        name: session_object
+        schema:
+          $ref: '#/definitions/SessionObject'
+      - description: Back-end to target
+        format: string
+        in: query
+        name: api_id
+        required: true
+        type: string
+      responses:
+        200:
+          description: Key Updated Response
+          schema:
+            properties:
+              action:
+                enum:
+                - modified
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.keys.keyId.put
+  /tyk/oauth/authorize-client/:
+    post:
+      description: The final request from an authorising party for a redirect URI
+        during the Tyk OAuth flown
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Should be provided by requesting client as part of authorisation
+          request, this should be either `code` or `token` depending on the methods
+          you have specified for the API
+        format: string
+        in: formData
+        name: response_type
+        required: true
+        type: string
+      - description: Should be provided by requesting client as part of authorisation
+          request. The Client ID that is making the request
+        format: string
+        in: formData
+        name: client_id
+        required: true
+        type: string
+      - description: Should be provided by requesting client as part of authorisation
+          request. Must match with the record stored with Tyk
+        format: string
+        in: formData
+        name: redirect_uri
+        required: true
+        type: string
+      - description: A string representation of a *Session Object (form-encoded)*.
+          This should be provided by your application in order to apply any quotas
+          or rules to the key
+        format: string
+        in: formData
+        name: key_rules
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful token response
+          schema:
+            properties:
+              access_token:
+                type: string
+              code:
+                type: string
+              expires_in:
+                type: number
+              redirect_to:
+                type: string
+              token_type:
+                type: string
+            type: object
+      operationId: tyk.oauth.authorize_client.post
+  /tyk/oauth/clients/create:
+    post:
+      description: Create a new OAuth clientn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - in: body
+        name: oauth_client
+        schema:
+          properties:
+            api_id:
+              type: string
+            redirect_uri:
+              type: string
+          type: object
+      responses:
+        200:
+          description: Succesful create response
+          schema:
+            $ref: '#/definitions/OAuthClient'
+      operationId: tyk.oauth.clients.create.post
+  /tyk/oauth/clients/{apiId}:
+    get:
+      description: Get a list of OAuth clients bound to this back end n
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID that owns this client (back end)
+        format: string
+        in: path
+        name: apiId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful listy response
+          schema:
+            $ref: '#/definitions/OAuthClients'
+      operationId: tyk.oauth.clients.apiId.get
+  /tyk/oauth/clients/{apiId}/{clientId}:
+    delete:
+      description: Delete the OAuth clientn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: API ID that owns this client (back end)
+        format: string
+        in: path
+        name: apiId
+        required: true
+        type: string
+      - description: OAuth Client ID to delete
+        format: string
+        in: path
+        name: clientId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful OAuth client deletion
+          schema:
+            properties:
+              action:
+                enum:
+                - deleted
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.oauth.clients.apiId.clientId.delete
+  /tyk/oauth/refresh/{keyId}:
+    delete:
+      description: Invalidate a refresh tokenn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      - description: Access Token
+        in: path
+        name: keyId
+        required: true
+        type: string
+      - description: API ID
+        in: query
+        name: apiID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful token revoked
+          schema:
+            properties:
+              action:
+                enum:
+                - deleted
+                type: string
+              key:
+                type: string
+              status:
+                enum:
+                - ok
+                - error
+                type: string
+            type: object
+      operationId: tyk.oauth.refresh.keyId.delete
+  /tyk/reload/:
+    get:
+      description: Will reload the targetted gatewayn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful reload response
+          schema:
+            properties:
+              error:
+                type: string
+              status:
+                type: string
+            type: object
+      operationId: tyk.reload.get
+  /tyk/reload/group:
+    get:
+      description: Will reload the cluster via the targeted gatewayn
+      parameters:
+      - description: tyk gateway shared secret
+        format: string
+        in: header
+        name: x-tyk-authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Succesful reload response
+          schema:
+            properties:
+              error:
+                type: string
+              status:
+                type: string
+            type: object
+      operationId: tyk.reload.group.get
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":13:{s:13:\"APIDefinition\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":21:{s:6:\"api_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"auth\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:16:\"auth_header_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"use_cookie\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"use_param\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:10:\"definition\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:10:\"enable_jwt\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:25:\"enable_signature_checking\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:23:\"hmac_allowed_clock_skew\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"jwt_identity_base_field\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"jwt_policy_field_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"jwt_signing_method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"jwt_source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"notifications\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:22:\"oauth_on_keychange_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"shared_secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:10:\"oauth_meta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:20:\"allowed_access_types\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:23:\"allowed_authorize_types\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"auth_login_redirect\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"org_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"slug\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"uptime_tests\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":18:{s:4:\"CORS\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":9:{s:17:\"allow_credentials\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"allowed_headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_methods\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"debug\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"enable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"exposed_headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"max_age\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:19:\"options_passthrough\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:6:\"active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"allowed_ips\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:13:\"cache_options\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:23:\"cache_all_safe_requests\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"cache_timeout\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"enable_cache\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:29:\"enable_upstream_cache_control\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:10:\"check_list\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:6:\"config\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:18:\"expire_utime_after\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"recheck_wait\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:17:\"service_discovery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/ServiceDiscoverConfiguration\";}}s:4:\"type\";s:6:\"object\";}s:17:\"custom_middleware\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"post\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/MiddlewareDefinition\";}s:4:\"type\";s:5:\"array\";}s:3:\"pre\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/MiddlewareDefinition\";}s:4:\"type\";s:5:\"array\";}s:8:\"response\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/MiddlewareDefinition\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:12:\"do_not_track\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"dont_set_quota_on_create\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:28:\"enable_batch_request_support\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:22:\"enable_ip_whitelisting\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"event_handlers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:22:\"expire_analytics_after\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:5:\"proxy\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:31:\"check_host_against_uptime_tests\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"enable_load_balancing\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"listen_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"preserve_host_header\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:17:\"service_discovery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/ServiceDiscoverConfiguration\";}s:17:\"strip_listen_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"target_list\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:10:\"target_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"response_processors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"options\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:16:\"session_lifetime\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:14:\"use_basic_auth\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"use_keyless\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"use_oauth2\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"version_data\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"not_versioned\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"versions\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/VersionDefinition\";}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:17:\"APIDefinitionList\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/APIDefinition\";}s:4:\"type\";s:5:\"array\";}s:12:\"AccessRights\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"api_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"api_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"versions\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:12:\"EndPointMeta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"method_actions\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/EndpointMethodMeta\";}s:4:\"type\";s:6:\"object\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"EndpointMethodMeta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"headers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:19:\"HeaderInjectionMeta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"add_headers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:14:\"delete_headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"MiddlewareDefinition\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"require_session\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:11:\"OAuthClient\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"client_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"redirect_uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"OAuthClients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OAuthClient\";}s:4:\"type\";s:5:\"array\";}s:28:\"ServiceDiscoverConfiguration\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":9:{s:13:\"cache_timeout\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"data_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"endpoint_returns_list\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"parent_data_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"port_data_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"query_endpoint\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"use_discovery_service\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"use_nested_query\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"use_target_list\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:13:\"SessionObject\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":20:{s:13:\"access_rights\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AccessRights\";}s:4:\"type\";s:6:\"object\";}s:9:\"allowance\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"apply_policy_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"basic_auth_data\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"hash_type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:0:\"\";i:1;s:6:\"bcrypt\";}s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:7:\"expires\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"hmac_enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"hmac_string\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"is_inactive\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"jwt_data\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:9:\"meta_data\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"monitor\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"trigger_limits\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:15:\"oauth_client_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"org_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"per\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"quota_max\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"quota_remaining\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:18:\"quota_renewal_rate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"quota_renews\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"rate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:12:\"TemplateMeta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"template_data\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"enable_session\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"input_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"template_mode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:17:\"VersionDefinition\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"expires\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"extended_paths\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":13:{s:10:\"black_list\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EndPointMeta\";}s:4:\"type\";s:5:\"array\";}s:5:\"cache\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:16:\"circuit_breakers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"return_to_service_after\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"samples\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:17:\"threshold_percent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:13:\"hard_timeouts\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"timeout\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"ignored\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EndPointMeta\";}s:4:\"type\";s:5:\"array\";}s:11:\"size_limits\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"size_limit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:9:\"transform\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TemplateMeta\";}s:4:\"type\";s:5:\"array\";}s:17:\"transform_headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/HeaderInjectionMeta\";}s:4:\"type\";s:5:\"array\";}s:18:\"transform_response\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TemplateMeta\";}s:4:\"type\";s:5:\"array\";}s:26:\"transform_response_headers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/HeaderInjectionMeta\";}s:4:\"type\";s:5:\"array\";}s:12:\"url_rewrites\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"match_pattern\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"rewrite_to\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"virtual\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:20:\"function_source_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"function_source_uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"response_function_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"use_session\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:10:\"white_list\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EndPointMeta\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:14:\"global_headers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:21:\"global_headers_remove\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:17:\"global_size_limit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"override_target\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"use_extended_paths\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}}"
+...

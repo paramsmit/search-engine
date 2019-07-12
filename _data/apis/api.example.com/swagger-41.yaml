@@ -1,0 +1,1557 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:14:\"Survey
+  Service\";s:11:\"description\";s:53:\"Microservice for designing and administering
+  surveys.\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:26:\"Amida Technology
+  Solutions\";s:3:\"url\";s:20:\"http://www.amida.com\";s:5:\"email\";s:20:\"hello@amida-tech.com\";}s:7:\"license\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"Apache
+  2.0\";}}"
+basePath: /api/v1.0
+paths:
+  /health-check:
+    x-swagger-router-controller: healthCheck.controller
+    get:
+      summary: returns health check status
+      operationId: healthCheck
+      responses:
+        200:
+          $ref: '#/responses/healthCheckSuccess'
+  /surveys:
+    x-swagger-router-controller: survey.controller
+    post:
+      summary: Creates new survey
+      operationId: createSurvey
+      parameters:
+      - name: newSurvey
+        in: body
+        description: Definition of a new survey.  Existing questions have 'id' only
+          and new questions have other fields.
+        required: true
+        schema:
+          $ref: '#/definitions/newSurvey'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Lists surveys
+      description: Only returns id and name fields.
+      operationId: listSurveys
+      parameters:
+      - name: scope
+        in: query
+        description: List scope
+        required: false
+        type: string
+        enum:
+        - summary
+        - export
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      - name: status
+        in: query
+        description: Status
+        required: false
+        type: string
+        enum:
+        - published
+        - draft
+        - retired
+        - all
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/surveyDashboard'
+        default:
+          $ref: '#/responses/genericError'
+  /surveys/csv:
+    x-swagger-router-controller: survey.controller
+    get:
+      summary: Exports surveys as csv file
+      operationId: exportSurveys
+      produces:
+      - text/csv
+      - application/json
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+    post:
+      summary: Imports survey csv file
+      operationId: importSurveys
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: surveycsv
+        in: formData
+        description: Survey CSV file
+        required: true
+        type: file
+      - name: questionidmap
+        in: formData
+        description: Question Id Map
+        required: true
+        type: string
+      responses:
+        201:
+          description: Successful response
+          schema:
+            type: object
+        default:
+          $ref: '#/responses/genericError'
+  /surveys/{id}:
+    x-swagger-router-controller: survey.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets survey
+      operationId: getSurvey
+      parameters:
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/survey'
+        default:
+          $ref: '#/responses/genericError'
+    patch:
+      summary: Updates survey
+      operationId: patchSurvey
+      parameters:
+      - name: surveyPatch
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/surveyPatch'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes survey
+      operationId: deleteSurvey
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /surveys/text/{language}:
+    x-swagger-router-controller: survey.controller
+    patch:
+      summary: Updates or translates survey text fields
+      operationId: patchSurveyText
+      parameters:
+      - name: language
+        in: path
+        description: Language code
+        required: true
+        type: string
+        minLength: 2
+      - name: textUpdate
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/surveyTextPatch'
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+  /numberUsersBySurvey/{id}:
+    x-swagger-router-controller: survey.controller
+    get:
+      summary: returns the number of users that have submitted an answer to the requested
+        survey
+      operationId: getNumberOfUsersBySurvey
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: integer
+      - name: include-soft-delete
+        in: query
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: integer
+        default:
+          $ref: '#/responses/genericError'
+  /answered-surveys/{id}:
+    x-swagger-router-controller: survey.controller
+    get:
+      summary: Get survey with answers
+      operationId: getAnsweredSurvey
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: integer
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/survey'
+        default:
+          $ref: '#/responses/genericError'
+  /answers:
+    x-swagger-router-controller: answer.controller
+    post:
+      description: This persists answers to survey questions.  Old answers are soft
+        deleted.  For each question for which there is no answer property, any existing
+        answer will be soft deleted.
+      summary: Creates answers
+      operationId: createAnswers
+      parameters:
+      - name: surveyAnswers
+        in: body
+        description: Answers to the survey
+        required: true
+        schema:
+          $ref: '#/definitions/surveyAnswers'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Gets answers
+      operationId: getAnswers
+      parameters:
+      - name: survey-id
+        in: query
+        description: Survey id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/linkedAnswers'
+        default:
+          $ref: '#/responses/genericError'
+  /answers/csv:
+    x-swagger-router-controller: answer.controller
+    get:
+      summary: Exports answers as csv file
+      operationId: exportAnswers
+      produces:
+      - text/csv
+      - application/json
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+    post:
+      summary: Imports answer csv file
+      operationId: importAnswers
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: answercsv
+        in: formData
+        description: Answer CSV file
+        required: true
+        type: file
+      - name: questionidmap
+        in: formData
+        description: Question Id Map
+        required: true
+        type: string
+      - name: surveyidmap
+        in: formData
+        description: Question Id Map
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successful response
+        default:
+          $ref: '#/responses/genericError'
+  /answers/multi-user-csv:
+    x-swagger-router-controller: answer.controller
+    get:
+      summary: Exports answers as csv file
+      operationId: exportMultiUserAnswers
+      produces:
+      - text/csv
+      - application/json
+      parameters:
+      - name: user-ids
+        in: query
+        required: true
+        type: array
+        items:
+          type: integer
+          minimum: 1
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+    post:
+      summary: Imports answer csv file
+      operationId: importMultiUserAnswers
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: answercsv
+        in: formData
+        description: Answer CSV file
+        required: true
+        type: file
+      - name: questionidmap
+        in: formData
+        description: Question Id Map
+        required: true
+        type: string
+      - name: surveyidmap
+        in: formData
+        description: Question Id Map
+        required: true
+        type: string
+      - name: useridmap
+        in: formData
+        description: User Id Map
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successful response
+        default:
+          $ref: '#/responses/genericError'
+  /answers/export:
+    x-swagger-router-controller: answer.controller
+    get:
+      summary: List answers export ready
+      operationId: listAnswersExport
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              type: object
+        default:
+          $ref: '#/responses/genericError'
+  /answers/multi-user-export:
+    x-swagger-router-controller: answer.controller
+    get:
+      summary: List answers multi user export ready
+      operationId: listAnswersMultiUserExport
+      parameters:
+      - name: user-ids
+        in: query
+        required: true
+        type: array
+        items:
+          type: integer
+          minimum: 1
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              type: object
+        default:
+          $ref: '#/responses/genericError'
+  /answers/queries:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns count of matching users
+      operationId: searchAnswers
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+        default:
+          $ref: '#/responses/genericError'
+  /answers/identifier-queries:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns count of matching users using identifiers
+      operationId: countParticipantsIdentifiers
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answerIdentifiersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+        default:
+          $ref: '#/responses/genericError'
+  /answers/user-ids:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns user ids
+      operationId: searchParticipants
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+              - userId
+              properties:
+                userId:
+                  type: integer
+                  minimum: 1
+              additionalProperties: false
+        default:
+          $ref: '#/responses/genericError'
+  /answers/identifier-user-ids:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns user ids
+      operationId: searchParticipantsIdentifiers
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answerIdentifiersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+              - userId
+              properties:
+                userId:
+                  type: integer
+                  minimum: 1
+              additionalProperties: false
+        default:
+          $ref: '#/responses/genericError'
+  /answers/federated:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns federated answers
+      operationId: federatedListAnswers
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answerIdentifiersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: array
+            items:
+              type: object
+        default:
+          $ref: '#/responses/genericError'
+  /answers/federated-queries:
+    x-swagger-router-controller: answer.controller
+    post:
+      summary: Searches all answers and returns count of matching users
+      operationId: federatedSearchAnswers
+      parameters:
+      - name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/answerIdentifiersQuery'
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+        default:
+          $ref: '#/responses/genericError'
+  /reset-tokens:
+    x-swagger-router-controller: reset-token.controller
+    post:
+      summary: Generates reset token and e-mail
+      operationId: resetToken
+      parameters:
+      - name: email
+        in: body
+        description: User email for password reset
+        required: true
+        schema:
+          $ref: '#/definitions/resetTokenRecipient'
+      responses:
+        204:
+          description: Successful response
+        default:
+          $ref: '#/responses/genericError'
+  /questions:
+    x-swagger-router-controller: question.controller
+    post:
+      summary: Creates new question
+      operationId: createQuestion
+      parameters:
+      - name: newQuestion
+        in: body
+        description: Question object
+        required: true
+        schema:
+          $ref: '#/definitions/newQuestion'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Lists questions
+      operationId: listQuestions
+      parameters:
+      - name: scope
+        in: query
+        description: List scope
+        required: false
+        type: string
+        enum:
+        - complete
+        - summary
+        - export
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      - name: survey-id
+        in: query
+        description: Survey id
+        required: false
+        type: integer
+        minimum: 1
+      - name: common-only
+        in: query
+        description: Common flag
+        required: false
+        type: boolean
+      - name: federated
+        in: query
+        description: Federated flag
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/questions'
+        default:
+          $ref: '#/responses/genericError'
+  /questions/csv:
+    x-swagger-router-controller: question.controller
+    get:
+      summary: Exports questions as csv file
+      operationId: exportQuestions
+      produces:
+      - text/csv
+      - application/json
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+    post:
+      summary: Imports question csv file
+      operationId: importQuestions
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: questioncsv
+        in: formData
+        description: Question CSV file
+        required: true
+        type: file
+      responses:
+        201:
+          description: Successful response
+          schema:
+            type: object
+        default:
+          $ref: '#/responses/genericError'
+  /questions/{id}:
+    x-swagger-router-controller: question.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets question
+      operationId: getQuestion
+      parameters:
+      - name: language
+        in: query
+        description: Language requested
+        required: false
+        type: string
+        minLength: 1
+      - name: federated
+        in: query
+        description: Include federated identifiers
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/question'
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes question
+      operationId: deleteQuestion
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /questions/text/{language}:
+    x-swagger-router-controller: question.controller
+    patch:
+      summary: Updates or translates question text fields
+      operationId: updateQuestionText
+      parameters:
+      - name: language
+        in: path
+        description: Language code
+        required: true
+        type: string
+        minLength: 2
+      - name: textUpdate
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/questionTextUpdate'
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+  /questions/{id}/identifiers:
+    x-swagger-router-controller: question.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    post:
+      summary: Add identifiers for question
+      operationId: addQuestionIdentifiers
+      parameters:
+      - name: newQuestionIdentifiers
+        in: body
+        description: New question identifiers
+        required: true
+        schema:
+          $ref: '#/definitions/newQuestionIdentifiers'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /languages:
+    x-swagger-router-controller: language.controller
+    post:
+      summary: Creates new language
+      operationId: createLanguage
+      parameters:
+      - name: language
+        in: body
+        description: New language object
+        required: true
+        schema:
+          $ref: '#/definitions/language'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Gets all languages
+      operationId: listLanguages
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/languages'
+        default:
+          $ref: '#/responses/genericError'
+  /languages/{code}:
+    x-swagger-router-controller: language.controller
+    parameters:
+    - name: code
+      in: path
+      required: true
+      type: string
+    get:
+      summary: Gets language
+      operationId: getLanguage
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/language'
+        default:
+          $ref: '#/responses/genericError'
+    patch:
+      summary: Updates language fields
+      operationId: patchLanguage
+      parameters:
+      - name: languageUpdate
+        in: body
+        description: Language fields to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/languageUpdate'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes language
+      operationId: deleteLanguage
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /user-surveys:
+    x-swagger-router-controller: user-survey.controller
+    get:
+      summary: Lists user surveys
+      description: Only returns id, name and status fields.
+      operationId: listUserSurveys
+      parameters:
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      - name: user-survey-status
+        in: query
+        description: Status of survey completion by user
+        required: false
+        type: string
+        enum:
+        - new
+        - in-progress
+        - completed
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/userSurveyDashboard'
+        default:
+          $ref: '#/responses/genericError'
+  /user-surveys/{id}:
+    x-swagger-router-controller: user-survey.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+      minimum: 1
+    get:
+      summary: Gets answered survey and its status
+      operationId: getUserSurvey
+      parameters:
+      - name: language
+        in: query
+        description: Language requested
+        required: false
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/userSurvey'
+        default:
+          $ref: '#/responses/genericError'
+  /user-surveys/{id}/status:
+    x-swagger-router-controller: user-survey.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+      minimum: 1
+    get:
+      summary: Gets survey status
+      operationId: getUserSurveyStatus
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            required:
+            - status
+            properties:
+              status:
+                $ref: '#/definitions/answerStatus'
+            additionalProperties: false
+        default:
+          $ref: '#/responses/genericError'
+  /user-surveys/{id}/answers:
+    x-swagger-router-controller: user-survey.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+      minimum: 1
+    post:
+      summary: Create answers and set status for survey
+      operationId: createUserSurveyAnswers
+      parameters:
+      - name: userSurveyAnswers
+        in: body
+        description: Survey answers and status
+        required: true
+        schema:
+          $ref: '#/definitions/newUserSurveyAnswers'
+      responses:
+        204:
+          description: Successful response
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Gets survey answers and status
+      operationId: getUserSurveyAnswers
+      parameters:
+      - name: language
+        in: query
+        description: Language requested
+        required: false
+        type: string
+        minLength: 1
+      - name: include-survey
+        in: query
+        description: Include survey
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/userSurveyAnswers'
+        default:
+          $ref: '#/responses/genericError'
+  /assessments:
+    x-swagger-router-controller: assessment.controller
+    post:
+      summary: Creates new assessment
+      operationId: createAssessment
+      parameters:
+      - name: newAssessment
+        in: body
+        description: Assessment object
+        required: true
+        schema:
+          $ref: '#/definitions/newAssessment'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: List assessments
+      operationId: listAssessments
+      parameters:
+      - name: group
+        in: query
+        description: Group key
+        required: false
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/assessmentList'
+        default:
+          $ref: '#/responses/genericError'
+  /assessments/{id}:
+    x-swagger-router-controller: assessment.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets assessment
+      operationId: getAssessment
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/assessment'
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes assessment
+      operationId: deleteAssessment
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+  /user-assessments:
+    x-swagger-router-controller: user-assessment.controller
+    post:
+      summary: Opens new user assessment
+      operationId: openUserAssessment
+      parameters:
+      - name: newAssessment
+        in: body
+        description: User assessment object
+        required: true
+        schema:
+          $ref: '#/definitions/newUserAssessment'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: List user assessmentd
+      operationId: listUserAssessments
+      parameters:
+      - name: user-id
+        in: query
+        description: User id
+        required: true
+        type: integer
+        minimum: 1
+      - name: assessment-id
+        in: query
+        description: Assessment id
+        required: true
+        type: integer
+        minimum: 1
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/userAssessmentList'
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Close active user assessment
+      operationId: closeUserAssessment
+      parameters:
+      - name: user-id
+        in: query
+        description: User id
+        required: true
+        type: integer
+        minimum: 1
+      - name: assessment-id
+        in: query
+        description: Assessment id
+        required: true
+        type: integer
+        minimum: 1
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+  /user-assessments/{id}/answers:
+    x-swagger-router-controller: user-assessment.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: List user assesment answers
+      operationId: listUserAssessmentAnswers
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              type: object
+        default:
+          $ref: '#/responses/genericError'
+  /question-identifiers/{type}/{identifier}:
+    x-swagger-router-controller: question-identifier.controller
+    get:
+      summary: Gets question id from identifier
+      operationId: getQuestionIdByIdentifier
+      parameters:
+      - name: type
+        in: path
+        description: Type of identifier
+        required: true
+        type: string
+        minLength: 1
+      - name: identifier
+        in: path
+        description: Identifier
+        required: true
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/questionId'
+        default:
+          $ref: '#/responses/genericError'
+  /answer-identifiers/{type}/{identifier}:
+    x-swagger-router-controller: answer-identifier.controller
+    get:
+      summary: Gets question id from identifier
+      operationId: getIdsByAnswerIdentifier
+      parameters:
+      - name: type
+        in: path
+        description: Type of identifier
+        required: true
+        type: string
+        minLength: 1
+      - name: identifier
+        in: path
+        description: Identifier
+        required: true
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/answerIds'
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers:
+    x-swagger-router-controller: assessment-answer.controller
+    get:
+      summary: Lists assessment answers
+      description: Do not return attached surveys.
+      operationId: getAssessmentAnswersList
+      parameters:
+      - name: assessment-answers-status
+        in: query
+        description: status of assessment completion by user
+        required: false
+        type: string
+        enum:
+        - new
+        - in-progress
+        - completed
+      - name: group
+        in: query
+        description: Group for assessments
+        required: false
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/assessmentAnswersDashboard'
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/{id}:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    post:
+      description: This persists assessment answers.  Old answers are soft deleted.  For
+        each question for which there is no answer property, any existing answer will
+        be soft deleted.
+      summary: Creates assessment answers
+      operationId: createAssessmentAnswers
+      parameters:
+      - name: newAssessmentAnswers
+        in: body
+        description: Answers to the survey
+        required: true
+        schema:
+          $ref: '#/definitions/newAssessmentAnswers'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Gets assessment answers
+      operationId: getAssessmentAnswers
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/assessmentAnswers'
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/{id}/as-copy:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    post:
+      description: This persists assessment answers.  Old answers are soft deleted.  For
+        each question for which there is no answer property, any existing answer will
+        be soft deleted.
+      summary: Copies assessment answers
+      operationId: copyAssessmentAnswers
+      parameters:
+      - name: prevAssessment
+        in: body
+        description: Assessment id to copy from
+        required: true
+        schema:
+          $ref: '#/definitions/prevAssessment'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/{id}/answers:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets assessment answers only
+      operationId: getAssessmentAnswersOnly
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/assessmentLinkedAnswers'
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/csv:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - description: survey Id that of the assessments' answers that will be returned
+      name: survey-id
+      in: query
+      required: true
+      type: integer
+    - description: questionId filter on the assessments' anwers that will be returned
+      name: question-id
+      in: query
+      required: false
+      type: integer
+    - description: sectionId filter on the assessments' answers that will be returned
+      name: section-id
+      in: query
+      required: false
+      type: integer
+    get:
+      summary: returns the answers of the question specified from latest assessments
+        that use the specified survey, in json format
+      operationId: assessmentAnswersCSV
+      produces:
+      - text/csv
+      - application/json
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/export:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - description: survey Id that of the assessments' answers that will be returned
+      name: survey-id
+      in: query
+      required: true
+      type: integer
+    - description: questionId filter on the assessments' answers that will be returned
+      name: question-id
+      in: query
+      required: false
+      type: integer
+    - description: sectionId filter on the assessments' answers that will be returned
+      name: section-id
+      in: query
+      required: false
+      type: integer
+    - description: boolean param to request comments along with question answers
+      name: include-comments
+      in: query
+      required: false
+      type: boolean
+    get:
+      summary: returns the answers of the question specified from latest assessments
+        that use the specified survey, in csv format
+      operationId: exportAssessmentAnswers
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/assessmentAnswersExportList'
+        default:
+          $ref: '#/responses/genericError'
+  /assessment-answers/{id}/status:
+    x-swagger-router-controller: assessment-answer.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets assessment answers Status
+      operationId: getAssessmentAnswersStatus
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+            required:
+            - status
+            properties:
+              status:
+                $ref: '#/definitions/answerStatus'
+            additionalProperties: false
+        default:
+          $ref: '#/responses/genericError'
+  /choice-sets:
+    x-swagger-router-controller: choice-set.controller
+    post:
+      summary: Creates new choice set
+      operationId: createChoiceSet
+      parameters:
+      - name: newChoiceSet
+        in: body
+        description: Choice set object
+        required: true
+        schema:
+          $ref: '#/definitions/newChoiceSet'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Lists choice sets
+      operationId: listChoiceSets
+      parameters:
+      - name: language
+        in: query
+        description: Language code
+        required: false
+        type: string
+        minLength: 2
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/choiceSets'
+        default:
+          $ref: '#/responses/genericError'
+  /choice-sets/{id}:
+    x-swagger-router-controller: choice-set.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Gets choice set
+      operationId: getChoiceSet
+      parameters:
+      - name: language
+        in: query
+        description: Language requested
+        required: false
+        type: string
+        minLength: 1
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/choiceSet'
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes choice set
+      operationId: deleteChoiceSet
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /question-choices/multi-text/{language}:
+    x-swagger-router-controller: question-choice.controller
+    patch:
+      summary: Updates or translates question choice textx
+      operationId: updateMultipleChoiceTexts
+      parameters:
+      - name: language
+        in: path
+        description: Language code
+        required: true
+        type: string
+        minLength: 2
+      - name: questionChoiceTextsUpdate
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/questionChoiceTextsUpdate'
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+  /question-choices:
+    x-swagger-router-controller: question-choice.controller
+    post:
+      operationId: createQuestionChoice
+      summary: Creates new question choice
+      parameters:
+      - name: newQuestionChoice
+        in: body
+        description: Question choice specification
+        required: true
+        schema:
+          $ref: '#/definitions/newQuestionChoice'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+  /question-choices/{id}:
+    x-swagger-router-controller: question-choice.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    patch:
+      summary: Patches question choice
+      operationId: patchQuestionChoice
+      parameters:
+      - name: questionChoicePatch
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/questionChoicePatch'
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      summary: Deletes question choice
+      operationId: deleteQuestionChoice
+      responses:
+        204:
+          description: Successful response.
+        default:
+          $ref: '#/responses/genericError'
+  /files:
+    x-swagger-router-controller: file.controller
+    post:
+      summary: Stores file in database
+      operationId: createFile
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: file
+        in: formData
+        description: File to be stored in db
+        required: true
+        type: file
+      - name: filename
+        in: formData
+        description: Name of the file
+        required: true
+        type: string
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+    get:
+      summary: Gets all files
+      operationId: listFiles
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/files'
+        default:
+          $ref: '#/responses/genericError'
+  /files/{id}:
+    x-swagger-router-controller: file.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      summary: Get contents of file
+      operationId: getFile
+      produces:
+      - application/octet-stream
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: file
+        default:
+          $ref: '#/responses/genericError'
+  /user-audits:
+    x-swagger-router-controller: user-audit.controller
+    get:
+      operationId: listUserAudits
+      summary: List user audits
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/userAudits'
+        default:
+          $ref: '#/responses/genericError'
+  /filters:
+    x-swagger-router-controller: filter.controller
+    get:
+      operationId: listFilters
+      summary: List filters
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/filterList'
+        default:
+          $ref: '#/responses/genericError'
+    post:
+      operationId: createFilter
+      summary: Creates new filter
+      parameters:
+      - name: filter
+        in: body
+        description: Filter specification
+        required: true
+        schema:
+          $ref: '#/definitions/newFilter'
+      responses:
+        201:
+          $ref: '#/responses/idSuccess'
+        default:
+          $ref: '#/responses/genericError'
+  /filters/{id}:
+    x-swagger-router-controller: filter.controller
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      operationId: getFilter
+      summary: Gets filter
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/filter'
+        default:
+          $ref: '#/responses/genericError'
+    patch:
+      operationId: patchFilter
+      summary: Patches filter
+      parameters:
+      - name: filterPatch
+        in: body
+        description: Filter patch specification
+        required: true
+        schema:
+          $ref: '#/definitions/filterPatch'
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+    delete:
+      operationId: deleteFilter
+      summary: Deletes filter
+      responses:
+        204:
+          description: Successul response
+        default:
+          $ref: '#/responses/genericError'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":98:{s:19:\"healthCheckResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"health
+  check response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:17:\"resetPasswordInfo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"token\";i:1;s:8:\"password\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:5:\"error\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:2:\"id\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:12:\"questionType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:19:{i:0;s:4:\"text\";i:1;s:4:\"bool\";i:2;s:7:\"integer\";i:3;s:6:\"choice\";i:4;s:7:\"choices\";i:5;s:5:\"float\";i:6;s:4:\"date\";i:7;s:4:\"year\";i:8;s:5:\"month\";i:9;s:3:\"day\";i:10;s:10:\"choice-ref\";i:11;s:11:\"open-choice\";i:12;s:6:\"pounds\";i:13;s:3:\"zip\";i:14;s:11:\"feet-inches\";i:15;s:14:\"blood-pressure\";i:16;s:4:\"file\";i:17;s:6:\"bullet\";i:18;s:5:\"scale\";}}s:12:\"questionMeta\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}s:7:\"newRule\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"logic\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"questionIndex\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:5:\"logic\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newRuleAnswer\";}}s:13:\"minProperties\";i:2;s:20:\"additionalProperties\";b:0;}s:13:\"newEnableWhen\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/newRule\";}s:8:\"minItems\";i:1;}s:17:\"newSurveyQuestion\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:100:\"Describes
+  either a brand new question (no 'id') or an existing question ('id' only with 'required').\";s:8:\"required\";a:1:{i:0;s:8:\"required\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:8:\"required\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"enableWhen\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newEnableWhen\";}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"instruction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"common\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionType\";}s:8:\"multiple\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"sections\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/newSection\";}s:8:\"minItems\";i:1;}s:8:\"maxCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:11:\"choiceSetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:18:\"choiceSetReference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionMeta\";}s:12:\"oneOfChoices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;}s:7:\"choices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/newChoice\";}s:8:\"minItems\";i:1;}s:11:\"scaleLimits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/scaleLimits\";}}s:13:\"minProperties\";i:2;s:20:\"additionalProperties\";b:0;}s:18:\"newSurveyQuestions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/newSurveyQuestion\";}}s:10:\"newSection\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/newSurveyQuestions\";}s:8:\"sections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/newSection\";}}s:10:\"enableWhen\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newEnableWhen\";}}s:13:\"maxProperties\";i:5;s:20:\"additionalProperties\";b:0;}s:7:\"section\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/surveyQuestions\";}s:8:\"sections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/section\";}}s:10:\"enableWhen\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/enableWhen\";}}s:13:\"maxProperties\";i:5;s:20:\"additionalProperties\";b:0;}s:17:\"sectionTextUpdate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:10:\"surveyMeta\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}s:9:\"newSurvey\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"authorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/surveyStatus\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/surveyMeta\";}s:8:\"parentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"sections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/newSection\";}}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/newSurveyQuestions\";}}s:20:\"additionalProperties\";b:0;}s:10:\"enableWhen\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/rule\";}s:8:\"minItems\";i:1;}s:4:\"rule\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"logic\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:13:\"questionIndex\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:5:\"logic\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}s:20:\"additionalProperties\";b:0;}s:14:\"surveyQuestion\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"text\";i:2;s:4:\"type\";i:3;s:8:\"required\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"instruction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionType\";}s:6:\"common\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"sections\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/section\";}s:8:\"minItems\";i:1;}s:8:\"multiple\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"maxCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionMeta\";}s:8:\"required\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"enableWhen\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/enableWhen\";}s:7:\"choices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/choice\";}s:8:\"minItems\";i:1;}s:11:\"scaleLimits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/scaleLimits\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:15:\"surveyQuestions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/surveyQuestion\";}}s:6:\"survey\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"authorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/surveyStatus\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/surveyMeta\";}s:8:\"sections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/section\";}}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/surveyQuestions\";}}s:20:\"additionalProperties\";b:0;}s:11:\"surveyPatch\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/surveyStatus\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/surveyMeta\";}s:8:\"sections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/newSection\";}}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/newSurveyQuestions\";}s:11:\"forceStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"forceQuestions\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:15:\"surveyTextPatch\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"sections\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/sectionTextUpdate\";}s:8:\"minItems\";i:1;}}s:20:\"additionalProperties\";b:0;}s:17:\"surveyInfoSection\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"sections\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/surveyInfoSections\";}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/surveyInfoQuestions\";}}s:20:\"additionalProperties\";b:0;s:13:\"minProperties\";i:2;}s:18:\"surveyInfoQuestion\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:8:\"required\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"required\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"sections\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/surveyInfoSections\";}}s:20:\"additionalProperties\";b:0;}s:19:\"surveyInfoQuestions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/surveyInfoQuestion\";}}s:18:\"surveyInfoSections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/surveyInfoSection\";}}s:10:\"surveyInfo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"authorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"consentTypeIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/surveyStatus\";}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/surveyInfoQuestions\";}s:8:\"sections\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/surveyInfoSections\";}}s:20:\"additionalProperties\";b:0;}s:15:\"surveyDashboard\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/surveyInfo\";}s:20:\"additionalProperties\";b:0;}s:12:\"answersQuery\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"questions\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/questionQueries\";}s:9:\"federated\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:20:\"additionalProperties\";b:0;}s:13:\"questionQuery\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"exclude\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"answers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/filterAnswer\";}s:8:\"minItems\";i:1;}}s:20:\"additionalProperties\";b:0;}s:22:\"answerIdentifiersQuery\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/answerIdentifierQuery\";}}s:15:\"questionQueries\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/questionQuery\";}}s:14:\"userSurveyInfo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"authorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}}s:20:\"additionalProperties\";b:0;}s:19:\"userSurveyDashboard\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/userSurveyInfo\";}s:20:\"additionalProperties\";b:0;}s:10:\"choiceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:12:{i:0;s:4:\"bool\";i:1;s:4:\"text\";i:2;s:4:\"year\";i:3;s:5:\"month\";i:4;s:3:\"day\";i:5;s:7:\"integer\";i:6;s:5:\"float\";i:7;s:4:\"date\";i:8;s:6:\"pounds\";i:9;s:3:\"zip\";i:10;s:11:\"feet-inches\";i:11;s:14:\"blood-pressure\";}}s:12:\"surveyStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:5:\"draft\";i:1;s:9:\"published\";i:2;s:7:\"retired\";}}s:6:\"choice\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:10:\"identifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/choiceType\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:20:\"additionalProperties\";b:0;}s:16:\"choiceTextUpdate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:11:\"choicesItem\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"floatValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:12:\"zipcodeValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{5}$\";}}s:13:\"maxProperties\";i:2;}s:6:\"answer\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:13:\"multipleIndex\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:6:\"choice\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:7:\"choices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/choicesItem\";}s:8:\"minItems\";i:1;}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"dateValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:11:\"numberValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"floatValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"feetInchesValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"feet\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"inches\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:18:\"bloodPressureValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"systolic\";i:1;s:9:\"diastolic\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"systolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"diastolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}s:9:\"fileValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"content\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;s:11:\"description\";s:37:\"Base64
+  encoded binary or text content\";}}s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:2;}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:12:\"zipcodeValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{5}$\";}}s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:2;s:20:\"additionalProperties\";b:0;}s:12:\"filterAnswer\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:6:\"choice\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"dateValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:11:\"numberValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"integerRange\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"min\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"max\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:10:\"floatValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"feetInchesValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"feet\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"inches\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:18:\"bloodPressureValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"systolic\";i:1;s:9:\"diastolic\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"systolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"diastolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:12:\"zipcodeValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{5}$\";}}s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:2;s:20:\"additionalProperties\";b:0;}s:9:\"newFilter\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"questions\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/questionQueries\";}}s:20:\"additionalProperties\";b:0;}s:6:\"filter\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:9:\"questions\";i:3;s:9:\"createdAt\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/questionQueries\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"dateTime\";}}s:20:\"additionalProperties\";b:0;}s:10:\"filterList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:9:\"createdAt\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"dateTime\";}}s:20:\"additionalProperties\";b:0;}}s:11:\"filterPatch\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"questions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/questionQueries\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:21:\"answerIdentifierQuery\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:10:\"identifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:12:\"questionText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"exclude\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"questionChoiceText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"dateValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:11:\"numberValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"integerRange\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"min\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"max\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:10:\"floatValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"feetInchesValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"feet\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"inches\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:18:\"bloodPressureValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"systolic\";i:1;s:9:\"diastolic\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"systolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"diastolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}}s:13:\"minProperties\";i:2;s:13:\"maxProperties\";i:5;s:20:\"additionalProperties\";b:0;}s:18:\"newRuleChoicesItem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}}s:13:\"maxProperties\";i:2;}s:13:\"newRuleAnswer\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:10:\"choiceText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"choice\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"choices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/newRuleChoicesItem\";}s:8:\"minItems\";i:1;}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"boolValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"dateValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:11:\"numberValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"integerValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"feetInchesValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"feet\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"inches\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:18:\"bloodPressureValue\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"systolic\";i:1;s:9:\"diastolic\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"systolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"diastolic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}s:9:\"yearValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{4}$\";}s:10:\"monthValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:8:\"dayValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:8:\"question\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"text\";i:2;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"identifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:16:\"answerIdentifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"instruction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionType\";}s:6:\"common\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"multiple\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"maxCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionMeta\";}s:7:\"choices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/choice\";}}s:11:\"scaleLimits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/scaleLimits\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}s:20:\"additionalProperties\";b:0;}s:9:\"questions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/question\";}s:9:\"minLength\";i:1;}s:18:\"questionTextUpdate\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"instruction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"choices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/choiceTextUpdate\";}}}s:20:\"additionalProperties\";b:0;s:13:\"minProperties\";i:2;}s:13:\"newIdentifier\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:9:\"newChoice\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/choiceType\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"answerIdentifier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newIdentifier\";}}s:20:\"additionalProperties\";b:0;}s:11:\"newQuestion\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"text\";i:1;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"instruction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionType\";}s:8:\"multiple\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"common\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"maxCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:18:\"questionIdentifier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newIdentifier\";}s:16:\"answerIdentifier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/newIdentifier\";}s:11:\"choiceSetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:18:\"choiceSetReference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/questionMeta\";}s:8:\"parentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:12:\"oneOfChoices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"choices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/newChoice\";}}s:11:\"scaleLimits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/scaleLimits\";}}s:20:\"additionalProperties\";b:0;}s:11:\"scaleLimits\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"min\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:3:\"max\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:13:\"minProperties\";i:1;s:20:\"additionalProperties\";b:0;}s:12:\"linkedAnswer\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"questionId\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}}s:20:\"additionalProperties\";b:0;}s:13:\"linkedAnswers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/linkedAnswer\";}}s:13:\"surveyAnswers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"surveyId\";i:1;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"surveyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:7:\"answers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/linkedAnswer\";}s:8:\"minItems\";i:1;}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:8:\"language\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"code\";i:1;s:4:\"name\";i:2;s:10:\"nativeName\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:10:\"nativeName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:9:\"languages\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/language\";}}s:14:\"languageUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:10:\"nativeName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:19:\"resetTokenRecipient\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:12:\"answerStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"new\";i:1;s:11:\"in-progress\";i:2;s:9:\"completed\";}}s:10:\"userSurvey\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:6:\"survey\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}s:6:\"survey\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/survey\";}}s:20:\"additionalProperties\";b:0;}s:20:\"newUserSurveyAnswers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}s:7:\"answers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/linkedAnswers\";}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:17:\"userSurveyAnswers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}s:7:\"answers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/linkedAnswers\";}s:6:\"survey\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/survey\";}}s:20:\"additionalProperties\";b:0;}s:14:\"prevAssessment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:16:\"prevAssessmentId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:16:\"prevAssessmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:10:\"newComment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"reason\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"reason\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"agree\";i:1;s:8:\"disagree\";}}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:25:\"newAssessmentLinkedAnswer\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"questionId\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/newComment\";}}s:20:\"additionalProperties\";b:0;}s:26:\"newAssessmentLinkedAnswers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/newAssessmentLinkedAnswer\";}}s:20:\"newAssessmentAnswers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}s:7:\"answers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/newAssessmentLinkedAnswers\";}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:7:\"comment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"reason\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:6:\"reason\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"agree\";i:1;s:8:\"disagree\";}}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}}s:20:\"additionalProperties\";b:0;}s:22:\"assessmentLinkedAnswer\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"questionId\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"answer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}s:7:\"answers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/answer\";}}s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/comment\";}s:14:\"commentHistory\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/comment\";}}}s:20:\"additionalProperties\";b:0;}s:23:\"assessmentLinkedAnswers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/assessmentLinkedAnswer\";}}s:17:\"assessmentAnswers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:7:\"answers\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}s:7:\"answers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/assessmentLinkedAnswers\";}}s:20:\"additionalProperties\";b:0;}s:21:\"assessmentAnswersInfo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:5:\"stage\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/answerStatus\";}}s:20:\"additionalProperties\";b:0;}s:27:\"assessmentAnswersExportList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/assessmentAnswersExport\";}}s:23:\"assessmentAnswersExport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:8:\"surveyId\";i:1;s:12:\"assessmentId\";i:2;s:6:\"userId\";i:3;s:10:\"questionId\";i:4;s:12:\"questionType\";i:5;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:8:\"surveyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"surveyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:1;}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:12:\"assessmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:12:\"questionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"questionText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:1;}s:19:\"questionInstruction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:1;}s:4:\"date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"dateTime\";s:7:\"minimum\";i:1;}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:1;}s:5:\"stage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:1;}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:26:\"assessmentAnswersDashboard\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/assessmentAnswersInfo\";}s:20:\"additionalProperties\";b:0;}s:17:\"assessmentSurveys\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}}s:13:\"newAssessment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"surveys\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:5:\"stage\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"surveys\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/assessmentSurveys\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:10:\"assessment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:7:\"surveys\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:5:\"stage\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"surveys\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/assessmentSurveys\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:14:\"assessmentList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:5:\"stage\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}}s:17:\"newUserAssessment\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"userId\";i:1;s:12:\"assessmentId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:12:\"assessmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:18:\"userAssessmentList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:7:\"version\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}}s:22:\"newQuestionIdentifiers\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:10:\"identifier\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:10:\"identifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:16:\"answerIdentifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:17:\"answerIdentifiers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"identifier\";i:1;s:16:\"questionChoiceId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"questionChoiceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"identifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}}}s:20:\"additionalProperties\";b:0;s:13:\"minProperties\";i:3;s:13:\"maxProperties\";i:3;}s:10:\"questionId\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"questionId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:9:\"answerIds\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"questionId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:16:\"questionChoiceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:12:\"newChoiceSet\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"reference\";i:1;s:7:\"choices\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"choices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"text\";i:1;s:4:\"code\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}}}s:20:\"additionalProperties\";b:0;}s:9:\"choiceSet\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:9:\"reference\";i:2;s:7:\"choices\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"choices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"text\";i:2;s:4:\"code\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:20:\"additionalProperties\";b:0;}}}s:20:\"additionalProperties\";b:0;}s:10:\"choiceSets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:9:\"reference\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}}}s:25:\"questionChoiceTextsUpdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}}}s:17:\"newQuestionChoice\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"before\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:11:\"choiceSetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:19:\"questionChoicePatch\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"before\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:10:\"questionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:11:\"choiceSetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}}s:20:\"additionalProperties\";b:0;}s:9:\"userAudit\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"userId\";i:1;s:8:\"endpoint\";i:2;s:9:\"operation\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:8:\"endpoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:9:\"operation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:10:\"userAudits\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/userAudit\";}}s:4:\"file\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}}s:20:\"additionalProperties\";b:0;}s:5:\"files\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/file\";}}}"
+...

@@ -1,0 +1,571 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:3:\"4.0\";s:5:\"title\";s:41:\"REST
+  API for Oracle Process Cloud Service\";s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"Amit
+  Naik\";s:5:\"email\";s:20:\"amit.naik@oracle.com\";}}"
+host: localhost:7001
+basePath: /bpm/api/4.0
+paths:
+  /tests:
+    get:
+      tags:
+      - Manage Tests
+      summary: Retrieves Tests Instance List.
+      description: ' Retrieves test instance list'
+      operationId: getTests
+      produces:
+      - application/json
+      parameters:
+      - name: name
+        in: query
+        description: name name
+        required: false
+        type: string
+      - name: description
+        in: query
+        description: Test description
+        required: false
+        type: string
+      - name: address1
+        in: query
+        description: Test address1 name
+        required: false
+        type: string
+      - name: address2
+        in: query
+        description: Test address2 name
+        required: false
+        type: string
+      - name: city
+        in: query
+        description: Test address2 name
+        required: false
+        type: string
+      - name: state
+        in: query
+        description: Test state name
+        required: false
+        type: string
+      - name: zip
+        in: query
+        description: Test zip name
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Collection'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Process list not found
+        500:
+          description: Something went wrong
+  /processes:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieves Process Instance List.
+      description: ' Retrieves process instance list'
+      operationId: getProcesses
+      produces:
+      - application/json
+      parameters:
+      - name: view
+        in: query
+        description: View name
+        required: false
+        type: string
+      - name: processDefId
+        in: query
+        description: Process definition ID
+        required: false
+        type: string
+      - name: processName
+        in: query
+        description: Processinstance name
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: priority
+        in: query
+        description: Process priority from 1 (highest) to 5 (lowest) or Any (default)
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: processOwner
+        in: query
+        description: Process instance owner
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: processCreator
+        in: query
+        description: Process instance creator
+        required: false
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: processState
+        in: query
+        description: Process state
+        required: false
+        type: array
+        items:
+          type: string
+          default: OPEN
+        collectionFormat: multi
+      - name: assignmentFilter
+        in: query
+        description: Assignment filter
+        required: false
+        type: string
+        default: MY_AND_GROUP
+      - name: dueDateFrom
+        in: query
+        description: Start of due date range in the format yyyy-mm-dd hh:mm:ss
+        required: false
+        type: string
+      - name: dueDateTo
+        in: query
+        description: End of due date range in the format yyyy-mm-dd hh:mm:ss
+        required: false
+        type: string
+      - name: limit
+        in: query
+        description: Maximum number of items per page, between 1 and 100, default
+          25
+        required: false
+        type: integer
+        default: 25
+        format: int32
+      - name: offset
+        in: query
+        description: Index for the first item on a page of list items
+        required: false
+        type: integer
+        default: 0
+        format: int32
+      - name: orderBy
+        in: query
+        description: Field with which results are to be ordered
+        required: false
+        type: string
+      - name: totalResult
+        in: query
+        description: Total Result - true or false
+        required: false
+        type: boolean
+        default: true
+      - name: since
+        in: query
+        description: Returned items must be created or updated later than the specified
+          time, format yyyy-mm-dd hh:mm:ss
+        required: false
+        type: string
+      - name: until
+        in: query
+        description: Returned items must be created or updated before the specified
+          time, format yyyy-mm-dd hh:mm:ss
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Collection'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Process list not found
+        500:
+          description: Something went wrong
+    post:
+      tags:
+      - Manage Processes
+      summary: Create a Process Instance.
+      description: ' Creates a new process instance or saves a process instance based
+        on the value of action in the input. The resource takes a multipart input
+        if looking to create a process instance with attachments - JSON as first body  part
+        and attachments as the remaining body parts. The process instance can also
+        be created with only JSON payload to create a process instance if attachments
+        are not needed. The operation and serviceName values in the input payload
+        are optional - if not specified ''operation'' defaults to ''start''.'
+      operationId: postMessage
+      consumes:
+      - multipart/mixed
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Process Instance succesfully created
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+        500:
+          description: Something went wrong
+    put:
+      tags:
+      - Manage Processes
+      summary: Perform Actions on List of Instances.
+      description: ' Performs actions on instance list'
+      operationId: performActionsOnInstanceList
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        200:
+          description: Success
+        304:
+          description: Not Modified
+        403:
+          description: Forbidden
+        500:
+          description: Something went wrong
+  /processes/{processId}:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve a Process Instance.
+      description: ' Retrieves a process instance'
+      operationId: getProcess
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID.
+        required: true
+        type: string
+      - name: isProcessNumberFlag
+        in: query
+        description: Value of processNumber, if true it will fetch process instance
+          by number, if false it will return process instance by instanceId
+        required: false
+        type: boolean
+        default: false
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+        500:
+          description: Something went wrong
+    put:
+      tags:
+      - Manage Processes
+      summary: Update the Process State.
+      description: ' Updates the state of the  process to the action value. '
+      operationId: performProcessAction
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      - text/plain
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Payload of process
+        required: true
+        schema:
+          $ref: '#/definitions/Action'
+      responses:
+        200:
+          description: Success
+        304:
+          description: Not Modified
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        500:
+          description: Internal server error
+  /processes/{processId}/attachments:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve Attachment List for a Process Instance.
+      description: ' Retrieves a list of attachments for a process instance.'
+      operationId: getProcessAttachments
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+        500:
+          description: Something went wrong
+    post:
+      tags:
+      - Manage Processes
+      summary: Add Attachment to the Process.
+      description: ' Adds attachments to a process. '
+      operationId: addProcessAttachment
+      consumes:
+      - multipart/mixed
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: multiPartAttachment
+        required: true
+        schema:
+          $ref: '#/definitions/MultiPart'
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal server error
+  /processes/{processId}/attachments/{attachmentId}:
+    delete:
+      tags:
+      - Manage Processes
+      summary: Delete Process Attachments.
+      description: ' Deletes process attachments.'
+      operationId: deleteProcessAttachment
+      produces:
+      - text/plain
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      - name: attachmentId
+        in: path
+        description: Value of attachment name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+        403:
+          description: Forbidden
+        500:
+          description: Internal server error
+  /processes/{processId}/audit:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve Audit Diagram of Process Instance.
+      description: ' Retrieves the audit diagram of a process instance.'
+      operationId: getAuditDiagram
+      produces:
+      - image/png
+      - application/json
+      - text/plain
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      - name: graphic
+        in: query
+        description: Value of graphic mode, true for png output, false for histories
+        required: false
+        type: boolean
+        default: true
+      responses:
+        200:
+          description: Success
+        500:
+          description: Something went wrong
+  /processes/{processId}/comments:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve Comment List for a Process Instance.
+      description: ' Retrieves a list of comments for a process instance.'
+      operationId: getProcessComments
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+        403:
+          description: Forbidden
+        500:
+          description: Something went wrong
+    post:
+      tags:
+      - Manage Processes
+      summary: Add Comment to the Process.
+      description: ' Adds comments to a process'
+      operationId: addProcessComments
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: CommentRequest
+        required: true
+        schema:
+          $ref: '#/definitions/CommentRequest'
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal server error
+  /processes/{processId}/conversations:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve Conversations for a Process Instance
+      description: Retrieves the conversations associated with the process instance.
+      operationId: getConversationsByProcessId
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID.
+        required: true
+        type: string
+      - name: name
+        in: query
+        description: Retrieves only the conversation for the specified conversation
+          name
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success. Returns the conversations or empty list when there
+            aren't any.
+          schema:
+            $ref: '#/definitions/ConversationInstances'
+        401:
+          description: Unauthorized
+        500:
+          description: Error in retrieving the conversation information
+  /processes/{processId}/conversations/{conversationId}:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve a Conversation for a Process Instance
+      description: Retrieve conversations associated with the process instance based
+        on conversationId.
+      operationId: getConversationByProcessId
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of process ID.
+        required: true
+        type: string
+      - name: conversationId
+        in: path
+        description: Value of conversation ID.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success. Returns the conversations or empty list when there
+            aren't any.
+          schema:
+            $ref: '#/definitions/ConversationInstance'
+        401:
+          description: Unauthorized
+        500:
+          description: Error in retrieving the conversation information
+  /processes/{processId}/folders:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve list of DOCs Folders for a Process
+      description: ' Retrieves the DOCs folders associated with a process.'
+      operationId: getProcessFolders
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of Process ID
+        required: true
+        type: string
+      - name: name
+        in: query
+        description: Retrieves only the folder for the specified folder name
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DcsFolders'
+        500:
+          description: Something went wrong
+  /processes/{processId}/folders/{folderId}:
+    get:
+      tags:
+      - Manage Processes
+      summary: Retrieve DOCs Folder for a Process
+      description: ' Retrieves the folder details for a given folder associated with
+        a process.'
+      operationId: getProcessFolderById
+      produces:
+      - application/json
+      parameters:
+      - name: processId
+        in: path
+        description: Value of Process Id
+        required: true
+        type: string
+      - name: folderId
+        in: path
+        description: Folder ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DcsFolder'
+        500:
+          description: Something went wrong
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":68:{s:18:\"AbstractProcessDef\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:12:\"processDefId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"processName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"application\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"revision\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"interfaces\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Interface\";}}s:11:\"processIcon\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ProcessIcon\";}s:12:\"processCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:17:\"isDocsEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:25:\"isConversationEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Action\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"assignees\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Identity\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"processes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"faultActionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:6:\"action\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/processdef\";}}s:15:\"AnalyticsResult\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"columnsInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ColumnMetadata\";}}s:4:\"rows\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Row\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:15:\"analyticsResult\";s:9:\"namespace\";s:48:\"http://xmlns.oracle.com/bpm/rest/analyticsResult\";}}s:7:\"Archive\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"requestedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"requestTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"exports\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ExportLink\";}}s:9:\"requester\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"archive\";s:9:\"namespace\";s:40:\"http://xmlns.oracle.com/bpm/rest/archive\";}}s:14:\"ArchiveRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"composites\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Composites\";}s:15:\"compositeStates\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CompositeStates\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"deleteInstances\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"deleteRetention\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:18:\"autoArchiveEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:14:\"archiveRequest\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/archive/request\";}}s:8:\"Archives\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:5:\"tasks\";s:9:\"namespace\";s:41:\"http://xmlns.oracle.com/bpm/rest/archives\";}}s:3:\"Arg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/QName\";}s:6:\"schema\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"primitive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:10:\"Attachment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:14:\"attachmentName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"mimeType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"attachmentScope\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"attachmentSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"docAttributes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/GenericMap\";}}s:5:\"input\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"attachment\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:11:\"Attachments\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"attachments\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:14:\"BPMRuntimeInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"runtime\";s:9:\"namespace\";s:40:\"http://xmlns.oracle.com/bpm/rest/runtime\";}}s:8:\"BodyPart\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"entity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"mediaType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/MediaType\";}s:6:\"parent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/MultiPart\";}s:9:\"providers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Providers\";}s:20:\"parameterizedHeaders\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ParameterizedHeader\";}}}s:18:\"contentDisposition\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ContentDisposition\";}}}s:13:\"BusinessQuery\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"dataSource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"PROCESS\";i:1;s:8:\"ACTIVITY\";i:2;s:10:\"ASSIGNMENT\";}}s:15:\"applicationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"queryType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"FLAT\";i:1;s:5:\"GROUP\";}}s:10:\"dataSeries\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DataSeriesEntry\";}}s:6:\"groups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"timeGroupings\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TimeGrouping\";}}s:6:\"legend\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"filter\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Filter\";}s:4:\"topN\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"lastNDays\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"sortEntries\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SortEntry\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Property\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"businessQuery\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:7:\"Catalog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"catalog\";s:9:\"namespace\";s:31:\"http://xmlns.oracle.com/bpm/api\";}}s:10:\"Collection\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalResult\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:12:\"totalResults\";}s:7:\"default\";b:0;}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"userLink\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"hasMore\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Collection\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/v3/common/\";}}s:15:\"CollectionGroup\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"userLink\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"hasMore\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Group\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Collection\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/v3/common/\";}}s:18:\"CollectionIdentity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"userLink\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"hasMore\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Identity\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Collection\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/v3/common/\";}}s:14:\"CollectionRole\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"userLink\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"hasMore\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Role\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Collection\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/v3/common/\";}}s:14:\"CollectionUser\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"userLink\";O:8:\"stdClass\":2:{s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"hasMore\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Collection\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/v3/common/\";}}s:6:\"Column\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"sqlType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"length\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"columnType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"indexed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:6:\"unique\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:10:\"primaryKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:14:\"ColumnMetadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"columnName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Comment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"commentStr\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"commentScope\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"comment\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:14:\"CommentRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"commentStr\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"commentScope\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"displayNameLanguage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"updatedDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"updatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:14:\"commentRequest\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:8:\"Comments\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"comments\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"comment\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"comments\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:15:\"CompositeStates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"compositeState\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:16:\"compositesStates\";}}s:10:\"Composites\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"compositeDN\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"composites\";}}s:18:\"ContentDisposition\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"fileName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"creationDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:16:\"modificationDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"readDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:4:\"size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:12:\"Conversation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:30:\"postMessageOnActivityEntryFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:29:\"postMessageOnActivityExitFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:25:\"postHumanTaskMessagesFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"conversationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"ConversationInstance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"conversationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"conversationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"flowId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"processId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"appLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"conversationTitle\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"clistURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:24:\"conversationInstanceList\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:21:\"ConversationInstances\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:21:\"conversationInstances\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:13:\"Conversations\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"conversations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"conversations\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Conversation\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"conversations\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:18:\"DataObjectMetadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"columns\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Column\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:18:\"DataObjectMetadata\";s:9:\"namespace\";s:51:\"http://xmlns.oracle.com/bpm/rest/DataObjectMetadata\";}}s:15:\"DataSeriesEntry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"measureColumn\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"aggregateOperation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:9:{i:0;s:5:\"COUNT\";i:1;s:3:\"SUM\";i:2;s:3:\"AVG\";i:3;s:3:\"MIN\";i:4;s:6:\"MEDIAN\";i:5;s:3:\"MAX\";i:6;s:6:\"STDDEV\";i:7;s:13:\"COUNTDISTINCT\";i:8;s:8:\"VARIANCE\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:15:\"DataSeriesEntry\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:9:\"DcsFolder\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"folderId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"folderName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"permission\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"mafLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"appLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"DcsFolders\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"dcsfolders\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:9:\"Documents\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"documents\";s:9:\"namespace\";s:52:\"http://xmlns.oracle.com/bpm/rest/process-definitions\";}}s:10:\"ExportLink\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"md5\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"exportlink\";s:9:\"namespace\";s:40:\"http://xmlns.oracle.com/bpm/rest/archive\";}}s:7:\"Exports\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"exportLinks\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ExportLink\";}}s:11:\"exportCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"exports\";s:9:\"namespace\";s:40:\"http://xmlns.oracle.com/bpm/rest/archive\";}}s:6:\"Filter\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"filterType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"ALL\";i:1;s:3:\"ANY\";}}s:13:\"filterEntries\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FilterEntry\";}}s:8:\"branches\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Filter\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:6:\"filter\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:11:\"FilterEntry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"columnName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"operator\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:10:{i:0;s:2:\"EQ\";i:1;s:2:\"LT\";i:2;s:2:\"LE\";i:3;s:2:\"GT\";i:4;s:2:\"GE\";i:5;s:2:\"NE\";i:6;s:4:\"LIKE\";i:7;s:7:\"NOTLIKE\";i:8;s:4:\"NULL\";i:9;s:7:\"NOTNULL\";}}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"columnDataType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:7:\"VARCHAR\";i:1;s:8:\"DATETIME\";i:2;s:3:\"INT\";i:3;s:7:\"DECIMAL\";i:4;s:5:\"FLOAT\";i:5;s:7:\"BOOLEAN\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"filterEntry\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:10:\"GenericMap\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"dataType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"readOnly\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"genericMap\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:5:\"Group\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"identity\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"middleName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"workPhone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"grantees\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}s:8:\"managers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}s:12:\"participants\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}s:8:\"tenantId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"tenantName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:5:\"group\";s:9:\"namespace\";s:49:\"http://xmlns.oracle.com/bpm/rest/identities/group\";}}s:8:\"Identity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"identity\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"middleName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"workPhone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"identity\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/identities\";}}s:16:\"IncomingDocument\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"permission\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"IncomingFolder\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"permission\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"IncomingFolders\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"incomingFolders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:16:\"incoming-folders\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/IncomingFolder\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:16:\"incoming-folders\";s:9:\"namespace\";s:52:\"http://xmlns.oracle.com/bpm/rest/process-definitions\";}}s:9:\"Interface\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"serviceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"operation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"args\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Arg\";}}s:12:\"formMetadata\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"Link\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"link\";s:9:\"namespace\";s:32:\"http://xmlns.oracle.com/bpm/rest\";}}s:9:\"MediaType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subtype\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:12:\"wildcardType\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:15:\"wildcardSubtype\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:12:\"MessageInput\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"processDefId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"serviceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"operation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"params\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:12:\"messageInput\";s:9:\"namespace\";s:42:\"http://xmlns.oracle.com/bpm/rest/processes\";}}s:9:\"MultiPart\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"entity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"mediaType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/MediaType\";}s:6:\"parent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/MultiPart\";}s:9:\"providers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Providers\";}s:9:\"bodyParts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/BodyPart\";}}s:20:\"parameterizedHeaders\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ParameterizedHeader\";}}}s:18:\"contentDisposition\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ContentDisposition\";}}}s:19:\"ParameterizedHeader\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:7:\"Payload\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"assignees\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Identity\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"processes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"faultActionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"identities\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Identity\";}}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}s:8:\"comments\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"taskSummaryField\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/TaskSummaryField\";}s:8:\"priority\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"payload\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:11:\"ProcessDefs\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AbstractProcessDef\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"processDefs\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/processdef\";}}s:11:\"ProcessIcon\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"initials\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"colorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"ProcessInstance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":17:{s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"processId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"processDefId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"processName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"priority\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"ownedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"owner\";}}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"creator\";}}s:14:\"conversationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"expirationDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"dueDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"processDN\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"processNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:17:\"isDocsEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:25:\"isConversationEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:15:\"processInstance\";s:9:\"namespace\";s:43:\"http://xmlns.oracle.com/bpm/rest/processdef\";}}s:8:\"Property\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"property\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:9:\"Providers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"QName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"namespaceURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"localPart\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"prefix\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"RequestResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"jobId\";}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:16:\"request-response\";s:9:\"namespace\";s:52:\"http://xmlns.oracle.com/bpm/archive/request-response\";}}s:4:\"Role\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"identity\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"middleName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"workPhone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"grantees\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}s:8:\"managers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}s:12:\"participants\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionUser\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"role\";s:9:\"namespace\";s:58:\"http://xmlns.oracle.com/bpm/rest/Collection<Identity>/role\";}}s:3:\"Row\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"values\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:9:\"SortEntry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"columnName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"descending\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"sortEntry\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:4:\"Task\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:11:\"attachments\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"history\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:8:\"comments\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:17:\"isDocsEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:25:\"isConversationEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"task\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:13:\"TaskHistories\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"taskHistories\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:16:\"TaskSummaryField\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"summaryFields\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/GenericMap\";}}s:7:\"comment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"priority\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"xmlPayload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"payload\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}s:12:\"TimeGrouping\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"timeGroupingUnits\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:10:{i:0;s:4:\"YEAR\";i:1;s:7:\"QUARTER\";i:2;s:5:\"MONTH\";i:3;s:4:\"WEEK\";i:4;s:9:\"DAYOFYEAR\";i:5;s:10:\"DAYOFMONTH\";i:6;s:9:\"DAYOFWEEK\";i:7;s:4:\"HOUR\";i:8;s:6:\"MINUTE\";i:9;s:6:\"SECOND\";}}}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:12:\"timeGrouping\";s:9:\"namespace\";s:56:\"http://xmlns.oracle.com/bpm/rest/analytics/businessquery\";}}s:4:\"User\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":20:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"identity\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"middleName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"workPhone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"fax\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"language\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"adminFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"manager\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:5:\"pager\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"reportees\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionIdentity\";}s:8:\"timezone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"homePhone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"roles\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CollectionRole\";}s:6:\"groups\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CollectionGroup\";}}s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"user\";s:9:\"namespace\";s:48:\"http://xmlns.oracle.com/bpm/rest/identities/user\";}}s:5:\"Views\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:5:\"tasks\";s:9:\"namespace\";s:38:\"http://xmlns.oracle.com/bpm/rest/tasks\";}}}"
+...

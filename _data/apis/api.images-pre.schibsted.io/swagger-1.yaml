@@ -1,0 +1,440 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:16:\"ImageService API\";s:11:\"description\";s:47:\"Move
+  your app forward with the ImageService API\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: api.images-pre.schibsted.io
+paths:
+  /file:
+    post:
+      tags:
+      - Upload Service
+      summary: Uploads an image to the service
+      description: Uploads an image using the upload service. A x-location and x-id
+        headers are set with the path. Id will be a UUID.
+      consumes:
+      - image/png
+      - image/jpg
+      - multipart/form-data
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Image already exists
+        201:
+          description: Image succesfully uploaded
+          headers:
+            x-location:
+              type: string
+              description: id of the image with the location in the api file/id
+            x-id:
+              type: string
+              description: id of the image
+        500:
+          description: Internal error
+    delete:
+      tags:
+      - Upload Service
+      summary: Batch delete
+      description: Deletes an image using
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: files
+        in: body
+        description: files to delete
+        required: true
+        schema:
+          $ref: '#/definitions/DeleteBatch'
+      responses:
+        200:
+          description: Image deleted successfully
+        500:
+          description: Internal error
+  /file/{image_path}:
+    post:
+      tags:
+      - Upload Service
+      summary: Uploads an image to the service
+      description: Uploads an image using the upload service. A Location header is
+        set with the path. The image_path will be the image id.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Image already exists
+        201:
+          description: Image succesfully uploaded
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+        items:
+          type: string
+    delete:
+      tags:
+      - Upload Service
+      summary: Removes an image from the service
+      description: Removes an image from the service
+      responses:
+        200:
+          description: Image deleted
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+        items:
+          type: string
+    get:
+      tags:
+      - Upload Service
+      summary: Gets an image
+      description: Updates an image with a different one
+      produces:
+      - image/(jpg|png|webp)
+      responses:
+        200:
+          description: Image found
+        404:
+          description: Image not found
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+        items:
+          type: string
+    put:
+      tags:
+      - Upload Service
+      summary: Updates an image with the {image_path}
+      description: Updates an image with a different one
+      produces:
+      - application/json
+      responses:
+        201:
+          description: Image succesfully uploaded
+        404:
+          description: Image not found
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+        items:
+          type: string
+  /{site_alias}/{rule}/{image_path}:
+    get:
+      tags:
+      - Delivery Service
+      summary: get the image
+      description: get the image
+      responses:
+        200:
+          description: Image Found
+        404:
+          description: Image Not Found
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: rule
+        in: path
+        description: rule to apply to the image
+        required: true
+        type: string
+  /{site_alias}/{image_path}:
+    get:
+      tags:
+      - Delivery Service
+      summary: get the image
+      description: get the image
+      responses:
+        200:
+          description: Image Found
+        404:
+          description: Image Not Found
+        500:
+          description: Internal error
+      parameters:
+      - name: image_path
+        in: path
+        description: path to image, path/to/image.jpg
+        required: true
+        type: string
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+  /bucket/{site_alias}/rules:
+    post:
+      tags:
+      - Accout-configuration Service
+      summary: Identity Creation
+      description: The Identity endpoint creates a user in the service
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Identity created correctly
+        500:
+          description: Internal error
+      parameters:
+      - name: rule
+        in: body
+        description: Pet to add to the store
+        required: true
+        schema:
+          $ref: '#/definitions/Rule'
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+    get:
+      tags:
+      - Accout-configuration Service
+      summary: Get all the rules for a bucket
+      description: Get all the rules for bucket
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Ok
+          schema:
+            properties:
+              rules:
+                type: array
+                items:
+                  $ref: '#/definitions/Rule'
+        500:
+          description: Internal error
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+  /bucket/{site_alias}/rules/{rule_name}:
+    get:
+      tags:
+      - Accout-configuration Service
+      summary: Get Rule
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Rule'
+        404:
+          description: Rule not found
+        500:
+          description: Internal error
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: rule_name
+        in: path
+        description: rule_name to get
+        type: string
+        required: true
+    put:
+      tags:
+      - Accout-configuration Service
+      summary: Update rule
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        201:
+          description: Rule updated
+        404:
+          description: Rule Not found
+        500:
+          description: Internal error
+      parameters:
+      - name: rule
+        in: body
+        description: Pet to add to the store
+        required: true
+        schema:
+          $ref: '#/definitions/Rule'
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: rule_name
+        in: path
+        description: rule_name to get
+        type: string
+        required: true
+    delete:
+      tags:
+      - Accout-configuration Service
+      summary: Delete rule
+      responses:
+        200:
+          description: Rule deleted
+        404:
+          description: Rule not found
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: rule_name
+        in: path
+        description: rule_name to get
+        type: string
+        required: true
+  /bucket/{site_alias}/watermarks:
+    post:
+      tags:
+      - Accout-configuration Service
+      summary: Add a new watermark
+      produces:
+      - application/json
+      responses:
+        201:
+          description: Watermark created correctly
+        500:
+          description: Internal error
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+    get:
+      tags:
+      - Accout-configuration Service
+      summary: Get All watermarks information
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Watermark'
+        500:
+          description: Internal error
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+  /bucket/{site_alias}/watermarks/{watermark_id}:
+    get:
+      tags:
+      - Accout-configuration Service
+      summary: Gets a watermark information
+      produces:
+      - application/json
+      responses:
+        200:
+          description: watermark exists
+        404:
+          description: watermark not found
+        500:
+          description: Internal server error
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: watermark_id
+        in: path
+        description: watermark id
+        type: string
+        required: true
+    put:
+      tags:
+      - Accout-configuration Service
+      summary: Update a watermark
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Identity created correctly
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: watermark_id
+        in: path
+        description: watermark id
+        type: string
+        required: true
+    delete:
+      tags:
+      - Accout-configuration Service
+      summary: Delete a watermark
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Identity created correctly
+      parameters:
+      - name: site_alias
+        in: path
+        description: site path set when creating the account
+        required: true
+        type: string
+      - name: watermark_id
+        in: path
+        description: watermark id
+        type: string
+        required: true
+produces:
+- application/json
+- image/jpeg
+- image/png
+- image/webp
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":7:{s:11:\"DeleteBatch\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"files\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"files\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"image_id\";}}}}s:9:\"Watermark\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"etag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"last_modified\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"Rule\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:9:\"rule_name\";i:1;s:6:\"config\";i:2;s:4:\"rule\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"rule_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Unique
+  identifier representing a specific name for a rule\";}s:6:\"config\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Config\";}s:11:\"description\";s:23:\"Description
+  of product.\";}s:4:\"rule\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/RuleAction\";}s:11:\"description\";s:24:\"Display
+  name of product.\";}}}s:6:\"Config\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"width\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"height\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"quality\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:10:\"RuleAction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"resize\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResizeAction\";}s:11:\"description\";s:23:\"Description
+  of product.\";}s:7:\"uprigth\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Description
+  of product.\";}s:9:\"watermark\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/WatermarkAction\";}s:11:\"description\";s:23:\"Description
+  of product.\";}}}s:12:\"ResizeAction\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"width\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"height\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"upscale\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"distort\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:15:\"WatermarkAction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"filename\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"filename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

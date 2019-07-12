@@ -1,0 +1,1329 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:5:\"0.1.0\";s:5:\"title\";s:13:\"LoveRealm
+  API\";}"
+paths:
+  /api/v1/mobile/users:
+    post:
+      summary: Register user (first step)
+      description: Registers user (first step)
+      parameters:
+      - in: formData
+        name: first_name
+        required: true
+        type: string
+      - in: formData
+        name: last_name
+        required: true
+        type: string
+      - in: formData
+        name: email
+        required: true
+        type: string
+      - in: formData
+        name: password
+        required: true
+        type: string
+      - in: formData
+        name: password_confirmation
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+  /api/v1/mobile/users/me:
+    get:
+      summary: User details
+      description: Get currently logged in user's information
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+  /api/v1/mobile/users/{id}:
+    put:
+      summary: Update user (3rd step)
+      description: Updates user details like birthdate, sex, etc.
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      - in: formData
+        name: first_name
+        required: true
+        type: string
+      - in: formData
+        name: last_name
+        required: true
+        type: string
+      - in: formData
+        name: country
+        type: string
+      - in: formData
+        name: sex
+        required: true
+        type: integer
+        description: 0 means male, 1 means female
+        enum:
+        - 0
+        - 1
+      - in: formData
+        name: birthdate
+        type: string
+      - in: formData
+        name: biography
+        type: string
+      - in: formData
+        name: time_zone
+        type: string
+        description: 'List of time zones here: http://api.rubyonrails.org/classes/ActiveSupport/TimeZone.html'
+      - in: formData
+        name: is_newbie
+        type: boolean
+      - in: formData
+        name: avatar[base64_data]
+        type: string
+      - in: formData
+        name: avatar[original_filename]
+        type: string
+      - in: formData
+        name: phone_number
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/users/{id}/profile:
+    get:
+      summary: User profile
+      description: User details with array of contents
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of contents per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserWithContents'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/users/{id}/unread_message_count:
+    get:
+      summary: User unread message count
+      description: Count data
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UnreadMessageCount'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/users/{id}/meta_info:
+    get:
+      summary: User meta info
+      description: User meta info collected by bot
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserMetaInfo'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/users/{id}/update_fcm_token:
+    post:
+      summary: User fcm token update
+      description: Update user's fcm token
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      - name: device_token
+        in: query
+        description: Device token
+        required: true
+        type: string
+      - name: fcm_token
+        in: query
+        description: FCM token
+        required: true
+        type: string
+      - name: device
+        in: query
+        description: 'kind of device: ios | android'
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/users/{id}/remove_fcm_token:
+    post:
+      summary: User fcm token remove
+      description: Remove user's fcm token
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        type: integer
+      - name: device_token
+        in: query
+        description: Device token
+        required: true
+        type: string
+      responses:
+        204:
+          description: successful operation
+  /api/v1/mobile/users/{id}/cover:
+    put:
+      summary: Update profile cover
+      description: Updates user profile cover.
+      parameters:
+      - in: formData
+        name: cover[base64_data]
+        required: true
+        type: string
+      - in: formData
+        name: cover[original_filename]
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/users/{id}/appointments:
+    post:
+      summary: Create appointment with mentor
+      description: Create appointment with mentor
+      parameters:
+      - name: mentor_id
+        required: true
+        type: integer
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Appointment'
+  /api/v1/mobile/users/{id}/hash_tags:
+    get:
+      summary: List of user hash tags
+      description: List of user hash tags
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HashTags'
+    post:
+      summary: Add user hash tags
+      description: Add user hash tags (that represent user interests)
+      parameters:
+      - name: hash_tag_ids
+        in: formData
+        description: Array of hashtag ids
+        required: false
+        type: array
+        items:
+          type: integer
+      - name: hash_tag_names
+        in: formData
+        description: Array of hashtag names
+        required: false
+        type: array
+        items:
+          type: string
+      responses:
+        201:
+          description: successful operation
+  /api/v1/mobile/users/following:
+    get:
+      summary: Following users
+      description: List of following users
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of follwing users per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Following'
+  /api/v1/mobile/users/followers:
+    get:
+      summary: Follower users
+      description: List of follower users
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of follwer users per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Followers'
+  /api/v1/mobile/users/search_following:
+    get:
+      summary: Search following users
+      description: Search following users
+      parameters:
+      - name: search_term
+        in: query
+        description: Search term
+        required: false
+        type: string
+        example: Marko
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of follwing users per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSimple'
+  /api/v1/mobile/users/password:
+    post:
+      summary: Send reset password instructions
+      description: Generate reset password token by email or phone number and send
+        instructions by email and sms (if phone number is defined)
+      parameters:
+      - name: email
+        description: User email address (required if phone number is empty)
+        required: false
+        type: string
+        example: user@loverealm.com
+        in: formData
+      - name: phone
+        description: User phone number (required if email is empty)
+        required: false
+        type: string
+        example: "59179716902"
+        in: formData
+      responses:
+        201:
+          description: successful operation
+    put:
+      summary: Update user password
+      description: Update user password
+      parameters:
+      - name: reset_password_token
+        description: Reset password token
+        required: true
+        type: string
+        in: formData
+      - name: password
+        description: Password
+        required: true
+        type: string
+        in: formData
+      - name: password_confirmation
+        description: Password confirmation
+        required: true
+        type: string
+        in: formData
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSimple'
+  /api/v1/mobile/hash_tags:
+    get:
+      summary: Get all hashtags
+      description: Retrieves all hashtags for displaying on forms for user to choose
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HashTags'
+  /api/v1/mobile/hash_tags/autocomplete_hash_tags:
+    get:
+      summary: Search hashtags
+      description: Searches hashtags by name
+      parameters:
+      - name: term
+        in: formData
+        description: start of or whole name of hashtag
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HashTags'
+  /api/v1/mobile/relationships/follow:
+    post:
+      summary: Follow user
+      description: Follow user
+      parameters:
+      - name: followed_id
+        in: formData
+        description: Id of the user that should be followed
+        required: true
+        type: integer
+      responses:
+        204:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/relationships/unfollow:
+    post:
+      summary: Unfollow user
+      description: Unfollow user
+      parameters:
+      - name: followed_id
+        in: formData
+        description: Id of the user that should be unfollowed
+        required: true
+        type: integer
+      responses:
+        204:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/statuses:
+    post:
+      summary: Add status
+      description: Add status
+      parameters:
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: owner_id
+        required: false
+        type: integer
+        description: User ID. This is used to write a post in other user's profile
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Status'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/statuses/{id}:
+    put:
+      summary: Update status
+      description: Update status
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: formData
+        name: description
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Status'
+  /api/v1/mobile/stories:
+    post:
+      summary: Add story
+      description: Add story
+      parameters:
+      - in: formData
+        name: title
+        required: true
+        type: string
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: image[base64_data]
+        required: true
+        type: string
+      - in: formData
+        name: image[original_filename]
+        required: true
+        type: string
+      - in: formData
+        name: hash_tag_ids
+        description: Array of hashtag ids
+        required: true
+        type: array
+        items:
+          type: integer
+      - in: formData
+        name: owner_id
+        required: false
+        type: integer
+        description: User ID. This is used to write a post in other user's profile
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Story'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/stories/{id}:
+    get:
+      summary: Get story
+      description: Get story details
+      parameters:
+      - name: id
+        in: path
+        description: Story id (actually it's content id from dashboard endpoint)
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Story'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+    put:
+      summary: Update story
+      description: Update story
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: title
+        required: true
+        type: string
+      - in: formData
+        name: image
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Story'
+  /api/v1/mobile/pictures:
+    post:
+      summary: Add picture
+      description: Add picture
+      parameters:
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: image[base64_data]
+        required: true
+        type: string
+      - in: formData
+        name: image[original_filename]
+        required: true
+        type: string
+      - in: formData
+        name: owner_id
+        required: false
+        type: integer
+        description: User ID. This is used to write a post in other user's profile
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Picture'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/pictures/{id}:
+    get:
+      summary: Get pictures
+      description: Get pictures details
+      parameters:
+      - name: id
+        in: path
+        description: Picture id (actually it's content id from dashboard endpoint)
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Picture'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+    put:
+      summary: Update picture
+      description: Update picture
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: image
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Picture'
+  /api/v1/mobile/videos:
+    post:
+      summary: Add video
+      description: Add video
+      parameters:
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: video[base64_data]
+        required: true
+        type: file
+      - in: formData
+        name: video[original_filename]
+        required: true
+        type: string
+      - in: formData
+        name: owner_id
+        required: false
+        type: integer
+        description: User ID. This is used to write a post in other user's profile
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Video'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/videos/{id}:
+    put:
+      summary: Update video
+      description: Update video
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: video[base64_data]
+        required: true
+        type: file
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Video'
+    get:
+      summary: Get videos
+      description: Get videos details
+      parameters:
+      - name: id
+        in: path
+        description: Video id (actually it's content id from dashboard endpoint)
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Video'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/videos/{id}/show_count:
+    put:
+      summary: Up show counter
+      description: Up show counter
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Video'
+  /api/v1/mobile/contents:
+    get:
+      summary: Content list
+      description: Content list
+      parameters:
+      - name: tag_id
+        in: path
+        description: Fitler content by hash tag id
+        required: false
+        type: integer
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of contents per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Content'
+  /api/v1/mobile/contents/{id}:
+    delete:
+      summary: Delete content
+      description: Delete content
+      parameters:
+      - name: id
+        in: path
+        description: Content id
+        required: true
+        type: integer
+      responses:
+        204:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/contents/{id}/like:
+    post:
+      summary: Like content
+      description: Like content
+      responses:
+        201:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/contents/{id}/dislike:
+    post:
+      summary: Dislike content
+      description: Dislike content
+      responses:
+        201:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/dashboard:
+    get:
+      summary: Get dashboard of currently logged in user
+      description: Get all contents for currently logged in user with all flags that
+        are needed on first screen
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of contents per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            $ref: '#/definitions/Dashboard'
+  /api/v1/mobile/suggested_users:
+    get:
+      summary: Get suggested users
+      description: Retrieves suggested users which currently logged in user can follow
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSimple'
+  /api/v1/mobile/reports:
+    post:
+      summary: Report (user, content or comment)
+      description: Report (user, content or comment) so someone can review it
+      parameters:
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: target_type
+        required: true
+        type: string
+      - in: formData
+        name: target_id
+        required: true
+        type: integer
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Report'
+        422:
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/ValidationErrorsResponse'
+  /api/v1/mobile/comments:
+    post:
+      summary: Create new comment
+      description: Create new comment for content (status, picture, story)
+      parameters:
+      - in: formData
+        name: body
+        required: true
+        type: string
+        example: This is awesome!
+      - in: formData
+        name: content_id
+        required: true
+        type: integer
+        example: 24
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Comment'
+  /api/v1/mobile/comments/{id}:
+    put:
+      summary: Update comment
+      description: Update comment
+      parameters:
+      - in: formData
+        name: body
+        required: true
+        type: string
+        example: This is better!
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Comment'
+  api/v1/mobile/mentor:
+    get:
+      summary: Get mentor
+      description: Get mentor of currently logged in user
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              full_name:
+                type: string
+                example: Truc Trac
+              avatar_url:
+                type: string
+                example: https://example.com/user.jpg
+              mentor_conversation_id:
+                type: integer
+                example: 3
+        204:
+          description: When current user does not have mentor 204 is returned
+  /api/v1/mobile/conversations:
+    get:
+      summary: Get all conversations
+      description: Get all conversations for currently logged in user
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of conversations per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ConversationSimple'
+  /api/v1/mobile/conversations/{id}:
+    get:
+      summary: Get conversation
+      description: Get conversation with user details and list of messages
+      parameters:
+      - name: id
+        in: path
+        description: Conversation id
+        required: true
+        type: integer
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of messages per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Conversation'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/conversations/{id}/unread_message_count:
+    get:
+      summary: Conversation unread message count
+      description: Count data
+      parameters:
+      - name: id
+        in: path
+        description: Conversation id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UnreadMessageCount'
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/conversations/{id}/read_messages:
+    post:
+      summary: Read conversation messages
+      description: read conversation message
+      parameters:
+      - name: id
+        in: path
+        description: Conversation id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/messages:
+    post:
+      summary: Create new message
+      description: Create new message
+      parameters:
+      - in: formData
+        name: receiver_id
+        required: true
+        type: integer
+        example: 779
+      - in: formData
+        name: body
+        required: true
+        type: string
+        example: Hey what's up?
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Message'
+  /api/v1/mobile/messages/{id}:
+    delete:
+      summary: Delete message
+      description: Delete message
+      parameters:
+      - name: id
+        in: path
+        description: Message id
+        required: true
+        type: integer
+      responses:
+        204:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+  /api/v1/mobile/messages/deleted:
+    get:
+      summary: Deleted messages
+      description: Get all deleted messages for currently logged in user
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of conversations per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Messages'
+  /api/v1/mobile/notifications:
+    get:
+      summary: Get all notifications
+      description: Get all notifications for currently logged in user
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of conversations per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Activity'
+  /api/v1/mobile/invitations:
+    post:
+      summary: Send invitation sms
+      description: Send invitation sms
+      parameters:
+      - in: formData
+        name: phone_numbers[]
+        required: false
+        type: string
+        example: "12345678900"
+      - in: formData
+        name: emails[]
+        required: false
+        type: string
+        example: test@test.com
+      responses:
+        201:
+          description: successful operation
+  /api/v1/mobile/search:
+    get:
+      summary: Search users & contents
+      description: Search users & contents
+      parameters:
+      - name: query
+        in: query
+        description: Search query
+        required: true
+        type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of items per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            properties:
+              users:
+                type: array
+                items:
+                  $ref: '#/definitions/UserSimple'
+              contents:
+                type: array
+                items:
+                  $ref: '#/definitions/Content'
+  /api/v1/mobile/search/users:
+    get:
+      summary: Search users
+      description: Search users
+      parameters:
+      - name: query
+        in: query
+        description: Search query
+        required: true
+        type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of items per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSimple'
+  /api/v1/mobile/search/contents:
+    get:
+      summary: Search contents
+      description: Search contents
+      parameters:
+      - name: query
+        in: query
+        description: Search query
+        required: true
+        type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        default: 1
+        type: integer
+      - name: per_page
+        in: query
+        description: Number of items per page
+        required: false
+        default: 5
+        type: integer
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Content'
+  /api/v1/mobile/shares:
+    post:
+      summary: Share content
+      description: Share content
+      parameters:
+      - name: content_id
+        description: Content ID
+        type: integer
+      responses:
+        201:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+    delete:
+      summary: Stop sharing content
+      description: Stop sharing content
+      parameters:
+      - name: content_id
+        description: Content ID
+        type: integer
+      responses:
+        201:
+          description: successful operation
+        404:
+          description: Invalid id supplied
+          schema:
+            $ref: '#/definitions/NotFoundErrorResponse'
+definitions: !php/object "O:8:\"stdClass\":26:{s:7:\"Comment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Some
+  body\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#definitions/UserSimple\";}}}}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"user@example.com\";}s:10:\"first_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"last_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"nick\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"birthdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:524044800000;}s:3:\"sex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:28:\"0
+  means male, 1 means female\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:9:\"biography\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:2:\"AL\";i:1;s:2:\"AF\";i:2;s:2:\"AG\";i:3;s:2:\"RS\";i:4;s:2:\"US\";}}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"https://example.com/user.jpg\";}s:15:\"cover_photo_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://example.com/cool-cover-photo.jpg\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}}}s:16:\"UserWithContents\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":19:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"user@example.com\";}s:10:\"first_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"last_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"nick\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"birthdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:524044800000;}s:3:\"sex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:28:\"0
+  means male, 1 means female\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:9:\"biography\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:2:\"AL\";i:1;s:2:\"AF\";i:2;s:2:\"AG\";i:3;s:2:\"RS\";i:4;s:2:\"US\";}}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"https://example.com/user.jpg\";}s:15:\"cover_photo_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://example.com/cool-cover-photo.jpg\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}s:9:\"following\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:23:\"Is
+  current user follow?\";s:7:\"example\";s:4:\"true\";}s:19:\"number_of_followers\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:55;}s:20:\"number_of_followings\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:467;}s:15:\"number_of_posts\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:53;}s:8:\"contents\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of contents\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Content\";}}}}s:10:\"UserSimple\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:9:\"full_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Truc
+  Trac\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"https://example.com/user.jpg\";}}}s:12:\"UserMetaInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":18:{s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"moscow\";}s:19:\"relationship_status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"single_and_available\";}s:6:\"height\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"180\";}s:9:\"body_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"slim\";}s:9:\"education\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"university\";}s:9:\"ethnicity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"pacific
+  islander\";}s:10:\"profession\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"developer\";}s:11:\"age_matters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"yes\";}s:12:\"denomination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"high\";}s:13:\"preferred_age\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"25\";}s:16:\"preferred_height\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"180\";}s:17:\"education_matters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"yes\";}s:17:\"ethnicity_matters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"yes\";}s:19:\"preferred_body_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"slim\";}s:19:\"preferred_education\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"university\";}s:19:\"preferred_ethnicity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"hispanic\";}s:20:\"denomination_matters\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"yes\";}s:22:\"preferred_denomination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"high\";}}}s:8:\"HashTags\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"love\";}}}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"I
+  feel awesome\";}s:15:\"number_of_likes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:8:\"comments\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of comments\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}}s:9:\"hash_tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"array
+  of hash tags\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HashTags\";}}}}s:7:\"Picture\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"I
+  feel awesome\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"https://example.com/picture1.png\";}s:15:\"number_of_likes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:8:\"comments\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of comments\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}}s:9:\"hash_tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"array
+  of hash tags\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HashTags\";}}}}s:5:\"Video\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"I
+  feel awesome\";}s:15:\"number_of_likes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:18:\"number_of_comments\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"video\";}s:10:\"show_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:9:\"video_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"https://example.com/video1.mp4\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:8:\"comments\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of comments\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}}s:5:\"liked\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:5:\"_link\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:22:\"/dashboard/contents/89\";}s:9:\"hash_tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"array
+  of hash tags\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HashTags\";}}}}s:5:\"Story\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"Some
+  title\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"I
+  feel awesome\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"https://example.com/image.jpg\";}s:15:\"number_of_likes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1463087467;}s:9:\"hash_tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"array
+  of hash tags\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HashTags\";}}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:8:\"comments\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of comments\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}}}}s:9:\"Following\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:5:\"users\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"array
+  of following users\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}}}s:9:\"Followers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:5:\"users\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"array
+  of followings\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Follower\";}}}}s:8:\"Follower\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:9:\"full_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Truc
+  Trac\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"https://example.com/user.jpg\";}s:9:\"following\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:9:\"Dashboard\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:25:\"number_of_unread_messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:30:\"number_of_unread_notifications\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:19:\"number_of_followers\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:55;}s:20:\"number_of_followings\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:467;}s:25:\"number_of_suggested_users\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:7;}s:15:\"number_of_posts\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:53;}s:8:\"contents\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"array
+  of contents\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Content\";}}}}s:7:\"Content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:4;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"This
+  is awesome content\";}s:15:\"number_of_likes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:5;}s:18:\"number_of_comments\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"story\";}s:9:\"image_url\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"Exists
+  only if content is picture or story\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"https://example.com/image.jpg\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Exists
+  only if content is story\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Life
+  is awesome\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Unix
+  timestamp\";s:7:\"example\";i:1457989534;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:9:\"shared_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:5:\"liked\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:40:\"Check
+  if current user liked content item\";s:7:\"example\";s:4:\"true\";}}}s:6:\"Report\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"This
+  contains bad words\";}}}s:18:\"ConversationSimple\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:6;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:18:\"number_of_messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:53;}s:12:\"last_message\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"Last
+  message\";s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MessageSimple\";}}}}s:12:\"Conversation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:6;}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}}s:18:\"number_of_messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:53;}s:8:\"messages\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"List
+  of messages for conversation\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Message\";}}}}s:8:\"Messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"number_of_messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:53;}s:8:\"messages\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"List
+  of deleted messages\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Message\";}}}}s:13:\"MessageSimple\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Hey,
+  what's up?\";}s:7:\"is_read\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"When
+  is message sent\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"When
+  is message updated\";s:7:\"example\";i:1457989534;}}}s:18:\"UnreadMessageCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}}}s:7:\"Message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:42:\"Hey,
+  what's up? <a href='...'>@mention</a>\";}s:8:\"body_raw\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"Hey,
+  what's up? @mention\";s:11:\"description\";s:45:\"Same as body, but without interpolated
+  values\";}s:11:\"receiver_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:8;}s:9:\"sender_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:22;}s:7:\"is_read\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:78:\"Deprecated,
+  Use `read_at` field. Kept here for legacy reasons / compatibility.\";}s:7:\"read_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:59:\"Date
+  when message was read. If null, then was not read yet.\";s:7:\"example\";i:1457989538;}s:10:\"removed_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:49:\"Date
+  when the message is removed (unix timestamp)\";s:7:\"example\";i:1457989538;}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"When
+  is message sent\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"When
+  is message updated\";s:7:\"example\";i:1457989534;}s:8:\"story_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:51:\"Reference
+  to story which is related to this message\";s:7:\"example\";i:124;}s:21:\"map_mentions_to_users\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:55:\"Hash
+  where key is the mention, and value is the user ID\";}}}s:11:\"Appointment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:9:\"mentee_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:9:\"mentor_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:8:\"finished\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:22:\"mentor_conversation_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}}}s:8:\"Activity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:12:\"trackable_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:8;}s:14:\"trackable_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Content\";}s:16:\"trackable_object\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:50:\"Additional
+  information for specific trackable type\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"content.create\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserSimple\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:21:\"When
+  is activity sent\";s:7:\"example\";i:1457989534;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:24:\"When
+  is activity updated\";s:7:\"example\";i:1457989534;}s:7:\"checked\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:19:\"Is
+  activity checked\";s:7:\"example\";b:1;}}}s:21:\"NotFoundErrorResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:33:\"Can't
+  find resource with given id\";}}}}s:24:\"ValidationErrorsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"example_field
+  can't be blank\";}}}}}"
+...

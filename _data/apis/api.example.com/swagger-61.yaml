@@ -1,0 +1,700 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"Public-facing endpoints
+  to interact with our API.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:21:\"UTD
+  Textbook Exchange\";}"
+paths:
+  /Authenticate:
+    post:
+      tags:
+      - Authenticate
+      summary: Send a username and password in order to get an authorization token
+      description: 'Side effects: none'
+      operationId: issueToken
+      produces:
+      - application/json
+      parameters:
+      - name: username
+        in: formData
+        description: ""
+        required: true
+        type: string
+        default: wbr071000
+      - name: password
+        in: formData
+        description: ""
+        required: true
+        type: string
+        default: thisIsARandomPassword
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200AuthenticationResult'
+        401:
+          description: Invalid credentials.
+          schema:
+            $ref: '#/definitions/401AuthenticationResult'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+  /my-books/{userId}/{productionOrStubBooks}:
+    get:
+      tags:
+      - my-books
+      summary: Get a list of user's required textbooks for all semesters
+      description: 'Side effects: none'
+      operationId: getMyBooks
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: ID of User whose books you want
+        required: true
+        type: integer
+        format: int
+        default: 1
+      - name: productionOrStubBooks
+        in: path
+        description: either 'stub' or 'production'
+        required: true
+        type: string
+        default: stub
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200myBooksResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /my-books/cover/isbn/{isbn}:
+    get:
+      tags:
+      - my-books
+      summary: Get a book's cover image
+      description: 'Side effects: none'
+      operationId: getBookCover
+      produces:
+      - application/json
+      parameters:
+      - name: isbn
+        in: path
+        description: ISBN of book for which you want the cover
+        required: true
+        type: string
+        default: "9780133778816"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200bookCoverResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /forSaleEntries/isbn/{isbn}:
+    get:
+      tags:
+      - forSaleEntries
+      summary: Get a list of books for sale for the given ISBN
+      description: 'Side effects: none'
+      operationId: getForSaleEntriesByIsbn
+      produces:
+      - application/json
+      parameters:
+      - name: isbn
+        in: path
+        description: ISBN of book for which you want listings for sale.
+        required: true
+        type: string
+        default: "9780133778816"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200forSaleEntriesIsbnGetResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /forSaleEntries/userId/{userId}:
+    get:
+      tags:
+      - forSaleEntries
+      summary: Get a list of books for sale for the given User Id
+      description: 'Side effects: none'
+      operationId: getForSaleEntriesByUser
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: User Id of user for which you want listings for sale.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200forSaleEntriesUserGetResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /forSaleEntries/condition:
+    get:
+      tags:
+      - forSaleEntries
+      summary: Get all the possible values for a For Sale entry's condition, along
+        with a description of each.
+      description: 'Side effects: none'
+      operationId: getPossibleForSaleEntryConditions
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200forSaleEntryConditionResult'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security: []
+  /forSaleEntries:
+    post:
+      tags:
+      - forSaleEntries
+      summary: Post a book for sale
+      description: 'Side effects: An entry is added to the For Sale list with the
+        given ISBN, author, price, condition, and description.'
+      operationId: postBookForSale
+      produces:
+      - application/json
+      parameters:
+      - name: title
+        in: formData
+        description: Title of the book being posted for sale.
+        required: true
+        type: string
+        default: STARTING OUT WITH C++ FROM CNTRL (LOOSEPGS)(W/OUT ACCESS)
+      - name: isbn
+        in: formData
+        description: ISBN of the book being posted for sale.
+        required: true
+        type: string
+        default: "9780133778816"
+      - name: author
+        in: formData
+        description: Author of the book being posted for sale.
+        required: true
+        type: string
+        default: Wallace Wang
+      - name: price
+        in: formData
+        description: Price of the book being posted for sale.
+        required: true
+        type: number
+        format: double
+        default: 32.990000
+      - name: condition
+        in: formData
+        description: Condition of the book being posted for sale.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      - name: description
+        in: formData
+        description: Description of the book being posted for sale.
+        required: true
+        type: string
+        default: Unused. Still in original packaging.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200forSaleEntriesPostResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /transactions/userId/{userId}:
+    get:
+      tags:
+      - transactions
+      summary: Get a list of open transactions for the given User Id
+      description: 'Side effects: none'
+      operationId: getTransactionsByUser
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: User Id of user for which you want a list of open transactions.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200getTransactionResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /transactions/transaction/{transactionId}:
+    get:
+      tags:
+      - transactions
+      summary: Get the transaction specified by the given transaction Id
+      description: 'Side effects: none'
+      operationId: getTransactionById
+      produces:
+      - application/json
+      parameters:
+      - name: transactionId
+        in: path
+        description: Transaction Id of transaction you want.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200getTransactionResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /transactions:
+    post:
+      tags:
+      - transactions
+      summary: Buy a book
+      description: 'Side effects: 1) A Transaction is created between the buyer and
+        the seller. 2) An automated message is sent to the seller to notify them that
+        their book has been sold.'
+      operationId: buyBook
+      produces:
+      - application/json
+      parameters:
+      - name: forSaleId
+        in: formData
+        description: forSaleId of the book being bought.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200buyBookResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /transactions/status:
+    get:
+      tags:
+      - transactions
+      summary: Get all the possible values for a Transaction's status, along with
+        a description of each.
+      description: 'Side effects: none'
+      operationId: getPossibleTransactionStatuses
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200transactionStatusResult'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security: []
+  /transactions/transaction/{transactionId}/complete:
+    post:
+      tags:
+      - transactions
+      summary: Mark a transaction as complete, given the transaction Id
+      description: 'Side effects: Flags transaction as completed.'
+      operationId: markTransactionComplete
+      produces:
+      - application/json
+      parameters:
+      - name: transactionId
+        in: path
+        description: Transaction Id of transaction.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200transactionCompleteResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /transactions/transaction/{transactionId}/cancel:
+    post:
+      tags:
+      - transactions
+      summary: Mark a transaction as cancelled, given the transaction Id
+      description: 'Side effects: Flags transaction as cancelled.'
+      operationId: markTransactionCancelled
+      produces:
+      - application/json
+      parameters:
+      - name: transactionId
+        in: path
+        description: Transaction Id of transaction.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200transactionCancelResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /messages/conversations/{userId}:
+    get:
+      tags:
+      - messages
+      summary: Get a list of conversations for the given User Id
+      description: 'Side effects: none'
+      operationId: getConversationsByUser
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: User Id of user for which you want conversations.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200getConversationsResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /messages/{conversationId}/limit/{limit}/before/{startingWithId}:
+    get:
+      tags:
+      - messages
+      summary: a list of the last X messages within the conversation, starting at
+        the message specified by :startingWithId, including the message specified
+        by :startingWithId
+      description: 'Side effects: none'
+      operationId: getMessagesBefore
+      produces:
+      - application/json
+      parameters:
+      - name: conversationId
+        in: path
+        description: Conversation Id of conversation for which you want messages.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      - name: limit
+        in: path
+        description: Number of messages that you want returned.
+        required: true
+        type: integer
+        format: int
+        default: 15
+      - name: startingWithId
+        in: path
+        description: Message Id of message to start counting at.
+        required: true
+        type: integer
+        format: int
+        default: 57
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200getmessagesResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /messages/{conversationId}/limit/{limit}/after/{startingWithId}:
+    get:
+      tags:
+      - messages
+      summary: a list of the X messages within the conversation that were received
+        after :startingWithId, excluding the message specified by :startingWithId
+      description: 'Side effects: none'
+      operationId: getMessagesAfter
+      produces:
+      - application/json
+      parameters:
+      - name: conversationId
+        in: path
+        description: Conversation Id of conversation for which you want messages.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      - name: limit
+        in: path
+        description: Number of messages that you want returned.
+        required: true
+        type: integer
+        format: int
+        default: 15
+      - name: startingWithId
+        in: path
+        description: Message Id of message to start counting at.
+        required: true
+        type: integer
+        format: int
+        default: 57
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200getmessagesResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /messages:
+    post:
+      tags:
+      - messages
+      summary: Send a message
+      description: 'Side effects: a message is posted to the designated conversation.'
+      operationId: sendMessage
+      produces:
+      - application/json
+      parameters:
+      - name: conversationId
+        in: formData
+        description: conversationId of the conversation you're posting to.
+        required: true
+        type: integer
+        format: int
+        default: 1
+      - name: message
+        in: formData
+        description: Message body
+        required: true
+        type: string
+        default: Lets meet in the student union Friday afternoon. I can pay cash.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200sendMessageResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /salePrice/suggested/isbn/{isbn}:
+    get:
+      tags:
+      - salePrice
+      summary: Get the suggested sale price for the given isbn
+      description: 'Side effects: none'
+      operationId: getSuggestedSalePrice
+      produces:
+      - application/json
+      parameters:
+      - name: isbn
+        in: path
+        description: isbn of the book for which you want the suggested sale price.
+        required: true
+        type: string
+        default: "9780133778816"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200suggestedSalePriceResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+  /salePrice/thirdParty/isbn/{isbn}:
+    get:
+      tags:
+      - salePrice
+      summary: Get the third party sale price for the given isbn
+      description: 'Side effects: none'
+      operationId: getThirdPartySalePrice
+      produces:
+      - application/json
+      parameters:
+      - name: isbn
+        in: path
+        description: isbn of the book for which you want the third party sale price.
+        required: true
+        type: string
+        default: "9780133778816"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/200thirdPartySalePriceResult'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/401Result'
+        500:
+          description: Internal Server Error.
+          schema:
+            $ref: '#/definitions/500Result'
+      security:
+      - authorization: []
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":29:{s:23:\"200AuthenticationResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:87:\"JWT
+  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.MQ.4p-Xcp_Aqs6evX2L8AylTbb1woTuxtlgL-Wg1QMXYYk\";}s:6:\"userId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:1;}s:12:\"userNickname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"Will
+  R\";}}}s:16:\"200myBooksResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/getRequiredTextbooksRecord\";}}s:30:\"200forSaleEntriesIsbnGetResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/forSaleRecord\";}}s:30:\"200forSaleEntriesUserGetResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/forSaleRecord\";}}s:27:\"200forSaleEntriesPostResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:30:\"Book
+  has been posted for sale.\";}s:9:\"forSaleId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:265;}}}s:30:\"200forSaleEntryConditionResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/conditionTypeRecord\";}}s:26:\"200transactionStatusResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/transactionStatusRecord\";}}s:16:\"200buyBookResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:21:\"Book
+  has put on hold.\";}s:13:\"transactionId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:952;}}}s:23:\"200getTransactionResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/transactionRecord\";}}s:28:\"200transactionCompleteResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:37:\"Transaction
+  has been marked complete.\";}}}s:26:\"200transactionCancelResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:31:\"Transaction
+  has been cancelled.\";}}}s:20:\"200sendMessageResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:27:\"Your
+  message has been sent.\";}s:9:\"messageId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:176;}}}s:25:\"200getConversationsResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/conversation\";}}s:20:\"200getmessagesResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/message\";}}s:27:\"200suggestedSalePriceResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"isbn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:13:\"9780133778816\";}s:18:\"suggestedSalePrice\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"default\";d:51.460000000000001;}s:6:\"reason\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:44:\"The
+  lowest price currently listed is $51.46.\";}}}s:28:\"200thirdPartySalePriceResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/thirdPartySalePriceRecord\";}}s:9:\"401Result\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:22:\"Authentication
+  failed.\";}}}s:23:\"401AuthenticationResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:20:\"Invalid
+  credentials.\";}}}s:9:\"500Result\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"msg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:22:\"Internal
+  Server Error.\";}}}s:26:\"getRequiredTextbooksRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"classNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:14:\"CS1336.001.17S\";}s:9:\"className\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:24:\"Programming
+  Fundamentals\";}s:10:\"classbooks\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/classBook\";}}}}s:9:\"classBook\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"bookName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:57:\"STARTING
+  OUT WITH C++ FROM CNTRL (LOOSEPGS)(W/OUT ACCESS)\";}s:11:\"bookEdition\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:19:\"PH
+  8th Edition 2015\";}s:10:\"bookAuthor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"GADDIS\";}s:8:\"bookISBN\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:13:\"9780133778816\";}s:25:\"book_required_recommended\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:13:\"Required
+  Text\";}}}s:13:\"forSaleRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:9:\"forSaleId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:217;}s:21:\"seller_InternalUserId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:1;}s:10:\"datePosted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:19:\"2017-01-22
+  00:02:40\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:7:\"On
+  Hold\";}s:13:\"transactionId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:74;}s:4:\"isbn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:13:\"9780133778816\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"GADDIS\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:57:\"STARTING
+  OUT WITH C++ FROM CNTRL (LOOSEPGS)(W/OUT ACCESS)\";}s:5:\"price\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"default\";d:37.920000000000002;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:27:\"Light
+  wear, some hilighting\";}s:9:\"condition\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:0;}s:20:\"conditionDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:15:\"Used
+  - Like New\";}s:15:\"seller_nickname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"Will
+  R\";}}}s:17:\"transactionRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:13:\"transactionId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:139;}s:13:\"buyerOrSeller\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"seller\";}s:14:\"buyer_Nickname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:7:\"Daren
+  C\";}s:20:\"buyer_InternalUserId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:2;}s:19:\"transactionDateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:19:\"2017-02-22
+  00:02:40\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:7:\"Pending\";}s:14:\"conversationId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:87;}s:9:\"forSaleId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:109;}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:32:\"Software
+  Engineering for Dummies\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:12:\"Wallace
+  Wang\";}s:4:\"ISBN\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:13:\"9780133778816\";}s:5:\"price\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"default\";d:101.98999999999999;}}}s:25:\"thirdPartySalePriceRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"price\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"default\";d:51.460000000000001;}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"Amazon\";}s:4:\"link\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:144:\"https://www.amazon.com/Starting-Control-Structures-through-Objects/dp/0133778819/ref=sr_1_1?ie=UTF8&qid=1487534860&sr=8-1&keywords=9780133778816\";}}}s:23:\"transactionStatusRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:1:\"0\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:7:\"Pending\";}}}s:19:\"conditionTypeRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:1:\"0\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"New\";}}}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:9:\"messageId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:57;}s:2:\"to\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:2;}s:4:\"from\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:7;}s:15:\"messageDateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:19:\"2017-02-22
+  00:02:40\";}s:14:\"messageContent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:65:\"Let's
+  meet in the student union Friday afternoon. I can pay cash.\";}s:6:\"unread\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}}}s:12:\"conversation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"conversationId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:1;}s:19:\"conversationPartner\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:11:\"Jonathan
+  R.\";}s:19:\"numOfUnreadMessages\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:2;}s:13:\"latestMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:21:\"#/definitions/message\";}}}s:18:\"200bookCoverResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"SmallImage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"URL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:59:\"https://images-na.ssl-images-amazon.com/images/ihefeufe.jpg\";}s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:390;}s:5:\"width\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:390;}}}s:11:\"MediumImage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"URL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:61:\"https://images-na.ssl-images-amazon.com/images/kjwdnwqjnd.jpg\";}s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:700;}s:5:\"width\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:700;}}}s:10:\"LargeImage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"URL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:60:\"https://images-na.ssl-images-amazon.com/images/oifebflkn.jpg\";}s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:1000;}s:5:\"width\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:3:\"int\";s:7:\"default\";i:1000;}}}}}}"
+...

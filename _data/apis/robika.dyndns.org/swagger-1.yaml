@@ -1,0 +1,806 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:5:\"Nomad\";s:11:\"description\";s:25:\"API
+  for robika.dyndns.org\";s:7:\"version\";s:5:\"0.0.2\";}"
+host: robika.dyndns.org:4646
+basePath: /v1
+paths:
+  /job/:
+    post:
+      tags:
+      - Job
+      description: Registers a new job or updates an existing job.
+      operationId: create
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Job
+        in: body
+        description: The JSON definition of the job.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Job'
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateJobResponse'
+          examples:
+            application/json:
+              EvalID: d092fdc0-e1fd-2536-67d8-43af8ca798ac
+              EvalCreateIndex: 35
+              JobModifyIndex: 34
+      security: []
+  /jobs:
+    post:
+      tags:
+      - Jobs
+      summary: Registers a new job.
+      description: Registers a new job.
+      operationId: create
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: ParameterizedJob
+        in: body
+        description: The Job object
+        required: true
+        schema:
+          $ref: '#/definitions/ParameterizedJob'
+      - name: stale
+        in: query
+        description: Consistency Mode
+        required: false
+        default: default
+        type: string
+        x-example: stale
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      - name: pretty
+        in: query
+        description: Formatted JSON Output
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateJobsResponse'
+          examples:
+            application/json:
+              EvalID: d092fdc0-e1fd-2536-67d8-43af8ca798ac
+              EvalCreateIndex: 35
+              JobModifyIndex: 34
+      security: []
+    get:
+      tags:
+      - Jobs
+      summary: Lists all the jobs registered with Nomad.
+      description: Lists all the jobs registered with Nomad.
+      operationId: get
+      produces:
+      - application/json
+      parameters:
+      - name: prefix
+        in: query
+        description: Filter jobs based on an identifier prefix.
+        required: false
+        type: string
+        x-example: ""
+      - name: stale
+        in: query
+        description: Consistency Mode
+        required: false
+        type: string
+        x-example: ""
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      - name: pretty
+        in: query
+        description: Formatted JSON Output
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Jobs'
+          examples:
+            application/json:
+            - ID: binstore-storagelocker
+              Name: binstore-storagelocker
+              Type: service
+              Priority: 50
+              Status: ""
+              StatusDescription: ""
+              CreateIndex: 14
+              ModifyIndex: 14
+      security: []
+  /job/{id}/evaluate:
+    put:
+      tags:
+      - Job
+      description: Creates a new evaluation for the given job.
+      operationId: createEvaluation
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/JobCreateEvaluationResponse'
+          examples:
+            application/json:
+              EvalID: d092fdc0-e1fd-2536-67d8-43af8ca798ac
+              EvalCreateIndex: 35
+              JobModifyIndex: 34
+      security: []
+  /job/{id}/dispatch:
+    put:
+      tags:
+      - Job
+      description: Dispatch a new instance of a parameterized job.
+      operationId: dispatch
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: Payload
+        in: formData
+        description: A []byte array encoded as a base64 string with a maximum size
+          of 16KiB.
+        required: false
+        type: string
+        x-example: ""
+      - name: Meta
+        in: formData
+        description: A map[string]string of metadata keys to their values.
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/JobDispatchResponse'
+          examples:
+            application/json:
+              Index: 13
+              JobCreateIndex: 12
+              EvalCreateIndex: 13
+              EvalID: e5f55fac-bc69-119d-528a-1fc7ade5e02c
+              DispatchedJobID: example/dispatch-1485408778-81644024
+      security: []
+  /job/{id}/periodic/force:
+    put:
+      tags:
+      - Job
+      description: Forces a new instance of the periodic job. A new instance will
+        be created even if it violates the job's prohibit_overlap settings. As such,
+        this should be only used to immediately run a periodic job.
+      operationId: forcePeriodic
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/JobForcePeriodicResponse'
+          examples:
+            application/json:
+              EvalCreateIndex: 7
+              EvalID: 57983ddd-7fcf-3e3a-fd24-f699ccfb36f4
+      security: []
+  /job/{id}:
+    get:
+      tags:
+      - Job
+      description: Query a single job for its specification and status.
+      operationId: get
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: stale
+        in: query
+        description: Consistency Mode
+        required: false
+        type: string
+        x-example: ""
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      - name: pretty
+        in: query
+        description: Formatted JSON Output
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetJobResponse'
+          examples:
+            application/json:
+              Region: global
+              ID: binstore-storagelocker
+              Name: binstore-storagelocker
+              Type: service
+              Priority: 50
+              AllAtOnce: false
+              Datacenters:
+              - us2
+              - eu1
+              Constraints:
+              - LTarget: ${attr.kernel.os}
+                RTarget: windows
+                Operand: =
+              TaskGroups:
+              - Name: binsl
+                Count: 5
+                Constraints:
+                - LTarget: ${attr.kernel.os}
+                  RTarget: linux
+                  Operand: =
+                Tasks:
+                - Name: binstore
+                  Driver: docker
+                  Config:
+                    image: hashicorp/binstore
+                  Constraints: ~
+                  Resources:
+                    CPU: 500
+                    MemoryMB: 0
+                    DiskMB: 0
+                    IOPS: 0
+                    Networks:
+                    - Device: ""
+                      CIDR: ""
+                      IP: ""
+                      MBits: 100
+                      ReservedPorts: ~
+                      DynamicPorts: ~
+                  Meta: ~
+                - Name: storagelocker
+                  Driver: java
+                  Config:
+                    image: hashicorp/storagelocker
+                  Constraints:
+                  - LTarget: ${attr.kernel.arch}
+                    RTarget: amd64
+                    Operand: =
+                  Resources:
+                    CPU: 500
+                    MemoryMB: 0
+                    DiskMB: 0
+                    IOPS: 0
+                    Networks: ~
+                  Meta: ~
+                Meta:
+                  elb_checks: "3"
+                  elb_interval: "10"
+                  elb_mode: tcp
+              Update:
+                Stagger: 0
+                MaxParallel: 0
+              Meta:
+                foo: bar
+              Status: ""
+              StatusDescription: ""
+              CreateIndex: 14
+              ModifyIndex: 14
+      security: []
+    delete:
+      tags:
+      - Job
+      description: Deregisters a job, and stops all allocations part of it.
+      operationId: remove
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/JobRemoveResponse'
+          examples:
+            application/json:
+              EvalID: d092fdc0-e1fd-2536-67d8-43af8ca798ac
+              EvalCreateIndex: 35
+              JobModifyIndex: 34
+      security: []
+    put:
+      tags:
+      - Job
+      description: Registers a new job or updates an existing job.
+      operationId: update
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: Job
+        in: body
+        description: The JSON definition of the job.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Job'
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateJobResponse'
+          examples:
+            application/json:
+              EvalID: d092fdc0-e1fd-2536-67d8-43af8ca798ac
+              EvalCreateIndex: 35
+              JobModifyIndex: 34
+      security: []
+  /job/{id}/allocations:
+    get:
+      tags:
+      - Job
+      description: Query the allocations belonging to a single job.Get allocations
+      operationId: getAllocations
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: all
+        in: query
+        description: Returns all allocations of job with the given ID including those
+          from past instances of the job.
+        required: false
+        type: string
+        x-example: ""
+      - name: stale
+        in: query
+        description: Consistency Mode
+        required: false
+        type: string
+        x-example: ""
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      - name: pretty
+        in: query
+        description: Formatted JSON Output
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GetJobAllocationsResponse'
+          examples:
+            application/json:
+            - ID: 3575ba9d-7a12-0c96-7b28-add168c67984
+              EvalID: 151accaa-1ac6-90fe-d427-313e70ccbb88
+              Name: binstore-storagelocker.binsl[0]
+              NodeID: a703c3ca-5ff8-11e5-9213-970ee8879d1b
+              JobID: binstore-storagelocker
+              TaskGroup: binsl
+              DesiredStatus: run
+              DesiredDescription: ""
+              ClientStatus: running
+              ClientDescription: ""
+              CreateIndex: 16
+              ModifyIndex: 16
+      security: []
+  /job/{id}/evaluations:
+    get:
+      tags:
+      - Job
+      description: Query the evaluations belonging to a single job.
+      operationId: getEvaluations
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GetJobEvaluationsResponse'
+          examples:
+            application/json:
+            - ID: 151accaa-1ac6-90fe-d427-313e70ccbb88
+              Priority: 50
+              Type: service
+              TriggeredBy: job-register
+              JobID: binstore-storagelocker
+              JobModifyIndex: 14
+              NodeID: ""
+              NodeModifyIndex: 0
+              Status: complete
+              StatusDescription: ""
+              Wait: 0
+              NextEval: ""
+              PreviousEval: ""
+              CreateIndex: 15
+              ModifyIndex: 17
+      security: []
+  /job/{id}/summary:
+    get:
+      tags:
+      - Job
+      description: Query the summary of a job.
+      operationId: getSummary
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        type: string
+        x-example: ""
+      - name: region
+        in: query
+        description: Cross-Region Request
+        required: false
+        type: string
+        x-example: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetJobSummaryResponse'
+          examples:
+            application/json:
+              JobID: example
+              Children:
+                Dead: 0
+                Running: 7
+                Pending: 2
+              Summary:
+                cache:
+                  Queued: 0
+                  Complete: 0
+                  Failed: 0
+                  Running: 1
+                  Starting: 0
+                  Lost: 0
+              CreateIndex: 6
+              ModifyIndex: 10
+      security: []
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":35:{s:17:\"JobRemoveResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Model
+  for JobRemoveResponse\";s:8:\"required\";a:1:{i:0;s:15:\"EvalCreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"35\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"d092fdc0-e1fd-2536-67d8-43af8ca798ac\";}s:14:\"JobModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"34\";}}}s:24:\"JobForcePeriodicResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Model
+  for JobForcePeriodicResponse\";s:8:\"required\";a:1:{i:0;s:15:\"EvalCreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"7\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"57983ddd-7fcf-3e3a-fd24-f699ccfb36f4\";}}}s:27:\"JobCreateEvaluationResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Model
+  for JobCreateEvaluationResponse\";s:8:\"required\";a:1:{i:0;s:15:\"EvalCreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"35\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"d092fdc0-e1fd-2536-67d8-43af8ca798ac\";}s:14:\"JobModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"34\";}}}s:19:\"JobDispatchResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"Model
+  for JobDispatchResponse\";s:8:\"required\";a:1:{i:0;s:15:\"DispatchedJobID\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"DispatchedJobID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"example/dispatch-1485408778-81644024\";}s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"13\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"e5f55fac-bc69-119d-528a-1fc7ade5e02c\";}s:5:\"Index\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"13\";}s:14:\"JobCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"12\";}}}s:14:\"GetJobResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Model
+  for GetJobResponse\";s:8:\"required\";a:1:{i:0;s:9:\"AllAtOnce\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:9:\"AllAtOnce\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:5:\"false\";}s:11:\"Constraints\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Constraint\";}s:9:\"x-example\";s:98:\"[\r\n
+  \ {\r\n    \"LTarget\": \"${attr.kernel.os}\",\r\n    \"RTarget\": \"windows\",\r\n
+  \   \"Operand\": \"=\"\r\n  }\r\n]\";}s:11:\"CreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"14\";}s:11:\"Datacenters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:14:\"[\"us2\",
+  \"eu1\"]\";}s:2:\"ID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:4:\"Meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:20:\"{\r\n
+  \ \"foo\": \"bar\"\r\n}\";}s:11:\"ModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"14\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:8:\"Priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"50\";}s:6:\"Region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:6:\"global\";}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:17:\"StatusDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:10:\"TaskGroups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/TaskGroup\";}s:9:\"x-example\";s:1418:\"[\r\n
+  \ {\r\n    \"Name\": \"binsl\",\r\n    \"Count\": 5,\r\n    \"Constraints\": [\r\n
+  \     {\r\n        \"LTarget\": \"${attr.kernel.os}\",\r\n        \"RTarget\": \"linux\",\r\n
+  \       \"Operand\": \"=\"\r\n      }\r\n    ],\r\n    \"Tasks\": [\r\n      {\r\n
+  \       \"Name\": \"binstore\",\r\n        \"Driver\": \"docker\",\r\n        \"Config\":
+  {\r\n          \"image\": \"hashicorp/binstore\"\r\n        },\r\n        \"Constraints\":
+  null,\r\n        \"Resources\": {\r\n          \"CPU\": 500,\r\n          \"MemoryMB\":
+  0,\r\n          \"DiskMB\": 0,\r\n          \"IOPS\": 0,\r\n          \"Networks\":
+  [\r\n            {\r\n              \"Device\": \"\",\r\n              \"CIDR\":
+  \"\",\r\n              \"IP\": \"\",\r\n              \"MBits\": 100,\r\n              \"ReservedPorts\":
+  null,\r\n              \"DynamicPorts\": null\r\n            }\r\n          ]\r\n
+  \       },\r\n        \"Meta\": null\r\n      },\r\n      {\r\n        \"Name\":
+  \"storagelocker\",\r\n        \"Driver\": \"java\",\r\n        \"Config\": {\r\n
+  \         \"image\": \"hashicorp/storagelocker\"\r\n        },\r\n        \"Constraints\":
+  [\r\n          {\r\n            \"LTarget\": \"${attr.kernel.arch}\",\r\n            \"RTarget\":
+  \"amd64\",\r\n            \"Operand\": \"=\"\r\n          }\r\n        ],\r\n        \"Resources\":
+  {\r\n          \"CPU\": 500,\r\n          \"MemoryMB\": 0,\r\n          \"DiskMB\":
+  0,\r\n          \"IOPS\": 0,\r\n          \"Networks\": null\r\n        },\r\n        \"Meta\":
+  null\r\n      }\r\n    ],\r\n    \"Meta\": {\r\n      \"elb_checks\": \"3\",\r\n
+  \     \"elb_interval\": \"10\",\r\n      \"elb_mode\": \"tcp\"\r\n    }\r\n  }\r\n]\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"service\";}s:6:\"Update\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:28:\"#/definitions/UpdateStrategy\";s:9:\"x-example\";s:41:\"{\r\n
+  \ \"Stagger\": 0,\r\n  \"MaxParallel\": 0\r\n}\";}}}s:12:\"ReservedPort\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Model
+  for ReservedPorts\";s:8:\"required\";a:1:{i:0;s:5:\"Label\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"Label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:3:\"rpc\";}s:5:\"Value\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:5:\"25566\";}}}s:7:\"Network\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Model
+  for Networks\";s:8:\"required\";a:1:{i:0;s:4:\"CIDR\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"CIDR\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:6:\"Device\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:12:\"DynamicPorts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ReservedPort\";}s:9:\"x-example\";s:33:\"[\r\n
+  \ {\r\n    \"Label\": \"db\"\r\n  }\r\n]\";}s:2:\"IP\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:5:\"MBits\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"10\";}s:13:\"ReservedPorts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ReservedPort\";}s:9:\"x-example\";s:55:\"[\r\n
+  \ {\r\n    \"Label\": \"rpc\",\r\n    \"Value\": 25566\r\n  }\r\n]\";}}}s:9:\"Resources\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Model
+  for Resources\";s:8:\"required\";a:1:{i:0;s:3:\"CPU\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"CPU\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:3:\"500\";}s:6:\"DiskMB\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:3:\"300\";}s:4:\"IOPS\";O:8:\"stdClass\":5:{s:7:\"maximum\";d:1000;s:7:\"minimum\";d:10;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:8:\"MemoryMB\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:3:\"256\";}s:8:\"Networks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Network\";}s:9:\"x-example\";s:202:\"[\r\n
+  \ {\r\n    \"ReservedPorts\": [\r\n      {\r\n        \"Label\": \"rpc\",\r\n        \"Value\":
+  25566\r\n      }\r\n    ],\r\n    \"DynamicPorts\": [\r\n      {\r\n        \"Label\":
+  \"db\"\r\n      }\r\n    ],\r\n    \"MBits\": 10\r\n  }\r\n]\";}}}s:4:\"Task\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Model
+  for Tasks\";s:8:\"required\";a:2:{i:0;s:6:\"Driver\";i:1;s:4:\"Name\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:9:\"Artifacts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Artifact\";}s:9:\"x-example\";s:189:\"[\r\n
+  \ {\r\n    \"GetterSource\": \"http://foo.com/artifact.tar.gz\",\r\n    \"GetterOptions\":
+  {\r\n      \"checksum\": \"md5:c4aa853ad2215426eb7d70a21922e794\"\r\n    },\r\n
+  \   \"RelativeDest\": \"local/\"\r\n  }\r\n]\";}s:6:\"Config\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:86:\"{\r\n
+  \ \"image\": \"redis:latest\",\r\n  \"port_map\": [\r\n    {\r\n      \"db\": 6379\r\n
+  \   }\r\n  ]\r\n}\";}s:11:\"Constraints\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Constraint\";}s:9:\"x-example\";s:0:\"\";}s:15:\"DispatchPayload\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/DispatchPayload\";s:9:\"x-example\";s:29:\"{\r\n
+  \ \"File\": \"config.json\"\r\n}\";}s:6:\"Driver\";O:8:\"stdClass\":3:{s:4:\"enum\";a:7:{i:0;s:6:\"docker\";i:1;s:4:\"exec\";i:2;s:4:\"java\";i:3;s:3:\"lxc\";i:4;s:4:\"qemu\";i:5;s:8:\"raw_exec\";i:6;s:3:\"rkt\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:6:\"docker\";}s:3:\"Env\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:17:\"#/definitions/Env\";s:9:\"x-example\";s:38:\"{\r\n
+  \ \"foo\": \"bar\",\r\n  \"baz\": \"pipe\"\r\n}\";}s:11:\"KillTimeout\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:9:\"x-example\";s:10:\"5000000000\";}s:6:\"leader\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:0:\"\";}s:9:\"LogConfig\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:23:\"#/definitions/LogConfig\";s:9:\"x-example\";s:46:\"{\r\n
+  \ \"MaxFiles\": 10,\r\n  \"MaxFileSizeMB\": 10\r\n}\";}s:4:\"Meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:38:\"{\r\n
+  \ \"foo\": \"bar\",\r\n  \"baz\": \"pipe\"\r\n}\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"redis\";}s:9:\"Resources\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:23:\"#/definitions/Resources\";s:9:\"x-example\";s:319:\"{\r\n
+  \ \"CPU\": 500,\r\n  \"MemoryMB\": 256,\r\n  \"DiskMB\": 300,\r\n  \"IOPS\": 0,\r\n
+  \ \"Networks\": [\r\n    {\r\n      \"ReservedPorts\": [\r\n        {\r\n          \"Label\":
+  \"rpc\",\r\n          \"Value\": 25566\r\n        }\r\n      ],\r\n      \"DynamicPorts\":
+  [\r\n        {\r\n          \"Label\": \"db\"\r\n        }\r\n      ],\r\n      \"MBits\":
+  10\r\n    }\r\n  ]\r\n}\";}s:8:\"Services\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Service\";}s:9:\"x-example\";s:390:\"[\r\n
+  \ {\r\n    \"Name\": \"cache-redis\",\r\n    \"Tags\": [\r\n      \"global\",\r\n
+  \     \"cache\"\r\n    ],\r\n    \"PortLabel\": \"db\",\r\n    \"Checks\": [\r\n
+  \     {\r\n        \"Id\": \"\",\r\n        \"Name\": \"alive\",\r\n        \"Type\":
+  \"tcp\",\r\n        \"Command\": \"\",\r\n        \"Args\": null,\r\n        \"Path\":
+  \"\",\r\n        \"Protocol\": \"\",\r\n        \"Interval\": 10000000000,\r\n        \"Timeout\":
+  2000000000\r\n      }\r\n    ]\r\n  }\r\n]\";}s:9:\"Templates\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Template\";}s:9:\"x-example\";s:207:\"[\r\n
+  \ {\r\n    \"SourcePath\": \"local/config.conf.tpl\",\r\n    \"DestPath\": \"local/config.conf\",\r\n
+  \   \"EmbeddedTmpl\": \"\",\r\n    \"ChangeMode\": \"signal\",\r\n    \"ChangeSignal\":
+  \"SIGUSR1\",\r\n    \"Splay\": 5000000000\r\n  }\r\n]\";}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:8:\"foo-user\";}s:5:\"Vault\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:19:\"#/definitions/Vault\";s:9:\"x-example\";s:112:\"{\r\n
+  \ \"Policies\": [\r\n    \"policy-name\"\r\n  ],\r\n  \"Env\": true,\r\n  \"ChangeMode\":
+  \"restart\",\r\n  \"ChangeSignal\": \"\"\r\n}\";}}}s:8:\"Artifact\";O:8:\"stdClass\":3:{s:11:\"description\";s:428:\"Nomad
+  downloads artifacts using go-getter. The go-getter library allows downloading of
+  artifacts from various sources using a URL as the input source. The key-value pairs
+  given in the options block map directly to parameters appended to the supplied source
+  URL. Nomad allows downloading http, https, and S3 artifacts. If these artifacts
+  are archives (zip, tar.gz, bz2, etc.), these will be unarchived before the task
+  is started.\";s:8:\"required\";a:1:{i:0;s:13:\"GetterOptions\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"GetterOptions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:58:\"{\r\n
+  \ \"checksum\": \"md5:c4aa853ad2215426eb7d70a21922e794\"\r\n}\";}s:12:\"GetterSource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:30:\"http://foo.com/artifact.tar.gz\";}s:12:\"RelativeDest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:6:\"local/\";}}}s:8:\"Template\";O:8:\"stdClass\":3:{s:11:\"description\";s:252:\"The
+  Template block instantiates an instance of a template renderer. This creates a convenient
+  way to ship configuration files that are populated from environment variables, Consul
+  data, Vault secrets, or just general configurations within a Nomad task.\";s:8:\"required\";a:1:{i:0;s:10:\"ChangeMode\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:10:\"ChangeMode\";O:8:\"stdClass\":3:{s:4:\"enum\";a:3:{i:0;s:4:\"noop\";i:1;s:7:\"restart\";i:2;s:6:\"signal\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:6:\"signal\";}s:12:\"ChangeSignal\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"SIGUSR1\";}s:8:\"DestPath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:17:\"local/config.conf\";}s:12:\"EmbeddedTmpl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:9:\"LeftDelim\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:2:\"{{\";}s:5:\"Perms\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:10:\"RightDelim\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:2:\"}}\";}s:10:\"SourcePath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:21:\"local/config.conf.tpl\";}s:5:\"Splay\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:9:\"x-example\";s:10:\"5000000000\";}}}s:7:\"Service\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Model
+  for Services\";s:8:\"required\";a:1:{i:0;s:6:\"Checks\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"Checks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Checks\";}s:9:\"x-example\";s:205:\"[\r\n
+  \ {\r\n    \"Id\": \"\",\r\n    \"Name\": \"alive\",\r\n    \"Type\": \"tcp\",\r\n
+  \   \"Command\": \"\",\r\n    \"Args\": null,\r\n    \"Path\": \"\",\r\n    \"Protocol\":
+  \"\",\r\n    \"Interval\": 10000000000,\r\n    \"Timeout\": 2000000000\r\n  }\r\n]\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:11:\"cache-redis\";}s:9:\"PortLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:2:\"db\";}s:4:\"Tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:19:\"[\"global\",
+  \"cache\"]\";}}}s:3:\"Job\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"Model
+  for Jobs\";s:8:\"required\";a:1:{i:0;s:3:\"Job\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"Job\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/JobDefinition\";s:9:\"x-example\";s:3811:\"{\r\n
+  \ \"Region\": \"global\",\r\n  \"ID\": \"example\",\r\n  \"Name\": \"example\",\r\n
+  \ \"Type\": \"batch\",\r\n  \"Priority\": 50,\r\n  \"AllAtOnce\": false,\r\n  \"Datacenters\":
+  [\r\n    \"dc1\"\r\n  ],\r\n  \"Constraints\": [\r\n    {\r\n      \"LTarget\":
+  \"${attr.kernel.name}\",\r\n      \"RTarget\": \"linux\",\r\n      \"Operand\":
+  \"=\"\r\n    }\r\n  ],\r\n  \"TaskGroups\": [\r\n    {\r\n      \"Name\": \"cache\",\r\n
+  \     \"Count\": 1,\r\n      \"Constraints\": null,\r\n      \"Tasks\": [\r\n        {\r\n
+  \         \"Name\": \"redis\",\r\n          \"Driver\": \"docker\",\r\n          \"User\":
+  \"foo-user\",\r\n          \"Config\": {\r\n            \"image\": \"redis:latest\",\r\n
+  \           \"port_map\": [\r\n              {\r\n                \"db\": 6379\r\n
+  \             }\r\n            ]\r\n          },\r\n          \"Constraints\": null,\r\n
+  \         \"Env\": {\r\n            \"foo\": \"bar\",\r\n            \"baz\": \"pipe\"\r\n
+  \         },\r\n          \"Services\": [\r\n            {\r\n              \"Name\":
+  \"cache-redis\",\r\n              \"Tags\": [\r\n                \"global\",\r\n
+  \               \"cache\"\r\n              ],\r\n              \"PortLabel\": \"db\",\r\n
+  \             \"Checks\": [\r\n                {\r\n                  \"Id\": \"\",\r\n
+  \                 \"Name\": \"alive\",\r\n                  \"Type\": \"tcp\",\r\n
+  \                 \"Command\": \"\",\r\n                  \"Args\": null,\r\n                  \"Path\":
+  \"\",\r\n                  \"Protocol\": \"\",\r\n                  \"Interval\":
+  10000000000,\r\n                  \"Timeout\": 2000000000\r\n                }\r\n
+  \             ]\r\n            }\r\n          ],\r\n          \"Vault\": {\r\n            \"Policies\":
+  [\r\n              \"policy-name\"\r\n            ],\r\n            \"Env\": true,\r\n
+  \           \"ChangeMode\": \"restart\",\r\n            \"ChangeSignal\": \"\"\r\n
+  \         },\r\n          \"Resources\": {\r\n            \"CPU\": 500,\r\n            \"MemoryMB\":
+  256,\r\n            \"DiskMB\": 300,\r\n            \"IOPS\": 0,\r\n            \"Networks\":
+  [\r\n              {\r\n                \"ReservedPorts\": [\r\n                  {\r\n
+  \                   \"Label\": \"rpc\",\r\n                    \"Value\": 25566\r\n
+  \                 }\r\n                ],\r\n                \"DynamicPorts\": [\r\n
+  \                 {\r\n                    \"Label\": \"db\"\r\n                  }\r\n
+  \               ],\r\n                \"MBits\": 10\r\n              }\r\n            ]\r\n
+  \         },\r\n          \"Meta\": {\r\n            \"foo\": \"bar\",\r\n            \"baz\":
+  \"pipe\"\r\n          },\r\n          \"KillTimeout\": 5000000000,\r\n          \"LogConfig\":
+  {\r\n            \"MaxFiles\": 10,\r\n            \"MaxFileSizeMB\": 10\r\n          },\r\n
+  \         \"Templates\": [\r\n            {\r\n              \"SourcePath\": \"local/config.conf.tpl\",\r\n
+  \             \"DestPath\": \"local/config.conf\",\r\n              \"EmbeddedTmpl\":
+  \"\",\r\n              \"ChangeMode\": \"signal\",\r\n              \"ChangeSignal\":
+  \"SIGUSR1\",\r\n              \"Splay\": 5000000000\r\n            }\r\n          ],\r\n
+  \         \"Artifacts\": [\r\n            {\r\n              \"GetterSource\": \"http://foo.com/artifact.tar.gz\",\r\n
+  \             \"GetterOptions\": {\r\n                \"checksum\": \"md5:c4aa853ad2215426eb7d70a21922e794\"\r\n
+  \             },\r\n              \"RelativeDest\": \"local/\"\r\n            }\r\n
+  \         ],\r\n          \"DispatchPayload\": {\r\n            \"File\": \"config.json\"\r\n
+  \         }\r\n        }\r\n      ],\r\n      \"RestartPolicy\": {\r\n        \"Interval\":
+  300000000000,\r\n        \"Attempts\": 10,\r\n        \"Delay\": 25000000000,\r\n
+  \       \"Mode\": \"delay\"\r\n      },\r\n      \"Meta\": {\r\n        \"foo\":
+  \"bar\",\r\n        \"baz\": \"pipe\"\r\n      }\r\n    }\r\n  ],\r\n  \"Update\":
+  {\r\n    \"Stagger\": 10000000000,\r\n    \"MaxParallel\": 1\r\n  },\r\n  \"Periodic\":
+  {\r\n    \"Enabled\": true,\r\n    \"Spec\": \"* * * * *\",\r\n    \"SpecType\":
+  \"cron\",\r\n    \"ProhibitOverlap\": true\r\n  },\r\n  \"Meta\": {\r\n    \"foo\":
+  \"bar\",\r\n    \"baz\": \"pipe\"\r\n  },\r\n  \"ParameterizedJob\": {\r\n    \"Payload\":
+  \"required\",\r\n    \"MetaRequired\": [\r\n      \"foo\"\r\n    ],\r\n    \"MetaOptional\":
+  [\r\n      \"bar\"\r\n    ]\r\n  },\r\n  \"Payload\": null\r\n}\";}}}s:9:\"TaskGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Model
+  for TaskGroups\";s:8:\"required\";a:1:{i:0;s:4:\"Name\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"Constraints\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Constraint\";}s:9:\"x-example\";s:0:\"\";}s:5:\"Count\";O:8:\"stdClass\":4:{s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"1\";}s:4:\"Meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:38:\"{\r\n
+  \ \"foo\": \"bar\",\r\n  \"baz\": \"pipe\"\r\n}\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"cache\";}s:13:\"RestartPolicy\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/RestartPolicy\";s:9:\"x-example\";s:96:\"{\r\n
+  \ \"Interval\": 300000000000,\r\n  \"Attempts\": 10,\r\n  \"Delay\": 25000000000,\r\n
+  \ \"Mode\": \"delay\"\r\n}\";}s:5:\"Tasks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Task\";}s:9:\"x-example\";s:2124:\"[\r\n
+  \ {\r\n    \"Name\": \"redis\",\r\n    \"Driver\": \"docker\",\r\n    \"User\":
+  \"foo-user\",\r\n    \"Config\": {\r\n      \"image\": \"redis:latest\",\r\n      \"port_map\":
+  [\r\n        {\r\n          \"db\": 6379\r\n        }\r\n      ]\r\n    },\r\n    \"Constraints\":
+  null,\r\n    \"Env\": {\r\n      \"foo\": \"bar\",\r\n      \"baz\": \"pipe\"\r\n
+  \   },\r\n    \"Services\": [\r\n      {\r\n        \"Name\": \"cache-redis\",\r\n
+  \       \"Tags\": [\r\n          \"global\",\r\n          \"cache\"\r\n        ],\r\n
+  \       \"PortLabel\": \"db\",\r\n        \"Checks\": [\r\n          {\r\n            \"Id\":
+  \"\",\r\n            \"Name\": \"alive\",\r\n            \"Type\": \"tcp\",\r\n
+  \           \"Command\": \"\",\r\n            \"Args\": null,\r\n            \"Path\":
+  \"\",\r\n            \"Protocol\": \"\",\r\n            \"Interval\": 10000000000,\r\n
+  \           \"Timeout\": 2000000000\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n
+  \   \"Vault\": {\r\n      \"Policies\": [\r\n        \"policy-name\"\r\n      ],\r\n
+  \     \"Env\": true,\r\n      \"ChangeMode\": \"restart\",\r\n      \"ChangeSignal\":
+  \"\"\r\n    },\r\n    \"Resources\": {\r\n      \"CPU\": 500,\r\n      \"MemoryMB\":
+  256,\r\n      \"DiskMB\": 300,\r\n      \"IOPS\": 0,\r\n      \"Networks\": [\r\n
+  \       {\r\n          \"ReservedPorts\": [\r\n            {\r\n              \"Label\":
+  \"rpc\",\r\n              \"Value\": 25566\r\n            }\r\n          ],\r\n
+  \         \"DynamicPorts\": [\r\n            {\r\n              \"Label\": \"db\"\r\n
+  \           }\r\n          ],\r\n          \"MBits\": 10\r\n        }\r\n      ]\r\n
+  \   },\r\n    \"Meta\": {\r\n      \"foo\": \"bar\",\r\n      \"baz\": \"pipe\"\r\n
+  \   },\r\n    \"KillTimeout\": 5000000000,\r\n    \"LogConfig\": {\r\n      \"MaxFiles\":
+  10,\r\n      \"MaxFileSizeMB\": 10\r\n    },\r\n    \"Templates\": [\r\n      {\r\n
+  \       \"SourcePath\": \"local/config.conf.tpl\",\r\n        \"DestPath\": \"local/config.conf\",\r\n
+  \       \"EmbeddedTmpl\": \"\",\r\n        \"ChangeMode\": \"signal\",\r\n        \"ChangeSignal\":
+  \"SIGUSR1\",\r\n        \"Splay\": 5000000000\r\n      }\r\n    ],\r\n    \"Artifacts\":
+  [\r\n      {\r\n        \"GetterSource\": \"http://foo.com/artifact.tar.gz\",\r\n
+  \       \"GetterOptions\": {\r\n          \"checksum\": \"md5:c4aa853ad2215426eb7d70a21922e794\"\r\n
+  \       },\r\n        \"RelativeDest\": \"local/\"\r\n      }\r\n    ],\r\n    \"DispatchPayload\":
+  {\r\n      \"File\": \"config.json\"\r\n    }\r\n  }\r\n]\";}}}s:13:\"JobDefinition\";O:8:\"stdClass\":3:{s:11:\"description\";s:165:\"Jobs
+  are submitted by users and represent a desired state. A job is a declarative description
+  of tasks to run which are bounded by constraints and require resources.\";s:8:\"required\";a:2:{i:0;s:11:\"Datacenters\";i:1;s:2:\"ID\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:9:\"AllAtOnce\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:5:\"false\";}s:11:\"Constraints\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Constraint\";}s:9:\"x-example\";s:98:\"[\r\n
+  \ {\r\n    \"LTarget\": \"${attr.kernel.name}\",\r\n    \"RTarget\": \"linux\",\r\n
+  \   \"Operand\": \"=\"\r\n  }\r\n]\";}s:11:\"Datacenters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:7:\"[\"dc1\"]\";}s:2:\"ID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"example\";}s:4:\"Meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:38:\"{\r\n
+  \ \"foo\": \"bar\",\r\n  \"baz\": \"pipe\"\r\n}\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"example\";}s:16:\"ParameterizedJob\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/ParameterizedJob\";s:9:\"x-example\";s:105:\"{\r\n
+  \ \"Payload\": \"required\",\r\n  \"MetaRequired\": [\r\n    \"foo\"\r\n  ],\r\n
+  \ \"MetaOptional\": [\r\n    \"bar\"\r\n  ]\r\n}\";}s:7:\"Payload\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:8:\"Periodic\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Periodic\";s:9:\"x-example\";s:98:\"{\r\n
+  \ \"Enabled\": true,\r\n  \"Spec\": \"* * * * *\",\r\n  \"SpecType\": \"cron\",\r\n
+  \ \"ProhibitOverlap\": true\r\n}\";}s:8:\"Priority\";O:8:\"stdClass\":5:{s:7:\"maximum\";d:100;s:7:\"minimum\";d:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"50\";}s:6:\"Region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:6:\"global\";}s:10:\"TaskGroups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/TaskGroup\";}s:9:\"x-example\";s:2835:\"[\r\n
+  \ {\r\n    \"Name\": \"cache\",\r\n    \"Count\": 1,\r\n    \"Constraints\": null,\r\n
+  \   \"Tasks\": [\r\n      {\r\n        \"Name\": \"redis\",\r\n        \"Driver\":
+  \"docker\",\r\n        \"User\": \"foo-user\",\r\n        \"Config\": {\r\n          \"image\":
+  \"redis:latest\",\r\n          \"port_map\": [\r\n            {\r\n              \"db\":
+  6379\r\n            }\r\n          ]\r\n        },\r\n        \"Constraints\": null,\r\n
+  \       \"Env\": {\r\n          \"foo\": \"bar\",\r\n          \"baz\": \"pipe\"\r\n
+  \       },\r\n        \"Services\": [\r\n          {\r\n            \"Name\": \"cache-redis\",\r\n
+  \           \"Tags\": [\r\n              \"global\",\r\n              \"cache\"\r\n
+  \           ],\r\n            \"PortLabel\": \"db\",\r\n            \"Checks\":
+  [\r\n              {\r\n                \"Id\": \"\",\r\n                \"Name\":
+  \"alive\",\r\n                \"Type\": \"tcp\",\r\n                \"Command\":
+  \"\",\r\n                \"Args\": null,\r\n                \"Path\": \"\",\r\n
+  \               \"Protocol\": \"\",\r\n                \"Interval\": 10000000000,\r\n
+  \               \"Timeout\": 2000000000\r\n              }\r\n            ]\r\n
+  \         }\r\n        ],\r\n        \"Vault\": {\r\n          \"Policies\": [\r\n
+  \           \"policy-name\"\r\n          ],\r\n          \"Env\": true,\r\n          \"ChangeMode\":
+  \"restart\",\r\n          \"ChangeSignal\": \"\"\r\n        },\r\n        \"Resources\":
+  {\r\n          \"CPU\": 500,\r\n          \"MemoryMB\": 256,\r\n          \"DiskMB\":
+  300,\r\n          \"IOPS\": 0,\r\n          \"Networks\": [\r\n            {\r\n
+  \             \"ReservedPorts\": [\r\n                {\r\n                  \"Label\":
+  \"rpc\",\r\n                  \"Value\": 25566\r\n                }\r\n              ],\r\n
+  \             \"DynamicPorts\": [\r\n                {\r\n                  \"Label\":
+  \"db\"\r\n                }\r\n              ],\r\n              \"MBits\": 10\r\n
+  \           }\r\n          ]\r\n        },\r\n        \"Meta\": {\r\n          \"foo\":
+  \"bar\",\r\n          \"baz\": \"pipe\"\r\n        },\r\n        \"KillTimeout\":
+  5000000000,\r\n        \"LogConfig\": {\r\n          \"MaxFiles\": 10,\r\n          \"MaxFileSizeMB\":
+  10\r\n        },\r\n        \"Templates\": [\r\n          {\r\n            \"SourcePath\":
+  \"local/config.conf.tpl\",\r\n            \"DestPath\": \"local/config.conf\",\r\n
+  \           \"EmbeddedTmpl\": \"\",\r\n            \"ChangeMode\": \"signal\",\r\n
+  \           \"ChangeSignal\": \"SIGUSR1\",\r\n            \"Splay\": 5000000000\r\n
+  \         }\r\n        ],\r\n        \"Artifacts\": [\r\n          {\r\n            \"GetterSource\":
+  \"http://foo.com/artifact.tar.gz\",\r\n            \"GetterOptions\": {\r\n              \"checksum\":
+  \"md5:c4aa853ad2215426eb7d70a21922e794\"\r\n            },\r\n            \"RelativeDest\":
+  \"local/\"\r\n          }\r\n        ],\r\n        \"DispatchPayload\": {\r\n          \"File\":
+  \"config.json\"\r\n        }\r\n      }\r\n    ],\r\n    \"RestartPolicy\": {\r\n
+  \     \"Interval\": 300000000000,\r\n      \"Attempts\": 10,\r\n      \"Delay\":
+  25000000000,\r\n      \"Mode\": \"delay\"\r\n    },\r\n    \"Meta\": {\r\n      \"foo\":
+  \"bar\",\r\n      \"baz\": \"pipe\"\r\n    }\r\n  }\r\n]\";}s:4:\"Type\";O:8:\"stdClass\":3:{s:4:\"enum\";a:3:{i:0;s:7:\"service\";i:1;s:6:\"system\";i:2;s:5:\"batch\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"batch\";}s:6:\"Update\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:28:\"#/definitions/UpdateStrategy\";s:9:\"x-example\";s:51:\"{\r\n
+  \ \"Stagger\": 10000000000,\r\n  \"MaxParallel\": 1\r\n}\";}}}s:14:\"UpdateStrategy\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"Specifies
+  the task's update strategy. When omitted, rolling updates are disabled.\";s:8:\"required\";a:1:{i:0;s:11:\"MaxParallel\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"MaxParallel\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"1\";}s:7:\"Stagger\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:9:\"x-example\";s:11:\"10000000000\";}}}s:10:\"Constraint\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Model
+  for Constraints\";s:8:\"required\";a:1:{i:0;s:7:\"LTarget\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"LTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:7:\"Operand\";O:8:\"stdClass\":3:{s:4:\"enum\";a:13:{i:0;s:6:\"regexp\";i:1;s:12:\"set_contains\";i:2;s:13:\"distinct_host\";i:3;s:17:\"distinct_property\";i:4;s:1:\"=\";i:5;s:2:\"==\";i:6;s:2:\"is\";i:7;s:2:\"!=\";i:8;s:3:\"not\";i:9;s:1:\">\";i:10;s:2:\">=\";i:11;s:1:\"<\";i:12;s:2:\"<=\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:7:\"RTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}}}s:17:\"CreateJobResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Model
+  for CreateJobResponse\";s:8:\"required\";a:1:{i:0;s:15:\"EvalCreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"35\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"d092fdc0-e1fd-2536-67d8-43af8ca798ac\";}s:14:\"JobModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"34\";}}}s:21:\"GetJobSummaryResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Model
+  for GetJobSummaryResponse\";s:8:\"required\";a:1:{i:0;s:8:\"Children\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"Children\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Children\";s:9:\"x-example\";s:47:\"{\n
+  \ \"Dead\": 0,\n  \"Running\": 7,\n  \"Pending\": 2\n}\";}s:11:\"CreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"6\";}s:5:\"JobID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"example\";}s:11:\"ModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"10\";}s:7:\"Summary\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Summary\";s:9:\"x-example\";s:124:\"{\n
+  \ \"cache\": {\n    \"Queued\": 0,\n    \"Complete\": 0,\n    \"Failed\": 0,\n    \"Running\":
+  1,\n    \"Starting\": 0,\n    \"Lost\": 0\n  }\n}\";}}}s:7:\"Summary\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Model
+  for Summary\";s:8:\"required\";a:1:{i:0;s:5:\"cache\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"cache\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:19:\"#/definitions/Cache\";s:9:\"x-example\";s:95:\"{\n
+  \ \"Queued\": 0,\n  \"Complete\": 0,\n  \"Failed\": 0,\n  \"Running\": 1,\n  \"Starting\":
+  0,\n  \"Lost\": 0\n}\";}}}s:5:\"Cache\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Model
+  for Cache\";s:8:\"required\";a:1:{i:0;s:8:\"Complete\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"Complete\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:6:\"Failed\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:4:\"Lost\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:6:\"Queued\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:7:\"Running\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"1\";}s:8:\"Starting\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}}}s:8:\"Children\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Model
+  for Children\";s:8:\"required\";a:1:{i:0;s:4:\"Dead\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"Dead\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:7:\"Pending\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"2\";}s:7:\"Running\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"7\";}}}s:25:\"GetJobEvaluationsResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Model
+  for GetJobEvaluationsResponse\";s:8:\"required\";a:1:{i:0;s:11:\"CreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:11:\"CreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"15\";}s:2:\"ID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"151accaa-1ac6-90fe-d427-313e70ccbb88\";}s:5:\"JobID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:14:\"JobModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"14\";}s:11:\"ModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"17\";}s:8:\"NextEval\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:6:\"NodeID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:15:\"NodeModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}s:12:\"PreviousEval\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:8:\"Priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"50\";}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:8:\"complete\";}s:17:\"StatusDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:11:\"TriggeredBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:12:\"job-register\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"service\";}s:4:\"Wait\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:1:\"0\";}}}s:25:\"GetJobAllocationsResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Model
+  for GetJobAllocationsResponse\";s:8:\"required\";a:1:{i:0;s:17:\"ClientDescription\";}s:10:\"properties\";O:8:\"stdClass\":12:{s:17:\"ClientDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:12:\"ClientStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"running\";}s:11:\"CreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"16\";}s:18:\"DesiredDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:13:\"DesiredStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:3:\"run\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"151accaa-1ac6-90fe-d427-313e70ccbb88\";}s:2:\"ID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"3575ba9d-7a12-0c96-7b28-add168c67984\";}s:5:\"JobID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:11:\"ModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"16\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:31:\"binstore-storagelocker.binsl[0]\";}s:6:\"NodeID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"a703c3ca-5ff8-11e5-9213-970ee8879d1b\";}s:9:\"TaskGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"binsl\";}}}s:18:\"CreateJobsResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"Model
+  for CreateJobsResponse\";s:8:\"required\";a:1:{i:0;s:15:\"EvalCreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"EvalCreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"35\";}s:6:\"EvalID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:36:\"d092fdc0-e1fd-2536-67d8-43af8ca798ac\";}s:14:\"JobModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"34\";}}}s:16:\"ParameterizedJob\";O:8:\"stdClass\":3:{s:11:\"description\";s:79:\"Specifies
+  the job as a paramterized job such that it can be dispatched against.\";s:8:\"required\";a:1:{i:0;s:12:\"MetaOptional\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"MetaOptional\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:7:\"[\"bar\"]\";}s:12:\"MetaRequired\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:7:\"[\"foo\"]\";}s:7:\"Payload\";O:8:\"stdClass\":3:{s:4:\"enum\";a:3:{i:0;s:8:\"optional\";i:1;s:8:\"required\";i:2;s:9:\"forbidden\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:8:\"required\";}}}s:8:\"Periodic\";O:8:\"stdClass\":3:{s:11:\"description\";s:216:\"Periodic
+  allows the job to be scheduled at fixed times, dates or intervals. The periodic
+  expression is always evaluated in the UTC timezone to ensure consistent evaluation
+  when Nomad Servers span multiple time zones.\";s:8:\"required\";a:1:{i:0;s:7:\"Enabled\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"Enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:4:\"true\";}s:15:\"ProhibitOverlap\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:4:\"true\";}s:4:\"Spec\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:9:\"*
+  * * * *\";}s:8:\"SpecType\";O:8:\"stdClass\":3:{s:4:\"enum\";a:1:{i:0;s:4:\"cron\";}s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:4:\"cron\";}s:9:\"time_zone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}}}s:13:\"RestartPolicy\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Model
+  for RestartPolicy\";s:8:\"required\";a:1:{i:0;s:8:\"Attempts\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"Attempts\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"10\";}s:5:\"Delay\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:11:\"25000000000\";}s:8:\"Interval\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:12:\"300000000000\";}s:4:\"Mode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"delay\";}}}s:15:\"DispatchPayload\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"Configures
+  the task to have access to dispatch payloads.\";s:8:\"required\";a:1:{i:0;s:4:\"File\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"File\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:11:\"config.json\";}}}s:9:\"LogConfig\";O:8:\"stdClass\":3:{s:11:\"description\";s:87:\"The
+  LogConfig object configures the log rotation policy for a task's stdout and stderr.\";s:8:\"required\";a:1:{i:0;s:8:\"MaxFiles\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"MaxFiles\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"10\";}s:13:\"MaxFileSizeMB\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"10\";}}}s:5:\"Vault\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Model
+  for Vault\";s:8:\"required\";a:1:{i:0;s:10:\"ChangeMode\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"ChangeMode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"restart\";}s:12:\"ChangeSignal\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:3:\"Env\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:9:\"x-example\";s:4:\"true\";}s:8:\"Policies\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"x-example\";s:15:\"[\"policy-name\"]\";}}}s:6:\"Checks\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"Model
+  for Checks\";s:8:\"required\";a:1:{i:0;s:4:\"Args\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"Args\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:7:\"Command\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:2:\"Id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:8:\"Interval\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:11:\"10000000000\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:5:\"alive\";}s:4:\"Path\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:8:\"Protocol\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:7:\"Timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:10:\"2000000000\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:3:\"tcp\";}}}s:3:\"Env\";O:8:\"stdClass\":3:{s:11:\"description\";s:13:\"Model
+  for Env\";s:8:\"required\";a:1:{i:0;s:3:\"baz\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"baz\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:4:\"pipe\";}s:3:\"foo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:3:\"bar\";}}}s:7:\"PortMap\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Model
+  for PortMap\";s:8:\"required\";a:1:{i:0;s:2:\"db\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"db\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:4:\"6379\";}}}s:4:\"Jobs\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"Model
+  for Jobs\";s:8:\"required\";a:1:{i:0;s:11:\"CreateIndex\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"CreateIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"14\";}s:2:\"ID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:11:\"ModifyIndex\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"14\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:22:\"binstore-storagelocker\";}s:8:\"Priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:9:\"x-example\";s:2:\"50\";}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:17:\"StatusDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:0:\"\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"x-example\";s:7:\"service\";}}}}"
+...
