@@ -1,0 +1,1239 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:168:\"Author's Haven
+  [https://metis-ah-staging.herokuapp.com/](https://metis-ah-staging.herokuapp.com/)
+  is a platform that allows you to share your knowledge across the world\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:14:\"Author's
+  Haven\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:22:\"metis.ah2018@gmail.com\";}}"
+host: metis-ah-staging.herokuapp.com
+basePath: /
+paths:
+  /:
+    get:
+      summary: Welcomes users to app
+      description: Users recieves a welcome message
+      responses:
+        200:
+          description: Welcome to the simulation program
+  /api/v1/users/auth/signup:
+    post:
+      tags:
+      - User
+      summary: Allows user to sign up with username, email and password
+      description: User recieves JWtoken as he supplies his username, email and password
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: User's object that need to be parsed
+        required: true
+        schema:
+          $ref: '#/definitions/Signup'
+      responses:
+        201:
+          description: User is signed up successfully
+        400:
+          description: Email already exist!
+  /api/v1/users/auth/login:
+    post:
+      tags:
+      - User
+      summary: Allows user to login email and password
+      description: User receives JWtoken on successful login
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: User's object that need to be parsed
+        required: true
+        schema:
+          $ref: '#/definitions/Login'
+      responses:
+        200:
+          description: User is signed in successfully
+        401:
+          description: Invalid credentials supplied
+  /api/v1/users/auth/google:
+    get:
+      tags:
+      - User
+      summary: Authenticate user with google
+      description: Signup or login a user with the person's google account
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Existing user logged in
+          schema:
+            $ref: '#/definitions/OAuth1'
+        201:
+          description: New user created
+          schema:
+            $ref: '#/definitions/OAuth2'
+        500:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/OAuthFail'
+  /api/v1/users/auth/facebook:
+    get:
+      tags:
+      - User
+      summary: Authenticate user with facebook
+      description: Signup or login a user with the person's facebook account
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Existing user logged in
+          schema:
+            $ref: '#/definitions/OAuth1'
+        201:
+          description: New user created
+          schema:
+            $ref: '#/definitions/OAuth2'
+        500:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/OAuthFail'
+  /api/v1/users/verify/{token}:
+    put:
+      tags:
+      - User
+      summary: Verify user account
+      description: User recive an email like account verified
+      operationId: getToken
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: token
+        in: path
+        description: Token generated for user
+        required: true
+        type: string
+      responses:
+        200:
+          description: Your account is verified successfully
+        401:
+          description: Your account is already verified
+  /api/v1/users/:
+    get:
+      tags:
+      - User
+      summary: A logged in user can retrieve all users
+      description: Users retrieve all users
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success!
+        401:
+          description: Failed to authenticate token! Valid token required
+  /api/v1/tags:
+    get:
+      tags:
+      - Tags
+      summary: Allows user view all tags
+      description: User views all tags in database
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      responses:
+        200:
+          description: array of tags
+  /api/v1/tags/{tagName}:
+    get:
+      tags:
+      - Tags
+      summary: Allows user view a tag
+      description: User views a tag in database with all is associated articles
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      - in: path
+        name: tagName
+        description: tag name
+        required: true
+        type: string
+      responses:
+        200:
+          description: tag with articles
+        404:
+          description: no tag found
+  /api/v1/user/update:
+    parameters:
+    - name: token
+      in: headers
+      required: true
+      description: Authorization header
+      type: string
+    put:
+      tags:
+      - User
+      summary: Allows user to update their profile
+      description: Authenticated user will be able edit their profile
+      parameters:
+      - in: body
+        name: body
+        description: Your profile has been updated successfully
+        required: true
+        schema:
+          $ref: '#/definitions/Update'
+      responses:
+        200:
+          description: Your profile has been updated successfully
+  /api/v1/user/:userId:
+    parameters:
+    - name: token
+      in: headers
+      required: true
+      description: Authorization header
+      type: string
+    - name: userId
+      in: path
+      required: true
+      description: ID of the user
+      type: string
+    get:
+      summary: Return the user's details
+      description: ""
+      schema:
+        $ref: '#/definitions/userId'
+      responses:
+        200:
+          description: User profile
+  /api/v1/articles/{articleId}/{reactionType}:
+    post:
+      tags:
+      - Like
+      summary: Allows user to like, dislike and remove reaction from on an article
+      description: Article like, dislike and remove reaction from on an endpoint
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      parameters:
+      - in: path
+        name: articleId
+        description: The id of the article to be liked
+        required: true
+        type: number
+      - in: path
+        name: reactionType
+        description: The reactionType the user inputs.. The acceptable reactionTypes
+          are like, dislike and resetReaction
+        required: true
+        type: string
+      responses:
+        200:
+          description: Password reset successful
+        401:
+          description: Verification link not valid
+        500:
+          description: Request could not be completed. Please try again
+  /api/v1/users/auth/reset-password:
+    post:
+      tags:
+      - User
+      summary: Allows user to request for a password reset
+      description: User receives an email with a link to reset password
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      parameters:
+      - in: body
+        name: body
+        description: User's object that need to be parsed
+        required: true
+        schema:
+          $ref: '#/definitions/reset-password-email'
+      responses:
+        200:
+          description: Password reset link has been sent to your email
+        401:
+          description: Invalid credentials supplied
+  /api/v1/users/{userId}/follow:
+    post:
+      tags:
+      - User
+      summary: Allows user to follow other users
+      description: User will become a follower of another user
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      - in: path
+        name: userId
+        description: user id to follow
+        required: true
+      responses:
+        200:
+          description: you are now following the user
+      401:
+        description: User access required
+  /api/v1/users/interests:
+    delete:
+      tags:
+      - User
+      summary: Enables a user to remove categories to his interests
+      description: User can remove multiple interests at a time
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      - in: body
+        name: body
+        description: category ids to add as interests
+        required: true
+        schema:
+          $ref: '#/definitions/interests'
+      responses:
+        200:
+          description: you are now following the user
+      401:
+        description: User access required
+  /api/v1/articles/{articleId}/like/{reactionType}:
+    post:
+      tags:
+      - Like
+      summary: Allows user to like, dislike and remove reaction from an article
+      description: Article like, dislike and remove reaction from an endpoint
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      parameters:
+      - in: path
+        name: articleId
+        description: The id of the article to be liked
+        required: true
+        type: number
+      - in: path
+        name: reactionType
+        description: The reactionType the user inputs.. The acceptable reactionTypes
+          are like, dislike and restReaction
+        required: true
+        type: string
+      responses:
+        200:
+          description: Password reset successful
+        401:
+          description: Verification link not valid
+        500:
+          description: Request could not be completed. Please try again
+  /api/v1/users/auth/reset-password/{token}:
+    put:
+      tags:
+      - User
+      summary: Allows user to reset password
+      description: User password reset endpoint
+      consumes:
+      - application/json
+      produces:
+      - application/xml
+      parameters:
+      - in: path
+        name: token
+        description: Token sent to the user's email for password reset
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: User's object that need to be parsed
+        required: true
+        schema:
+          $ref: '#/definitions/reset-password'
+      responses:
+        200:
+          description: Password reset successful
+        401:
+          description: Verification link not valid
+        500:
+          description: Request could not be completed. Please try again
+  /api/v1/users/{userId}/unfollow:
+    delete:
+      tags:
+      - User
+      summary: Allows user to unfollow other users
+      description: User will unfollow another user
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      - in: path
+        name: userId
+        description: user id to unfollow
+        required: true
+      responses:
+        200:
+          description: you are now longer following the user
+      401:
+        description: User access required
+  /api/v1/users/followings:
+    get:
+      tags:
+      - User
+      summary: Allows user to see followers
+      description: User will view followers
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: you are now following the user
+        401:
+          description: User access required
+  /api/v1/articles/:articleId/comments/like:
+    post:
+      tags:
+      - Like
+      summary: Route for authenticated users to like or remove reaction of comments
+        on an article
+      description: Returns a confirmation is like or remove reaction is successful
+      parameters:
+      - in: params
+        name: commentId
+        description: the id of the comment to be liked
+        required: true
+      responses:
+        201:
+          description: Returns a 201 status code on the first like
+        200:
+          description: Returns a 200 when like is toggled based on yours like/reset
+            the action
+        400:
+          description: Returns a 400 if params is not valid
+        401:
+          description: User access required
+        500:
+          description: Returns a 500 if comment no longer exists
+  /api/v1/articles/{articleId}/comments:
+    post:
+      tags:
+      - Comment
+      summary: This route handles posting of comments
+      description: Returns the comment posted and the details of the user that created
+        the comment
+      parameters:
+      - in: params
+        name: articleId
+        description: the id of the article to be commented on
+        required: true
+      responses:
+        201:
+          description: Returns a 201 status code on on success
+        400:
+          description: Returns a 400 if params is not valid, if content is empty or
+            not a string
+        404:
+          description: Returns a 404 if article no longer exists
+        500:
+          description: Returns a 500 in the event of a generic database connection
+            error
+  /api/v1/articles/{articleId}/comments/{commentId}/reply:
+    post:
+      tags:
+      - Comment
+      summary: This route handles posting of replies. The articleId makes no difference
+        but it is required to make a complete url.
+      description: Returns the reply posted and the details of the user that created
+        the reply
+      parameters:
+      - in: params
+        name: articleId
+        description: the id of the article whose comment is being replied to
+        required: true
+      - in: params
+        name: commentId
+        description: the id of the comment being replied to
+        required: true
+      responses:
+        201:
+          description: Returns a 201 status code on success
+        400:
+          description: Returns a 400 if params is not valid, if content is empty or
+            not a string
+        404:
+          description: Returns a 404 if article no longer exists
+        500:
+          description: Returns a 500 in the event of a generic database connection
+            error
+  /api/v1/articles/{articleId}/comments/{commentId}:
+    put:
+      tags:
+      - Comment
+      summary: This route handles updating of comments.
+      description: Returns a confirmation and the new update made to the comment
+      parameters:
+      - in: params
+        name: articleId
+        description: the id of the article whose comment is being updated
+        required: true
+      - in: params
+        name: commentId
+        description: the id of the comment being updated
+        required: true
+      responses:
+        201:
+          description: Returns a 201 status code on success
+        400:
+          description: Returns a 400 if params is not valid, if content is empty or
+            not a string
+        404:
+          description: Returns a 404 if article no longer exists
+        500:
+          description: Returns a 500 in the event of a generic database connection
+            error
+  /api/v1/articles/{articleId}/comments/{commentId}/reply/{replyId}:
+    put:
+      tags:
+      - Comment
+      summary: This route handles updating of replies.
+      description: Returns a confirmation and the new update made to the reply
+      parameters:
+      - in: params
+        name: articleId
+        description: the id of the article of the comment whose reply is being updated
+        required: true
+      - in: params
+        name: commentId
+        description: the id of the comment whose reply is being updated
+        required: true
+      - in: params
+        name: replyId
+        description: the id of the reply being updated
+        required: true
+      responses:
+        201:
+          description: Returns a 201 status code on success
+        400:
+          description: Returns a 400 if params is not valid, if content is empty or
+            not a string
+        404:
+          description: Returns a 404 if article no longer exists
+        500:
+          description: Returns a 500 in the event of a generic database connection
+            error
+  /api/v1/articles/{articleId}:
+    post:
+      tags:
+      - Articles
+      summary: Route for authenticated users to post comments on an article
+      description: Returns the user and the user's comment
+      parameters:
+      - in: body
+        name: body
+        description: comment object to be returned when a user makes a post request
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
+      responses:
+        201:
+          description: Comment posted successfully
+        400:
+          description: Comment is empty
+        401:
+          description: User access required
+  /api/v1/articles/{articleId}/rate:
+    post:
+      tags:
+      - Articles
+      summary: Route for authenticated users to rate articles
+      description: Returns the new average rating of the article
+      parameters:
+      - in: body
+        name: body
+        description: object containing the rating given to this article
+        required: true
+        schema:
+          $ref: '#/definitions/rating'
+      - in: path
+        name: articleId
+        description: The id for the article to be rated
+        required: true
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      responses:
+        200:
+          description: article rating successfully changed
+          schema:
+            $ref: '#/definitions/ratingRes'
+        201:
+          description: article successfully rated for the first time
+          schema:
+            $ref: '#/definitions/ratingRes'
+        401:
+          description: User access required
+  /api/v1/articles/{articleId}/report:
+    post:
+      tags:
+      - Articles
+      summary: Route for authenticated users to report articles
+      description: Returns a message on the status of the case
+      parameters:
+      - in: body
+        name: body
+        description: object containing the violation details of the article
+        required: true
+        schema:
+          $ref: '#/definitions/report'
+      - in: path
+        name: articleId
+        description: The id for the article to be reported
+        required: true
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      responses:
+        201:
+          description: article successfully reported
+          schema:
+            $ref: '#/definitions/reportRes1'
+        401:
+          description: User access required
+        409:
+          description: article has been reported by authenticated user before
+          schema:
+            $ref: '#/definitions/reportRes2'
+  /api/v1/cases/:
+    get:
+      tags:
+      - Cases
+      summary: Route for authenticated users to get reported cases
+      description: Returns a list of cases for specified or all articles
+      parameters:
+      - in: query
+        name: a
+        description: The ids of the article cases to be searched
+        required: false
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      responses:
+        200:
+          description: cases found and returned
+          schema:
+            $ref: '#/definitions/casesRes1'
+        204:
+          description: no reported cases found
+          schema:
+            $ref: '#/definitions/casesRes2'
+        401:
+          description: Admin access required
+  /api/v1/articles/search?{query}:
+    post:
+      tags:
+      - Articles
+      summary: Route for authenticated users to post comments on an article
+      description: Returns the user and the user's comment
+      parameters:
+      - in: query
+        name: query
+        description: The query string helps the user filter search results
+        required: true
+      responses:
+        200:
+          description: Search successfully returns results
+        400:
+          description: bad request; empty query string
+        401:
+          description: Admin access required
+  /api/v1/articles:
+    post:
+      tags:
+      - Articles
+      summary: Allows user to create and publish articles
+      description: This gives user the ability to create and publish articles with
+        support for images
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - in: formData
+        name: title
+        type: string
+        description: Article's title
+        required: true
+      - in: formData
+        name: description
+        type: string
+        description: A description of an article
+        required: true
+      - in: formData
+        name: body
+        type: string
+        description: Article's body
+        required: true
+      - in: formData
+        name: image
+        type: file
+        description: An image reflecting the content of an article
+        required: false
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        201:
+          description: Article published successfully
+        401:
+          description: Authentication failed
+        400:
+          description: Invalid User Input
+        500:
+          description: Internal server error
+    get:
+      tags:
+      - Articles
+      summary: Pagination support for getting articles
+      description: Allows users to specify the number of articles they want to view
+        within a specified limit
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      - in: query
+        name: limit
+        description: this indicates the number of articles to be return per page
+        required: false
+        type: number
+      - in: query
+        name: page
+        description: this indicates the current page number for viewing articles
+        required: false
+        type: number
+      responses:
+        200:
+          description: Operation successfully
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+  /api/v1/roles:
+    get:
+      tags:
+      - Roles
+      summary: Route for getting all the roles
+      description: Returns all the roles of created
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      responses:
+        200:
+          description: Successful return all roles
+        401:
+          description: Admin access required
+    post:
+      tags:
+      - Roles
+      summary: Route for adding a new role
+      description: Returns the new role added
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      - in: body
+        name: body
+        description: object containing the new role and permissions
+        required: true
+        schema:
+          $ref: '#/definitions/roles'
+      responses:
+        200:
+          description: Successful saved the new role
+        401:
+          description: Admin access required
+        404:
+          description: Invalid permissions
+    put:
+      tags:
+      - Roles
+      summary: Route for editing a role
+      description: Returns the edited role
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      - in: body
+        name: body
+        description: object containing the new role and permissions
+        required: true
+        schema:
+          $ref: '#/definitions/roles1'
+      responses:
+        200:
+          description: Successful saved the new role
+        400:
+          description: Invalid permissions sent
+        401:
+          description: Admin access required
+        404:
+          description: Invalid permissions
+        409:
+          description: Role already exits
+  /api/v1/articles/featured:
+    get:
+      tags:
+      - Articles
+      summary: Returns featured articles for the week
+      description: This endpoint returns top most rated articles for a week
+      parameters:
+      - in: query
+        name: limit
+        description: The number of featured articles you want to have access to
+        required: false
+      responses:
+        200:
+          description: Articles returned successfully
+          schema:
+            $ref: '#/definitions/ArticlesResponseBody'
+  /api/v1/authors/authors-of-the-week:
+    get:
+      tags:
+      - Authors
+      summary: Returns atmost four (4) authors for the week.
+      description: Authors are selected based on the number of likes of the articles
+        written for the current week.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Operation successfully
+          schema:
+            $ref: '#/definitions/authors-of-the-week'
+        500:
+          description: Internal server error
+  /api/v1/categories:
+    get:
+      tags:
+      - Categories
+      summary: Allows user view all Categories
+      description: User views all categories in database
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      responses:
+        200:
+          description: paginated array of categories
+    post:
+      tags:
+      - Categories
+      summary: Allows Admin to create category
+      description: Admin can create a category
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: formData
+        name: name
+        type: string
+        description: Category title
+        required: true
+      - in: formData
+        name: image
+        type: file
+        description: banner image for category
+        required: false
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+      responses:
+        200:
+          description: created category
+  /api/v1/categories/{categoryId}:
+    get:
+      tags:
+      - Categories
+      summary: Allows get a category by name
+      description: User to get a category by name
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      - in: path
+        name: categoryId
+        description: category id
+        required: true
+        type: string
+      responses:
+        200:
+          description: category  with articles
+        404:
+          description: no category found
+    put:
+      tags:
+      - Categories
+      summary: Allows admin to edit category by ID
+      description: Admin to edit category by ID
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      - in: path
+        name: categoryId
+        description: category id
+        required: true
+        type: string
+      - in: formData
+        name: name
+        type: string
+        description: Category title
+        required: true
+      - in: formData
+        name: image
+        type: file
+        description: banner image for category
+        required: false
+      responses:
+        200:
+          description: category is updated
+        404:
+          description: no category found
+    delete:
+      tags:
+      - Categories
+      summary: Allows admin to delete category by ID
+      description: Admin to delete category by ID
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: user token
+        required: true
+        type: string
+      - in: path
+        name: categoryId
+        description: category id
+        required: true
+        type: string
+      responses:
+        200:
+          description: category is deleted
+        404:
+          description: no category found
+  /api/v1/articles/popular:
+    get:
+      tags:
+      - Articles
+      summary: Returns atmost five (5) most popular artilces for the week.
+      description: Articles created in the current week but, without likes, may be
+        returned if liked articles are not up to five.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Operation successfully
+          schema:
+            $ref: '#/definitions/authors-of-the-week'
+        500:
+          description: Internal server error
+  /api/v1/articles/bookmarks:
+    parameters:
+    - name: token
+      in: headers
+      required: true
+      description: Authorization header
+      type: string
+    post:
+      summary: Allows users to bookmark an article
+      description: ""
+      schema:
+        $ref: '#/definitions/Bookmarks'
+      responses:
+        200:
+          description: Add articles to bookmark
+    get:
+      summary: Allows users view the list of all articles that have been bookmarked
+      description: Allows and authenticated user to view the list of all articles
+        he has bookmarked
+      responses:
+        200:
+          description: Returns bookmarked all articles
+  /api/v1/notifications:
+    get:
+      tags:
+      - Notifications
+      summary: Allows user to view notifications
+      description: This gives user the ability to view notifications
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+    put:
+      tags:
+      - Notifications
+      summary: Allows user to mark all notifications as read
+      description: This gives user the ability to mark all his notifications as read
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+    delete:
+      tags:
+      - Notifications
+      summary: Allows user to delete notifications hitory
+      description: This gives user the ability to delete all his notifications
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+  /api/v1/notifications/{notifyId}:
+    get:
+      tags:
+      - Notifications
+      summary: Allows user to get to one notifications
+      description: This gives user the ability to view one notifications
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      - in: path
+        name: notifyId
+        description: notification id
+        required: true
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+    put:
+      tags:
+      - Notifications
+      summary: Allows user to mark one notifications as read
+      description: This gives user the ability to mark one of his notifications as
+        read
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      - in: path
+        name: notifyId
+        description: notification id
+        required: true
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+    delete:
+      tags:
+      - Notifications
+      summary: Allows user to delete one notifications hitory
+      description: This gives user the ability to delete one of his notifications
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      - in: path
+        name: notifyId
+        description: notification id
+        required: true
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+  /api/v1/notifications/read:
+    delete:
+      tags:
+      - Notifications
+      summary: Allows user to delete all read notifications
+      description: This gives user the ability to delete all his read notifications
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+  /api/v1/notifications/history:
+    get:
+      tags:
+      - Notifications
+      summary: Allows user to get notifications history
+      description: This gives user the ability get all his notifications history
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: authorization
+        description: authentication access token for users to access this endpoint
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful
+        401:
+          description: Authentication failed
+        500:
+          description: Internal server error
+schemes:
+- https
+- http
+definitions: !php/object "O:8:\"stdClass\":21:{s:6:\"signin\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:9:\"firstname\";i:1;s:8:\"lastname\";i:2;s:5:\"email\";i:3;s:8:\"password\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"firstname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Opeoluwa\";}s:8:\"lastname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"Iyi-Kuyoro\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"ope.iky@ah.com\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"PassWords\";}}}s:6:\"report\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"violation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Discrimination\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"I
+  just don't like this article\";}}}s:6:\"Signup\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"metis\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"metis@gmail.com\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Password\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"User\";}}s:5:\"Login\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"metis@gmail.com\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Password\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"User\";}}s:20:\"reset-password-email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"metis@gmail.com\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"User\";}}s:14:\"reset-password\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Jojitoon\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"User\";}}s:7:\"Comment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Great
+  post!\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"content\";}}s:5:\"Reply\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Great
+  post!\";}}s:4:\"json\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"content\";}}s:6:\"OAuth1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:1:\"1\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"james.blane@ah.com\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:337:\"41cb94404576c3a025785f18ff5ad62d1cf8d2de6796edf9d61fb61cdd85ac9055884c5ab9ce25070d2d42abcb1a0b96b10f244a1ee8986ab9aed0d7437a55089f9ce53e94760d6ebefa3d2eae33f87cf66a1ca7a19e280f89f9e28e58695278ea7281338b03e63348a83833a55d08cd3271dff2785ff06ed2f2387f1827207337857db46aa328dc83cadd075392131a1f07f5ea5c308facb94df612bec478157488723dbff152fae\";}}}}}s:6:\"OAuth2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:1:\"1\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"james.blane@ah.com\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:5:\"false\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:337:\"41cb94404576c3a025785f18ff5ad62d1cf8d2de6796edf9d61fb61cdd85ac9055884c5ab9ce25070d2d42abcb1a0b96b10f244a1ee8986ab9aed0d7437a55089f9ce53e94760d6ebefa3d2eae33f87cf66a1ca7a19e280f89f9e28e58695278ea7281338b03e63348a83833a55d08cd3271dff2785ff06ed2f2387f1827207337857db46aa328dc83cadd075392131a1f07f5ea5c308facb94df612bec478157488723dbff152fae\";}}}}}s:9:\"OAuthFail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Fail\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"User
+  could not be authenticated\";}}}}}s:6:\"rating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"rating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:1:\"4\";}}}s:9:\"ratingRes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"averageRating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:3;}}}}}s:10:\"reportRes1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:48:\"This
+  case has been recorded and will be reviewed\";}}}}}s:10:\"reportRes2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:38:\"You
+  have reported this article already\";}}}}}s:9:\"casesRes1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"cases\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":8:{s:2:\"id\";i:1;s:6:\"userId\";i:5;s:9:\"articleId\";i:1;s:9:\"violation\";s:14:\"Sexual
+  Content\";s:11:\"description\";s:17:\"It is very erotic\";s:8:\"resolved\";b:0;s:9:\"createdAt\";s:24:\"2018-09-15T19:32:36.164Z\";s:9:\"updatedAt\";s:24:\"2018-09-15T19:32:36.164Z\";}}}}}}}s:9:\"casesRes2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"cases\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"There
+  are no cases\";}}}}}s:18:\"ArticleRequestBody\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"How
+  the Metis ruled the world\";}s:4:\"slug\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:59:\"How-the-Metis-ruled-the-world-89043hjk54b325bj42j234093hh3e\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:117:\"How
+  the metis ruled the world is an article that will open your mind and show you the
+  might power of team work. Enjoy\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:273:\"Quisque
+  accumsan ngue sed, scelerisque ut turpis. Mauris ut ornare erat. Duis hendrerit
+  massa urna, ut pretium ante porttitor eget. Sed quam urna, euismod vel massa at,
+  tempor consequat leo. Quisque nec felis ac ante luctus tincidunt. Sed rutrum orci
+  sit amet orci ultrices\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:80:\"http://res.cloudinary.com/demo/image/upload/v1473596672/eneivicys42bq5f2jpn2.jpg\";}}}s:19:\"ArticleResponseBody\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"How
+  the Metis ruled the world\";}s:4:\"slug\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:59:\"How-the-Metis-ruled-the-world-89043hjk54b325bj42j234093hh3e\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:117:\"How
+  the metis ruled the world is an article that will open your mind and show you the
+  might power of team work. Enjoy\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:273:\"Quisque
+  accumsan ngue sed, scelerisque ut turpis. Mauris ut ornare erat. Duis hendrerit
+  massa urna, ut pretium ante porttitor eget. Sed quam urna, euismod vel massa at,
+  tempor consequat leo. Quisque nec felis ac ante luctus tincidunt. Sed rutrum orci
+  sit amet orci ultrices\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:80:\"http://res.cloudinary.com/demo/image/upload/v1473596672/eneivicys42bq5f2jpn2.jpg\";}s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";s:7:\"example\";s:24:\"2018-09-05T00:00:00.000Z\";}s:9:\"updatedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";s:7:\"example\";s:24:\"2018-09-05T00:00:00.000Z\";}}}s:20:\"ArticlesResponseBody\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"success\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"articles\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ArticleResponseBody\";}}s:11:\"currentPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}}}}}s:6:\"Update\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"The
+  day I'll never forget\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:1;}}}}"
+...

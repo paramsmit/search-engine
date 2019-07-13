@@ -1,0 +1,2509 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:17:\"OpsGenie REST API\";s:11:\"description\";s:30:\"OpsGenie
+  OpenAPI Specification\";s:7:\"version\";s:5:\"2.0.0\";}"
+host: api.opsgenie.com
+paths:
+  /v2/alerts/requests/{requestId}:
+    get:
+      tags:
+      - alert
+      summary: Get Request Status of Alert
+      description: Used to track the status and alert details (if any) of the request
+        whose identifier is given
+      operationId: getRequestStatus
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-get-request-status
+      parameters:
+      - name: requestId
+        in: path
+        description: Universally unique identifier of the questioned request
+        required: true
+        type: string
+      responses:
+        200:
+          description: Request status information for given id
+          schema:
+            $ref: '#/definitions/GetRequestStatusResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts:
+    get:
+      tags:
+      - alert
+      summary: List Alerts
+      description: Returns list of alerts
+      operationId: listAlerts
+      x-collapse-params: ListAlertsRequest
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-alerts
+      parameters:
+      - name: query
+        in: query
+        description: Search query to apply while filtering the alerts
+        required: false
+        type: string
+      - name: searchIdentifier
+        in: query
+        description: Identifier of the saved search query to apply while filtering
+          the alerts
+        required: false
+        type: string
+      - name: searchIdentifierType
+        in: query
+        description: Identifier type of the saved search query. Possible values are
+          'id', or 'name'
+        required: false
+        type: string
+        enum:
+        - id
+        - name
+        default: id
+      - name: offset
+        in: query
+        description: Start index of the result set (to apply pagination). Minimum
+          value (and also default value) is 0
+        required: false
+        type: integer
+        format: int32
+        minimum: 0
+      - name: limit
+        in: query
+        description: Maximum number of items to provide in the result. Must be a positive
+          integer value. Default value is 20 and maximum value is 100
+        required: false
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+      - name: sort
+        in: query
+        description: Name of the field that result set will be sorted by
+        required: false
+        type: string
+        enum:
+        - createdAt
+        - updatedAt
+        - tinyId
+        - alias
+        - message
+        - status
+        - acknowledged
+        - isSeen
+        - snoozed
+        - snoozedUntil
+        - count
+        - lastOccurredAt
+        - source
+        - owner
+        - integration.name
+        - integration.type
+        - report.ackTime
+        - report.closeTime
+        - report.acknowledgedBy
+        - report.closedBy
+        default: createdAt
+      - name: order
+        in: query
+        description: Sorting order of the result set
+        required: false
+        type: string
+        enum:
+        - asc
+        - desc
+        default: desc
+      responses:
+        200:
+          description: List of alert informations
+          schema:
+            $ref: '#/definitions/ListAlertsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+            X-Paging-Prev:
+              description: Previous page url
+              type: string
+            X-Paging-Next:
+              description: Next page url
+              type: string
+            X-Paging-First:
+              description: First page url
+              type: string
+            X-Paging-Last:
+              description: Last page url
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    post:
+      tags:
+      - alert
+      summary: Create Alert
+      description: Creates a new alert
+      operationId: createAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-create-alert
+      parameters:
+      - name: body
+        in: body
+        description: Request payload of created alert
+        required: true
+        schema:
+          $ref: '#/definitions/CreateAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}:
+    get:
+      tags:
+      - alert
+      summary: Get Alert
+      description: Returns alert with given id, tiny id or alias
+      operationId: getAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-get-alert
+      x-collapse-params: GetAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      responses:
+        200:
+          description: Alert information for given identifier
+          schema:
+            $ref: '#/definitions/GetAlertResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - alert
+      summary: Delete Alert
+      description: Deletes an alert using alert id, tiny id or alias
+      operationId: deleteAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-delete-alert
+      x-collapse-params: DeleteAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - $ref: '#/parameters/AlertUserParam'
+      - $ref: '#/parameters/AlertSourceParam'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/acknowledge:
+    post:
+      tags:
+      - alert
+      summary: Acknowledge Alert
+      description: Acknowledges alert with given identifier
+      operationId: acknowledgeAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-acknowledge-alert
+      x-collapse-params: AcknowledgeAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of acknowledging alert action
+        required: false
+        schema:
+          $ref: '#/definitions/AcknowledgeAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/unacknowledge:
+    post:
+      tags:
+      - alert
+      summary: UnAcknowledge Alert
+      description: UnAcknowledge alert with given identifier
+      operationId: unAcknowledgeAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-unacknowledge-alert
+      x-collapse-params: UnAcknowledgeAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of unacknowledging alert action
+        required: false
+        schema:
+          $ref: '#/definitions/UnAcknowledgeAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/close:
+    post:
+      tags:
+      - alert
+      summary: Close Alert
+      description: Closes alert with given identifier
+      operationId: closeAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-close-alert
+      x-collapse-params: CloseAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of closing alert action
+        required: false
+        schema:
+          $ref: '#/definitions/CloseAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/snooze:
+    post:
+      tags:
+      - alert
+      summary: Snooze Alert
+      description: Snooze alert with given identifier
+      operationId: snoozeAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-snooze-alert
+      x-collapse-params: SnoozeAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of snoozing alert action
+        required: true
+        schema:
+          $ref: '#/definitions/SnoozeAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/escalate:
+    post:
+      tags:
+      - alert
+      summary: Escalate Alert
+      description: Escalate alert with given identifier
+      operationId: escalateAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-escalate-alert-to-next
+      x-collapse-params: EscalateAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of escalating alert action
+        required: true
+        schema:
+          $ref: '#/definitions/EscalateAlertToNextPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/assign:
+    post:
+      tags:
+      - alert
+      summary: Assign Alert
+      description: Assign alert with given identifier
+      operationId: assignAlert
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-assign-alert
+      x-collapse-params: AssignAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of assigning alert action
+        required: true
+        schema:
+          $ref: '#/definitions/AssignAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/responders:
+    post:
+      tags:
+      - alert
+      summary: Add Responder
+      description: Add responder to alert with given identifier
+      operationId: addResponder
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-add-responder-to-alert
+      x-collapse-params: AddResponderToAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of adding responder to alert action
+        required: true
+        schema:
+          $ref: '#/definitions/AddResponderToAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/teams:
+    post:
+      tags:
+      - alert
+      summary: Add Team
+      description: Add team to alert with given identifier
+      operationId: addTeam
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-add-team-to-alert
+      x-collapse-params: AddTeamToAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of adding team to alert action
+        required: true
+        schema:
+          $ref: '#/definitions/AddTeamToAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/actions/{actionName}:
+    post:
+      tags:
+      - alert
+      summary: Custom Alert Action
+      description: Custom actions for the alert
+      operationId: executeCustomAlertAction
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-execute-custom-action
+      x-collapse-params: ExecuteCustomAlertActionRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: actionName
+        in: path
+        description: Name of the action to execute
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: Request payload of executing custom alert action
+        required: false
+        schema:
+          $ref: '#/definitions/ExecuteCustomAlertActionPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/recipients:
+    get:
+      tags:
+      - alert
+      summary: List Alert Recipients
+      description: List alert recipients for the given alert identifier
+      operationId: listRecipients
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-alert-recipients
+      x-collapse-params: ListAlertRecipientsRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      responses:
+        200:
+          description: Returns alert recipients for the given alert identifier
+          schema:
+            $ref: '#/definitions/ListAlertRecipientsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/logs:
+    get:
+      tags:
+      - alert
+      summary: List Alert Logs
+      description: List alert logs for the given alert identifier
+      operationId: listLogs
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-alert-logs
+      x-collapse-params: ListAlertLogsRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - $ref: '#/parameters/OffsetParam'
+      - $ref: '#/parameters/PageDirectionParam'
+      - $ref: '#/parameters/AlertLimitParam'
+      - $ref: '#/parameters/OrderParam'
+      responses:
+        200:
+          description: Returns alert logs for the given alert identifier
+          schema:
+            $ref: '#/definitions/ListAlertLogsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+            X-Paging-Next:
+              description: Next page url
+              type: string
+            X-Paging-First:
+              description: First page url
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/attachments:
+    get:
+      tags:
+      - alert
+      summary: List Alert Attachments
+      description: List alert attachment names and urls for related alert
+      operationId: listAttachments
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-alert-attachments
+      x-collapse-params: ListAlertAttachmentsRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType2'
+      responses:
+        200:
+          description: Returns name and url for given identifier
+          schema:
+            $ref: '#/definitions/ListAlertAttachmentsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    post:
+      tags:
+      - alert
+      summary: Add Alert Attachment
+      description: Add Alert Attachment to related alert
+      operationId: addAttachment
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-create-alert-attachment
+      x-collapse-params: AddAttachmentToAlertRequest
+      consumes:
+      - multipart/form-data
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType2'
+      - name: file
+        in: formData
+        required: true
+        description: Attachment file to be uploaded
+        type: file
+      - name: user
+        in: formData
+        description: Display name of the request owner
+        required: false
+        type: string
+      - name: indexFile
+        in: formData
+        description: Name of html file which will be shown when attachment clicked
+          on UI
+        required: false
+        type: string
+      responses:
+        201:
+          description: Returns attachment id
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          description: Corrupted file
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/attachments/{attachmentId}:
+    get:
+      tags:
+      - alert
+      summary: Get Alert Attachment
+      description: Get alert attachment name and url for the given identifier
+      operationId: getAttachment
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-get-alert-attachment
+      x-collapse-params: GetAlertAttachmentRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType2'
+      - name: attachmentId
+        in: path
+        description: Identifier of alert attachment
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Returns name and url for given identifier
+          schema:
+            $ref: '#/definitions/GetAlertAttachmentResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - alert
+      summary: Remove Alert Attachment
+      description: Remove alert attachment for the given identifier
+      operationId: removeAttachment
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-delete-alert-attachment
+      x-collapse-params: RemoveAttachmentFromAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType2'
+      - name: attachmentId
+        in: path
+        description: Identifier of alert attachment
+        required: true
+        type: integer
+        format: int64
+      - $ref: '#/parameters/AlertUserParam'
+      responses:
+        200:
+          description: Returns deleted messsage for this async operation.
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/tags:
+    post:
+      tags:
+      - alert
+      summary: Add Tags
+      description: Add tags to the alert with given identifier
+      operationId: addTags
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-add-tags-to-alert
+      x-collapse-params: AddTagsToAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of creating alert tags action
+        required: true
+        schema:
+          $ref: '#/definitions/AddTagsToAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - alert
+      summary: Remove Tags
+      description: Remove tags of the alert with given identifier
+      operationId: removeTags
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-remove-tags-from-alert
+      x-collapse-params: RemoveTagsFromAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - $ref: '#/parameters/AlertUserParam'
+      - $ref: '#/parameters/AlertNoteParam'
+      - $ref: '#/parameters/AlertSourceParam'
+      - name: tags
+        in: query
+        description: Tags field of the given alert as comma seperated values (e.g.
+          'tag1, tag2')
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/details:
+    post:
+      tags:
+      - alert
+      summary: Add Details
+      description: Add details to the alert with given identifier
+      operationId: addDetails
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-add-details-custom-properties-to-alert
+      x-collapse-params: AddDetailsToAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of adding alert details action
+        required: true
+        schema:
+          $ref: '#/definitions/AddDetailsToAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - alert
+      summary: Remove Details
+      description: Remove details of the alert with given identifier
+      operationId: removeDetails
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-remove-details-custom-properties-from-alert
+      x-collapse-params: RemoveDetailsFromAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - $ref: '#/parameters/AlertUserParam'
+      - $ref: '#/parameters/AlertNoteParam'
+      - $ref: '#/parameters/AlertSourceParam'
+      - name: keys
+        in: query
+        description: Comma separated list of keys to remove from the custom properties
+          of the alert (e.g. 'key1,key2')
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/notes:
+    get:
+      tags:
+      - alert
+      summary: List Alert Notes
+      description: List alert notes for the given alert identifier
+      operationId: listNotes
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-alert-notes
+      x-collapse-params: ListAlertNotesRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - $ref: '#/parameters/OffsetParam'
+      - $ref: '#/parameters/PageDirectionParam'
+      - $ref: '#/parameters/AlertLimitParam'
+      - $ref: '#/parameters/OrderParam'
+      responses:
+        200:
+          description: Returns alert notes for the given alert identifier
+          schema:
+            $ref: '#/definitions/ListAlertNotesResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+            X-Paging-Next:
+              description: Next page url
+              type: string
+            X-Paging-First:
+              description: First page url
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    post:
+      tags:
+      - alert
+      summary: Add Note
+      description: Adds note to alert with given identifier
+      operationId: addNote
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-add-note-to-alert
+      x-collapse-params: AddNoteToAlertRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of adding note to alert action
+        required: true
+        schema:
+          $ref: '#/definitions/AddNoteToAlertPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/saved-searches:
+    get:
+      tags:
+      - alert
+      summary: Lists Saved Searches
+      description: List all saved searches
+      operationId: listSavedSearches
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-list-saved-searches
+      responses:
+        200:
+          description: Returns saved search list
+          schema:
+            $ref: '#/definitions/ListSavedSearchesResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    post:
+      tags:
+      - alert
+      summary: Create Saved Search
+      description: Create saved search with given fields
+      operationId: createSavedSearches
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-create-a-saved-search
+      parameters:
+      - name: body
+        in: body
+        description: Request payload of creating saved search
+        required: true
+        schema:
+          $ref: '#/definitions/CreateSavedSearchPayload'
+      responses:
+        201:
+          description: Returns saved search meta information
+          schema:
+            $ref: '#/definitions/CreateSavedSearchResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/saved-searches/{identifier}:
+    get:
+      tags:
+      - alert
+      summary: Get Saved Search
+      description: Get saved search for the given search identifier
+      operationId: getSavedSearch
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/alert-api#section-get-saved-search
+      x-collapse-params: GetSavedSearchRequest
+      parameters:
+      - $ref: '#/parameters/SearchIdentifier'
+      - $ref: '#/parameters/SearchIdentifierType'
+      responses:
+        200:
+          description: Returns saved search for given identifier
+          schema:
+            $ref: '#/definitions/GetSavedSearchResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - alert
+      summary: Delete Saved Search
+      description: Deletes saved search using given search identifier
+      operationId: deleteSavedSearch
+      x-collapse-params: DeleteSavedSearchRequest
+      parameters:
+      - $ref: '#/parameters/SearchIdentifier'
+      - $ref: '#/parameters/SearchIdentifierType'
+      responses:
+        200:
+          $ref: '#/responses/Ok'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    patch:
+      tags:
+      - alert
+      summary: Update Saved Search
+      description: Update saved search for the given search identifier
+      operationId: updateSavedSearch
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/alert-api-continued#section-update-saved-search
+      x-collapse-params: UpdateSavedSearchRequest
+      parameters:
+      - $ref: '#/parameters/SearchIdentifier'
+      - $ref: '#/parameters/SearchIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of updating saved search
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateSavedSearchPayload'
+      responses:
+        200:
+          description: Returns saved search for given identifier
+          schema:
+            $ref: '#/definitions/GetSavedSearchResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/count:
+    get:
+      tags:
+      - alert
+      summary: Count Alerts
+      description: Count alerts in Opsgenie
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/alert-api#section-count-alerts
+      operationId: countAlerts
+      x-collapse-params: GetCountAlertsRequest
+      parameters:
+      - name: query
+        in: query
+        description: Search query to apply while filtering the alerts
+        required: false
+        type: string
+      - name: searchIdentifier
+        in: query
+        description: Identifier of the saved search query to apply while filtering
+          the alerts
+        required: false
+        type: string
+      - name: searchIdentifierType
+        in: query
+        description: Identifier type of the saved search query. Possible values are
+          id and name. Default value is id. If searchIdentifier is not provided, this
+          value is ignored.
+        type: string
+        default: id
+        enum:
+        - id
+        - name
+      responses:
+        200:
+          description: Returns saved search for given identifier
+          schema:
+            $ref: '#/definitions/GetCountAlertsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/message:
+    put:
+      tags:
+      - alert
+      summary: Update Alert Message
+      description: Update the message of the alert with given identifier
+      operationId: updateAlertMessage
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/alert-api-continued#section-update-alert-message
+      x-collapse-params: UpdateAlertMessageRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of update alert message
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateAlertMessagePayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/description:
+    put:
+      tags:
+      - alert
+      summary: Update Alert Description
+      description: Update the description of the alert with given identifier
+      operationId: updateAlertDescription
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/alert-api-continued#section-update-alert-description
+      x-collapse-params: UpdateAlertDescriptionRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of update alert description
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateAlertDescriptionPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/alerts/{identifier}/priority:
+    put:
+      tags:
+      - alert
+      summary: Update Alert Priority
+      description: Update the priority of the alert with given identifier
+      operationId: updateAlertPriority
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/alert-api-continued#section-update-alert-priority
+      x-collapse-params: UpdateAlertPriorityRequest
+      parameters:
+      - $ref: '#/parameters/AlertIdentifier'
+      - $ref: '#/parameters/AlertIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of update alert priority
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateAlertPriorityPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/heartbeats/{name}/ping:
+    get:
+      tags:
+      - heartbeat
+      summary: Ping Heartbeat
+      description: Ping Heartbeat for given heartbeat name
+      operationId: ping
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-ping-heartbeat-request
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/heartbeats:
+    get:
+      tags:
+      - heartbeat
+      summary: List Heartbeats
+      description: Returns list of Heartbeats
+      operationId: listHeartBeats
+      x-collapse-params: ListHeartBeatRequest
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/heartbeat-api#section-list-heartbeats
+      responses:
+        200:
+          description: List of heartbeat informations
+          schema:
+            $ref: '#/definitions/ListHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+            X-Paging-Prev:
+              description: Previous page url
+              type: string
+            X-Paging-Next:
+              description: Next page url
+              type: string
+            X-Paging-First:
+              description: First page url
+              type: string
+            X-Paging-Last:
+              description: Last page url
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    post:
+      tags:
+      - heartbeat
+      summary: Create Heartbeat
+      description: Create a new heartbeat
+      operationId: createHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-add-heartbeat-request
+      parameters:
+      - name: body
+        in: body
+        description: Request payload of created heartbeat
+        required: true
+        schema:
+          $ref: '#/definitions/CreateHeartbeatPayload'
+      responses:
+        201:
+          description: Heartbeat information for created heartbeat name
+          schema:
+            $ref: '#/definitions/CreateHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/heartbeats/{name}:
+    get:
+      tags:
+      - heartbeat
+      summary: Get Heartbeat
+      description: Returns heartbeat with given name
+      operationId: getHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-get-heartbeat-request
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      responses:
+        200:
+          description: Heartbeat information for given heartbeat name
+          schema:
+            $ref: '#/definitions/GetHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    patch:
+      tags:
+      - heartbeat
+      summary: Update Heartbeat (Partial)
+      description: Update Heartbeatwith given name
+      operationId: updateHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-update-heartbeat-request-partial
+      x-collapse-params: UpdateHeartbeatRequest
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      - name: body
+        in: body
+        description: Request payload of update heartbeat action
+        schema:
+          $ref: '#/definitions/UpdateHeartbeatPayload'
+      responses:
+        200:
+          description: Heartbeat meta information for given heartbeat name
+          schema:
+            $ref: '#/definitions/UpdateHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - heartbeat
+      summary: Delete Heartbeat
+      description: Delete heartbeat with given name
+      operationId: deleteHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-delete-heartbeat-request
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      responses:
+        200:
+          $ref: '#/responses/Ok'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/heartbeats/{name}/enable:
+    post:
+      tags:
+      - heartbeat
+      summary: Enable Heartbeat
+      description: Enable heartbeat request with given name
+      operationId: enableHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-enable-heartbeat-request
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      responses:
+        200:
+          description: Heartbeat meta information for given heartbeat name
+          schema:
+            $ref: '#/definitions/EnableHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/heartbeats/{name}/disable:
+    post:
+      tags:
+      - heartbeat
+      summary: Disable Heartbeat
+      description: Disable heartbeat request with given name
+      operationId: disableHeartbeat
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/heartbeat-api#section-disable-heartbeat-request
+      parameters:
+      - $ref: '#/parameters/HeartbeatName'
+      responses:
+        200:
+          description: Heartbeat meta information for given heartbeat name
+          schema:
+            $ref: '#/definitions/DisableHeartbeatResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v2/account:
+    get:
+      tags:
+      - account
+      summary: Get Account Info
+      description: Used to search and retrieve account information in OpsGenie
+      operationId: getInfo
+      externalDocs:
+        description: For more information
+        url: https://www.opsgenie.com/docs/account-api#section-get-account-info
+      responses:
+        200:
+          description: Request status information for given id
+          schema:
+            $ref: '#/definitions/GetAccountInfoResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v1/incidents/requests/{requestId}:
+    get:
+      tags:
+      - incident
+      summary: Get Request Status of Incident
+      description: Used to track the status and incident details (if any) of the request
+        whose identifier is given
+      operationId: getIncidentRequestStatus
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-get-request-status
+      parameters:
+      - name: requestId
+        in: path
+        description: Universally unique identifier of the questioned request
+        required: true
+        type: string
+      responses:
+        200:
+          description: Request status information for given id
+          schema:
+            $ref: '#/definitions/GetIncidentRequestStatusResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v1/incidents/create:
+    post:
+      tags:
+      - incident
+      summary: Create Incident
+      description: Creates a new incident
+      operationId: createIncident
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-create-incident
+      parameters:
+      - name: body
+        in: body
+        description: Request payload of created incident
+        required: true
+        schema:
+          $ref: '#/definitions/CreateIncidentPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v1/incidents/{identifier}:
+    get:
+      tags:
+      - incident
+      summary: Get Incident
+      description: Returns incident with given id, tiny id or alias
+      operationId: getIncident
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-get-incident
+      x-collapse-params: GetIncidentRequest
+      parameters:
+      - $ref: '#/parameters/IncidentIdentifier'
+      - $ref: '#/parameters/IncidentIdentifierType'
+      responses:
+        200:
+          description: Incident information for given identifier
+          schema:
+            $ref: '#/definitions/GetIncidentResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+    delete:
+      tags:
+      - incident
+      summary: Delete Incident
+      description: Deletes an incident using incident id or the tiny id
+      operationId: deleteIncident
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-delete-incident
+      x-collapse-params: DeleteIncidentRequest
+      parameters:
+      - $ref: '#/parameters/IncidentIdentifier'
+      - $ref: '#/parameters/IncidentIdentifierType'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v1/incidents/:
+    get:
+      tags:
+      - incident
+      summary: List incidents
+      description: Return list of incidents
+      operationId: ListIncidents
+      x-collapse-params: ListIncidentsRequest
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-list-incidents
+      parameters:
+      - name: query
+        in: query
+        description: Search query to apply while filtering the incidents.
+        required: true
+        type: string
+      - name: offset
+        in: query
+        description: Start index of the result set (to apply pagination). Minimum
+          value (and also default value) is 0.
+        required: false
+        type: integer
+        format: int32
+        minimum: 0
+      - name: limit
+        in: query
+        description: Maximum number of items to provide in the result. Must be a positive
+          integer value. Default value is 20 and maximum value is 100
+        required: false
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+      - name: sort
+        in: query
+        description: Name of the field that result set will be sorted by
+        required: false
+        type: string
+        enum:
+        - createdAt
+        - tinyId
+        - message
+        - status
+        - isSeen
+        - owner
+        default: createdAt
+      - name: order
+        in: query
+        description: Sorting order of the result set
+        required: false
+        type: string
+        enum:
+        - asc
+        - desc
+        default: desc
+      responses:
+        200:
+          description: List of incident informations
+          schema:
+            $ref: '#/definitions/ListIncidentsResponse'
+          headers:
+            X-Request-ID:
+              description: Id of given request
+              type: string
+            X-Response-Time:
+              description: Process time of given request
+              type: string
+            X-RateLimit-State:
+              description: Status of rate limit
+              type: string
+            X-RateLimit-Reason:
+              description: Source of the rate limit
+              type: string
+            X-RateLimit-Period-In-Sec:
+              description: Time of throttle in seconds
+              type: string
+            X-Paging-Prev:
+              description: Previous page url
+              type: string
+            X-Paging-Next:
+              description: Next page url
+              type: string
+            X-Paging-First:
+              description: First page url
+              type: string
+            X-Paging-Last:
+              description: Last page url
+              type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+  /v1/incidents/{identifier}/close:
+    post:
+      tags:
+      - incident
+      summary: Close Incident
+      description: Closes incident with given identifier
+      operationId: closeIncident
+      externalDocs:
+        description: For more information
+        url: https://docs.opsgenie.com/docs/incident-api#section-close-incident
+      x-collapse-params: CloseIncidentRequest
+      parameters:
+      - $ref: '#/parameters/IncidentIdentifier'
+      - $ref: '#/parameters/IncidentIdentifierType'
+      - name: body
+        in: body
+        description: Request payload of closing incident action
+        required: false
+        schema:
+          $ref: '#/definitions/CloseIncidentPayload'
+      responses:
+        202:
+          $ref: '#/responses/Accepted'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        402:
+          $ref: '#/responses/PaymentRequired'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+        429:
+          $ref: '#/responses/TooManyRequest'
+        default:
+          $ref: '#/responses/GeneralError'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":98:{s:12:\"BaseResponse\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"requestId\";i:1;s:4:\"took\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"requestId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"took\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"default\";i:0;}}}s:26:\"BaseResponseWithExpandable\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"expandable\";}s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"expandable\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:15:\"responseHeaders\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}}s:15:\"SuccessResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"result\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SuccessData\";}}}}}s:11:\"SuccessData\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"PageDetails\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"prev\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"next\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"first\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"last\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Recipient\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:13:\"discriminator\";s:4:\"type\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:3:\"all\";i:1;s:4:\"none\";i:2;s:4:\"user\";i:3;s:10:\"escalation\";i:4;s:8:\"schedule\";i:5;s:4:\"team\";i:6;s:5:\"group\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"TeamRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:4:\"team\";s:11:\"description\";s:14:\"Team
+  recipient\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:14:\"GroupRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:5:\"group\";s:11:\"description\";s:15:\"Group
+  recipient\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:17:\"ScheduleRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:8:\"schedule\";s:11:\"description\";s:18:\"Schedule
+  recipient\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:19:\"EscalationRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:10:\"escalation\";s:11:\"description\";s:20:\"Escalation
+  recipient\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:13:\"UserRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:4:\"user\";s:11:\"description\";s:14:\"User
+  recipient\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:11:\"NoRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:4:\"none\";s:11:\"description\";s:12:\"No
+  recipient\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}}s:12:\"AllRecipient\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:3:\"all\";s:11:\"description\";s:13:\"All
+  recipient\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}}s:23:\"TimeRestrictionInterval\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:13:\"discriminator\";s:4:\"type\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:23:\"weekday-and-time-of-day\";i:1;s:11:\"time-of-day\";}}}}s:30:\"WeekdayTimeRestrictionInterval\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:21:\"x-discriminator-value\";s:23:\"weekday-and-time-of-day\";s:11:\"description\";s:33:\"Weekday
+  time restriction interval\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/TimeRestrictionInterval\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"restrictions\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/WeekdayTimeRestriction\";}s:8:\"minItems\";i:1;s:8:\"maxItems\";i:15;}}}}}s:28:\"TimeOfDayRestrictionInterval\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:21:\"x-discriminator-value\";s:11:\"time-of-day\";s:11:\"description\";s:32:\"Time
+  of day restriction interval\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/TimeRestrictionInterval\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"restriction\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TimeOfDayRestriction\";}}}}}s:22:\"WeekdayTimeRestriction\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"startDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:6:\"monday\";i:1;s:7:\"tuesday\";i:2;s:9:\"wednesday\";i:3;s:8:\"thursday\";i:4;s:6:\"friday\";i:5;s:8:\"saturday\";i:6;s:6:\"sunday\";}}s:9:\"startHour\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"startMin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"endDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:6:\"monday\";i:1;s:7:\"tuesday\";i:2;s:9:\"wednesday\";i:3;s:8:\"thursday\";i:4;s:6:\"friday\";i:5;s:8:\"saturday\";i:6;s:6:\"sunday\";}}s:7:\"endHour\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"endMin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:20:\"TimeOfDayRestriction\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"startHour\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"startMin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"endHour\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"endMin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:8:\"Duration\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"timeAmount\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"timeAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"timeUnit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:4:\"days\";i:1;s:5:\"hours\";i:2;s:7:\"minutes\";i:3;s:7:\"seconds\";i:4;s:11:\"miliseconds\";i:5;s:6:\"micros\";i:6;s:5:\"nanos\";}s:7:\"default\";s:7:\"minutes\";}}}s:6:\"Filter\";O:8:\"stdClass\":6:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:11:\"description\";s:127:\"Defines
+  the conditions that will be checked before applying rules and type of the operations
+  that will be applied on conditions\";s:13:\"discriminator\";s:4:\"type\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:9:\"match-all\";i:1;s:19:\"match-any-condition\";i:2;s:20:\"match-all-conditions\";}}}}s:8:\"MatchAll\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:9:\"match-all\";s:11:\"description\";s:16:\"Match
+  all filter\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Filter\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:18:\"MatchAllConditions\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:20:\"match-all-conditions\";s:11:\"description\";s:27:\"Match
+  all conditions filter\";s:8:\"required\";a:1:{i:0;s:10:\"conditions\";}s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Filter\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"conditions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Condition\";}s:8:\"minItems\";i:1;}}}}}s:17:\"MatchAnyCondition\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:19:\"match-any-condition\";s:11:\"description\";s:26:\"Match
+  any condition filter\";s:8:\"required\";a:1:{i:0;s:10:\"conditions\";}s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Filter\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"conditions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Condition\";}s:8:\"minItems\";i:1;}}}}}s:9:\"Condition\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"field\";i:1;s:9:\"operation\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"field\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:172:\"Specifies
+  which alert field will be used in condition. Possible values are message, alias,
+  description, source, entity, tags, actions, extra-properties, recipients or teams\";s:4:\"enum\";a:12:{i:0;s:7:\"message\";i:1;s:5:\"alias\";i:2;s:11:\"description\";i:3;s:6:\"source\";i:4;s:6:\"entity\";i:5;s:4:\"tags\";i:6;s:7:\"actions\";i:7;s:16:\"extra-properties\";i:8;s:10:\"recipients\";i:9;s:5:\"teams\";i:10;s:8:\"priority\";i:11;s:7:\"details\";}}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:73:\"If
+  field is set as extra-properties, key could be used for key-value pair\";}s:3:\"not\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:66:\"Indicates
+  behaviour of the given operation. Default value is false\";}s:9:\"operation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:11:{i:0;s:7:\"matches\";i:1;s:8:\"contains\";i:2;s:11:\"starts-with\";i:3;s:9:\"ends-with\";i:4;s:6:\"equals\";i:5;s:12:\"contains-key\";i:6;s:14:\"contains-value\";i:7;s:12:\"greater-than\";i:8;s:9:\"less-than\";i:9;s:8:\"is-empty\";i:10;s:24:\"equals-ignore-whitespace\";}s:11:\"description\";s:70:\"It
+  is the operation that will be executed for the given field and key.\";}s:13:\"expectedValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:115:\"User
+  defined value that will be compared with alert field according to the operation.
+  Default value is empty string\";}s:5:\"order\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:41:\"Order
+  of the condition in conditions list\";}}}s:9:\"Responder\";O:8:\"stdClass\":5:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:4:\"type\";s:6:\"object\";s:13:\"discriminator\";s:4:\"type\";s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"user\";i:1;s:4:\"team\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"UserResponder\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:4:\"user\";s:11:\"description\";s:14:\"User
+  responder\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Responder\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:13:\"TeamResponder\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:6:\"common\";s:21:\"x-discriminator-value\";s:4:\"team\";s:11:\"description\";s:14:\"Team
+  responder\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Responder\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:18:\"AlertActionPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Display
+  name of the request owner\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:59:\"Additional
+  note that will be added while creating the alert\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"Source
+  field of the alert. Default value is IP address of the incoming request\";}}}s:18:\"CreateAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Message
+  of the alert\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"Client-defined
+  identifier of the alert, that is also the key element of alert deduplication.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"Description
+  field of the alert that is generally used to provide a detailed information about
+  the alert.\";}s:10:\"responders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:62:\"Responders
+  that the alert will be routed to send notifications\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}s:9:\"visibleTo\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:86:\"Teams
+  and users that the alert will become visible to without sending any notification\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}s:7:\"actions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:51:\"Custom
+  actions that will be available for the alert\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Tags
+  of the alert\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:63:\"Map
+  of key-value pairs to use as custom properties of the alert\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"entity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"Entity
+  field of the alert that is generally used to specify which domain alert is related
+  to\";}s:8:\"priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Priority
+  level of the alert\";s:4:\"enum\";a:5:{i:0;s:2:\"P1\";i:1;s:2:\"P2\";i:2;s:2:\"P3\";i:3;s:2:\"P4\";i:4;s:2:\"P5\";}}}}}}s:23:\"AcknowledgeAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}}}s:25:\"UnAcknowledgeAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}}}s:17:\"CloseAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}}}s:18:\"SnoozeAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"endTime\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"endTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:42:\"Date
+  and time that snooze will lose effect\";}}}}}s:26:\"EscalateAlertToNextPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:10:\"escalation\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"escalation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/EscalationRecipient\";}}}}}s:18:\"AssignAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"owner\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserRecipient\";}}}}}s:21:\"AddTeamToAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"team\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"team\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TeamRecipient\";}}}}}s:26:\"AddResponderToAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:9:\"responder\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"responder\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}}}}s:31:\"ExecuteCustomAlertActionPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}}}s:21:\"AddTagsToAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"tags\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:24:\"AddDetailsToAlertPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"details\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:91:\"Key-value
+  pairs to add as custom property into alert. You can refer here for example values\";}}}}}s:21:\"AddNoteToAlertPayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"note\";}s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertActionPayload\";}}}s:24:\"CreateSavedSearchPayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:5:\"query\";i:2;s:5:\"owner\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:100;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:15000;}s:5:\"query\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:1000;}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserRecipient\";}s:5:\"teams\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"maxItems\";i:20;s:11:\"description\";s:57:\"Teams
+  that the alert will be routed to send notifications\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TeamRecipient\";}}}}s:24:\"UpdateSavedSearchPayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:5:\"query\";i:2;s:5:\"owner\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:100;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:15000;}s:5:\"query\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:1000;}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserRecipient\";}s:5:\"teams\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"maxItems\";i:20;s:11:\"description\";s:57:\"Teams
+  that the alert will be routed to send notifications\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TeamRecipient\";}}}}s:26:\"UpdateAlertPriorityPayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"priority\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Priority
+  level of the alert\";s:4:\"enum\";a:5:{i:0;s:2:\"P1\";i:1;s:2:\"P2\";i:2;s:2:\"P3\";i:3;s:2:\"P4\";i:4;s:2:\"P5\";}}}}s:25:\"UpdateAlertMessagePayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Message
+  of the alert\";}}}s:29:\"UpdateAlertDescriptionPayload\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Description
+  of the alert\";}}}s:24:\"GetRequestStatusResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AlertRequestStatus\";}}}}}s:18:\"ListAlertsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/BaseAlert\";}}s:6:\"paging\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PageDetails\";}}}}}s:16:\"GetAlertResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Alert\";}}}}}s:27:\"ListAlertRecipientsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/AlertRecipient\";}}}}}}s:21:\"ListAlertLogsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/AlertLog\";}}s:6:\"paging\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AlertPaging\";}}}}}s:22:\"ListAlertNotesResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/AlertNote\";}}s:6:\"paging\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AlertPaging\";}}}}}s:25:\"ListSavedSearchesResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/SavedSearchMeta\";}}}}}}s:25:\"CreateSavedSearchResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/SavedSearchMeta\";}}}}}s:22:\"GetSavedSearchResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SavedSearch\";}}}}}s:28:\"ListAlertAttachmentsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AlertAttachmentMeta\";}}}}}}s:26:\"GetAlertAttachmentResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AlertAttachment\";}}}}}s:22:\"GetCountAlertsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}}}}}s:18:\"AlertRequestStatus\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"processedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"isSuccess\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"alertId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"BaseAlert\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":20:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"tinyId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"acknowledged\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"isSeen\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"snoozed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"snoozedUntil\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:5:\"count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:14:\"lastOccurredAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"priority\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"responders\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}s:11:\"integration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AlertIntegration\";}s:6:\"report\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AlertReport\";}}}s:13:\"AlertTeamMeta\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"AlertIntegration\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"AlertReport\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"ackTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"closeTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:14:\"acknowledgedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"closedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Alert\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/BaseAlert\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"actions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"entity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:14:\"AlertRecipient\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AlertUserMeta\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:13:\"AlertUserMeta\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"AlertLog\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"log\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"AlertPaging\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"first\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"next\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"AlertNote\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"note\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"SavedSearchMeta\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"SavedSearchEntity\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"SavedSearch\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SavedSearchEntity\";}s:5:\"teams\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SavedSearchEntity\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"query\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"AlertAttachmentMeta\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"AlertAttachment\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:5:\"alert\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"CreateHeartbeatPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:4:\"name\";i:1;s:8:\"interval\";i:2;s:12:\"intervalUnit\";i:3;s:7:\"enabled\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Name
+  of the heartbeat\";s:9:\"maxLength\";i:200;}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"An
+  optional description of the heartbeat\";s:9:\"maxLength\";i:10000;}s:8:\"interval\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"Specifies
+  how often a heartbeat message should be expected\";s:7:\"minimum\";i:1;}s:12:\"intervalUnit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Interval
+  specified as 'minutes', 'hours' or 'days'\";s:4:\"enum\";a:3:{i:0;s:7:\"minutes\";i:1;s:5:\"hours\";i:2;s:4:\"days\";}}s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:35:\"Enable/disable
+  heartbeat monitoring\";}s:9:\"ownerTeam\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:72:\"Owner
+  team of the heartbeat, consisting id and/or name of the owner team\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"alertMessage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:136:\"Specifies
+  the alert message for heartbeat expiration alert. If this is not provided, default
+  alert message is 'HeartbeatName is expired'\";s:9:\"maxLength\";i:130;}s:9:\"alertTags\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:55:\"Specifies
+  the alert tags for heartbeat expiration alert\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:50;}s:8:\"maxItems\";i:20;}s:13:\"alertPriority\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Specifies
+  the alert priority for heartbeat expiration alert. If this is not provided, default
+  priority is P3\";s:4:\"enum\";a:5:{i:0;s:2:\"P1\";i:1;s:2:\"P2\";i:2;s:2:\"P3\";i:3;s:2:\"P4\";i:4;s:2:\"P5\";}}}}}}s:22:\"UpdateHeartbeatPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"An
+  optional description of the heartbeat\";s:9:\"maxLength\";i:10000;}s:8:\"interval\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"Specifies
+  how often a heartbeat message should be expected\";s:7:\"minimum\";i:1;}s:12:\"intervalUnit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Interval
+  specified as 'minutes', 'hours' or 'days'\";s:4:\"enum\";a:3:{i:0;s:7:\"minutes\";i:1;s:5:\"hours\";i:2;s:4:\"days\";}}s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:35:\"Enable/disable
+  heartbeat monitoring\";}}}s:23:\"CreateHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Heartbeat\";}}}}}s:20:\"GetHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Heartbeat\";}}}}}s:23:\"UpdateHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HeartbeatMeta\";}}}}}s:23:\"EnableHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HeartbeatMeta\";}}}}}s:24:\"DisableHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HeartbeatMeta\";}}}}}s:21:\"ListHeartbeatResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"heartbeats\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Heartbeat\";}}}}}}}}s:9:\"Heartbeat\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"interval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"intervalUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"minutes\";i:1;s:5:\"hours\";i:2;s:4:\"days\";}}s:7:\"expired\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"lastPingTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:13:\"HeartbeatMeta\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:9:\"heartbeat\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"expired\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:22:\"GetAccountInfoResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:7:\"account\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AccountInfo\";}}}}}s:11:\"AccountInfo\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:7:\"account\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"userCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"plan\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AccountPlan\";}}}s:11:\"AccountPlan\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:7:\"account\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"maxUserCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"isYearly\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:15:\"StatusPageEntry\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:8:\"required\";a:1:{i:0;s:5:\"title\";}}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"The
+  message to be added using status page into incident\";}s:7:\"details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"Description
+  of the message being added via stats page into incident\";}}}}}s:21:\"CreateIncidentPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:9:\"serviceId\";}}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Message
+  of the incident\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:110:\"Description
+  field of the incident that is generally used to provide a detailed information about
+  the incident.\";}s:10:\"responders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:65:\"Responders
+  that the incident will be routed to send notifications\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:21:\"Tags
+  of the incident.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:66:\"Map
+  of key-value pairs to use as custom properties of the incident\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Priority
+  level of the incident\";s:4:\"enum\";a:5:{i:0;s:2:\"P1\";i:1;s:2:\"P2\";i:2;s:2:\"P3\";i:3;s:2:\"P4\";i:4;s:2:\"P5\";}}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"Additional
+  note that will be added while creating the incident\";}s:9:\"serviceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Service
+  on which incident will be created.\";}s:15:\"statusPageEntry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:140:\"Status
+  page entry fields. If this field is leaved blank, message and description of incident
+  will be used for title and detail respectively.\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/StatusPageEntry\";}}s:18:\"notifyStakeholders\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:74:\"Indicate
+  whether stakeholders are notified or not. Default value is false.\";}}}}}s:21:\"IncidentActionPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Additional
+  note that will be included with the incident\";}}}s:20:\"CloseIncidentPayload\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/IncidentActionPayload\";}}}s:32:\"GetIncidentRequestStatusResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/IncidentRequestStatus\";}}}}}s:19:\"GetIncidentResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Incident\";}}}}}s:21:\"ListIncidentsResponse\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseResponse\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseIncident\";}}s:6:\"paging\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PageDetails\";}}}}}s:21:\"IncidentRequestStatus\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"success\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"processedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"isSuccess\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"incidentId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Incident\";O:8:\"stdClass\":3:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/BaseIncident\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"requestId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:12:\"BaseIncident\";O:8:\"stdClass\":4:{s:17:\"x-opsgenie-domain\";s:8:\"incident\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"tinyId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"isSeen\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"priority\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"responders\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recipient\";}}s:6:\"teamId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:66:\"Map
+  of key-value pairs to use as custom properties of the incident\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}"
+...

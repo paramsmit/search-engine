@@ -1,0 +1,446 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:5:\"title\";s:24:\"navel-dispatcher-manager\";s:11:\"description\";s:52:\"https://github.com/navel-it/navel-dispatcher-manager\";s:7:\"version\";s:5:\"0.1.0\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:47:\"Yoann
+  Le Garff, Nicolas Boquet and Yann Le Bras\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:27:\"Apache
+  License, Version 2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+basePath: /api
+paths:
+  /status:
+    get:
+      summary: Show product status
+      operationId: showStatus
+      x-mojo-to: Controller::OpenAPI::Product#show_status
+      tags:
+      - status
+      responses:
+        200:
+          description: Product status
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+            - version
+            properties:
+              version:
+                type:
+                - string
+                - integer
+                - number
+        default:
+          $ref: '#/responses/unexpectedError'
+  /save_configuration:
+    put:
+      summary: Save configuration
+      operationId: saveConfiguration
+      x-mojo-to: Controller::OpenAPI::Configuration#save
+      tags:
+      - backup
+      - configuration
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /meta:
+    get:
+      summary: Show meta configuration
+      operationId: showMeta
+      x-mojo-to: Controller::OpenAPI::Meta#show
+      tags:
+      - meta
+      responses:
+        200:
+          description: Meta configuration
+          schema:
+            $ref: '#/definitions/meta'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs:
+    get:
+      summary: List job types
+      operationId: listJobTypes
+      x-mojo-to: Controller::OpenAPI::Job#list_types
+      tags:
+      - job
+      responses:
+        200:
+          description: Job types
+          schema:
+            type: array
+            items:
+              type: string
+              minLength: 1
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs/{type}:
+    get:
+      summary: List job names by job type
+      operationId: listJobNamesByJobType
+      x-mojo-to: Controller::OpenAPI::Job#list_by_type
+      tags:
+      - job
+      parameters:
+      - $ref: '#/parameters/type'
+      responses:
+        200:
+          description: Job names by job type
+          schema:
+            type: array
+            items:
+              type: string
+              minLength: 1
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs/{type}/{name}:
+    get:
+      summary: Show the properties of a job
+      operationId: showJobByTypeAndName
+      x-mojo-to: Controller::OpenAPI::Job#show_by_type_and_name
+      tags:
+      - job
+      parameters:
+      - $ref: '#/parameters/type'
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          description: Job
+          schema:
+            $ref: '#/definitions/job'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs/{type}/{name}/enable:
+    put:
+      summary: Enable a job
+      operationId: enableJobByTypeAndName
+      x-mojo-to: Controller::OpenAPI::Job#enable_by_type_and_name
+      tags:
+      - job
+      parameters:
+      - $ref: '#/parameters/type'
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs/{type}/{name}/disable:
+    put:
+      summary: Disable a job
+      operationId: disableJobByTypeAndName
+      x-mojo-to: Controller::OpenAPI::Job#disable_by_type_and_name
+      tags:
+      - job
+      parameters:
+      - $ref: '#/parameters/type'
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /jobs/{type}/{name}/execute:
+    put:
+      summary: Execute a job
+      operationId: executeJobByTypeAndName
+      x-mojo-to: Controller::OpenAPI::Job#execute_by_type_and_name
+      tags:
+      - job
+      parameters:
+      - $ref: '#/parameters/type'
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers:
+    get:
+      summary: List dispatcher names
+      operationId: listDispatcherNames
+      x-mojo-to: Controller::OpenAPI::Dispatcher#list
+      tags:
+      - dispatcher
+      responses:
+        200:
+          description: Dispatcher names
+          schema:
+            type: array
+            items:
+              type: string
+              minLength: 1
+        default:
+          $ref: '#/responses/unexpectedError'
+    post:
+      summary: Create a dispatcher
+      operationId: createDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#create
+      tags:
+      - dispatcher
+      parameters:
+      - $ref: '#/parameters/definition'
+      responses:
+        201:
+          $ref: '#/responses/okKo'
+        400:
+          $ref: '#/responses/badRequest'
+        409:
+          $ref: '#/responses/resourceAlreadyExists'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}:
+    get:
+      summary: Show the properties of a dispatcher
+      operationId: showDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show
+      tags:
+      - dispatcher
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          description: Dispatcher
+          schema:
+            $ref: '#/definitions/dispatcher'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+    put:
+      summary: Update a dispatcher
+      operationId: updateDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#update
+      tags:
+      - dispatcher
+      parameters:
+      - $ref: '#/parameters/name'
+      - $ref: '#/parameters/baseDefinition'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+    delete:
+      summary: Delete a dispatcher
+      operationId: deleteDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#delete
+      tags:
+      - dispatcher
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker:
+    get:
+      summary: Show informations on the worker of a dispatcher
+      operationId: showWorkerStatusOfADispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_worker_status
+      tags:
+      - dispatcher
+      - worker
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          description: Worker's informations
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+            - healthy
+            - initialized
+            properties:
+              healthy:
+                type:
+                - integer
+                - boolean
+                minimum: 0
+                maximum: 1
+              initialized:
+                type:
+                - integer
+                - boolean
+                minimum: 0
+                maximum: 1
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker/filler/connection:
+    get:
+      summary: Show the connection status of the filler associated with a dispatcher
+      operationId: showFillerConnectionStatusAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_associated_filler_connection_status
+      tags:
+      - dispatcher
+      - worker
+      - filler
+      - connection
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          description: Filler connection status
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+            - active_connections
+            properties:
+              active_connections:
+                type: integer
+                minimum: 0
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker/consumer/queue:
+    get:
+      summary: Show informations on the consumer queue associated with a dispatcher
+      operationId: showConsumerQueueAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_associated_consumer_queue
+      tags:
+      - dispatcher
+      - worker
+      - consumer
+      - queue
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/queueStatus'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+    delete:
+      summary: Delete all events in the consumer queue associated with a dispatcher
+      operationId: deleteAllEventsFromConsumerQueueAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#delete_all_events_from_associated_consumer_queue
+      tags:
+      - dispatcher
+      - consumer
+      - queue
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker/consumer/connection:
+    get:
+      summary: Show the connection status of the consumer associated with a dispatcher
+      operationId: showConsumerConnectionStatusAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_associated_consumer_connection_status
+      tags:
+      - dispatcher
+      - worker
+      - consumer
+      - connection
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/couldBeConnectableConnectionStatus'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker/publisher/queue:
+    get:
+      summary: Show informations on the publisher queue associated with a dispatcher
+      operationId: showPublisherQueueAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_associated_publisher_queue
+      tags:
+      - dispatcher
+      - worker
+      - publisher
+      - queue
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/queueStatus'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+    delete:
+      summary: Delete all events in the publisher queue associated with a dispatcher
+      operationId: deleteAllEventsFromPublisherQueueAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#delete_all_events_from_associated_publisher_queue
+      tags:
+      - dispatcher
+      - publisher
+      - queue
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/okKo'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+  /dispatchers/{name}/worker/publisher/connection:
+    get:
+      summary: Show the connection status of the publisher associated with a dispatcher
+      operationId: showPublisherConnectionStatusAssociatedWithDispatcher
+      x-mojo-to: Controller::OpenAPI::Dispatcher#show_associated_publisher_connection_status
+      tags:
+      - dispatcher
+      - worker
+      - publisher
+      - connection
+      parameters:
+      - $ref: '#/parameters/name'
+      responses:
+        200:
+          $ref: '#/responses/couldBeConnectableConnectionStatus'
+        400:
+          $ref: '#/responses/badRequest'
+        404:
+          $ref: '#/responses/resourceCouldNotBeFound'
+        default:
+          $ref: '#/responses/unexpectedError'
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":5:{s:4:\"meta\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:1:{i:0;s:11:\"dispatchers\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"dispatchers\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:2:{i:0;s:21:\"definitions_from_file\";i:1;s:7:\"maximum\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"definitions_from_file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"maximum\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}}}}}s:3:\"job\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:6:{i:0;s:4:\"name\";i:1;s:4:\"type\";i:2;s:7:\"backend\";i:3;s:7:\"enabled\";i:4;s:9:\"singleton\";i:5;s:7:\"running\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"backend\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:7:\"enabled\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:7:\"boolean\";}s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:9:\"singleton\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:7:\"boolean\";}s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:7:\"running\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}}}s:14:\"baseDispatcher\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:10:\"filler_tls\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:7:\"boolean\";}s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:14:\"filler_tls_ctx\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}s:11:\"filler_user\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"minLength\";i:1;}s:15:\"filler_password\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"filler_host\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:11:\"filler_port\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:65535;}s:15:\"filler_basepath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:19:\"consumer_queue_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:16:\"consumer_backend\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:22:\"consumer_backend_input\";O:8:\"stdClass\":0:{}s:20:\"publisher_queue_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:17:\"publisher_backend\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:1;}s:23:\"publisher_backend_input\";O:8:\"stdClass\":0:{}}}s:10:\"dispatcher\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/baseDispatcher\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:14:{i:0;s:4:\"name\";i:1;s:10:\"filler_tls\";i:2;s:14:\"filler_tls_ctx\";i:3;s:11:\"filler_user\";i:4;s:15:\"filler_password\";i:5;s:11:\"filler_host\";i:6;s:11:\"filler_port\";i:7;s:15:\"filler_basepath\";i:8;s:19:\"consumer_queue_size\";i:9;s:16:\"consumer_backend\";i:10;s:22:\"consumer_backend_input\";i:11;s:20:\"publisher_queue_size\";i:12;s:17:\"publisher_backend\";i:13;s:23:\"publisher_backend_input\";}}}}s:4:\"okKo\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:2:{i:0;s:2:\"ok\";i:1;s:2:\"ko\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"ok\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":0:{}}s:2:\"ko\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":0:{}}}}}"
+...

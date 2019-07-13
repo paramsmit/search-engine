@@ -1,0 +1,331 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:15:\"Open
+  Skills API\";s:11:\"description\";s:140:\"A complete and standard data store for
+  canonical and emerging skills, knowledge, abilities, tools, technolgies, and how
+  they relate to jobs.\";s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:20:\"Work
+  Data Initiative\";s:3:\"url\";s:25:\"http://www.dataatwork.org\";}}"
+host: api.dataatwork.org
+basePath: /v1
+paths:
+  /jobs:
+    get:
+      summary: Job Titles and Descriptions
+      description: Retrieves the names, descriptions, and UUIDs of all job titles.
+      parameters:
+      - name: offset
+        in: query
+        description: Pagination offset. Default is 0.
+        type: integer
+      - name: limit
+        in: query
+        description: Maximum number of items per page. Default is 20 and cannot exceed
+          500.
+        type: integer
+      responses:
+        200:
+          description: A collection of jobs
+          schema:
+            $ref: '#/definitions/Jobs'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{id}:
+    get:
+      summary: Job Title and Description
+      description: Retrieves the name, description, and UUID of a job by specifying
+        its O*NET SOC Code or UUID.
+      parameters:
+      - name: id
+        in: path
+        description: The O*NET SOC Code or UUID of the job title to retrieve
+        required: true
+        type: string
+      - name: fips
+        in: query
+        description: The FIPS Code of a Core-Based Statistical Area. Only return the
+          job if present in this area
+        type: string
+      responses:
+        200:
+          description: A job
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{id}/related_skills:
+    get:
+      summary: Skills Associated with a Job
+      description: Retrieves a collection of skills associated with a specified job.
+      parameters:
+      - name: id
+        in: path
+        description: The UUID of the job to retrieve skills for
+        required: true
+        type: string
+      responses:
+        200:
+          description: A job and its related skills
+          schema:
+            $ref: '#/definitions/JobSkills'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{id}/related_jobs:
+    get:
+      summary: Jobs Associated with a Job
+      description: Retrieves a collection of jobs associated with a specified job.
+      parameters:
+      - name: id
+        in: path
+        description: The UUID of the job to retrieve related jobs for
+        required: true
+        type: string
+      responses:
+        200:
+          description: A job and its related jobs
+          schema:
+            $ref: '#/definitions/JobRelatedJobs'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/autocomplete:
+    get:
+      summary: Job Title Autocomplete
+      description: Retrieves the names, descriptions, and UUIDs of all job titles
+        matching a given search criteria.
+      parameters:
+      - name: begins_with
+        in: query
+        description: Find job titles beginning with the given text fragment
+        required: false
+        type: string
+      - name: contains
+        in: query
+        description: Find job titles containing the given text fragment
+        required: false
+        type: string
+      - name: ends_with
+        in: query
+        description: Find job titles ending with the given text fragment
+        required: false
+        type: string
+      responses:
+        200:
+          description: A collection of jobs
+          schema:
+            $ref: '#/definitions/Jobs'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/normalize:
+    get:
+      summary: Job Title Normalization
+      description: Retrieves the canonical job title for a synonymous job title
+      parameters:
+      - name: job_title
+        in: query
+        description: Find the canonical job title(s) for jobs matching the given text
+          fragment
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: Maximumn number of job title synonyms to return. Default is 1
+          and cannot exceed 10.
+        required: false
+        type: integer
+      responses:
+        200:
+          description: A collection of normalized jobs
+          schema:
+            $ref: '#/definitions/NormalizedJobs'
+  /jobs/unusual_titles:
+    get:
+      summary: Unusual Job Titles
+      description: Retrieves a list of unusual job titles and the UUIDs of their canonical
+        jobs.
+      responses:
+        200:
+          description: A collection of normalized jobs
+          schema:
+            $ref: '#/definitions/NormalizedJobs'
+  /skills:
+    get:
+      summary: Skill Names and Descriptions
+      description: Retrieve the names, descriptions, and UUIDs of all skills.
+      parameters:
+      - name: offset
+        in: query
+        description: Pagination offset. Default is 0.
+        type: integer
+      - name: limit
+        in: query
+        description: Maximum number of items per page. Default is 20 and cannot exceed
+          500.
+        type: integer
+      responses:
+        200:
+          description: A collection of skills
+          schema:
+            $ref: '#/definitions/Skills'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /skills/{id}:
+    get:
+      summary: Skill Name and Description
+      description: Retrieves the name, description, and UUID of a job by specifying
+        its UUID.
+      parameters:
+      - name: id
+        in: path
+        description: The UUID of the skill name to retrieve
+        required: true
+        type: string
+      responses:
+        200:
+          description: A skill
+          schema:
+            $ref: '#/definitions/Skill'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /skills/{id}/related_jobs:
+    get:
+      summary: Jobs Associated with a Skill
+      description: Retrieves a collection of jobs associated with a specified skill.
+      parameters:
+      - name: id
+        in: path
+        description: The UUID of the skill to retrieve jobs for
+        required: true
+        type: string
+      responses:
+        200:
+          description: A skill and its related jobs
+          schema:
+            $ref: '#/definitions/SkillJobs'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /skills/{id}/related_skills:
+    get:
+      summary: Skills Associated with a Skill
+      description: Retrieves a collection of skills associated with a specified skill.
+      parameters:
+      - name: id
+        in: path
+        description: The UUID of the skill to retrieve related skills for
+        required: true
+        type: string
+      responses:
+        200:
+          description: A skill and its related skills
+          schema:
+            $ref: '#/definitions/SkillRelatedSkills'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /skills/autocomplete:
+    get:
+      summary: Skill Name Autocomplete
+      description: Retrieves the names, descriptions, and UUIDs of all skills matching
+        a given search criteria.
+      parameters:
+      - name: begins_with
+        in: query
+        description: Find skill names beginning with the given text fragment
+        required: false
+        type: string
+      - name: contains
+        in: query
+        description: Find skill names containing the given text fragment
+        required: false
+        type: string
+      - name: ends_with
+        in: query
+        description: Find skill names ending with the given text fragment
+        required: false
+        type: string
+      responses:
+        200:
+          description: A collection of skills
+          schema:
+            $ref: '#/definitions/SkillJobs'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /skills/normalize:
+    get:
+      summary: Skill Name Normalization
+      description: Retrieves the canonical skill name for a synonymous skill name
+      parameters:
+      - name: skill_name
+        in: query
+        description: Find the canonical skill name(s) for skills matching the given
+          text fragment
+        required: true
+        type: string
+      responses:
+        200:
+          description: A collection of normalized skills
+          schema:
+            $ref: '#/definitions/NormalizedSkills'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":18:{s:4:\"Jobs\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Job\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/PageLink\";}}}}s:3:\"Job\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Job
+  title\";}s:20:\"normalized_job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Normalized
+  job title\";}s:11:\"parent_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"UUID
+  for the job's parent job category\";}}}s:14:\"NormalizedJobs\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/NormalizedJob\";}}s:9:\"JobSkills\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"job_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:9:\"job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Title
+  of the job associated with the UUID\";}s:20:\"normalized_job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Normalized
+  title of the job associated with the UUID\";}s:6:\"skills\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/SkillJob\";}}}}s:13:\"NormalizedJob\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Universally
+  Unique Identifier for the synonymous job title\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Job
+  title for the synonymous job title\";}s:15:\"relevance_score\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Relevance
+  score for job title.\";}s:11:\"parent_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Universal
+  Unique Identifier for the canonical job title\";}}}s:8:\"JobSkill\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"job_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:9:\"job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Job
+  title\";}s:20:\"normalized_job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Normalized
+  job title\";}s:10:\"importance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:64:\"O*NET
+  importance score indicating how important skill is to job.\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:66:\"O*NET
+  level score indicating the skill level required for the job.\";}}}s:14:\"JobRelatedJobs\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:18:\"related_job_titles\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/JobRelatedJob\";}}}}s:13:\"JobRelatedJob\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Job
+  title\";}s:11:\"parent_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Universally
+  Unique Identifier for the job's canonical job title\";}}}s:6:\"Skills\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Skill\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/PageLink\";}}}}s:5:\"Skill\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Universally
+  Unique Identifier for the skill\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Skill
+  name\";}s:15:\"onet_element_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"O*NET
+  Element Identifier\";}s:21:\"normalized_skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Normalized
+  skill name\";}}}s:16:\"NormalizedSkills\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/NormalizedSkill\";}}s:15:\"NormalizedSkill\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Universally
+  Unique Identifier for the canonical skill name\";}s:10:\"skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Canonical
+  skill name\";}}}s:9:\"SkillJobs\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"skill_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Universally
+  Unique Identifier for the job\";}s:10:\"skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Title
+  of the job associated with the UUID\";}s:20:\"normalized_job_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Normalized
+  title of the job associated with the UUID\";}s:4:\"jobs\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/JobSkill\";}}}}s:8:\"SkillJob\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"skill_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Universally
+  Unique Identifier for the skill\";}s:10:\"skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Name
+  of the skill\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Description
+  of the skill\";}s:21:\"normalized_skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Normalized
+  skill name\";}s:10:\"importance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:22:\"O*NET
+  importance score\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:17:\"O*NET
+  level score\";}}}s:18:\"SkillRelatedSkills\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Universally
+  Unique Identifier for the skills\";}s:18:\"related_skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SkillRelatedSkill\";}}}}s:17:\"SkillRelatedSkill\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Universally
+  Unique Identifier for the skill\";}s:10:\"skill_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Skill
+  name\";}}}s:8:\"PageLink\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"rel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Link
+  descriptor (e.g. self, first, prev, next, last)\";}s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Link
+  URI\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

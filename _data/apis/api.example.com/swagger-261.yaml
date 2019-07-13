@@ -1,0 +1,378 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:47:\"This documentation
+  is made for carrier wrappers\";s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:15:\"Carrier
+  Wrapper\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:22:\"julien@shoprunback.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: '#'
+paths:
+  /:
+    get:
+      tags:
+      - general
+      summary: This endpoint list all supported endpoints for this wrapper.
+      description: This is an hardcoded response (ie. the response is not programmatic
+        but set by the developer)
+      operationId: listEndpoints
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: Endpoints not implemented (falsy) are not required in the response.
+          schema:
+            $ref: '#/definitions/ListEndpoint'
+  /type:
+    get:
+      tags:
+      - general
+      summary: Return the type of carrier service.
+      description: This is an hardcoded response
+      operationId: type
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: Type of carrier service. You must provide the type in String
+            and set boolean values. (for future services which provide multiple types).
+            For most cases, only one boolean will be true.
+          schema:
+            $ref: '#/definitions/Type'
+  /label:
+    post:
+      tags:
+      - general
+      summary: Get the label for a shipment
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Information about the sender, the recipient and the parcel
+        required: true
+        schema:
+          $ref: '#/definitions/Label'
+      responses:
+        200:
+          description: Return the parameters used to generate the label plus the ID
+            of the shipment and the tracking URL.
+          schema:
+            $ref: '#/definitions/CreatedLabel'
+  /price:
+    post:
+      tags:
+      - general
+      summary: Get the estimated price for a shipment
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Information about the sender, the recipient and the parcel. This
+          endpoint is not required if the carrier service can't provide a price for
+          a shipment
+        required: true
+        schema:
+          $ref: '#/definitions/Label'
+      responses:
+        200:
+          description: Return the parameters used to generate the label plus the ID
+            of the shipment estimantion, the estimated price and the currency.
+          schema:
+            $ref: '#/definitions/EstimatedLabel'
+  /dropoff/points:
+    post:
+      tags:
+      - dropoff
+      summary: Get the 10/20 closest dropoff points for a specified address or GPS
+        coordinates
+      parameters:
+      - in: body
+        name: body
+        description: Information about the location of the sender
+        required: true
+        schema:
+          $ref: '#/definitions/SenderLocation'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DropoffPoint'
+  /dropoff/reserve_slot:
+    post:
+      tags:
+      - dropoff
+      summary: Reserve specific dropoff slot
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Information about the dropoff reservation
+        required: true
+        schema:
+          $ref: '#/definitions/DropoffReservationRequest'
+      responses:
+        200:
+          description: Dropoff slot reservation confirmation
+          schema:
+            $ref: '#/definitions/DropoffReservationResponse'
+  /pickup:
+    post:
+      tags:
+      - pickup
+      summary: Request for a pickup
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Information about the sender, the recipient and the parcel
+        required: true
+        schema:
+          $ref: '#/definitions/PickupRequest'
+      responses:
+        200:
+          description: Return the parameters used to request the pickup plus the ID
+            of the pickup
+          schema: []
+  /pickup/{pickupId}:
+    delete:
+      tags:
+      - pickup
+      parameters:
+      - name: pickupId
+        in: path
+        description: ID of pickup to be deleted
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: TODO
+  /tracking/{reference}:
+    get:
+      tags:
+      - general
+      parameters:
+      - name: reference
+        in: path
+        description: Reference of the shipment, pickup etc. Could be shipment_id,
+          pickup_id ...
+        required: true
+        type: string
+      responses:
+        200:
+          description: Tracking response
+          schema: []
+  /status:
+    get:
+      tags:
+      - general
+      summary: Get the status of the service
+      parameters: []
+      responses:
+        200:
+          description: Service status
+          schema:
+            $ref: '#/definitions/Status'
+  /pickup/slots:
+    get:
+      tags:
+      - pickup
+      parameters: []
+      responses:
+        200:
+          description: Return all pickup slots for the 7 coming days
+          schema:
+            $ref: '#/definitions/Slots'
+  /webhooks/subscribe:
+    post:
+      tags:
+      - general
+      parameters: []
+      responses:
+        200:
+          description: TODO
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":32:{s:14:\"SenderLocation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}}}s:25:\"DropoffReservationRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"booking_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:26:\"DropoffReservationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"confirmation_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"DropoffPoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Name
+  of the point\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"address
+  line 2\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"zipcode\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"City\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:8:\"logo_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Logo
+  of the dropoff points (if known)\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Unique
+  identifier of the dropoff\";}s:17:\"booking_reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Unique
+  identifier used for booking (can be blank)\";}s:7:\"opening\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:26:\"Opening
+  array (0 = monday)\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DropoffPoint_opening\";}}}}s:5:\"Label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"shipment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Label_origin\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/Label_destination\";}s:6:\"parcel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Label_parcel\";}s:7:\"dropoff\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Label_dropoff\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Label_metadata\";}}}s:12:\"CreatedLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CreatedLabel_origin\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/CreatedLabel_destination\";}s:6:\"parcel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CreatedLabel_parcel\";}s:7:\"dropoff\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Label_dropoff\";}s:19:\"carrier_shipment_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  identifier of the shipment for this carrier\";}s:18:\"original_label_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Url
+  of the label stored by the carrier\";}s:9:\"label_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"URL
+  of the label (PDF)\";}}}s:13:\"PickupRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"shipment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/PickupRequest_origin\";}s:6:\"pickup\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/PickupRequest_pickup\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/PickupRequest_destination\";}s:6:\"parcel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Label_parcel\";}}}s:14:\"PickupResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"pickup_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"ID
+  return by the carrier\";}s:19:\"carrier_shipment_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Id
+  of the shipment label\";}s:18:\"original_label_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Url
+  of the label stored by the carrier\";}s:9:\"label_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Label
+  url (S3)\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/PickupResponse_origin\";}s:6:\"pickup\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/PickupRequest_pickup\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/PickupRequest_destination\";}s:6:\"parcel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Label_parcel\";}}s:11:\"description\";s:63:\"Parameters
+  used to request the pickup plus the ID of the pickup\";}s:14:\"EstimatedLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"shipment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CreatedLabel_origin\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/EstimatedLabel_destination\";}s:6:\"parcel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Label_parcel\";}s:19:\"carrier_shipment_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Unique
+  identifier of the estimated shipment for this carrier\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:15:\"Estimated
+  price\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"ISO
+  code of the currency (EUR, USD, ...)\";}}}s:12:\"ListEndpoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:1:\"/\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ListEndpoint_\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ListEndpoint_\";}s:12:\"pickup/slots\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ListEndpoint_\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ListEndpoint_\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ListEndpoint_\";}}}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:6:\"postal\";i:1;s:6:\"pickup\";i:2;s:7:\"dropoff\";i:3;s:8:\"linehaul\";}}s:6:\"postal\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"pickup\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"dropoff\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"linehaul\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"available\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:37:\"Does
+  the service is working properly?\";}s:13:\"response_time\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:59:\"Response
+  time of the service in milliseconds.\n -1 if no API\";}s:7:\"timeout\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:62:\"Does
+  the API reached the time limit (timeout) before replying?\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:58:\"Time
+  in milliseconds set as timeout limit (30s by default)\";}}}s:5:\"Slots\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"days\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Slots_days\";}}}}s:20:\"TrackingInformations\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Last
+  step's status of the shipment\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Last
+  location of the shipment\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Description
+  of the last event\";}s:8:\"datetime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Datetime
+  of the last event\";}s:5:\"steps\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/TrackingInformations_steps\";}}}s:20:\"DropoffPoint_opening\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"start_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"HH:MM:SS
+  UTC time\";}s:6:\"end_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"HH:MM:SS
+  UTC time\";}}}s:12:\"Label_origin\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Identity
+  of the sender (John Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"First
+  name of the sender (John)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Last
+  name of the sender (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Company
+  name of the sender (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Phone
+  number of the sender (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Email
+  of the sender\";}}}s:17:\"Label_destination\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Identity
+  of the recipient (Jane Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Company
+  name of the recipient (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Zipcode
+  destination\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"City
+  destination\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Phone
+  number of the recipient (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Email
+  of the recipient\";}}}s:12:\"Label_parcel\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"length_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"width_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"height_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"weight_in_grams\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"number_of_pieces\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Number
+  of pieces of the shipment\";}}}s:13:\"Label_dropoff\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"point_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"ID
+  returned for each points by the /dropoff/points call\";}}s:11:\"description\";s:48:\"Informations
+  required if it is a dropoff service\";}s:14:\"Label_metadata\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"RMA\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"example
+  of matadata\";}}s:11:\"description\";s:208:\"Metadata are data which can be qualified
+  but can be needed for a certain carrier service. When you want a certain data to
+  generate a label, contact us and we will add the needed metadata in this metadata
+  part\";}s:19:\"CreatedLabel_origin\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Identity
+  of the sender (John Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"First
+  name of the sender (John)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Last
+  name of the sender (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Company
+  name of the sender (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"City\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Phone
+  number of the sender (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Email
+  of the sender\";}}}s:24:\"CreatedLabel_destination\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:12:\"carrier_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"destination
+  carrier code\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Identity
+  of the recipient (Jane Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Company
+  name of the recipient (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"First
+  part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"City\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Phone
+  number of the recipient (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Email
+  of the recipient\";}}}s:19:\"CreatedLabel_parcel\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"length_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"width_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"height_in_cm\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"weight_in_grams\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"number_of_pieces\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Number
+  of pieces of the shipment\";}s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Description
+  of the parcel's content\";}}}s:20:\"PickupRequest_origin\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Requestor's
+  name of the pickup\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Requestor
+  Contact Phone Number\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Identity
+  of the sender (John Doe)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Address
+  2\";}s:16:\"package_location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Package
+  Location in the pickup place\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"City
+  of the pickup place\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"ZipCode\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Country
+  code of the pickup place\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:20:\"PickupRequest_pickup\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:48:\"The
+  date at which the pick up has been scheduled\";}s:7:\"slot_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"slot
+  id if exists\";}s:13:\"slot_start_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"time\";s:11:\"description\";s:65:\"Time
+  in hours and minutes (HH:MM) by which the pick will be ready\";}s:11:\"slot_end_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"time\";s:11:\"description\";s:35:\"Closing
+  time of the pickup location\";}s:20:\"special_instructions\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"special
+  instructions for pickup\";}}}s:25:\"PickupRequest_destination\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":16:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Identity
+  of the recipient (Jane Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Company
+  name of the recipient (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Zipcode
+  destination\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"City
+  destination\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Phone
+  number of the recipient (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Email
+  of the recipient\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:21:\"PickupResponse_origin\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":13:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Requestor's
+  name of the pickup\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Requestor
+  Contact Phone Number\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Identity
+  of the sender (John Doe)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Address
+  2\";}s:16:\"package_location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Package
+  Location in the pickup place\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"City
+  of the pickup place\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"ZipCode\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Country
+  code of the pickup place\";}}}s:26:\"EstimatedLabel_destination\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:12:\"carrier_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"destination
+  carrier code\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Identity
+  of the recipient (Jane Doe)\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"First
+  name of the recipient (Jane)\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Last
+  name of the recipient (Doe)\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Company
+  name of the recipient (can be empty)\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Number
+  of the street\";}s:11:\"street_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the street\";}s:5:\"line1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Full
+  First part of the address\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Second
+  part of the address (can be empty)\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"(can
+  be empty)\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"ISO
+  Code 2 of the country (always provided)\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Phone
+  number of the recipient (international format)\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Email
+  of the recipient\";}}}s:13:\"ListEndpoint_\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"get\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}}}s:11:\"Slots_slots\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"ID
+  of the slot\";}s:10:\"start_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:37:\"Datetime
+  of the beginning of the slot\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:15:\"time
+  in minutes\";}s:12:\"availability\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:117:\"How
+  many courier available for this slot. (set to 1000 when unlimited,  -1 when not
+  known but known as not unlimited)\";}}}s:10:\"Slots_days\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:5:\"slots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Slots_slots\";}}}}s:26:\"TrackingInformations_steps\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Status
+  of the shipment\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Location
+  of the shipment\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Description
+  of the event\";}s:8:\"datetime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Datetime
+  of the event\";}}}}"
+...

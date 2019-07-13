@@ -1,0 +1,766 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:828:\"This is a web
+  scraping tool, written in Django, that constantly scrapes the articles of major
+  technology blogs and stores it in a PostgreSQL database.\n\nThese are the relevant
+  data being stored:\n- Outlet name and metadata (Title, website and description);\n-
+  Authors (name, outlet, profile page, about, avatar and social networks);\n- Published
+  articles and metadata (title, publication date, author, content, thumbnail, url,
+  outlet, authors, categories);\n- Categories' tags\n\nCurrently we're scraping content
+  from:\n- [TechCrunch](https://techcrunch.com/)\n- [Cheesecake Labs](https://cheesecakelabs.com/)\n-
+  [Mashable](https://mashable.com/)\n- [Engadget](https://engadget.com/)\n\nThis rest
+  API, provides access to all these informations. If you are **admin**, you'll have
+  access to `PUT`, `PATCH`, `POST` and `DELETE` methods as well.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:13:\"CKL
+  Challenge\";}"
+host: cheesecake-challenge.herokuapp.com
+basePath: /
+paths:
+  /outlets:
+    get:
+      tags:
+      - outlet
+      summary: Returns all stored outlets.
+      description: This endpoind returns all stored outlets with their informations.
+      operationId: get_outlets
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: name__contains
+        type: string
+        description: Searches for outlets' names containing this parameter.n**Example(s):**n-
+          ?name__contains=cheese
+      - in: query
+        name: website__contains
+        type: string
+        description: Searches for outlets' websites containing this parameter.n**Example(s):**n-
+          ?website__contains=cheese
+      - in: query
+        name: description__contains
+        type: string
+        description: Searches for outlets' description containing this parameter.n**Example(s):**n-
+          ?description__contains=cheese
+      responses:
+        200:
+          description: List with all stored outlets matching the given parameters
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Outlet'
+  /outlet:
+    post:
+      tags:
+      - outlet
+      summary: Creates an outlet.
+      description: This endpoind creates an outlet if the user trying to do it is
+        logged as admin.
+      operationId: create_outlet
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: outlet
+        description: The outlet's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Outlet'
+      responses:
+        201:
+          description: Succesfully created
+          schema:
+            $ref: '#/definitions/Outlet'
+        400:
+          description: Name, slug, website or description wasn't provided
+        403:
+          description: User not logged as admin
+  /outlet/{id}:
+    get:
+      tags:
+      - outlet
+      summary: Retrieves an outlet.
+      description: This endpoind retrieves an outlet given its ID.
+      operationId: retrieve_outlet
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the outlet to get
+      responses:
+        200:
+          description: Outlet found
+          schema:
+            $ref: '#/definitions/Outlet'
+        404:
+          description: Outlet not found
+    put:
+      tags:
+      - outlet
+      summary: Update an entire outlet.
+      description: This endpoind updates an entire outlet given its ID if the user
+        is logged as admin.
+      operationId: update_outlet
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the outlet to get
+      - in: body
+        name: outlet
+        description: The outlet's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Outlet'
+      responses:
+        200:
+          description: Outlet updated
+          schema:
+            $ref: '#/definitions/Outlet'
+        400:
+          description: One or more parameters weren't provided
+        403:
+          description: User not logged as admin
+        404:
+          description: Outlet not found
+    patch:
+      tags:
+      - outlet
+      summary: Update parts of an outlet.
+      description: This endpoind updates parts of an outlet given its ID if the user
+        is logged as admin.
+      operationId: update_parts_outlet
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the outlet to get
+      - in: body
+        name: outlet
+        required: true
+        description: The outlet's information.
+        schema:
+          $ref: '#/definitions/Outlet'
+      responses:
+        200:
+          description: Outlet updated
+          schema:
+            $ref: '#/definitions/Outlet'
+        403:
+          description: User not logged as admin
+        404:
+          description: Outlet not found
+    delete:
+      tags:
+      - outlet
+      summary: Delete an outlet.
+      description: This endpoind soft deletes an outlet given its ID if the user is
+        logged as admin. Hard deletion is not permitted because the asyncronous functions
+        that fetch the articles depends on it.
+      operationId: delete_outlet
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the outlet to get
+      responses:
+        204:
+          description: Outlet deleted
+        403:
+          description: User not logged as admin
+        404:
+          description: Outlet not found
+  /authors:
+    get:
+      tags:
+      - author
+      summary: Returns all stored authors.
+      description: This endpoind returns all stored authors with their informations.
+      operationId: get_authors
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: name__contains
+        type: string
+        description: Searches for authors' names containing this parameter.n**Example(s):**n-
+          ?name__contains=woz
+      - in: query
+        name: about__contains
+        type: string
+        description: Searches for authors' about containing this parameter.n**Example(s):**n-
+          ?about__contains=tech
+      - in: query
+        name: twitter__contains
+        type: string
+        description: Searches for authors' twitter containing this parameter.n**Example(s):**n-
+          ?twitter__contains=woz
+      - in: query
+        name: facebook__contains
+        type: string
+        description: Searches for authors' facebook containing this parameter.n**Example(s):**n-
+          ?facebook__contains=woz
+      - in: query
+        name: linkedin__contains
+        type: string
+        description: Searches for authors' linkedin containing this parameter.n**Example(s):**n-
+          ?linkedin__contains=woz
+      - in: query
+        name: profile__contains
+        type: string
+        description: Searches for authors' profile containing this parameter.n**Example(s):**n-
+          ?profile__contains=woz
+      - in: query
+        name: website__contains
+        type: string
+        description: Searches for authors' website containing this parameter.n**Example(s):**n-
+          ?website__contains=woz
+      - in: query
+        name: outlet
+        type: integer
+        description: Search for articles served by this outlet. It is also possible
+          to query multiple outlets.n**Example(s):**n- ?outlet=1n- ?outlet=1&outlet=2
+          ...
+      responses:
+        200:
+          description: List with all stored authors
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Author'
+  /author:
+    post:
+      tags:
+      - author
+      summary: Creates an author.
+      description: This endpoind creates an author if the user trying to do it is
+        logged as admin.
+      operationId: create_author
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: author
+        description: The author's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Author'
+      responses:
+        201:
+          description: Succesfully created
+          schema:
+            $ref: '#/definitions/Author'
+        400:
+          description: Name or slug wasn't provided
+        403:
+          description: User not logged as admin
+  /author/{id}:
+    get:
+      tags:
+      - author
+      summary: Retrieves an author.
+      description: This endpoind retrieves an author given its ID.
+      operationId: retrieve_author
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the author to get
+      responses:
+        200:
+          description: author found
+          schema:
+            $ref: '#/definitions/Author'
+        404:
+          description: author not found
+    put:
+      tags:
+      - author
+      summary: Update an entire author.
+      description: This endpoind updates an entire author given its ID if the user
+        is logged as admin.
+      operationId: update_author
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the author to get
+      - in: body
+        name: author
+        description: The author's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Author'
+      responses:
+        200:
+          description: author updated
+          schema:
+            $ref: '#/definitions/Author'
+        400:
+          description: One or more parameters weren't provided
+        403:
+          description: User not logged as admin
+        404:
+          description: author not found
+    patch:
+      tags:
+      - author
+      summary: Update parts of an author.
+      description: This endpoind updates parts of an author given its ID if the user
+        is logged as admin.
+      operationId: update_parts_author
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the author to get
+      - in: body
+        name: author
+        required: true
+        description: The author's information.
+        schema:
+          $ref: '#/definitions/Author'
+      responses:
+        200:
+          description: author updated
+          schema:
+            $ref: '#/definitions/Author'
+        403:
+          description: User not logged as admin
+        404:
+          description: author not found
+    delete:
+      tags:
+      - author
+      summary: Delete an author.
+      description: This endpoind deletes an author given its ID if the user is logged
+        as admin.
+      operationId: delete_author
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the author to get
+      responses:
+        204:
+          description: author deleted
+        403:
+          description: User not logged as admin
+        404:
+          description: author not found
+  /categories:
+    get:
+      tags:
+      - category
+      summary: Returns all stored categories.
+      description: This endpoind returns all stored categories with their informations.
+      operationId: get_categories
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: name__contains
+        type: string
+        description: Searches for categories' name containing this parameter.n**Example(s):**n-
+          ?name__contains=tech
+      responses:
+        200:
+          description: List with all stored categories
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Category'
+  /category:
+    post:
+      tags:
+      - category
+      summary: Creates a category.
+      description: This endpoind creates a category if the user trying to do it is
+        logged as admin.
+      operationId: create_category
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: category
+        description: The category's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Category'
+      responses:
+        201:
+          description: Succesfully created
+          schema:
+            $ref: '#/definitions/Category'
+        400:
+          description: Name or slug wasn't provided
+        403:
+          description: User not logged as admin
+  /category/{id}:
+    get:
+      tags:
+      - category
+      summary: Retrieves a category.
+      description: This endpoind retrieves a category given its ID.
+      operationId: retrieve_category
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the category to get
+      responses:
+        200:
+          description: category found
+          schema:
+            $ref: '#/definitions/Category'
+        404:
+          description: category not found
+    put:
+      tags:
+      - category
+      summary: Update an entire category.
+      description: This endpoind updates an entire category given its ID if the user
+        is logged as admin.
+      operationId: update_category
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the category to get
+      - in: body
+        name: category
+        description: The category's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Category'
+      responses:
+        200:
+          description: category updated
+          schema:
+            $ref: '#/definitions/Category'
+        400:
+          description: One or more parameters weren't provided
+        403:
+          description: User not logged as admin
+        404:
+          description: category not found
+    patch:
+      tags:
+      - category
+      summary: Update parts of a category.
+      description: This endpoind updates parts of a category given its ID if the user
+        is logged as admin.
+      operationId: update_parts_category
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the category to get
+      - in: body
+        name: category
+        required: true
+        description: The category's information.
+        schema:
+          $ref: '#/definitions/Category'
+      responses:
+        200:
+          description: category updated
+          schema:
+            $ref: '#/definitions/Category'
+        403:
+          description: User not logged as admin
+        404:
+          description: category not found
+    delete:
+      tags:
+      - category
+      summary: Delete a category.
+      description: This endpoind deletes a category given its ID if the user is logged
+        as admin.
+      operationId: delete_category
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the category to get
+      responses:
+        204:
+          description: category deleted
+        403:
+          description: User not logged as admin
+        404:
+          description: category not found
+  /articles:
+    get:
+      tags:
+      - article
+      summary: Returns all stored articles.
+      description: This endpoind returns all stored articles with their informations.
+      operationId: get_articles
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: title__contains
+        type: string
+        description: Searches for articles' titles containing this parameter.n**Example(s):**n-
+          ?title__contains=snowden
+      - in: query
+        name: title__startswith
+        type: string
+        description: Searches for articles' titles starting with this parameter.n**Example(s):**n-
+          ?title__startswith=edward
+      - in: query
+        name: title__endswith
+        type: string
+        description: Searches for articles' titles ending with this parameter.n**Example(s):**n-
+          ?title__endswith=system
+      - in: query
+        name: outlet
+        type: integer
+        description: Search for articles served by this outlet. It is also possible
+          to query multiple outlets.n**Example(s):**n- ?outlet=1n- ?outlet=1&outlet=2
+          ...
+      - in: query
+        name: date_0
+        type: string
+        format: date-time
+        description: Searches for articles published from this date and time.n**Example(s):**n-
+          ?date_0=2012-12-12n- ?date_0=2017-12-12 12:12:12nnThis can be used with
+          `date_1` for range search.
+      - in: query
+        name: date_1
+        type: string
+        format: date-time
+        description: Searches for articles published to this date and time.n**Example(s):**n-
+          ?date_0=2012-12-12n- ?date_0=2017-12-12 12:12:12nnThis can be used with
+          `date_0` for range search.
+      - in: query
+        name: authors
+        type: integer
+        description: Search for articles written by this author. It is also possible
+          to query multiple authors.n**Example(s):**n- ?authors=1n- ?authors=1&authors=2&authors=5
+          ...
+      - in: query
+        name: categories
+        type: integer
+        description: Search for articles with this category. It is also possible to
+          query multiple categories.n**Example(s):**n- ?categories=1n- ?categories=1&categories=2
+          ...
+      responses:
+        200:
+          description: List with all stored articles with pagination.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Article'
+  /article:
+    post:
+      tags:
+      - article
+      summary: Creates an article.
+      description: This endpoind creates an article if the user trying to do it is
+        logged as admin.
+      operationId: create_article
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: article
+        description: The article's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Article'
+      responses:
+        201:
+          description: Succesfully created
+          schema:
+            $ref: '#/definitions/Article'
+        400:
+          description: Title, url, date, outlet or content wasn't provided
+        403:
+          description: User not logged as admin
+  /article/{id}:
+    get:
+      tags:
+      - article
+      summary: Retrieves an article.
+      description: This endpoind retrieves an article given its ID.
+      operationId: retrieve_article
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the article to get
+      responses:
+        200:
+          description: article found
+          schema:
+            $ref: '#/definitions/Article'
+        404:
+          description: article not found
+    put:
+      tags:
+      - article
+      summary: Update an entire article.
+      description: This endpoind updates an entire article given its ID if the user
+        is logged as admin.
+      operationId: update_article
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the article to get
+      - in: body
+        name: article
+        description: The article's information.
+        required: true
+        schema:
+          $ref: '#/definitions/Article'
+      responses:
+        200:
+          description: article updated
+          schema:
+            $ref: '#/definitions/Article'
+        400:
+          description: One or more parameters weren't provided
+        403:
+          description: User not logged as admin
+        404:
+          description: article not found
+    patch:
+      tags:
+      - article
+      summary: Update parts of an article.
+      description: This endpoind updates parts of an article given its ID if the user
+        is logged as admin.
+      operationId: update_parts_article
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the article to get
+      - in: body
+        name: article
+        required: true
+        description: The article's information.
+        schema:
+          $ref: '#/definitions/Article'
+      responses:
+        200:
+          description: article updated
+          schema:
+            $ref: '#/definitions/Article'
+        403:
+          description: User not logged as admin
+        404:
+          description: article not found
+    delete:
+      tags:
+      - article
+      summary: Delete an article.
+      description: This endpoind deletes an article given its ID if the user is logged
+        as admin.
+      operationId: delete_article
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        format: int32
+        required: true
+        description: Numeric ID of the article to get
+      responses:
+        204:
+          description: article deleted
+        403:
+          description: User not logged as admin
+        404:
+          description: article not found
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":4:{s:6:\"Outlet\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"website\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"Outlet\";}}s:8:\"Category\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"slug\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"Categories\";}}s:6:\"Author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"outlet\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Outlet\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"profile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"twitter\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"linkedin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"facebook\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"website\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"avatar\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"about\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Article\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"outlet\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Outlet\";}s:10:\"categories\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}}s:7:\"authors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Author\";}}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"thumb\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"Outlet\";}}}"
+...

@@ -1,0 +1,323 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:297:\"This is a documentation
+  for back-end. Need to use Socket.IO 1.0 or more.<br><h2>API Methods:</h2> <p class=\"NAWS\"><b>NAWS</b>
+  - Not Active Web Socket( Don't need to activate WS)</p><p class=\"AWS\"><b>AWS</b>
+  - Ned Active Web Socket</p><p class=\"SEvent\"><b>SEvent</b>  <b>POST</b> - Server
+  Event</p>\";s:7:\"version\";s:5:\"0.1.1\";s:5:\"title\";s:9:\"Birka Api\";s:14:\"termsOfService\";s:0:\"\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:18:\"titorens@gmail.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: localhost:1993
+basePath: /
+paths:
+  auth:
+    NAWS:
+      tags:
+      - Auth
+      summary: User auth in socket
+      description: Auth/Register user. Auth user. If user is not register -> register.
+        ACTIVE Socket connection.
+      operationId: User auth
+      parameters:
+      - name: uid
+        in: query
+        description: User vk ID
+        required: "true"
+        type: integer
+      - name: token
+        in: query
+        description: User vk access_token
+        required: "true"
+        type: string
+      - name: email
+        in: query
+        description: email
+        required: "true"
+        type: string
+      - name: expires
+        in: query
+        description: Expires. Life of token ms
+        type: integer
+        default: 0
+      responses:
+        403:
+          description: <b>Data is invalid.</b> (Uid, token or email empty)
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        200:
+          description: User is auth
+          schema:
+            $ref: '#/definitions/birkaToken'
+  checkToken:
+    NAWS:
+      tags:
+      - Auth
+      summary: Auth by uid and token. Check user Token. <b>( TEMP )<b/>
+      description: Check user and active WS. If user uid and token is active then
+        activate socket connection.
+      operationId: Check user Token
+      parameters:
+      - name: uid
+        in: query
+        description: u0438u0434u0435u043du0442u0438u0444u0438u043au0430u0442u043eu0440
+          u043fu043eu043bu044cu0437u043eu0432u0430u0442u0435u043bu044f. u043fu043eu043bu043eu0436u0438u0442u0435u043bu044cu043du043eu0435
+          u0447u0438u0441u043bu043e
+        required: true
+        type: string
+      responses:
+        403:
+          description: User is not auth
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        404:
+          description: Uid or token is empty
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/birkaToken'
+  updateToken:
+    post:
+      tags:
+      - Auth
+      summary: Server send Event to Update User Token.
+      description: Update user Token. Server send event to client.
+      operationId: Update user Token.
+      parameters: []
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/updateToken'
+        400:
+          description: <b>Data is save.</b>
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        401:
+          description: <b>First you need to activate WS connect</b>
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+        404:
+          description: <b>Token is empty.</b>
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+    AWS:
+      tags:
+      - Auth
+      summary: Update Token
+      description: Set new user Token
+      operationId: Set new user Token
+      parameters:
+      - name: token
+        in: query
+        description: This is user token.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ApiSimpleResponse'
+  recoveryConnection:
+    NAWS:
+      tags:
+      - Auth
+      summary: Auth by Birka Token. Check user Birka Token.
+      description: Check user and active WS. If Birka Token is active then activate
+        socket connection.
+      operationId: Check user Birka Token
+      parameters:
+      - name: birka_token
+        in: query
+        description: Birka Access Token
+        required: true
+        type: string
+      responses:
+        400:
+          description: Birka Token is invalid
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        404:
+          description: Birka Token is empty
+          schema:
+            $ref: '#/definitions/ApiErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ApiSimpleResponse'
+  testCrypt:
+    NAWS:
+      tags:
+      - Base
+      summary: Test simple crypt
+      description: Using Lib.
+      operationId: Test Crypt
+      parameters:
+      - name: code
+        in: query
+        description: Encrypt Use lib Crypto.
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/testCrypt'
+  errorGlobal:
+    SEvent:
+      tags:
+      - Base
+      summary: Base error
+      description: Base global Error
+      operationId: Error Global
+      responses:
+        400:
+          description: Error
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+  user.me:
+    AWS:
+      tags:
+      - User
+      summary: User info
+      description: Show User Info
+      operationId: User info
+      responses:
+        errorGlobal:
+          description: Error
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/User'
+  user.info:
+    AWS:
+      tags:
+      - User
+      summary: User info
+      description: Show User Info
+      operationId: User info
+      parameters:
+      - name: user_uid
+        in: query
+        description: u0438u0434u0435u043du0442u0438u0444u0438u043au0430u0442u043eu0440
+          u043fu043eu043bu044cu0437u043eu0432u0430u0442u0435u043bu044f. u043fu043eu043bu043eu0436u0438u0442u0435u043bu044cu043du043eu0435
+          u0447u0438u0441u043bu043e
+        required: true
+        type: string
+      responses:
+        errorGlobal:
+          description: Error
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/UserInfo'
+  user.friends:
+    AWS:
+      tags:
+      - User
+      summary: User friends
+      description: Show User friends
+      operationId: User friends
+      responses:
+        errorGlobal:
+          description: Error
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/friends'
+  user.shops:
+    AWS:
+      tags:
+      - User
+      summary: User shops
+      description: Show User shops
+      operationId: User shops
+      responses:
+        errorGlobal:
+          description: Error
+          schema:
+            $ref: '#/definitions/ApiGlobalErrorResponse'
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/shops'
+schemes:
+- ws
+definitions: !php/object "O:8:\"stdClass\":12:{s:8:\"activate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/userShortInfo\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:4:\"enum\";a:2:{i:0;i:200;i:1;i:201;}s:7:\"default\";i:200;}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"activate\";}}s:16:\"ApiErrorResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:400;s:4:\"enum\";a:6:{i:0;i:304;i:1;i:400;i:2;i:401;i:3;i:403;i:4;i:404;i:5;i:500;}}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:6:\"status\";i:400;s:5:\"error\";s:15:\"{Error
+  message}\";}}s:22:\"ApiGlobalErrorResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:12:\"defaultValue\";i:401;}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:37:\"First
+  you need to activate WS connect\";}}}}s:17:\"ApiSimpleResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"integer
+  def 200 - OK\";s:7:\"default\";i:200;}}s:7:\"example\";O:8:\"stdClass\":1:{s:6:\"status\";i:200;}}s:9:\"testCrypt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Encrypt
+  data from client.\";s:7:\"default\";s:0:\"\";}s:6:\"decode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Decode
+  Code use Crypto lib. Leb get from admin.\";s:7:\"default\";s:0:\"\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"decode\";s:6:\"{CODE}\";s:4:\"code\";s:8:\"{DECODE}\";s:6:\"status\";i:200;}}s:10:\"birkaToken\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"birka_token\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Encrypt
+  data from client.\";s:7:\"default\";s:0:\"\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"birka_token\";s:13:\"{birka_token}\";s:6:\"status\";i:200;}}s:4:\"User\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:3:\"uid\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:90:\"\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F. \u043F\u043E\u043B\u043E\u0436\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435
+  \u0447\u0438\u0441\u043B\u043E\";}s:10:\"first_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:31:\"\u0438\u043C\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:9:\"last_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:39:\"\u0444\u0430\u043C\u0438\u043B\u0438\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:35:\"\u0413\u043E\u0440\u043E\u0434
+  \u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:37:\"\u0421\u0442\u0440\u0430\u043D\u0430
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:3:\"sex\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:145:\"\u043F\u043E\u043B
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F. \u0412\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435
+  \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F: 1 \u2014 \u0436\u0435\u043D\u0441\u043A\u0438\u0439;
+  2 \u2014 \u043C\u0443\u0436\u0441\u043A\u043E\u0439; 0 \u2014 \u043F\u043E\u043B
+  \u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D.\";s:4:\"enum\";a:3:{i:0;i:0;i:1;i:1;i:2;i:2;}}s:13:\"friends_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:59:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u0434\u0440\u0443\u0437\u0435\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:15:\"followers_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:69:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u043F\u043E\u0434\u043F\u0438\u0441\u0447\u0438\u043A\u043E\u0432 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:5:\"bdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:253:\"\u0434\u0430\u0442\u0430
+  \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F. \u0412\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044F
+  \u0432 \u0444\u043E\u0440\u043C\u0430\u0442\u0435 DD.MM.YYYY \u0438\u043B\u0438
+  DD.MM (\u0435\u0441\u043B\u0438 \u0433\u043E\u0434 \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F
+  \u0441\u043A\u0440\u044B\u0442). \u0415\u0441\u043B\u0438 \u0434\u0430\u0442\u0430
+  \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F \u0441\u043A\u0440\u044B\u0442\u0430
+  \u0446\u0435\u043B\u0438\u043A\u043E\u043C, \u043F\u043E\u043B\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442
+  \u0432 \u043E\u0442\u0432\u0435\u0442\u0435.\";}s:14:\"photo_max_orig\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:104:\"url
+  \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F
+  \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0440\u0430\u0437\u043C\u0435\u0440\u0430
+  w:400/200 px\";}s:14:\"products_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:61:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u0442\u043E\u0432\u0430\u0440\u043E\u0432 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:9:\"favorites\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:31:\"\u0418\u0437\u0431\u0440\u0430\u043D\u043D\u044B\u0435
+  \u0442\u043E\u0432\u0430\u0440\u044B\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"example\";O:8:\"stdClass\":12:{s:3:\"uid\";i:1;s:10:\"first_name\";s:8:\"\u0412\u0430\u0441\u044F\";s:9:\"last_name\";s:12:\"\u041F\u0443\u043F\u043A\u0438\u043D\";s:3:\"sex\";i:2;s:4:\"city\";s:4:\"City\";s:7:\"country\";s:7:\"Country\";s:13:\"friends_count\";i:2;s:15:\"followers_count\";i:2;s:5:\"bdate\";s:10:\"01.01.1001\";s:14:\"photo_max_orig\";s:33:\"http://vk.com/images/camera_b.gif\";s:14:\"products_count\";i:0;s:9:\"favorites\";a:0:{}}}s:8:\"UserInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:3:\"uid\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:90:\"\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F. \u043F\u043E\u043B\u043E\u0436\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435
+  \u0447\u0438\u0441\u043B\u043E\";}s:10:\"first_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:31:\"\u0438\u043C\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:9:\"last_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:39:\"\u0444\u0430\u043C\u0438\u043B\u0438\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:35:\"\u0413\u043E\u0440\u043E\u0434
+  \u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:37:\"\u0421\u0442\u0440\u0430\u043D\u0430
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:3:\"sex\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:145:\"\u043F\u043E\u043B
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F. \u0412\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435
+  \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F: 1 \u2014 \u0436\u0435\u043D\u0441\u043A\u0438\u0439;
+  2 \u2014 \u043C\u0443\u0436\u0441\u043A\u043E\u0439; 0 \u2014 \u043F\u043E\u043B
+  \u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D.\";s:4:\"enum\";a:3:{i:0;i:0;i:1;i:1;i:2;i:2;}}s:12:\"common_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:70:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u043E\u0431\u0449\u0438\u0445 \u0434\u0440\u0443\u0437\u0435\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:15:\"followers_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:69:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u043F\u043E\u0434\u043F\u0438\u0441\u0447\u0438\u043A\u043E\u0432 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:5:\"bdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:253:\"\u0434\u0430\u0442\u0430
+  \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F. \u0412\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044F
+  \u0432 \u0444\u043E\u0440\u043C\u0430\u0442\u0435 DD.MM.YYYY \u0438\u043B\u0438
+  DD.MM (\u0435\u0441\u043B\u0438 \u0433\u043E\u0434 \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F
+  \u0441\u043A\u0440\u044B\u0442). \u0415\u0441\u043B\u0438 \u0434\u0430\u0442\u0430
+  \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F \u0441\u043A\u0440\u044B\u0442\u0430
+  \u0446\u0435\u043B\u0438\u043A\u043E\u043C, \u043F\u043E\u043B\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442
+  \u0432 \u043E\u0442\u0432\u0435\u0442\u0435.\";}s:14:\"photo_max_orig\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:104:\"url
+  \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F
+  \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0440\u0430\u0437\u043C\u0435\u0440\u0430
+  w:400/200 px\";}s:14:\"products_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:61:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u0442\u043E\u0432\u0430\u0440\u043E\u0432 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F.\";}s:9:\"is_friend\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:33:\"\u0414\u0440\u0443\u0433
+  \u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:9:\"favorites\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:31:\"\u0418\u0437\u0431\u0440\u0430\u043D\u043D\u044B\u0435
+  \u0442\u043E\u0432\u0430\u0440\u044B\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"example\";O:8:\"stdClass\":13:{s:3:\"uid\";i:1;s:10:\"first_name\";s:8:\"\u0412\u0430\u0441\u044F\";s:9:\"last_name\";s:12:\"\u041F\u0443\u043F\u043A\u0438\u043D\";s:3:\"sex\";i:2;s:4:\"city\";s:4:\"City\";s:7:\"country\";s:7:\"Country\";s:12:\"common_count\";i:2;s:15:\"followers_count\";i:2;s:5:\"bdate\";s:10:\"01.01.1001\";s:14:\"photo_max_orig\";s:33:\"http://vk.com/images/camera_b.gif\";s:14:\"products_count\";i:0;s:9:\"is_friend\";i:0;s:9:\"favorites\";a:0:{}}}s:6:\"friend\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"uid\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:90:\"\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F. \u043F\u043E\u043B\u043E\u0436\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435
+  \u0447\u0438\u0441\u043B\u043E\";}s:10:\"first_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:31:\"\u0438\u043C\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:9:\"last_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:39:\"\u0444\u0430\u043C\u0438\u043B\u0438\u044F
+  \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\";}s:14:\"photo_max_orig\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:91:\"url
+  \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F
+  \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0440\u0430\u0437\u043C\u0435\u0440\u0430\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:3:\"uid\";i:1;s:10:\"first_name\";s:8:\"\u0412\u0430\u0441\u044F\";s:9:\"last_name\";s:12:\"\u041F\u0443\u043F\u043A\u0438\u043D\";s:14:\"photo_max_orig\";s:33:\"http://vk.com/images/camera_b.gif\";}}s:7:\"friends\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:33:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u0434\u0440\u0443\u0437\u0435\u0439\";}s:10:\"collection\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:29:\"\u041A\u043E\u043B\u0435\u043A\u0446\u0438\u044F
+  \u0414\u0440\u0443\u0437\u0435\u0439\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/friend\";}}}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"count\";i:1;s:10:\"collection\";a:1:{i:0;O:8:\"stdClass\":4:{s:3:\"uid\";i:1;s:10:\"first_name\";s:8:\"\u0412\u0430\u0441\u044F\";s:9:\"last_name\";s:12:\"\u041F\u0443\u043F\u043A\u0438\u043D\";s:14:\"photo_max_orig\";s:33:\"http://vk.com/images/camera_b.gif\";}}}}s:5:\"shops\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:39:\"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u041C\u0430\u0433\u0430\u0437\u0438\u043D\u043E\u0432\";}s:10:\"collection\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:35:\"\u041A\u043E\u043B\u0435\u043A\u0446\u0438\u044F
+  \u041C\u0430\u0433\u0430\u0437\u0438\u043D\u043E\u0432\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/shop\";}}}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"count\";i:1;s:10:\"collection\";a:1:{i:0;O:8:\"stdClass\":6:{s:2:\"id\";i:28950133;s:4:\"name\";s:41:\"\u0418\u043D\u0442\u0435\u043B\u043B\u0435\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0439
+  \u044E\u043C\u043E\u0440\";s:11:\"screen_name\";s:9:\"in.humour\";s:4:\"type\";s:4:\"page\";s:9:\"photo_200\";s:53:\"http://cs630420.vk.me/v630420426/d40f/V2Tlc7FlrQ0.jpg\";s:13:\"members_count\";i:2394162;}}}}s:4:\"shop\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:65:\"\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440.
+  \u043F\u043E\u043B\u043E\u0436\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u0447\u0438\u0441\u043B\u043E\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:4:\"Name\";}s:11:\"screen_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:11:\"screen
+  name\";}s:9:\"photo_200\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:9:\"photo
+  200\";}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:6:\"\u0442\u0438\u043F\";s:4:\"enum\";a:3:{i:0;s:5:\"group\";i:1;s:4:\"page\";i:2;s:5:\"event\";}}s:13:\"members_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"required\";s:4:\"true\";s:11:\"description\";s:41:\"\u043A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E
+  \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432\";}}s:7:\"example\";O:8:\"stdClass\":6:{s:2:\"id\";i:28950133;s:4:\"name\";s:41:\"\u0418\u043D\u0442\u0435\u043B\u043B\u0435\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0439
+  \u044E\u043C\u043E\u0440\";s:11:\"screen_name\";s:9:\"in.humour\";s:9:\"photo_200\";s:53:\"http://cs630420.vk.me/v630420426/d40f/V2Tlc7FlrQ0.jpg\";s:4:\"type\";s:4:\"page\";s:13:\"members_count\";i:2394162;}}}"
+...

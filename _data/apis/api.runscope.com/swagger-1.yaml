@@ -1,0 +1,734 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:12:\"Runscope API\";s:11:\"description\";s:33:\"Manage
+  Runscope programmatically.\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: api.runscope.com
+basePath: /
+paths:
+  /account:
+    get:
+      summary: Account Resource
+      description: Information about the authorized account.
+      tags:
+      - Account
+      responses:
+        200:
+          description: Account owner and team information.
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Account'
+              meta:
+                $ref: '#/definitions/Meta'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - account:email
+  /teams/{teamId}/people:
+    get:
+      summary: Teams Resource
+      description: List people and integrations associated with a given team.
+      parameters:
+      - $ref: '#/parameters/teamId'
+      tags:
+      - Account
+      responses:
+        200:
+          description: List of people associated with the team.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Account'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - account:email
+        - team:read
+  /teams/{teamId}/integrations:
+    get:
+      summary: Team integrations list
+      description: Returns a list of integrations configured for the team.
+      parameters:
+      - $ref: '#/parameters/teamId'
+      tags:
+      - Account
+      responses:
+        200:
+          description: List of integrations associated with the team.
+          schema:
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Integration'
+              meta:
+                $ref: '#/definitions/Meta'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - team:read
+  /teams/{teamId}/agents:
+    get:
+      summary: Team agents list
+      description: List currently connected agents associated with a given team.
+      parameters:
+      - $ref: '#/parameters/teamId'
+      tags:
+      - Account
+      responses:
+        200:
+          description: List of the teamu2019s currently connected agents.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Agent'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - team:read
+  /buckets:
+    get:
+      summary: Returns a list of buckets.
+      tags:
+      - Buckets
+      responses:
+        200:
+          description: List of buckets associated with this authenticated account.
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Bucket'
+              meta:
+                $ref: '#/definitions/Meta'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+      - runscope_auth:
+        - api:read
+        - bucket:auth_token
+    post:
+      summary: Create a new bucket
+      tags:
+      - Buckets
+      parameters:
+      - name: NewBucket
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/NewBucket'
+      responses:
+        200:
+          description: Bucket details.
+          schema:
+            $ref: '#/definitions/Bucket'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - bucket:write
+  /buckets/{bucketKey}:
+    get:
+      summary: Returns a single bucket resource.
+      tags:
+      - Buckets
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      responses:
+        200:
+          description: Bucket details.
+          schema:
+            $ref: '#/definitions/Bucket'
+        default:
+          $ref: '#/responses/UnexpectedError'
+    delete:
+      summary: Delete a single bucket resource.
+      tags:
+      - Buckets
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      responses:
+        204:
+          description: No content with no body.
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - bucket:write
+  /buckets/{bucketKey}/messages:
+    get:
+      summary: Retrieve a list of messages in a bucket
+      tags:
+      - Messages
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: count
+        in: query
+        type: integer
+        description: Maxiumum number of messages to return. Default 50, max 1000.
+      - name: since
+        in: query
+        type: integer
+        description: Only return messages after the given Unix timestamp
+      - name: before
+        in: query
+        type: integer
+        description: Only return messages before the given Unix timestamp
+      responses:
+        200:
+          description: List of messages in a bucket
+        default:
+          $ref: '#/responses/UnexpectedError'
+    delete:
+      summary: Clear a bucket (remove all messages).
+      tags:
+      - Messages
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      responses:
+        204:
+          description: No content with no body.
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - message:write
+    post:
+      summary: Create a message
+      tags:
+      - Messages
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: NewMessage
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/NewMessage'
+      responses:
+        200:
+          description: The response includes a list of result objects for the message(s)
+            submitted. It will always return an array, even if only one message was
+            created. The order of the result objects corresponds to the order of messages
+            submitted.
+          schema:
+            properties:
+              data:
+                type: array
+                items:
+                  properties:
+                    status:
+                      description: 'One of the following: success, error, or warning.'
+                      type: string
+                    unique_identifier:
+                      description: If the message had a unique_identifier, it will
+                        be returned in this field, to help match the responses to
+                        the messages that were submitted.
+                      type: string
+                    uuid:
+                      description: This message's Runscope-generated ID.
+                      type: string
+                    warning:
+                      description: An object representing warnings (non-fatal warnings)
+                        for this item. Only present if status is warning, otherwise
+                        this will be null.
+                      type: object
+                      properties:
+                        code:
+                          type: integer
+                          description: A numeric error code for the specific problem
+                            we encountered with this message. (warning status only)
+                        message:
+                          type: string
+                          description: A description of the problem we encountered
+                            with this message. (warning status only)
+                        more_info:
+                          type: string
+                          description: A link to more help about the warning. (warning
+                            status only)
+                    error:
+                      description: An object representing errors for this item. Only
+                        present if status is error, otherwise this will be null.
+                      type: object
+                      properties:
+                        code:
+                          type: integer
+                          description: A numeric error code for the specific problem
+                            we encountered with this message. (error status only)
+                        message:
+                          type: string
+                          description: A description of the problem we encountered
+                            with this message. (error status only)
+                        more_info:
+                          type: string
+                          description: A link to more help about the warning. (error
+                            status only)
+              meta:
+                type: object
+                properties:
+                  succcess_count:
+                    type: integer
+                  warning_count:
+                    type: integer
+                  error_count:
+                    type: integer
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - message:write
+  /buckets/{bucketKey}/errors:
+    get:
+      summary: Retrieve a list of error messages in a bucket
+      tags:
+      - Messages
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: count
+        in: query
+        type: integer
+        description: Maxiumum number of messages to return. Default 50, max 1000.
+      - name: since
+        in: query
+        type: integer
+        description: Only return messages after the given Unix timestamp
+      - name: before
+        in: query
+        type: integer
+        description: Only return messages before the given Unix timestamp
+      responses:
+        200:
+          description: List of error messages in a bucket
+        default:
+          $ref: '#/responses/UnexpectedError'
+  /buckets/{bucketKey}/messages/{messageId}:
+    get:
+      summary: Retrieve the details for a single message.
+      tags:
+      - Messages
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: messageId
+        in: path
+        description: The unique identifier for this message
+        required: true
+        type: string
+      responses:
+        200:
+          description: List of messages in a bucket
+        default:
+          $ref: '#/responses/UnexpectedError'
+  /buckets/{bucketKey}/tests:
+    get:
+      summary: Returns a list of tests.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      responses:
+        200:
+          description: List of tests for this bucket
+          schema:
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Test'
+              meta:
+                $ref: '#/definitions/Meta'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+    post:
+      summary: Create a test.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: NewTest
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Test'
+      responses:
+        200:
+          description: List of tests for this bucket
+          schema:
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Test'
+              meta:
+                $ref: '#/definitions/Meta'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}:
+    get:
+      summary: Retrieve the details of a given test by ID.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        200:
+          description: Returns an object with the details of the given test.
+          schema:
+            $ref: '#/definitions/TestDetail'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+    put:
+      summary: Modify a test's name, description, default environment and its steps.
+        To modify other individual properties of a test, make requests to the steps,
+        environments, and schedules subresources of the test.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        201:
+          description: Returns 201 and the updated test's JSON description if the
+            test is successfully updated.
+          schema:
+            $ref: '#/definitions/TestDetail'
+        default:
+          $ref: '#/responses/UnexpectedError'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+    delete:
+      summary: Delete a test, including all steps, schedules, test-specific environments
+        and results.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        204:
+          description: No content with no body.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}/steps:
+    get:
+      summary: List test steps for a test.
+      tags:
+      - Test Steps
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        200:
+          description: List of test steps for a test
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+    post:
+      summary: Add new test step.
+      tags:
+      - Test Steps
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      - name: TestStep
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TestStep'
+      responses:
+        201:
+          description: Details of the new test step.
+        400:
+          description: Must send valid JSON object to create a new test step
+          schema:
+            $ref: '#/definitions/StandardError'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}/steps/{stepId}:
+    put:
+      summary: Update the details of a single test step.
+      tags:
+      - Test Steps
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      - $ref: '#/parameters/stepId'
+      - name: TestStep
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TestStep'
+      responses:
+        200:
+          description: List of test steps for a test
+        400:
+          description: Unable to update template '{stepId}' for test '{testId}'
+          schema:
+            $ref: '#/definitions/StandardError'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+    delete:
+      summary: Delete a step from a test.
+      tags:
+      - Test Steps
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      - $ref: '#/parameters/stepId'
+      responses:
+        204:
+          description: No content with no body.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}/environments:
+    get:
+      summary: Return details of the test's environments (only those that belong to
+        the specified test)
+      tags:
+      - Test Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        200:
+          description: List of environments belonging to this test.
+          schema:
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Environment'
+              meta:
+                $ref: '#/definitions/Meta'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+    post:
+      summary: Create new test environment.
+      tags:
+      - Test Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      - name: NewEnvironment
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Environment'
+      responses:
+        201:
+          description: Details of the new test environment.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}/environments/{environmentId}:
+    put:
+      summary: Update the details of a test environment.
+      tags:
+      - Test Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      - $ref: '#/parameters/environmentId'
+      - name: ModifiedEnvironment
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Environment'
+      responses:
+        201:
+          description: Details of the modified test environment.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/tests/{testId}/metrics:
+    get:
+      summary: Return details of the test metrics for the specified timeframe.
+      tags:
+      - Tests
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/testId'
+      responses:
+        200:
+          description: List of average response times and additional performance metrics
+            belonging to this test.
+          schema:
+            $ref: '#/definitions/Metrics'
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+  /buckets/{bucketKey}/environments:
+    get:
+      summary: Returns list of shared environments for a specified bucket.
+      tags:
+      - Shared Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      responses:
+        200:
+          description: List of shared environments belonging to this bucket.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:read
+    post:
+      summary: Create new shared environment.
+      tags:
+      - Shared Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - name: NewEnvironment
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Environment'
+      responses:
+        201:
+          description: Details of the new test environment.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+  /buckets/{bucketKey}/environments/{environmentId}:
+    put:
+      summary: Update the details of a shared environment.
+      tags:
+      - Shared Environments
+      parameters:
+      - $ref: '#/parameters/bucketKey'
+      - $ref: '#/parameters/environmentId'
+      - name: ModifiedEnvironment
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Environment'
+      responses:
+        201:
+          description: Details of the modified test environment.
+      security:
+      - runscope_auth:
+        - api:read
+        - test:write
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":20:{s:4:\"Meta\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Success
+  or failure status of call.\";}}}s:7:\"Account\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  name of the person for this account.\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"The
+  unique identifier for this account.\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  email address for this account. Only present if authorized with the account:email
+  scope.\";}s:5:\"teams\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Team\";}}}}s:4:\"Team\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  unique identifier for this team.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  name of this team.\";}}}s:6:\"Bucket\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:10:\"auth_token\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Bucket
+  auth token if set, otherwise this value is null.\";s:4:\"type\";s:6:\"string\";}s:7:\"default\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"True
+  if this bucket is the 'default' for a team. Default buckets cannot be deleted.\";s:4:\"type\";s:7:\"boolean\";}s:3:\"key\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  unique identifier used to address a bucket.\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  name of this bucket as displayed in your dashboard.\";s:4:\"type\";s:6:\"string\";}s:4:\"team\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Team\";}s:11:\"trigger_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"verify_ssl\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"True
+  if this bucket is configured to verify ssl for requests made to it.\";s:4:\"type\";s:7:\"boolean\";}s:9:\"tests_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"collections_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"messages_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"NewBucket\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"team_id\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Name
+  of this bucket\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"Unique
+  identifier for the team to create this bucket for.\";s:4:\"type\";s:6:\"string\";}}}s:10:\"NewMessage\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"HTTP
+  method name (GET, POST, PUT, HEAD, OPTIONS, PATCH, DELETE, etc.)\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"Full
+  URL of the request, including URL querystring parameters.\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:88:\"JSON
+  object of header keys and values -- with values as a string or an array of strings.\";}s:4:\"form\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:135:\"JSON
+  object of set of form fields included in a POST request. \nValues can either be
+  represented as a string or as an array of strings.\n\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:238:\"HTTP
+  request body (most commonly used for POST and PUT requests). If the\nrequest body
+  contains binary data that cannot be included directly in the \nJSON, encode the
+  content with Base64 and include the body_encoding attribute accordingly.\n\";}s:13:\"body_encoding\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:138:\"If
+  the request body was encoded with Base64, this field should be present and set to
+  \n\"base64\". If not specified, defaults to \"plaintext\"\n\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:52:\"Unix
+  timestamp indicating when the request was made.\";}}}s:8:\"response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:42:\"HTTP
+  status code returned in the response.\";}s:6:\"reason\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:229:\"Textual
+  description of HTTP status code. This will be set automatically if not \nprovided
+  in the API call. For example, if the status code is 404, this will be \nset to \"Not
+  Found\" unless you explicitly specify a different reason.\n\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:88:\"JSON
+  object of header keys and values -- with values as a string or an array of strings.\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:151:\"HTTP
+  response body. If the response body contains binary data that cannot be\nincluded
+  directly in the JSON, you should encode the content with Base64.\n\";}s:13:\"body_encoding\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:138:\"If
+  the request body was encoded with Base64, this field should be present and set to
+  \n\"base64\". If not specified, defaults to \"plaintext\"\n\";}s:13:\"response_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:59:\"Length
+  of time it took to receive the response, in seconds.\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:52:\"Unix
+  timestamp indicating when the request was made.\";}}}}}s:8:\"TestStep\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"step_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Type
+  of test step -- request, pause, condition, ghost-inspector, or subtest.\";}}}s:15:\"TestStepRequest\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"The
+  URL to make a request to for this step. This may contain both query string parameters
+  and variables.\";}s:6:\"method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  HTTP method for this request step. E.g. GET, POST, PUT, DELETE, etc.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"A
+  description or note for this request step.\";}s:4:\"auth\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:118:\"An
+  authentication object with either basic, oauth1, or client_certificate credentials
+  for authenticating this request.\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:121:\"An
+  object with keys as header names matched to their values. Values can either be a
+  single string or an array of strings.\";}s:4:\"form\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:134:\"An
+  object with keys as form post parameter names matched to their values. Values can
+  either be a single string or an array of strings.\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"A
+  string to use as the body of the request.\";}s:10:\"assertions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:69:\"A
+  list of assertions to apply to the HTTP response from this request.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Assertion\";}}s:9:\"variables\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:74:\"A
+  list of variables to extract out of the HTTP response from this request.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Variable\";}}s:7:\"scripts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:58:\"A
+  list of post-response scripts to run after this request.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:14:\"before_scripts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:57:\"A
+  list of pre-request scripts to run before this request.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/TestStep\";}}}s:11:\"Environment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":22:{s:12:\"integrations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:46:\"The
+  list of integrations for this environment.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Integration\";}}s:10:\"verify_ssl\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:55:\"Validate
+  all SSL certificates on any HTTPS connections.\";}s:14:\"script_library\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:91:\"The
+  list of ids for scripts, part of the script libraries, being used for this environment.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"The
+  unique identifier for this environment.\";}s:6:\"script\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";}s:7:\"regions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:60:\"An
+  array of the region codes that this environment is using.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"stop_on_failure\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:52:\"Stop
+  executing the test after the first failed step.\";}s:19:\"initial_script_hash\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"auth\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"exported_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"retry_on_failure\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"remote_agents\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Agent\";}}s:8:\"webhooks\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"test_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  unique identifier for this test.\";}s:6:\"emails\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Name
+  of this environment.\";}s:17:\"initial_variables\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"headers\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:21:\"parent_environment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"preserve_cookies\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"client_certificate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:4:\"Test\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:66:\"The
+  date the test was created in seconds (Unix time stamp format).\";}s:10:\"created_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"default_environment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  description for the test.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  name for the test.\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"trigger_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"last_run\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:10:\"TestDetail\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"exported_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"environments\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Environment\";}s:9:\"schedules\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Schedule\";}}s:5:\"steps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:8:\"last_run\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Test\";}}}s:11:\"Integration\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Agent\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  version for this agent.\";}s:8:\"agent_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"The
+  unique identifier for this agent.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"The
+  name of the agent set in the configuration file or with the command line flag.\";}}}s:7:\"Metrics\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"response_times\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:65:\"The
+  list of response times based on the timeframe of the request.\";s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"success_ratio\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:77:\"1
+  if there's a successful request in this time interval, or 0 if there isn't.\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:57:\"The
+  timestamp in Unix format for the specified timeframe.\";}s:20:\"avg_response_time_ms\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:98:\"The
+  average response time in miliseconds for all the requests for this test in this
+  time interval.\";}}}}s:16:\"this_time_period\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:95:\"The
+  average response time for different percentiles for the request in the requested
+  timeframe.\";}s:24:\"changes_from_last_period\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:65:\"The
+  changes in average response time compared to the last period.\";}s:16:\"environment_uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  environment_uuid that filters this request.\";}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"The
+  region that filters this request.\";}s:9:\"timeframe\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  timeframe that filters this request.\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Error400\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"more_info\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"StandardError\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Error400\";}}}s:9:\"Assertion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"comparison\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Variable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"property\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Schedule\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"environment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"interval\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"note\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"exported_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

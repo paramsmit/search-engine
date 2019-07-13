@@ -1,0 +1,1363 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:4219:\"The Crime Data
+  API enables you to explore data from the FBI Uniform Crime Reporting (UCR) program.
+  This is data the FBI collects from law state and local law enforcement agencies
+  and is used to compile the Crime in the US annual reports since 1960. The program
+  is voluntary and not all agencies participate. In addition, data is often published
+  publicly about 18 months after it is submitted to the FBI. This means that the most
+  recent year for data in the API is 2015.\n\nThis site and API are in beta, which
+  means we're actively working on both and adding new features. While we plan to version
+  big changes that are not backwards compatible, expect things to change as the API
+  develops. This might mean that the structure of endpoints could shift around or
+  that the accepted parameters are changed. All noteable changes to the API are recorded
+  in the [CHANGELOG](https://github.com/fbi-cde/crime-data-api/blob/master/CHANGELOG.md).\n\nThe
+  API is a read-only web service that returns JSON or CSV data. It is broadly organized
+  around the data reporting systems the FBI UCR program uses and their related entities.
+  Agencies submit data using one of two reporting formats -- the Summary Reporting
+  System (SRS), or the National Incident Based Reporting System (NIBRS). SRS data
+  is the legacy format that provides aggregated counts of the reported crime offenses
+  known to law enforcement by location.\n\nNIBRS is a newer format that provides an
+  incident-based view of crime. It includes information about each offense, such as
+  the time of day an incident occurred, the demographics of the offenders/victims,
+  the known relationships between the offenders and victims, and many other details
+  around how and where crime occurs. Neither format includes personally identifiable
+  information (PII) about the offenders or victims. While many agencies submit SRS
+  data, the FBI plans to transition all crime reporting to the NIBRS format by 2021.\n\nOther
+  UCR data collection systems made available by this API include:\n\n* Supplemental
+  homicide report (SHR)\n* Cargo theft\n* Hate crimes\n* Human trafficking\n* Assaults
+  on law enforcement officers\n* Law enforcement agency personnel demographic data\nThere
+  is a lot of data, but a good place to start is by looking at the rate of a particular
+  crime over the last 10 years in a state or Washington, DC.\nLet's try it with homicide
+  in Washington, DC for from 2004 through 2014.  find crime rates, we will use the
+  /counts endpoint passing in parameters to represent the crime type (homicide) and
+  the years in question. Here's the API request the Crime Data Explorer makes to display
+  this data:\n\n`/counts?explorer_offense=homicide&per_page=11&year>=2004&year<=2014&state=dc`\n\nWe
+  can use the `explorer_offense` parameter to just get data related to homicide crimes.
+  If you do not supply an offense, you'll get data that represents all the crime types
+  in that location. Next we set our `per_page` parameter to be 11, since we'll be
+  requesting 11 years at once. We do this to ensure that we only need to make one
+  request to get all of the data. We craft a date range query by supply two `year`
+  parameters using greater than and less than operators in the URL. Finally, we supply
+  the location that we want data for. If `state` is omitted, the data will represent
+  the national perspective.\n\nGet an API key here. That will enable you to place
+  up to XX requests per minute. Each call is limited to YY results per page. You can
+  email questions or comments to EE. You can ask questions or give us feedback using
+  Github issues.\n\nThe model definitions and schema are available at [/swagger.json](/swagger.json).
+  This is useful for making wrappers and exploring the data.\n\nThe API was designed
+  to provide as much information as possible in a usable format. However, the FBI
+  still has some recommendations about how to interpret and display the data provided.
+  The FBI strongly advises against using this data to do any sort of ranking or comparison
+  among states or other entities. The exception being that it is appropriate to compare
+  a city to its respective state, and that state to a national perspective.\n\nView
+  our [source code](https://github.com/fbi-cde/crime-data-api). We welcome issues
+  and pull requests!\";s:5:\"title\";s:18:\"FBI Crime Data API\";s:7:\"version\";s:2:\"v1\";}"
+host: api.usa.gov
+basePath: /crime/fbi/ucr/
+paths:
+  /agencies:
+    get:
+      tags:
+      - agencies
+      description: Returns a paginated list of agencies.
+      parameters:
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      - $ref: '#/parameters/oriParam'
+      - $ref: '#/parameters/agencyNameParam'
+      - $ref: '#/parameters/agencyTypeNameParam'
+      - $ref: '#/parameters/tribeIdParam'
+      - $ref: '#/parameters/campusIdParam'
+      - $ref: '#/parameters/cityNameParam'
+      - $ref: '#/parameters/stateAbbrParam'
+      - $ref: '#/parameters/populationGroupCodeParam'
+      responses:
+        200:
+          description: For success, returns a paginated list of agencies.
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Agency'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /agencies/{ori}:
+    get:
+      tags:
+      - agencies
+      description: Returns a single agency by ORI
+      parameters:
+      - $ref: '#/parameters/oriPathParam'
+      responses:
+        200:
+          description: For success, returns a single agency.
+          schema:
+            $ref: '#/definitions/Agency'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /arrests/national:
+    get:
+      tags:
+      - arrests
+      description: Returns annual counts of estimated arrests nationwide per each
+        year.
+      responses:
+        200:
+          description: Returns a paginated list of national arrest counts
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/NationalArrestCounts'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /arson/national:
+    get:
+      tags:
+      - arson
+      description: Returns annual counts of arsons nationwide per each year.
+      responses:
+        200:
+          description: Returns a paginated list of arson counts
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ArsonSummary'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /arson/states/{state_abbr}:
+    get:
+      tags:
+      - arson
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      description: Returns counts of arsons in a given state per year.
+      responses:
+        200:
+          description: Returns a paginated list of arson counts
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ArsonSummary'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /codes:
+    get:
+      tags:
+      - meta
+      description: The codes endpoint returns a listing of all the code lookup tables
+        for codes that are used throughout the crime data explorer. Certain API endpoints
+        will return either the codes or their corresponding values. This endpoint
+        returns a dictionary mapping code table names to URLs for their lookup
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success response
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+  /codes/{code_table_id}:
+    get:
+      tags:
+      - meta
+      description: This endpoint returns a list of values for a given code lookup
+        table within the crime data explorer. Other API endpoints may return either
+        the codes or their corresponding value in a given record, so this endpoints
+        provides a comprehensive list of all possible values that you might expect
+        to see. The actual structure of each result will vary depending on the code
+        table you are requesting.
+      parameters:
+      - $ref: '#/parameters/codeTablePathParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+        default:
+          $ref: '#/responses/Error'
+  /estimates/national:
+    get:
+      tags:
+      - estimates
+      - national
+      description: This endpoint returns national estimates from the API
+      parameters:
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/EstimatedCount'
+        default:
+          $ref: '#/responses/Error'
+  /estimates/states/{state_abbr}:
+    get:
+      tags:
+      - estimates
+      - state
+      description: This endpoint returns national estimates from the API
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/EstimatedCount'
+        default:
+          $ref: '#/responses/Error'
+  /geo/states/{state_abbr}:
+    get:
+      tags:
+      - state
+      description: Returns basic information about the state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      responses:
+        200:
+          description: The metadata for a state
+          schema:
+            $ref: '#/definitions/GeoStateDetail'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /participation/states/{state_abbr}:
+    get:
+      tags:
+      - state
+      - participation
+      description: Returns just the participation data for a state
+      parameters:
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      - $ref: '#/parameters/statePathParam'
+      responses:
+        200:
+          description: For success, return a paginated list of participation stats.
+            Note that if you request `output=csv`, you probably want to also make
+            `per_page` sufficiently large to include all data.
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/StateParticipationRate'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /participation/agencies:
+    get:
+      tags:
+      - participation
+      description: Returns participation details for agencies
+      parameters:
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      - $ref: '#/parameters/yearParam'
+      - $ref: '#/parameters/stateNameParam'
+      - $ref: '#/parameters/stateParam'
+      - $ref: '#/parameters/agencyOriParam'
+      - $ref: '#/parameters/agencyNameParam'
+      - $ref: '#/parameters/reportedParam'
+      - $ref: '#/parameters/reportedNibrsParam'
+      - $ref: '#/parameters/monthsReportedParam'
+      - $ref: '#/parameters/monthsReportedNibrsParam'
+      responses:
+        200:
+          description: For success, return a paginated list of agency participation
+            detail. With no parameters, this can get quite large, but you can provide
+            filters to limit to specific fields.
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencyParticipation'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /participation/national:
+    get:
+      tags:
+      - participation
+      - national
+      description: Returns national participation data
+      parameters:
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: Returns a paginated list of statistics for nationwide participation
+            per year in revers chronological order
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ParticipationRate'
+        500:
+          description: Standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /offenders/count/national/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/offendersCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenders/count/states/{state_abbr}/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/offendersCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenses/count/national/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/offensesCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenses/count/states/{state_abbr}/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/offensesCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /victims/count/national/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/victimsCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /victims/count/states/{state_abbr}/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/victimsCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /ct/count/national/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - cargo theft
+      - national
+      parameters:
+      - $ref: '#/parameters/cargoTheftsCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CargoTheftCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /ct/count/states/{state_abbr}/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - cargo theft
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/cargoTheftsCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CargoTheftCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /hc/count/national/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - hate crimes
+      - national
+      parameters:
+      - $ref: '#/parameters/hateCrimesCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /hc/count/states/{state_abbr}/{variable}:
+    get:
+      tags:
+      - nibrs summaries
+      - hate crimes
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/hateCrimesCountVariableParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenders/count/national/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/offendersCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenders/count/states/{state_abbr}/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/offendersCountForOffenseVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        500:
+          $ref: '#/responses/Error'
+  /offenses/count/national/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/offensesCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /offenses/count/states/{state_abbr}/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/offensesCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /victims/count/national/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - national
+      parameters:
+      - $ref: '#/parameters/victimsCountForOffenseVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /victims/count/states/{state_abbr}/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/victimsCountForOffenseVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /ct/count/national/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - cargo theft
+      - national
+      parameters:
+      - $ref: '#/parameters/cargoTheftsCountForOffenseVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CargoTheftCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /ct/count/states/{state_abbr}/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - cargo theft
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/cargoTheftsCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CargoTheftCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /hc/count/national/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - hate crimes
+      - national
+      parameters:
+      - $ref: '#/parameters/hateCrimesCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: TK
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        default:
+          $ref: '#/responses/Error'
+  /hc/count/states/{state_abbr}/{variable}/offenses:
+    get:
+      tags:
+      - nibrs summaries
+      - hate crimes
+      - state
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/hateCrimesCountVariableParam'
+      - $ref: '#/parameters/offenseNameParam'
+      - $ref: '#/parameters/explorerOffenseParam'
+      - $ref: '#/parameters/fieldsParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: TK
+          schema:
+            $ref: '#/definitions/PaginatedCountForYear'
+        500:
+          $ref: '#/responses/Error'
+  /agencies/count/states/suboffenses/{state_abbr}:
+    get:
+      tags:
+      - suboffenses
+      - states
+      parameters:
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencySuboffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /agencies/count/states/suboffenses/{state_abbr}/counties/{fips_code}:
+    get:
+      tags:
+      - suboffenses
+      - states
+      - counties
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/fipsPathParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencySuboffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /agencies/count/states/suboffenses/{state_abbr}/{ori}:
+    get:
+      tags:
+      - suboffenses
+      - states
+      - agencies
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/oriPathParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencySuboffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /agencies/count/states/offenses/{state_abbr}:
+    get:
+      tags:
+      - offenses
+      - states
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencyOffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /agencies/count/states/offenses/{state_abbr}/counties/{fips_code}:
+    get:
+      tags:
+      - offenses
+      - states
+      - counties
+      parameters:
+      - $ref: '#/parameters/statePathParam'
+      - $ref: '#/parameters/fipsPathParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencyOffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /agencies/count/{ori}/offenses:
+    get:
+      tags:
+      - offenses
+      - states
+      - agencies
+      parameters:
+      - $ref: '#/parameters/oriPathParam'
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencyOffenseCounts'
+        default:
+          $ref: '#/responses/Error'
+  /ht/agencies:
+    get:
+      tags:
+      - human trafficking
+      description: Returns a paginated list of annual agency counts for human trafficking.
+        Not all agencies submit reports nor they necessarily submit for all months
+        of a given year. Human trafficking data has only been collected from 2013
+        onwards. Any field returned in the response can be used to filter down searches.
+      parameters:
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      - $ref: '#/parameters/oriParam'
+      - $ref: '#/parameters/agencyNameParam'
+      - $ref: '#/parameters/stateAbbrParam'
+      - $ref: '#/parameters/yearParam'
+      responses:
+        200:
+          description: For success, returns a paginated list of agency reports on
+            human trafficking
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/AgencyTraffickingReport'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+  /ht/states:
+    get:
+      tags:
+      - human trafficking
+      description: Returns a paginated list of state counts for human trafficking.
+        Not all agencies submit reports nor they necessarily submit for all months
+        of a given year. Human trafficking data has only been collected from 2013
+        onwards. Only reports from states and Washington, DC are included in these
+        counts (territories are excluded). Any field returned in the response can
+        be use to filter down searches.
+      parameters:
+      - $ref: '#/parameters/pageParam'
+      - $ref: '#/parameters/perPageParam'
+      - $ref: '#/parameters/outputParam'
+      - $ref: '#/parameters/stateAbbrParam'
+      - $ref: '#/parameters/yearParam'
+      responses:
+        200:
+          description: For success, returns a paginated list of state totals on human
+            trafficking
+          schema:
+            type: object
+            required:
+            - pagination
+            - results
+            properties:
+              pagination:
+                $ref: '#/definitions/Pagination'
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/SummaryTraffickingReport'
+        500:
+          description: The standard error response
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+- text/csv
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":20:{s:5:\"Error\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"An
+  error message\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}}s:10:\"Pagination\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"page\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"pages\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:8:\"per_page\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;}s:6:\"Agency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:10:\"properties\";O:8:\"stdClass\":38:{s:3:\"ori\";O:8:\"stdClass\":4:{s:11:\"description\";s:56:\"The
+  ORI is a unique identifier for retrieving the agency\";s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:9;s:9:\"maxLength\";i:9;}s:10:\"legacy_ori\";O:8:\"stdClass\":4:{s:11:\"description\";s:113:\"If
+  the agency had a different ORI in the past, it will be stored here. Otherwise, it
+  will be the same as the ORI.\";s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:9;s:9:\"maxLength\";i:9;}s:11:\"agency_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  name of the agency\";s:4:\"type\";s:6:\"string\";}s:10:\"short_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"A
+  shorter name for the agency\";s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:100;}s:14:\"agency_type_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"A
+  code for the type of the agency\";s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:1;}s:16:\"agency_type_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"A
+  string description of the agency type\";s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:100;}s:8:\"tribe_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:88:\"Identifier
+  for a tribe in the `ref_tribe` table if the agency is associated with a tribe\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:9:\"campus_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:109:\"Identifier
+  for a campus in `ref_university_campus` table if the agency is associated ith a
+  university campus.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:9:\"city_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"The
+  name of the city associated with the agency.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:100;}s:10:\"state_abbr\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"The
+  2-letter postal abbrevation for the associated state\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:2;}s:14:\"primary_county\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"The
+  name of the main county that the agency is located within\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:100;}s:19:\"primary_county_fips\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  5-character FIPS code for the primary county\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"agency_status\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"A
+  code for the agency status\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:1:\"A\";i:1;s:1:\"L\";}}s:14:\"submitting_sai\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"The
+  SAI for the entity that submitted records for this agency\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:9;}s:15:\"submitting_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"The
+  name of the entity that submitted records for this agency\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:150;}s:21:\"submitting_state_abbr\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"The
+  state of the entity that submitted records for this agency\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"maxLength\";i:2;}s:10:\"start_year\";O:8:\"stdClass\":3:{s:11:\"description\";s:148:\"The
+  earliest records in the database for this specific ORI. Note that agencies may have
+  participated in the UCR program earlier and under other ORI.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:1960;}s:12:\"dormant_year\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"The
+  year a specific agency went dormant\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:1960;}s:18:\"revised_rape_start\";O:8:\"stdClass\":3:{s:11:\"description\";s:306:\"The
+  year the agency started reporting rapes using the new definition that was revised
+  in 2013. Agencies can switch over at any time to the new definition during the indicated
+  year and rapes reported that year will be a mix of the old and new definition. NULL
+  indicates the agency has not switched over yet.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:2013;}s:24:\"current_nibrs_start_year\";O:8:\"stdClass\":2:{s:11:\"description\";s:333:\"If
+  the agency is currently reporting 12 months of NIBRS data to the FBI, this is the
+  first year that current run of reporting NIBRS data started. Because there are many
+  agencies that reported NIBRS data in 1991 then stopped for many years before resuming
+  in the 2000s, this is a better measure than the first year of NIBRS reporting.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:12:\"current_year\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:1960;s:11:\"description\";s:83:\"The
+  most recent year there is population and other demographic data for the agency.\";}s:10:\"population\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:258:\"The
+  reported population for an agency. Note that the UCR definition of `population`
+  is often smaller than the actual population that might be within an agency's jurisdiction
+  and in many cases may be 0 Exercise caution when calculating rates with this number.\";s:7:\"minimum\";i:0;}s:21:\"population_group_code\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:42:\"The
+  code for the agency's population group\";s:9:\"maxLength\";i:2;}s:21:\"population_group_desc\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:46:\"A
+  description of the agency's population group\";s:9:\"maxLength\";i:150;}s:22:\"population_source_flag\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:48:\"A
+  source flag for the agency's population number\";s:9:\"maxLength\";i:1;}s:18:\"suburban_area_flag\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:25:\"Is
+  the agency in a suburb\";s:9:\"maxLength\";i:1;}s:14:\"core_city_flag\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:33:\"Is
+  the agency a core_city agency?\";s:9:\"maxLength\";i:1;}s:15:\"months_reported\";O:8:\"stdClass\":4:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:75:\"How
+  many months the agency reported either SRS or NIBRS in the current_year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:12;}s:21:\"nibrs_months_reported\";O:8:\"stdClass\":4:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:68:\"How
+  many months the agency reported either NIBRS in the current_year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:12;}s:22:\"past_10_years_reported\";O:8:\"stdClass\":4:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:117:\"A
+  count of how  many of the 10 most recent years of SRS data this agency reported
+  12 months of crime dats to the FBI.\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:10;}s:14:\"covered_by_ori\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:84:\"The
+  ORI of another agency that covered reporting for this agency in the current_year\";}s:15:\"covered_by_name\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:81:\"The
+  name of the agency that covered reporting for this agency in the current_year\";}s:13:\"staffing_year\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:62:\"The
+  last year this agency reported staffing numbers to the FBI\";s:7:\"minimum\";i:1960;}s:14:\"total_officers\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  total number of officers reported for the staffing_year\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:15:\"total_civilians\";O:8:\"stdClass\":3:{s:11:\"description\";s:69:\"The
+  total number of civilian employees reported for the staffing_year\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:9:\"icpsr_zip\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"A
+  zip code for the agency from the ICPSR 2012 crosswalk\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"icpsr_lat\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"A
+  geocoded decimal latitude for the agency from the ICPSR 2012 crosswalk. Locations
+  will be approximate and may be the centroid for the locality.\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:9:\"icpsr_lng\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"A
+  geocoded decimal longitude for the ageny from the ICPSR 2012 crosswalk. Locations
+  will be approximate and may be the centroid for the locality.\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}}}s:20:\"NationalArrestCounts\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"Estimated
+  arrest statistics for the United States\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:33:{i:0;s:4:\"year\";i:1;s:10:\"population\";i:2;s:13:\"total_arrests\";i:3;s:8:\"homicide\";i:4;s:4:\"rape\";i:5;s:7:\"robbery\";i:6;s:18:\"aggravated_assault\";i:7;s:8:\"burglary\";i:8;s:7:\"larceny\";i:9;s:19:\"motor_vehicle_theft\";i:10;s:5:\"arson\";i:11;s:13:\"violent_crime\";i:12;s:14:\"property_crime\";i:13;s:13:\"other_assault\";i:14;s:7:\"forgery\";i:15;s:5:\"fraud\";i:16;s:12:\"embezzlement\";i:17;s:15:\"stolen_property\";i:18;s:9:\"vandalism\";i:19;s:7:\"weapons\";i:20;s:12:\"prostitution\";i:21;s:18:\"other_sex_offenses\";i:22;s:10:\"drug_abuse\";i:23;s:8:\"gambling\";i:24;s:14:\"against_family\";i:25;s:3:\"dui\";i:26;s:11:\"liquor_laws\";i:27;s:11:\"drunkenness\";i:28;s:18:\"disorderly_conduct\";i:29;s:8:\"vagrancy\";i:30;s:5:\"other\";i:31;s:9:\"suspicion\";i:32;s:16:\"curfew_loitering\";}s:10:\"properties\";O:8:\"stdClass\":33:{s:4:\"year\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  year the counts are for\";s:4:\"type\";s:7:\"integer\";}s:10:\"population\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"The
+  total population for the United States in that year\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:13:\"total_arrests\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"Total
+  arrests. Does not include suspicion.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:8:\"homicide\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Murder
+  and nonnegligent manslaughter\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:4:\"rape\";O:8:\"stdClass\":3:{s:11:\"description\";s:147:\"The
+  rape figure in this table is an aggregate total of the data submitted based on both
+  the legacy and revised Uniform Crime Reporting definitions.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:7:\"robbery\";O:8:\"stdClass\":3:{s:11:\"description\";s:7:\"Robbery\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:18:\"aggravated_assault\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Aggravated
+  assault\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:8:\"burglary\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Burglary\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:7:\"larceny\";O:8:\"stdClass\":3:{s:11:\"description\";s:7:\"Larceny\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:19:\"motor_vehicle_theft\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Motor
+  vehicle theft\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:5:\"arson\";O:8:\"stdClass\":3:{s:11:\"description\";s:5:\"Arson\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:13:\"violent_crime\";O:8:\"stdClass\":3:{s:11:\"description\";s:107:\"Violent
+  crimes are offenses of murder and nonnegligent manslaughter, rape, robbery, and
+  aggravated assault.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:14:\"property_crime\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"Property
+  crimes are offenses of burglary, larceny-theft, motor vehicle theft, and arson.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:13:\"other_assault\";O:8:\"stdClass\":3:{s:11:\"description\";s:13:\"Other
+  assault\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:7:\"forgery\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Forgery
+  and counterfeiting\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:5:\"fraud\";O:8:\"stdClass\":3:{s:11:\"description\";s:5:\"Fraud\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:12:\"embezzlement\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"Embezzlement\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:15:\"stolen_property\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"Stolen
+  property; buying, receiving, possessing\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:9:\"vandalism\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Vandalism\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:7:\"weapons\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Weapons;
+  carrying, possessing, etc.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:12:\"prostitution\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Prostitution
+  and commercialized vice\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:18:\"other_sex_offenses\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Sex
+  offenses (except rape and prostitution)\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:10:\"drug_abuse\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Drug
+  abuse violations\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:8:\"gambling\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Gambling\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:14:\"against_family\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"Offenses
+  against the family and children\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:3:\"dui\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Driving
+  under the influence\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:11:\"liquor_laws\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Liquor
+  laws\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:11:\"drunkenness\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Drunkenness\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:18:\"disorderly_conduct\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Disorderly
+  conduct\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:8:\"vagrancy\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Vagrancy\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:5:\"other\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"All
+  other offenses\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:9:\"suspicion\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Suspicion\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:16:\"curfew_loitering\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Curfew
+  and loitering law violations\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}}}s:12:\"SummaryCount\";O:8:\"stdClass\":4:{s:11:\"description\";s:93:\"Several
+  endpoints in the Crime Data Explorer return aggregated counts related to the offense.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:8:\"reported\";i:1;s:6:\"actual\";i:2;s:9:\"unfounded\";i:3;s:7:\"cleared\";i:4;s:16:\"juvenile_cleared\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"year\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"Usually
+  counts are aggregated on an annual basis among other measures. This field contains
+  the year the counts are valid for.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1960;}s:8:\"reported\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"How
+  many incidents were reported for the specified offense.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:6:\"actual\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  number of reported incidents that were deemed credible.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:9:\"unfounded\";O:8:\"stdClass\":3:{s:11:\"description\";s:142:\"The
+  number of reported incidents that were deemed unfounded. This should add up with
+  `actual` to return the total number of reported offenses.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:7:\"cleared\";O:8:\"stdClass\":3:{s:11:\"description\";s:167:\"The
+  number of incidents that were cleared by law enforcement. Note that clearances are
+  counted in the year they are made and not added to previous years for old cases.\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:16:\"juvenile_cleared\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"The
+  number of clearances made that involved a juvenile (generally someone < 18 years
+  old)\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}}}s:12:\"ArsonSummary\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"Represents
+  arson counts for a specific year returned by the arson endpoints.\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:4:\"year\";i:1;s:8:\"reported\";i:2;s:7:\"cleared\";i:3;s:6:\"actual\";i:4;s:9:\"unfounded\";i:5;s:11:\"uninhabited\";i:6;s:16:\"est_damage_value\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"year\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"The
+  year the count is from\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1960;}s:10:\"state_abbr\";O:8:\"stdClass\":4:{s:11:\"description\";s:103:\"The
+  2-letter postal abbreviation of the state the arson count is for. May be NULL for
+  nationwide counts\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;}s:3:\"ori\";O:8:\"stdClass\":4:{s:11:\"description\";s:117:\"For
+  arson requests at the agency level, returns the ORI for the agency. Always null
+  for statewide and national counts\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"minLength\";i:9;s:9:\"maxLength\";i:9;}s:16:\"subcategory_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"For
+  counts taken at the subcategory level, this is the code for the subcategory. Otherwise,
+  null.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"subcategory_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:123:\"For
+  counts at the subcategory level, this returns a description for the subcategory
+  of structure affected. Otherwise, null.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"uninhabited\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"The
+  number of affected buildings that were uninhabited.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:16:\"est_damage_value\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"Estimated
+  damage in dollars from the arson cases in that year.\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}}}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SummaryCount\";}}}s:14:\"EstimatedCount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:13:{i:0;s:4:\"year\";i:1;s:10:\"population\";i:2;s:13:\"violent_crime\";i:3;s:8:\"homicide\";i:4;s:11:\"rape_legacy\";i:5;s:12:\"rape_revised\";i:6;s:7:\"robbery\";i:7;s:18:\"aggravated_assault\";i:8;s:14:\"property_crime\";i:9;s:8:\"burglary\";i:10;s:7:\"larceny\";i:11;s:19:\"motor_vehicle_theft\";i:12;s:7:\"caveats\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"year\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"The
+  year of the estimated counts\";}s:10:\"population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:140:\"Populations
+  are U.S. Census Bureau provisional estimates as of July 1 for each year except 2000
+  and 2010, which are decennial census counts.\";}s:10:\"state_abbr\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"The
+  2-letter postal abbreviation if these estimates are for a specific state\";s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;}s:13:\"violent_crime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:116:\"The
+  violent crime figures include the offenses of murder, rape (legacy definition),
+  robbery, and aggravated assault.\";}s:8:\"homicide\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"Murder
+  and nonnegligent manslaughter\";s:7:\"minimum\";i:0;}s:11:\"rape_legacy\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:24:\"Rape
+  (legacy definition)\";}s:12:\"rape_revised\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;s:11:\"description\";s:30:\"Rape
+  (revised 2013 definition)\";}s:7:\"robbery\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:7:\"Robbery\";}s:18:\"aggravated_assault\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:18:\"Aggravated
+  assault\";}s:14:\"property_crime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:42:\"The
+  total of all property crime categories\";}s:8:\"burglary\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:8:\"Burglary\";}s:7:\"larceny\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:13:\"Larceny
+  theft\";}s:19:\"motor_vehicle_theft\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:19:\"Motor
+  vehicle theft\";}s:7:\"caveats\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:175:\"Caveats
+  provided by the FBI related to the estimates for that specific year. Note that a
+  lack of caveats does not that other precautions for working with the data don't
+  apply.\";}}}s:19:\"AgencyOffenseCounts\";O:8:\"stdClass\":2:{s:11:\"description\";s:0:\"\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SummaryCount\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"agency_id\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";}s:3:\"ori\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:17:\"state_postal_abbr\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:15:\"pub_agency_name\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:12:\"offense_code\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:12:\"offense_name\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:14:\"classification\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"A
+  classification of the criminal offenses\";s:4:\"enum\";a:2:{i:0;s:7:\"Violent\";i:1;s:8:\"Property\";}}}}}}s:22:\"AgencySuboffenseCounts\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AgencyOffenseCounts\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:15:\"ucr_agency_name\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:16:\"ncic_agency_name\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:19:\"offense_subcat_code\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:19:\"offense_subcat_name\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}}}}s:17:\"TraffickingReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:8:\"sex_acts\";i:1;s:16:\"sex_acts_cleared\";i:2;s:25:\"sex_acts_juvenile_cleared\";i:3;s:9:\"servitude\";i:4;s:17:\"servitude_cleared\";i:5;s:26:\"servitude_juvenile_cleared\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"year\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:61:\"The
+  year an agency is reporting human trafficking numbers for\";s:7:\"minimum\";i:2013;}s:10:\"population\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:257:\"The
+  population served by the agency in the year of its report. Because of how the UCR
+  program uniquely apportions populations to agencies, this number may be significantly
+  lower than the actual population that lies within the agency's jurisdiction or even
+  0\";}s:10:\"state_abbr\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  2-letter postal code for the state\";s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;}s:8:\"sex_acts\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Total
+  cases, commercial sex acts\";s:7:\"minimum\";i:0;}s:16:\"sex_acts_cleared\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:40:\"Total
+  cleared cases, commercial sex acts\";s:7:\"minimum\";i:0;}s:25:\"sex_acts_juvenile_cleared\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:49:\"Total
+  juvenile cleared cases, commercial sex acts\";s:7:\"minimum\";i:0;}s:9:\"servitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Total
+  cases, involuntary servitude\";s:7:\"minimum\";i:0;}s:17:\"servitude_cleared\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:42:\"Total
+  cleared cases, involuntary servitude\";s:7:\"minimum\";i:0;}s:26:\"servitude_juvenile_cleared\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:51:\"Total
+  juvenile cleared cases, involuntary servitude\";s:7:\"minimum\";i:0;}}}s:24:\"SummaryTraffickingReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TraffickingReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:15:\"months_reported\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:228:\"How
+  many months in the year all participating agencies within the given state reported
+  human trafficking statistics to the FBI. To get an average number of months reported
+  by each agency, you can divide by the agencies parameter\";s:7:\"minimum\";i:1;}s:8:\"agencies\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:60:\"The
+  number of agencies reporting in the given state and year\";s:7:\"minimum\";i:1;}}}}}s:23:\"AgencyTraffickingReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TraffickingReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"months_reported\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:233:\"How
+  many months the agency reported human trafficking statistics to the FBI. The FBI
+  includes counts from agencies that have not reported a full year, and you should
+  avoid extrapoliting annual counts from a partial year of reporting.\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:12;}s:3:\"ori\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"The
+  agency ORI\";s:9:\"minLength\";i:9;s:9:\"maxLength\";i:9;}s:11:\"agency_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  agency's name\";}}}}}s:19:\"AgencyParticipation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:8:{i:0;s:4:\"year\";i:1;s:10:\"state_name\";i:2;s:10:\"state_abbr\";i:3;s:10:\"agency_ori\";i:4;s:11:\"agency_name\";i:5;s:17:\"agency_population\";i:6;s:21:\"population_group_code\";i:7;s:16:\"population_group\";}s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"year\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:44:\"The
+  year these participation details are for\";s:7:\"minimum\";i:1960;}s:10:\"state_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"The
+  name of the state the agency is located in\";}s:10:\"state_abbr\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:48:\"The
+  two-letter postal abbreviation for the state\";}s:10:\"agency_ori\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:7:\"pattern\";s:11:\"[A-Z0-9]{9}\";s:11:\"description\";s:34:\"The
+  9-character ORI for the agency\";}s:11:\"agency_name\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:17:\"The
+  agency's name\";}s:17:\"agency_population\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}s:11:\"description\";s:292:\"The
+  unique population within the jurisdiction for the agency. The FBI UCR program does
+  not overlap populations even though agency jurisdictions might overlap. This means
+  that some agencies like state highway patrols or transit police might be assigned
+  a population of 0, and that is not a bug\";s:7:\"minimum\";i:0;}s:21:\"population_group_code\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:143:\"The
+  FBI code for the population group the agency belongs to. For a full listing of all
+  population codes, call the `/codes/ref_population_group`\";}s:16:\"population_group\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:55:\"The
+  name for the population group the agency belongs to\";}s:8:\"reported\";O:8:\"stdClass\":4:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:11:\"description\";s:80:\"This
+  is 1 if agency reported either SRS or NIBRS at least once in the given year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:15:\"months_reported\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:65:\"How
+  many months the agency filed a crime report in the given year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:12;}s:14:\"nibrs_reported\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:69:\"This
+  is 1 if agency reported to NIBRS at least once in the given year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:21:\"nibrs_months_reported\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:71:\"How
+  many months the agency filed a NIBRS crime report in the given year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:12;}}}s:17:\"ParticipationRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:9:{i:0;s:4:\"year\";i:1;s:22:\"participating_agencies\";i:2;s:14:\"total_agencies\";i:3;s:18:\"participation_rate\";i:4;s:16:\"total_population\";i:5;s:24:\"participating_population\";i:6;s:28:\"nibrs_participating_agencies\";i:7;s:24:\"nibrs_participation_rate\";i:8;s:30:\"nibrs_participating_population\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"year\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:64:\"The
+  year that these participation statistics were calculated for\";s:7:\"minimum\";i:1960;}s:22:\"participating_agencies\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:87:\"How
+  many agencies either reported crime or were covered by another agency that reported\";}s:14:\"total_agencies\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"The
+  total number of agencies for the specific year\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;}s:18:\"participation_rate\";O:8:\"stdClass\":5:{s:11:\"description\";s:83:\"A
+  rate of which agencies have filed either an SRS or NIBRS report in the given year\";s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:16:\"total_population\";O:8:\"stdClass\":4:{s:11:\"description\";s:80:\"The
+  sum of the population within the jurisdictions of all agencies for that year\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:24:\"participating_population\";O:8:\"stdClass\":4:{s:11:\"description\";s:98:\"The
+  sum of the population within the jurisdictions of all agencies that participated
+  for that year\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}s:28:\"nibrs_participating_agencies\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"The
+  number of agencies who filed a NIBRS report in the given year or were covered by
+  another agency that filed NIBRS\";s:4:\"type\";s:7:\"integer\";}s:24:\"nibrs_participation_rate\";O:8:\"stdClass\":5:{s:11:\"description\";s:64:\"A
+  rate of how many agencies filed a NIBRS report in a given year\";s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;}s:30:\"nibrs_participating_population\";O:8:\"stdClass\":4:{s:11:\"description\";s:107:\"The
+  sum of the population within the jurisdictions of all agencies that participated
+  in NIBRS for that year\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}}}s:22:\"StateParticipationRate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ParticipationRate\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"state_name\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"state_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:12:\"CountForYear\";O:8:\"stdClass\":3:{s:11:\"description\";s:292:\"This
+  object will almost always include an additional variable field with the value of
+  the variable being counted. So. if you asked the API for counts related to `race_code`
+  variable, each record would have a key like `race_code` and the corresponding value
+  (ie, `B`, `W`) etc. for that count.\";s:8:\"required\";a:2:{i:0;s:4:\"year\";i:1;s:5:\"count\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"year\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  year for which the counts were computed\";s:4:\"type\";s:6:\"string\";}s:5:\"count\";O:8:\"stdClass\":3:{s:11:\"description\";s:58:\"A
+  count for a specific value of a variable in a given year\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}s:7:\"minimum\";i:0;}}}s:22:\"CargoTheftCountForYear\";O:8:\"stdClass\":2:{s:11:\"description\";s:96:\"Cargo
+  theft counts also include dollar estimates for the values of stolen and recovered
+  property\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CountForYear\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"stolen_value\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"The
+  total estimated value for stolen property in that count\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"recovered_value\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"The
+  total estimated value for recovered property in that count\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}}}}s:21:\"PaginatedCountForYear\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"pagination\";i:1;s:7:\"results\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}s:7:\"results\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CountForYear\";}}}}s:18:\"GeoCountyBasicInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:97:\"Basic
+  information about the county, as returned within the response for the /geo/states
+  endpoint.\";s:8:\"required\";a:2:{i:0;s:9:\"county_id\";i:1;s:11:\"county_name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"county_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"The
+  internal identifier for the county within the CDE database\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"county_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"The
+  name of the county\";s:9:\"maxLength\";i:100;s:4:\"type\";s:6:\"string\";}s:4:\"fips\";O:8:\"stdClass\":4:{s:11:\"description\";s:265:\"The
+  five character numeric code used to identify the county under the FIPS standards.
+  The UCR database also contains multiple special unmapped counties that hold statewide
+  and tribal entities that do not belong to real counties. These will have a FIPS
+  code of NULL.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:9:\"minLength\";i:5;s:9:\"maxLength\";i:5;}}s:4:\"type\";s:6:\"object\";}s:14:\"GeoStateDetail\";O:8:\"stdClass\":4:{s:11:\"description\";s:99:\"The
+  record of metadata returned by the /geo/states/<state_abbr> endpoint to describe
+  a single state\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":19:{s:8:\"counties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GeoCountyBasicInfo\";}}s:12:\"current_year\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"The
+  most recent year of data for the state\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:10:\"state_abbr\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  2-letter postal abbreviation for the state\";s:4:\"type\";s:6:\"string\";}s:10:\"state_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the state\";s:4:\"type\";s:6:\"string\";}s:13:\"participation\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ParticipationRate\";}}s:16:\"total_population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:57:\"The
+  reported population for the state in the current_year\";s:7:\"minimum\";i:0;}s:14:\"total_agencies\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:61:\"The
+  total number of agencies in the state in the current_year\";s:7:\"minimum\";i:0;}s:22:\"participating_agencies\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:143:\"The
+  number of agencies in the current year that either reported 12 months of data or
+  were covered by another agency that reported for 12 months\";s:7:\"minimum\";i:0;}s:17:\"participation_pct\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:63:\"The
+  percentage of agencies the participated in the current year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}s:28:\"nibrs_participating_agencies\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:134:\"The
+  number of agencies that reported 12 months of NIBRS data or were covered by an agency
+  that reported NIBRS data in the current year\";s:7:\"minimum\";i:0;}s:23:\"nibrs_participation_pct\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:73:\"The
+  percentage of agencies the participated in NIBRS for the current year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}s:16:\"covered_agencies\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:169:\"The
+  number of agencies that were covered by another agency (i.e., the covering agency
+  included counts for the covered agencies in its own statistics) in the current year\";s:7:\"minimum\";i:0;}s:11:\"covered_pct\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:82:\"The
+  percentage of agencies that were covered by other agencies in the current year\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}s:24:\"participating_population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:183:\"The
+  total populations of all agencies that participated in the current year. Note that
+  this should be used as an approximate measure of reporting coverage rather than
+  an exact number.\";s:7:\"minimum\";i:0;}s:28:\"participating_population_pct\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:217:\"The
+  percentage of the state population that is within participating agencies. Since
+  the UCR program assigns populations in a special way, this should be used as an
+  approximate heuristic rather than an exact statistic.\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}s:30:\"nibrs_participating_population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:193:\"The
+  total populations of all agencies that participated in NIBRS for the current year.
+  Note that this should be used as an approximate measure of reporting coverage rather
+  than an exact number.\";s:7:\"minimum\";i:0;}s:20:\"nibrs_population_pct\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:223:\"The
+  percentage of the state population that is within NIBRS participating agencies.
+  Since the UCR program assigns populations in a special way, this should be used
+  as an approximate heuristic rather than an exact statistic.\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}s:15:\"police_officers\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:122:\"The
+  number of police officers reported by agencies in the current year. Not all agencies
+  report their staffing every year.\";s:7:\"minimum\";i:0;}s:18:\"civilian_employees\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:125:\"The
+  number of civilian employees reported by agencies in the current year. Not all agencies
+  report their staffing every year.\";s:7:\"minimum\";i:0;}}s:8:\"required\";a:4:{i:0;s:4:\"name\";i:1;s:12:\"current_year\";i:2;s:13:\"participation\";i:3;s:8:\"counties\";}}}"
+...

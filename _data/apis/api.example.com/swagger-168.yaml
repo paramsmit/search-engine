@@ -1,0 +1,343 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:3:\"2.8\";s:5:\"title\";s:18:\"Service
+  Broker API\";s:11:\"description\";s:534:\"The Cloud Foundry services API defines
+  the contract between the Cloud Controller and the service broker. The broker is
+  expected to implement several HTTP (or HTTPS) endpoints underneath a URI prefix.
+  One or more services can be provided by a single broker, and load balancing enables
+  horizontal scalability of redundant brokers. Multiple Cloud Foundry instances can
+  be supported by a single broker using different URL prefixes and credentials. [Learn
+  more about the Service Broker API.](http://docs.cloudfoundry.org/services/api.html)\";}"
+basePath: /v2
+paths:
+  /catalog:
+    get:
+      operationId: catalog
+      summary: Gets services registered within the broker
+      tags:
+      - catalog
+      description: 'The first endpoint that a broker must implement is the service
+        catalog. Cloud Controller will initially fetch this endpoint from all brokers
+        and make adjustments to the user-facing service catalog stored in the Cloud
+        Controller database. '
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CatalogServices'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+  /service_instances/{instance_id}/last_operation:
+    parameters:
+    - $ref: '#/parameters/instance_id'
+    get:
+      summary: Polling Last Operation (async only)
+      description: When a broker returns status code 202 ACCEPTED for provision, update,
+        or deprovision, Cloud Foundry will begin to poll the /v2/service_instances/:guid/last_operation
+        endpoint to obtain the state of the last requested operation. The broker response
+        must contain the field state and an optional field description.
+      responses:
+        200:
+          description: Valid state values are 'in progress', 'succeeded', and 'failed'
+          schema:
+            $ref: '#/definitions/LastOperation'
+        410:
+          description: 'Appropriate only for asynchronous delete requests. Cloud Foundry
+            will consider this response a success and remove the resource from its
+            database. '
+          schema:
+            $ref: '#/definitions/Empty'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+  /service_instances/{instance_id}:
+    parameters:
+    - $ref: '#/parameters/instance_id'
+    put:
+      operationId: createServiceInstance
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      description: When the broker receives a provision request from Cloud Controller,
+        it should synchronously take whatever action is necessary to create a new
+        service resource for the developer. The result of provisioning varies by service
+        type, although there are a few common actions that work for many services.
+      summary: Provisions a service instance
+      parameters:
+      - name: service
+        required: true
+        description: Service information.
+        in: body
+        schema:
+          $ref: '#/definitions/Service'
+      responses:
+        200:
+          description: May be returned if the service instance already exists and
+            the requested parameters are identical to the existing service instance.
+            The expected response body is below.
+          schema:
+            $ref: '#/definitions/DashboardUrl'
+        201:
+          description: Service instance has been created.
+          schema:
+            $ref: '#/definitions/DashboardUrl'
+        202:
+          description: Service instance creation has been accepted
+          schema:
+            $ref: '#/definitions/DashboardUrl'
+        409:
+          description: Should be returned if the requested service instance already
+            exists. The expected response body is {}
+          schema:
+            $ref: '#/definitions/Empty'
+        422:
+          description: Shoud be returned if the broker only supports asynchronous
+            provisioning for the requested plan and the request did not include ?accepts_incomplete=true
+          schema:
+            $ref: '#/definitions/AsyncError'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+    patch:
+      operationId: updateServiceInstance
+      summary: Updating a Service Instance
+      description: Brokers that implement this endpoint can enable users to modify
+        attributes of an existing service instance. The first attribute Cloud Foundry
+        supports users modifying is the service plan. This effectively enables users
+        to upgrade or downgrade their service instance to other plans. To see how
+        users make these requests, [see Managing Services](https://docs.cloudfoundry.org/devguide/services/managing-services.html#update_service).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: plan
+        description: New Plan information.
+        required: true
+        in: body
+        schema:
+          $ref: '#/definitions/ServicePlan'
+      responses:
+        200:
+          description: New plan is effective. The expected response body is {}.
+          schema:
+            $ref: '#/definitions/Empty'
+        202:
+          description: Service instance update is in progress. This triggers Cloud
+            Controller to poll the Service Instance Last Operation Endpoint for operation
+            status.
+          schema:
+            $ref: '#/definitions/Empty'
+        422:
+          description: May be returned if the particular plan change requested is
+            not supported or if the request can not currently be fulfilled due to
+            the state of the instance (eg. instance utilization is over the quota
+            of the requested plan). Broker should include a user-facing message in
+            the body; for details [see Broker Errors](https://docs.cloudfoundry.org/services/api.html#broker-errors).
+          schema:
+            $ref: '#/definitions/AsyncError'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+    delete:
+      operationId: deprovisionServiceInstance
+      summary: Deprovisions a service instance.
+      description: When a broker receives a deprovision request from Cloud Controller,
+        it should delete any resources it created during the provision. Usually this
+        means that all resources are immediately reclaimed for future provisions.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/service_id'
+      - $ref: '#/parameters/plan_id'
+      responses:
+        200:
+          description: Service instance was deleted. The expected response body is
+            {}.
+          schema:
+            $ref: '#/definitions/Empty'
+        202:
+          description: Service instance update is in progress. This triggers Cloud
+            Controller to poll the Service Instance Last Operation Endpoint for operation
+            status.
+          schema:
+            $ref: '#/definitions/Empty'
+        410:
+          description: Should be returned if the binding does not exist. The expected
+            response body is {}.
+          schema:
+            $ref: '#/definitions/Empty'
+        422:
+          description: Should be returned if the broker only supports asynchronous
+            deprovisioning for the requested plan and the request did not include
+            ?accepts_incomplete=true
+          schema:
+            $ref: '#/definitions/AsyncError'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+  /service_instances/{instance_id}/service_bindings/{binding_id}:
+    parameters:
+    - $ref: '#/parameters/instance_id'
+    - $ref: '#/parameters/binding_id'
+    put:
+      operationId: serviceBind
+      summary: Binds to a service
+      description: When the broker receives a bind request from the Cloud Controller,
+        it should return information which helps an application to utilize the provisioned
+        resource. This information is generically referred to as credentials. Applications
+        should be issued unique credentials whenever possible, so one application
+        access can be revoked without affecting other bound applications. For more
+        information on credentials, [see Binding Credentials](https://docs.cloudfoundry.org/services/binding-credentials.html).
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - name: binding
+        required: true
+        in: body
+        schema:
+          $ref: '#/definitions/Binding'
+      responses:
+        200:
+          description: May be returned if the binding already exists and the requested
+            parameters are identical to the existing binding.
+          schema:
+            $ref: '#/definitions/BindingResponse'
+        201:
+          description: Binding has been created.
+          schema:
+            $ref: '#/definitions/BindingResponse'
+        409:
+          description: Should be returned if the requested binding already exists.
+            The expected response body is {}, though the description field can be
+            used to return a user-facing error message, as described in Broker Errors.
+          schema:
+            $ref: '#/definitions/Empty'
+        422:
+          description: Should be returned if the broker requires that app_guid be
+            included in the request body.
+          schema:
+            $ref: '#/definitions/Empty'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+    delete:
+      operationId: serviceUnbind
+      summary: Unbinds a service
+      description: When a broker receives an unbind request from Cloud Controller,
+        it should delete any resources it created in bind. Usually this means that
+        an application immediately cannot access the resource.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/service_id'
+      - $ref: '#/parameters/plan_id'
+      responses:
+        200:
+          description: Binding was deleted. The expected response body is {}.
+          schema:
+            $ref: '#/definitions/Empty'
+        410:
+          description: Should be returned if the binding does not exist. The expected
+            response body is {}.
+          schema:
+            $ref: '#/definitions/Empty'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/BrokerError'
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":17:{s:15:\"CatalogServices\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"list
+  of services stored in the catalog\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"services\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CatalogService\";}}}}s:14:\"CatalogService\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Schema
+  of a service object see http://docs.cloudfoundry.org/services/api.html\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"bindable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"tags\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/MetaData\";}s:8:\"requires\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:15:\"plan_updateable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"plans\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:57:\"A
+  list of plans for this service as stored in the catalog\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Plan\";}}s:16:\"dashboard_client\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DashboardClient\";}}}s:4:\"Plan\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"A
+  plan for the service\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:147:\"An
+  identifier used to correlate this plan in future requests to the catalog. This must
+  be unique within Cloud Foundry, using a GUID is recommended.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  CLI-friendly name of the plan that will appear in the catalog. All lowercase, no
+  spaces.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"A
+  short description of the service that will appear in the catalog.\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:146:\"A
+  list of metadata for a service plan. For more information, [see Service Metadata](https://docs.cloudfoundry.org/services/catalog-metadata.html).\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"A
+  short name for the service plan to be displayed in a catalog.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"A
+  description of the service plan to be displayed in a catalog.\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:95:\"Additional
+  non mandatory fields for Plan metadata (e.g. metadata.displayName, metadata.bullets)\";}}}s:4:\"free\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:192:\"This
+  field allows the plan to be limited by the non_basic_services_allowed field in a
+  Cloud Foundry Quota, [see Quota Plans](http://docs.cloudfoundry.org/running/managing-cf/quota-plans.html).\";}}}s:15:\"DashboardClient\";O:8:\"stdClass\":2:{s:11:\"description\";s:143:\"Contains
+  the data necessary to activate the [Dashboard SSO feature](https://docs.cloudfoundry.org/services/dashboard-sso.html)
+  for this service\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:142:\"The
+  id of the Oauth2 client that the service intends to use. The name may be taken,
+  in which case the API will return an error to the operator\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"A
+  secret for the dashboard client\";}s:12:\"redirect_uri\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:84:\"A
+  domain for the service dashboard that will be whitelisted by the UAA to enable SSO\";}}}s:7:\"Service\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Service
+  object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"service_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:117:\"The
+  ID of the service within the catalog above. While not strictly necessary, some brokers
+  might make use of this ID.\";}s:7:\"plan_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:219:\"The
+  ID of the plan within the above service (from the catalog endpoint) that the user
+  would like provisioned. Because plans have identifiers unique to a broker, this
+  is enough information to determine what to provision.\";}s:17:\"organization_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:223:\"The
+  Cloud Controller GUID of the organization under which the service is to be provisioned.
+  Although most brokers will not use this field, it could be helpful in determining
+  data placement or applying custom business rules.\";}s:10:\"space_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Similar
+  to organization_guid, but for the space.\";}s:11:\"parameteres\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Parameter\";}s:18:\"accepts_incomplete\";O:8:\"stdClass\":2:{s:11:\"description\";s:318:\"A
+  value of true indicates that both the Cloud Controller and the requesting client
+  support asynchronous provisioning. If this parameter is not included in the request,
+  and the broker can only provision an instance of the requested plan asynchronously,
+  the broker should reject the request with a 422 as described below\";s:4:\"type\";s:7:\"boolean\";}}}s:12:\"DashboardUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:410:\"The
+  URL of a web-based management user interface for the service instance; we refer
+  to this as a service dashboard. The URL should contain enough information for the
+  dashboard to identify the resource being accessed ( in the example below). For information
+  on how users can authenticate with service dashboards via SSO, [see Dashboard Single
+  Sign-On](https://docs.cloudfoundry.org/services/dashboard-sso.html).\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"dashboard_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:409:\"The
+  URL of a web-based management user interface for the service instance; we refer
+  to this as a service dashboard. The URL should contain enough information for the
+  dashboard to identify the resource being accessed (in the example below). For information
+  on how users can authenticate with service dashboards via SSO, [see Dashboard Single
+  Sign-On](https://docs.cloudfoundry.org/services/dashboard-sso.html).\";}}}s:5:\"Empty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:35:\"Expected
+  empty response could be {}\";}s:13:\"LastOperation\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Last
+  operation response.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"AsyncError\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Async
+  operation not supported error\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"ServicePlan\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"New
+  Plan to be added to a service.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"service_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"plan_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Parameter\";}s:15:\"previous_values\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PreviousValues\";}s:18:\"accepts_incomplete\";O:8:\"stdClass\":2:{s:11:\"description\";s:318:\"A
+  value of true indicates that both the Cloud Controller and the requesting client
+  support asynchronous provisioning. If this parameter is not included in the request,
+  and the broker can only provision an instance of the requested plan asynchronously,
+  the broker should reject the request with a 422 as described below\";s:4:\"type\";s:7:\"boolean\";}}}s:14:\"PreviousValues\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Information
+  about the instance prior to the update.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"plan_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"ID
+  of the plan prior to the update.\";}s:10:\"service_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"ID
+  of the service for the instance.\";}s:15:\"organization_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"ID
+  of the organization containing the instance.\";}s:8:\"space_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"ID
+  of the space containing the instance.\";}}}s:9:\"Parameter\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"A
+  key value parameters\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Name
+  of the parameter\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:22:\"value
+  of the parameter\";}}}s:7:\"Binding\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Information
+  to bind the service to an application.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"app_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:130:\"GUID
+  of the application that you want to bind your service to. Will be included when
+  users bind applications to service instances.\";}s:7:\"plan_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:102:\"ID
+  of the plan from the catalog. While not strictly necessary, some brokers might make
+  use of this ID.\";}s:10:\"service_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:105:\"ID
+  of the service from the catalog. While not strictly necessary, some brokers might
+  make use of this ID.\";}s:13:\"bind_resource\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Bind_resource\";}s:10:\"parameters\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Parameter\";}}}s:13:\"Bind_resource\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"app_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"route\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"BindingResponse\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Success
+  binding response.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"credentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:203:\"A
+  free-form hash of credentials that the bound application can use to access the service.
+  For more information, [see Binding Credentials](https://docs.cloudfoundry.org/services/binding-credentials.html).\";}s:16:\"syslog_drain_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:298:\"A
+  URL to which Cloud Foundry should drain logs for the bound application. requires
+  syslog_drain must be declared in the catalog endpoint or Cloud Foundry will consider
+  the response invalid. For details, [see Application Log Streaming](https://docs.cloudfoundry.org/services/app-log-streaming.html).\";}s:17:\"route_service_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:71:\"A
+  URL to which Cloud Foundry should proxy requests for the bound route.\";}}}s:8:\"MetaData\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"metadata
+  related to the service\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"BrokerError\";O:8:\"stdClass\":3:{s:11:\"description\";s:13:\"General
+  error\";s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:123:\"An
+  error message explaining why the request failed.  This message will be displayed
+  to the user who  initiated the request.\";}}}}"
+...

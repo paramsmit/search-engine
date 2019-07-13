@@ -1,0 +1,2654 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:5:\"0.0.1\";s:5:\"title\";s:26:\"Travel
+  Security System API\";s:11:\"description\";s:74:\"Sicuritalia Travel Security API
+  for Web-Dashboard and Mobile Traveler Apps\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:30:\"Camelot
+  Biomedical Systems srl\";s:3:\"url\";s:18:\"www.camelotbio.com\";s:5:\"email\";s:19:\"info@camelotbio.com\";}}"
+host: localhost:10010
+basePath: /api
+paths:
+  /alerts:
+    x-swagger-router-controller: Alerts
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getAlerts
+      summary: Last alerts
+      description: This resource represents the list of the available alerts.nBy default
+        it returns alerts of the last 24h, using the alert timestampnas criterion.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out alerts older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: criterion
+        in: query
+        description: Criterion to be used to filter alerts using timestamp
+        type: string
+        default: timealert
+        enum:
+        - timealert
+        - timecreation
+      - name: category
+        in: query
+        description: Show alerts belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - generic
+          - disaster
+          - security
+          - health
+        collectionFormat: csv
+      - name: country
+        in: query
+        description: Show alerts belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      - name: loadcontents
+        in: query
+        description: get or not get contents
+        type: boolean
+        default: true
+        required: false
+      - name: to
+        in: query
+        description: Filter out alerts newer than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: region
+        in: query
+        description: Show alerts belonging to the given regions
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Return alerts filtered by status
+        type: string
+        default: all
+        enum:
+        - read
+        - unread
+        - all
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: An array of alerts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Alert'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - alerts:write
+      operationId: createAlert
+      summary: Save a new alert
+      description: This resource creates a new alert.
+      parameters:
+      - name: alert
+        in: body
+        description: Alert object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/AlertManual'
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /alerts/bycategory:
+    x-swagger-router-controller: Alerts
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getAlertsByCategory
+      summary: Last alerts by category
+      description: This resource represents the list of the available alertsngrouped
+        by category.nBy default it returns alerts of the last 24h, using the alert
+        timestampnas criterion.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out alerts older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: criterion
+        in: query
+        description: Criterion to be used to filter alerts using timestamp
+        type: string
+        default: timealert
+        enum:
+        - timealert
+        - timecreation
+      - name: category
+        in: query
+        description: Show alerts belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - generic
+          - disaster
+          - security
+          - health
+        collectionFormat: csv
+      - name: country
+        in: query
+        description: show alerts belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      - name: to
+        in: query
+        description: Filter out alerts newer than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: region
+        in: query
+        description: Show alerts belonging to the given regions
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Return alerts filtered by status
+        type: string
+        default: all
+        enum:
+        - read
+        - unread
+        - all
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: An array of alerts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CategoryAlerts'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /alerts/bycountry:
+    x-swagger-router-controller: Alerts
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getAlertsByCountry
+      summary: Last alerts
+      description: This resource represents the list of the available alertsngrouped
+        by country.nBy default it returns alerts of the last 24h, using the alert
+        timestampnas criterion.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out alerts older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: criterion
+        in: query
+        description: Criterion to be used to filter alerts using timestamp
+        type: string
+        default: timealert
+        enum:
+        - timealert
+        - timecreation
+      - name: category
+        in: query
+        description: Show alerts belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - generic
+          - disaster
+          - security
+          - health
+        collectionFormat: csv
+      - name: country
+        in: query
+        description: Show alerts belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      - name: to
+        in: query
+        description: Filter out alerts newer than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: region
+        in: query
+        description: Show alerts belonging to the given regions
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Return alerts filtered by status
+        type: string
+        default: all
+        enum:
+        - read
+        - unread
+        - all
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: An array of alerts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CountryAlerts'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /alerts/{id}:
+    x-swagger-router-controller: Alerts
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getAlert
+      summary: Alert description
+      description: This resource represents the required (by id) alert object.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Alert identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: The required alert
+          schema:
+            $ref: '#/definitions/Alert'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - alerts:write
+      operationId: updateAlert
+      summary: Update an existing alert
+      description: This resource updates an existing alert.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Alert identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: alert
+        in: body
+        description: Alert information to be update.
+        required: true
+        schema:
+          $ref: '#/definitions/AlertUpdate'
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Alert not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - alerts:write
+      operationId: removeAlert
+      summary: Remove an existing alert
+      description: This resource removes an existing alert.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Alert identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /alerts/markasread/{id}:
+    x-swagger-router-controller: Alerts
+    put:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: markAlertAsReadByUser
+      summary: Mark an existing alert as read for the given user
+      description: This resource marks an existing alert as read for the given user.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Alert identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: user
+        required: true
+        in: body
+        description: User data
+        schema:
+          $ref: '#/definitions/AlertsUser'
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Alert not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /news:
+    x-swagger-router-controller: News
+    get:
+      security:
+      - oauth2:
+        - news:read
+      operationId: getNewsList
+      summary: Last news
+      description: This resource represents the list of the available news.nBy default
+        it returns the news of last 24 hours.nIf lastN greater than 0 only return
+        the last N news by not considering timestamp if provided.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out news older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: lastN
+        in: query
+        description: Set latest N news to be returned (default 0 = no limit). If lastN
+          > 0 timestamp parameter is not considered.
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+      - name: country
+        in: query
+        description: Show news belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      - name: loadcontents
+        in: query
+        description: get or not get contents
+        type: boolean
+        default: true
+        required: false
+      - name: to
+        in: query
+        description: Filter out news newer than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: region
+        in: query
+        description: Show news belonging to the given regions
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      tags:
+      - News
+      responses:
+        200:
+          description: An array of news
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/News'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - news:write
+      operationId: createNews
+      summary: Save a news
+      description: This resource creates a news.
+      parameters:
+      - name: news
+        in: body
+        description: News object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/NewsCreate'
+      tags:
+      - News
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /news/bycountry:
+    x-swagger-router-controller: News
+    get:
+      security:
+      - oauth2:
+        - news:read
+      operationId: getNewsByCountry
+      summary: Last news by country
+      description: This resource represents the list of the available newsngrouped
+        by country.nBy default it returns news of the last 24hn
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out news older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: country
+        in: query
+        description: Show news belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      tags:
+      - Alerts
+      responses:
+        200:
+          description: An array of news
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CountryNews'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /news/{id}:
+    x-swagger-router-controller: News
+    get:
+      security:
+      - oauth2:
+        - news:read
+      operationId: getNews
+      summary: Alert description
+      description: This resource represents the required (by id) news object.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: News identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - News
+      responses:
+        200:
+          description: The required news
+          schema:
+            $ref: '#/definitions/News'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - news:write
+      operationId: updateNews
+      summary: Update an existing news
+      description: This resource updates an existing news.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: News identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: news
+        in: body
+        description: News information to be update.
+        required: true
+        schema:
+          $ref: '#/definitions/NewsUpdate'
+      tags:
+      - News
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: News not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /countries:
+    x-swagger-router-controller: Countries
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getCountries
+      summary: Countries geojson information
+      description: This resource represents the countries borders in geojson format
+      parameters:
+      - name: onlyInfo
+        in: query
+        description: If 'true' returns only country information (code and name). Also
+          countries without coordinates are included.
+        type: boolean
+        default: false
+      - name: country
+        in: query
+        description: Show info belonging to the given countries
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 3
+        collectionFormat: csv
+      - name: regions
+        in: query
+        description: If 'true' returns also the regions' list for all the countries.
+        type: boolean
+        default: false
+      tags:
+      - Countries
+      responses:
+        200:
+          description: Countries geojson data (format http://geojson.org/geojson-spec.html)
+          schema:
+            $ref: '#/definitions/CountriesGeo'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /countries/{code}:
+    x-swagger-router-controller: Countries
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getCountry
+      summary: Geojson information of a specific country
+      description: This resource represents the countries borders in geojson format
+      parameters:
+      - name: code
+        required: true
+        in: path
+        description: Country identifier
+        type: string
+        minLength: 3
+        maxLength: 3
+      - name: onlyInfo
+        in: query
+        description: If 'true' returns only country information (code and name).
+        type: boolean
+        default: false
+      - name: regions
+        in: query
+        description: If 'true' returns also the regions' list for the country.
+        type: boolean
+        default: false
+      tags:
+      - Countries
+      responses:
+        200:
+          description: Country geojson data (format http://geojson.org/geojson-spec.html)
+          schema:
+            $ref: '#/definitions/CountryGeo'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /countries/byshortcode/{shortCode}:
+    x-swagger-router-controller: Countries
+    get:
+      security:
+      - oauth2:
+        - alerts:read
+      operationId: getCountryByShortCode
+      summary: Information of a specific country retrived by short code
+      description: This resource represents the country data retrived by short code
+      parameters:
+      - name: shortCode
+        required: true
+        in: path
+        description: Country short code
+        type: string
+        minLength: 2
+        maxLength: 2
+      tags:
+      - Countries
+      responses:
+        200:
+          description: Country object
+          schema:
+            $ref: '#/definitions/Country'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /companies:
+    x-swagger-router-controller: Companies
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getCompanies
+      summary: Company list
+      description: This resource represents the list of available companies.
+      tags:
+      - Companies
+      responses:
+        200:
+          description: An array of companies
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Company'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - users:write
+      operationId: createCompany
+      summary: Create a new company
+      description: This resource creates a new company.
+      parameters:
+      - name: company
+        in: body
+        description: New company
+        required: true
+        schema:
+          $ref: '#/definitions/CompanyCreate'
+      tags:
+      - Companies
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Existing company
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /companies/{id}:
+    x-swagger-router-controller: Companies
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getCompany
+      summary: Get a specific company
+      description: This resource represents the required (by id) company object.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Company identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Companies
+      responses:
+        200:
+          description: A company object
+          schema:
+            $ref: '#/definitions/Company'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - users:write
+      operationId: updateCompany
+      summary: Update an existing company
+      description: This resource updates an existing company.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Company identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: company
+        in: body
+        description: Company information to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/CompanyUpdate'
+      tags:
+      - Companies
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - users:write
+      operationId: removeCompany
+      summary: Remove an existing company
+      description: This resource removes an existing company and associated users.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: Company identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Companies
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users:
+    x-swagger-router-controller: Users
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getUsers
+      summary: Users list
+      description: This resource represents the list of available users.
+      parameters:
+      - name: role
+        in: query
+        description: Show users belonging to the given role
+        type: array
+        items:
+          type: string
+          enum:
+          - admin
+          - tssManager
+          - manager
+          - traveler
+      - name: company
+        in: query
+        description: Show users belonging to the given company (by company id)
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      tags:
+      - Users
+      responses:
+        200:
+          description: An array of users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - users:write
+      operationId: createUser
+      summary: Create new user in existing company
+      description: This resource creates a new user in existing company.
+      parameters:
+      - name: user
+        in: body
+        description: New user
+        required: true
+        schema:
+          $ref: '#/definitions/UserCreate'
+      tags:
+      - Users
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/bycompany:
+    x-swagger-router-controller: Users
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getUsersByCompany
+      summary: Users List grouped by company.
+      description: This resource represents the list of available users grouped by
+        companyn
+      parameters:
+      - name: role
+        in: query
+        description: Show users belonging to the given role
+        type: array
+        items:
+          type: string
+          enum:
+          - admin
+          - tssManager
+          - manager
+          - traveler
+      - name: company
+        in: query
+        description: Show users belonging to the given company (by company id)
+        type: array
+        items:
+          type: string
+      tags:
+      - Users
+      responses:
+        200:
+          description: An array of users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CompanyUsers'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/{id}:
+    x-swagger-router-controller: Users
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getUser
+      summary: User profile
+      description: This resource represents the required (by id) user profile object.n
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Users
+      responses:
+        200:
+          description: The required user profile
+          schema:
+            $ref: '#/definitions/User'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - users:write
+      operationId: updateUser
+      summary: Update an existing user
+      description: This resource updates an existing user.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: user
+        in: body
+        description: User information to be update.
+        required: true
+        schema:
+          $ref: '#/definitions/UserUpdate'
+      tags:
+      - Users
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User or company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - users:write
+      operationId: removeUser
+      summary: Delete an existing user
+      description: This resource delete an existing user.
+      parameters:
+      - name: id
+        required: true
+        in: path
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Users
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/me:
+    x-swagger-router-controller: Users
+    get:
+      security:
+      - oauth2:
+        - users:me
+      operationId: getLoggedUser
+      summary: User profile
+      description: This resource represents the logged user profile object.n
+      tags:
+      - Users
+      responses:
+        200:
+          description: The logged user profile
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - users:me
+      operationId: updateLoggedUser
+      summary: Update logged user
+      description: This resource updates the logged user.
+      parameters:
+      - name: user
+        in: body
+        description: User information to be update.
+        required: true
+        schema:
+          $ref: '#/definitions/UserUpdate'
+      tags:
+      - Users
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User or company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/me/trackingsessionid:
+    x-swagger-router-controller: Locations
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: createTrackingSessionId
+      summary: Initializes a new tracking session returning its identifier
+      description: Initializes a new tracking session returning its identifier
+      tags:
+      - Users
+      - Locations
+      parameters:
+      - name: data
+        in: body
+        description: Empty request data
+        required: true
+        schema:
+          type: object
+      responses:
+        200:
+          description: The session ID
+          schema:
+            type: string
+            format: uuid
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - users:me
+      operationId: clearTrackingSessionId
+      summary: Removes the current tracking session ID
+      description: Removes the current tracking session ID
+      tags:
+      - Users
+      - Locations
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /messages:
+    x-swagger-router-controller: Messages
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getMessages
+      summary: User messages
+      description: This resource represents the list of all available messages.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out messages older than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: category
+        in: query
+        description: Show messages belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - help
+          - support
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Show messages belonging to the given status
+        type: array
+        items:
+          type: string
+          enum:
+          - pending
+          - read
+        collectionFormat: csv
+      - name: expand
+        in: query
+        description: Expand the nested field alert for help messages
+        type: boolean
+        default: false
+      tags:
+      - Messages
+      responses:
+        200:
+          description: An array of messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /messages/{sender}:
+    x-swagger-router-controller: Messages
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getMessagesForSender
+      summary: User messages
+      description: This resource represents the list of the available messages deliverednby
+        the provided user.n
+      parameters:
+      - name: sender
+        required: true
+        in: path
+        description: Identifier of user that sent the message
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: timestamp
+        in: query
+        description: Filter out messages than the specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: category
+        in: query
+        description: Show messages belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - help
+          - support
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Show messages belonging to the given status
+        type: array
+        items:
+          type: string
+          enum:
+          - pending
+          - read
+        collectionFormat: csv
+      tags:
+      - Messages
+      responses:
+        200:
+          description: An array of messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /messages/me:
+    x-swagger-router-controller: Messages
+    get:
+      security:
+      - oauth2:
+        - users:me
+      operationId: getLoggedUserMessages
+      summary: Logged user messages
+      description: This resource represents the list of the available messages deliverednby
+        the logged user.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out alerts messages older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: category
+        in: query
+        description: Show messages belonging to the given categories
+        type: array
+        items:
+          type: string
+          enum:
+          - help
+          - support
+        collectionFormat: csv
+      - name: status
+        in: query
+        description: Show messages belonging to the given status
+        type: array
+        items:
+          type: string
+          enum:
+          - pending
+          - read
+        collectionFormat: csv
+      - name: expand
+        in: query
+        description: Expand the nested field alert for help messages
+        type: boolean
+        default: false
+      tags:
+      - Messages
+      responses:
+        200:
+          description: An array of messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: createMessage
+      summary: Create message for logged user
+      description: This resource creates a new message belonging to logged user
+      parameters:
+      - name: message
+        in: body
+        description: New message
+        required: true
+        schema:
+          $ref: '#/definitions/MessageFromMeCreate'
+      tags:
+      - Messages
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Company not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /messages/{senderId}/{messageId}:
+    x-swagger-router-controller: Messages
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getMessage
+      summary: Get the user message
+      description: This resource represents the messages delivered by the given user.n
+      parameters:
+      - name: senderId
+        in: path
+        description: Identifier of user that sent the message
+        required: true
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: messageId
+        in: path
+        description: Message identifier
+        required: true
+        type: string
+        minLength: 24
+        maxLength: 24
+      tags:
+      - Messages
+      responses:
+        200:
+          description: A messages
+          schema:
+            $ref: '#/definitions/Message'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - users:write
+      operationId: updateMessage
+      summary: Updates user messages
+      description: This resource updates the status of the required message delivered
+        by the required user.n
+      parameters:
+      - name: senderId
+        in: path
+        description: Identifier of user that sent the message
+        required: true
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: messageId
+        in: path
+        description: Message identifier
+        required: true
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: status
+        in: body
+        description: Message status
+        required: true
+        schema:
+          $ref: '#/definitions/MessageStatus'
+      tags:
+      - Messages
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /locations/{user}:
+    x-swagger-router-controller: Locations
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getLocations
+      summary: User locations
+      description: This resource represents the list of locations of the required
+        user.nBy default it returns locations for the last 24h.n
+      parameters:
+      - name: user
+        in: path
+        required: true
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: timestamp
+        in: query
+        description: Filter out locations older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      tags:
+      - Locations
+      responses:
+        200:
+          description: An array of user locations
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserLocation'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /locations/bysession/{user}:
+    x-swagger-router-controller: Locations
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getLocationsBySession
+      summary: User locations grouped by session id
+      description: This resource represents the list of locations of the required
+        user.nBy default it returns locations for the last 24h, grouped by session
+        id.nIt returns complete sessions.n
+      parameters:
+      - name: user
+        in: path
+        required: true
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: timestamp
+        in: query
+        description: Filter out locations older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      tags:
+      - Locations
+      responses:
+        200:
+          description: An array of user locations grouped by session id
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserLocationBySession'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /locations/me:
+    x-swagger-router-controller: Locations
+    get:
+      security:
+      - oauth2:
+        - users:me
+      operationId: getLoggedUserLocations
+      summary: Logged user location
+      description: This resource represents the list of locations for the logged user.nBy
+        default it returns locations for the last 24h.n
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out locations older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      tags:
+      - Locations
+      responses:
+        200:
+          description: An array of user locations
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserLocation'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: saveLocations
+      summary: Save location for logged user
+      description: This resource saves a location for the logged user.n
+      parameters:
+      - name: location
+        in: body
+        description: User location
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/UserLocationCreateMobile'
+      tags:
+      - Locations
+      responses:
+        200:
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /reports:
+    x-swagger-router-controller: Reports
+    get:
+      security:
+      - oauth2:
+        - reports:read
+      operationId: getReports
+      summary: Get list of available country reports information.
+      description: This resource represents the list of available country reports
+        information.n
+      tags:
+      - Reports
+      responses:
+        200:
+          description: List of available country reports information
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReportInfo'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /reports/{country}:
+    x-swagger-router-controller: Reports
+    get:
+      security:
+      - oauth2:
+        - reports:read
+      operationId: getReport
+      summary: Get report file for country
+      produces:
+      - application/pdf
+      description: This resource represents the report for provided country.n
+      parameters:
+      - name: country
+        required: true
+        in: path
+        description: Country code
+        type: string
+        minLength: 3
+        maxLength: 3
+      tags:
+      - Reports
+      responses:
+        200:
+          description: Report for provided country
+          schema:
+            type: file
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - reports:write
+      operationId: saveReport
+      summary: Save report file for country
+      consumes:
+      - multipart/form-data
+      description: This resource saves a report for provided country.n
+      parameters:
+      - name: country
+        required: true
+        in: path
+        description: Country code
+        type: string
+        minLength: 3
+        maxLength: 3
+      - name: report
+        in: formData
+        description: Report
+        type: file
+      tags:
+      - Reports
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        403:
+          description: Existing report
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - reports:write
+      operationId: removeReport
+      summary: Delete report file for country
+      description: This resource deletes a report for provided country.n
+      parameters:
+      - name: country
+        required: true
+        in: path
+        description: Country code
+        type: string
+        minLength: 3
+        maxLength: 3
+      tags:
+      - Reports
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        403:
+          description: Not existing report
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices:
+    x-swagger-router-controller: Devices
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: sendDevice
+      summary: Create and update devices information
+      description: This resource creates and update devices information.n
+      parameters:
+      - name: device
+        required: true
+        in: body
+        description: Device information
+        schema:
+          $ref: '#/definitions/Device'
+      tags:
+      - Devices
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /notifications:
+    x-swagger-router-controller: Notifications
+    post:
+      security:
+      - oauth2:
+        - alerts:notify
+      operationId: sendNotification
+      summary: Send a notification when new alerts are available
+      description: This resource send a notification when new alers are available.n
+      parameters:
+      - name: alerts
+        required: true
+        in: body
+        description: Array with new alert identifiers
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/AlertId'
+      tags:
+      - Notifications
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /resetPassword:
+    x-swagger-router-controller: PwdResetRequests
+    post:
+      operationId: resetPassword
+      summary: make a reset password request
+      description: make a reset password request
+      parameters:
+      - name: data
+        required: true
+        in: body
+        schema:
+          $ref: '#/definitions/ResetPasswordData'
+        description: email of the user
+      tags:
+      - PwdResetRequests
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /pwdResetRequests/{reqId}:
+    x-swagger-router-controller: PwdResetRequests
+    get:
+      operationId: getPwdResetRequest
+      summary: get a reset password request
+      description: make a reset password request
+      parameters:
+      - name: reqId
+        required: true
+        in: path
+        type: string
+        description: id of the request
+      tags:
+      - PwdResetRequests
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PwdResetRequest'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      operationId: confirmPasswordReset
+      summary: change the user password after recovery procedure
+      description: confirm a reset password request
+      parameters:
+      - name: reqId
+        required: true
+        in: path
+        type: string
+        description: id of the request
+      - name: data
+        required: true
+        in: body
+        schema:
+          $ref: '#/definitions/ChangePasswordData'
+        description: new user password
+      tags:
+      - PwdResetRequests
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels:
+    x-swagger-router-controller: Travels
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getUsersTravels
+      summary: Travels list for all users
+      description: This resource represents the list of available travels for all
+        users.
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out travels' statuses older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: lastN
+        in: query
+        description: Get the last n travels
+        type: integer
+        format: int32
+        minimum: 1
+      tags:
+      - Travels
+      responses:
+        200:
+          description: An array of travels
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Travel'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/{user}:
+    x-swagger-router-controller: Travels
+    get:
+      security:
+      - oauth2:
+        - users:read
+      operationId: getUserTravels
+      summary: Travels list for the required user
+      description: This resource represents the list of available travels for the
+        required user.
+      parameters:
+      - name: user
+        required: true
+        in: path
+        description: User identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: timestamp
+        in: query
+        description: Filter out travels' statuses older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: lastN
+        in: query
+        description: Get the last n travels
+        type: integer
+        format: int32
+        minimum: 1
+      tags:
+      - Travels
+      responses:
+        200:
+          description: An array of travels
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Travel'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/me:
+    x-swagger-router-controller: Travels
+    get:
+      security:
+      - oauth2:
+        - users:me
+      operationId: getLoggedUserTravels
+      summary: Travels list of the logged user
+      description: This resource represents the list of available travels for the
+        logged user.
+      parameters:
+      - name: timestamp
+        in: query
+        description: Filter out locations older than specified timestamp
+        type: integer
+        format: int32
+        minimum: 0
+      - name: lastN
+        in: query
+        description: Get the last n travels
+        type: integer
+        format: int32
+        minimum: 1
+      tags:
+      - Travels
+      responses:
+        200:
+          description: An array of travels
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Travel'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/travelling/me:
+    x-swagger-router-controller: Travels
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: actionTravelling
+      summary: Create a new travel with status 'travelling' for the logged user
+      description: This resource creates a new travel.
+      parameters:
+      - name: travel
+        in: body
+        description: Travel object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/TravelNew'
+      tags:
+      - Travels
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Status change not permitted
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/checkin/me:
+    x-swagger-router-controller: Travels
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: actionCheckIn
+      summary: Create a new travel with status 'check-in' for the logged user
+      description: This resource creates a new travel.
+      parameters:
+      - name: travel
+        in: body
+        description: Travel object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/TravelNew'
+      tags:
+      - Travels
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Status change not permitted
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/landed/me:
+    x-swagger-router-controller: Travels
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: actionLanded
+      summary: Create a new travel with status 'landed' for the logged user
+      description: This resource creates a new travel.
+      parameters:
+      - name: travel
+        in: body
+        description: Travel object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/TravelNew'
+      tags:
+      - Travels
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Status change not permitted
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/arrived/me:
+    x-swagger-router-controller: Travels
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: actionArrived
+      summary: Create a new travel with status 'arrived' for the logged user
+      description: This resource creates a new travel.
+      parameters:
+      - name: travel
+        in: body
+        description: Travel object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/TravelNew'
+      tags:
+      - Travels
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Status change not permitted
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /travels/aborted/me:
+    x-swagger-router-controller: Travels
+    post:
+      security:
+      - oauth2:
+        - users:me
+      operationId: actionAborted
+      summary: Create a new travel with status 'aborted' for the logged user
+      description: This resource creates a new travel.
+      parameters:
+      - name: travel
+        in: body
+        description: Travel object for creation
+        required: true
+        schema:
+          $ref: '#/definitions/TravelNewAborted'
+      tags:
+      - Travels
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Status change not permitted
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /attachments:
+    x-swagger-router-controller: Attachment
+    get:
+      security:
+      - oauth2:
+        - attachments:read
+      operationId: getAttachmentsMeta
+      summary: Returns assigned attachment's metadata
+      description: Returns assigned attachment's metadata
+      tags:
+      - Attachments
+      responses:
+        200:
+          description: Attachment metadata
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AttachmentMetaRO'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+      - oauth2:
+        - attachments:write
+      operationId: saveAttachment
+      summary: Upload attachment
+      description: This resource uploads an attachment
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: attachment
+        required: true
+        in: formData
+        description: The attachment file to be uploaded
+        type: file
+      - name: notes
+        in: formData
+        description: Notes about the file
+        type: string
+      - name: companies
+        in: formData
+        description: IDs of the assigned companies. Only members of the assigned companies
+          will read the file
+        type: array
+        items:
+          type: string
+      tags:
+      - Attachments
+      responses:
+        201:
+          description: Attachment uploaded
+          schema:
+            $ref: '#/definitions/AttachmentMetaRO'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /attachments/{atchID}:
+    x-swagger-router-controller: Attachment
+    get:
+      security:
+      - oauth2:
+        - attachments:read
+      operationId: getAttachmentMeta
+      summary: Returns an attachment's metadata
+      description: Returns an attachment's metadata
+      parameters:
+      - name: atchID
+        required: true
+        in: path
+        type: string
+        description: id of the attachment
+      tags:
+      - Attachments
+      responses:
+        200:
+          description: Attachment metadata
+          schema:
+            $ref: '#/definitions/AttachmentMetaRO'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      security:
+      - oauth2:
+        - attachments:write
+      operationId: updateAttachment
+      summary: Update attachment metadata
+      description: This resource updates an attachment
+      parameters:
+      - name: atchID
+        required: true
+        in: path
+        type: string
+        description: id of the attachment
+      - name: meta
+        in: body
+        description: Attachment metadata
+        schema:
+          $ref: '#/definitions/AttachmentMetaRW'
+      tags:
+      - Attachments
+      responses:
+        200:
+          description: Attachment metadata
+          schema:
+            $ref: '#/definitions/AttachmentMetaRO'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+      - oauth2:
+        - attachments:write
+      operationId: deleteAttachment
+      summary: Deletes an attachment
+      description: This resource deletes an attachment
+      parameters:
+      - name: atchID
+        required: true
+        in: path
+        type: string
+        description: id of the attachment
+      tags:
+      - Attachments
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Success'
+        400:
+          description: Not valid parameters
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /attachments/{atchID}/content:
+    x-swagger-router-controller: Attachment
+    get:
+      security:
+      - oauth2:
+        - attachments:read
+      operationId: getAttachmentFile
+      summary: Returns an attachment's content
+      description: Returns an attachment's content
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: atchID
+        required: true
+        in: path
+        type: string
+        description: id of the attachment
+      tags:
+      - Attachments
+      responses:
+        200:
+          description: File
+          schema:
+            type: file
+        400:
+          description: Not valid parameters
+        403:
+          description: Forbidden
+        default:
+          description: Unexpected error
+  /privacyPolicy/{company}/{role}:
+    x-swagger-router-controller: PrivacyPolicy
+    get:
+      operationId: getPrivacyPolicy
+      summary: Privacy policy for the required company and role
+      description: This resource represents the privacy policy for the required company
+        and role.
+      parameters:
+      - name: company
+        required: true
+        in: path
+        description: Company identifier
+        type: string
+        minLength: 24
+        maxLength: 24
+      - name: role
+        required: true
+        in: path
+        description: Role
+        type: string
+      tags:
+      - PrivacyPolicy
+      responses:
+        200:
+          description: A PrivacyPolicy object
+          schema:
+            $ref: '#/definitions/PrivacyPolicy'
+        404:
+          description: No data found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":47:{s:5:\"Alert\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:9:\"timestamp\";i:3;s:7:\"created\";i:4;s:8:\"category\";i:5;s:4:\"read\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:7:\"created\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"generic\";i:1;s:8:\"security\";i:2;s:6:\"health\";i:3;s:8:\"disaster\";}}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"read\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:11:\"AlertManual\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:5:\"title\";i:1;s:8:\"category\";i:2;s:7:\"content\";i:3;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"generic\";i:1;s:8:\"security\";i:2;s:6:\"health\";i:3;s:8:\"disaster\";}}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":4:{s:11:\"description\";s:55:\"country
+  of the provided alert, if international put INT\";s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"lang\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;s:7:\"default\";s:2:\"it\";}s:6:\"region\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"region
+  of the country of the provided alert\";s:4:\"type\";s:6:\"string\";}}}s:14:\"AlertInMessage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:7:\"created\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"generic\";i:1;s:8:\"security\";i:2;s:6:\"health\";i:3;s:8:\"disaster\";}}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}}}s:13:\"CountryAlerts\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"country\";i:1;s:6:\"alerts\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:6:\"alerts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Alert\";}}}}s:14:\"CategoryAlerts\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"category\";i:1;s:6:\"alerts\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"generic\";i:1;s:8:\"disaster\";i:2;s:8:\"security\";i:3;s:6:\"health\";}}s:6:\"alerts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Alert\";}}}}s:7:\"AlertId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}}}s:4:\"News\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:9:\"timestamp\";i:3;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:4:\"lang\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;}s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"CountryNews\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"country\";i:1;s:4:\"news\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:4:\"news\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/News\";}}}}s:10:\"NewsCreate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"title\";i:1;s:7:\"content\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"country
+  of the provided news (default INT)\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:4:\"lang\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"language
+  of the provided news (default it)\";s:9:\"minLength\";i:2;s:9:\"maxLength\";i:2;}s:6:\"region\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"region
+  of the country of the provided news\";s:4:\"type\";s:6:\"string\";}}}s:12:\"CountriesGeo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:8:\"features\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/CountryGeo\";}}}}s:10:\"CountryGeo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"type\";i:1;s:2:\"id\";i:2;s:10:\"properties\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CountryProp\";}s:8:\"geometry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"regions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:11:\"CountryProp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"shortCode\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"shortCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"UserMain\";O:8:\"stdClass\":4:{s:11:\"description\";s:16:\"User
+  main object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:5:\"email\";i:1;s:4:\"name\";i:2;s:7:\"surname\";i:3;s:4:\"role\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"surname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"admin\";i:1;s:10:\"tssManager\";i:2;s:7:\"manager\";i:3;s:8:\"traveler\";}}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"User\";O:8:\"stdClass\":4:{s:11:\"description\";s:28:\"User
+  contact/position object\";s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:5:\"email\";i:2;s:4:\"name\";i:3;s:7:\"surname\";i:4;s:4:\"role\";i:5;s:7:\"company\";}s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/UserMain\";}}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:7:\"company\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Company\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/UserLocation\";}s:6:\"travel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserTravel\";}}}s:13:\"UserNoCompany\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"User
+  contact/position object without company\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:5:\"email\";i:2;s:4:\"name\";i:3;s:7:\"surname\";i:4;s:4:\"role\";}s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/UserMain\";}}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/UserLocation\";}s:6:\"travel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserTravel\";}}}s:10:\"UserCreate\";O:8:\"stdClass\":4:{s:11:\"description\";s:38:\"User
+  contact information for creation.\";s:8:\"required\";a:5:{i:0;s:5:\"email\";i:1;s:4:\"name\";i:2;s:7:\"surname\";i:3;s:4:\"role\";i:4;s:7:\"company\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"surname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"admin\";i:1;s:10:\"tssManager\";i:2;s:7:\"manager\";i:3;s:8:\"traveler\";}}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"company\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"company
+  identifier\";s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:10:\"UserUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"surname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"admin\";i:1;s:10:\"tssManager\";i:2;s:7:\"manager\";i:3;s:8:\"traveler\";}}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"company\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"company
+  identifier\";s:4:\"type\";s:6:\"string\";}s:13:\"privacyPolicy\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:12:\"CompanyUsers\";O:8:\"stdClass\":4:{s:11:\"description\";s:4:\"dddd\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"company\";i:1;s:5:\"users\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"company\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Company\";}s:5:\"users\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserNoCompany\";}}}}s:7:\"Company\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"Company
+  contact object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"CompanyCreate\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Company
+  contact object for creation\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:3:\"url\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:13:\"CompanyUpdate\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"Company
+  contact object for update\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:7:\"Message\";O:8:\"stdClass\":4:{s:11:\"description\";s:30:\"Message/Support-Request
+  object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:6:\"sender\";i:2;s:8:\"category\";i:3;s:9:\"timestamp\";i:4;s:7:\"message\";i:5;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:6:\"sender\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:5:\"alert\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/AlertInMessage\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"help\";i:1;s:7:\"support\";}}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:7:\"pending\";i:1;s:4:\"read\";}}}}s:19:\"MessageFromMeCreate\";O:8:\"stdClass\":5:{s:11:\"description\";s:54:\"Created
+  Message/Support-Request object for logged user\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"category\";i:1;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"alert\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"help\";i:1;s:7:\"support\";}}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:13:\"MessageStatus\";O:8:\"stdClass\":5:{s:11:\"description\";s:14:\"Message
+  status\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:7:\"pending\";i:1;s:4:\"read\";}}}s:20:\"additionalProperties\";b:0;}s:8:\"Location\";O:8:\"stdClass\":5:{s:11:\"description\";s:19:\"Geographic
+  location\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"latitude\";i:1;s:9:\"longitude\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}s:20:\"additionalProperties\";b:0;}s:12:\"UserLocation\";O:8:\"stdClass\":5:{s:11:\"description\";s:39:\"User
+  geographic location with timestamp\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:9:\"timestamp\";i:1;s:8:\"latitude\";i:2;s:9:\"longitude\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:9:\"sessionID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:21:\"UserLocationBySession\";O:8:\"stdClass\":5:{s:11:\"description\";s:61:\"User
+  geographic location with timestamp grouped by session id\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:3:\"_id\";i:1;s:9:\"locations\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"locations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/UserLocation\";}}s:5:\"start\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}}s:20:\"additionalProperties\";b:0;}s:24:\"UserLocationCreateMobile\";O:8:\"stdClass\":5:{s:11:\"description\";s:61:\"User
+  geographic location with timestamp (for mobile app post)\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"time\";i:1;s:8:\"latitude\";i:2;s:9:\"longitude\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"time\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int64\";}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:8:\"provider\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"accuracy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:16:\"locationProvider\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"sessionID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";}}s:20:\"additionalProperties\";b:1;}s:10:\"ReportInfo\";O:8:\"stdClass\":5:{s:11:\"description\";s:18:\"Report
+  information\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"countryCode\";i:1;s:11:\"countryName\";i:2;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"countryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}s:11:\"countryName\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CountryNameWithTrans\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}}s:20:\"additionalProperties\";b:0;}s:20:\"CountryNameWithTrans\";O:8:\"stdClass\":5:{s:11:\"description\";s:30:\"Country
+  name with translations\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"en\";i:1;s:2:\"it\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"en\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"it\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:6:\"Device\";O:8:\"stdClass\":5:{s:11:\"description\";s:18:\"Device
+  information\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:2:\"os\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"os\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:5:\"Error\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:4:\"code\";i:1;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:7:\"Success\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"PwdResetRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:27:\"Password
+  Reset Request info\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:5:\"email\";i:1;s:9:\"timestamp\";i:2;s:10:\"expiration\";i:3;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:10:\"expiration\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:17:\"ResetPasswordData\";O:8:\"stdClass\":5:{s:11:\"description\";s:26:\"Reset
+  Password Data object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"lang\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:18:\"ChangePasswordData\";O:8:\"stdClass\":5:{s:11:\"description\";s:27:\"Change
+  Password Data object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"newPassword\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"newPassword\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:6:\"Travel\";O:8:\"stdClass\":5:{s:11:\"description\";s:18:\"Travel
+  Data object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"user\";i:1;s:6:\"status\";i:2;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:9:\"TravelNew\";O:8:\"stdClass\":5:{s:11:\"description\";s:18:\"Travel
+  Data object\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:16:\"TravelNewAborted\";O:8:\"stdClass\":5:{s:11:\"description\";s:41:\"Travel
+  Data object (for 'aborted' status)\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"timestamp\";i:1;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:10:\"UserTravel\";O:8:\"stdClass\":5:{s:11:\"description\";s:27:\"Travel
+  Data object for user\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:16:\"AttachmentMetaRO\";O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"Attachment
+  metadata object\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"filename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"contentType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"md5\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"uploadDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"notes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"companies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:20:\"additionalProperties\";b:0;}s:16:\"AttachmentMetaRW\";O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"Attachment
+  metadata object\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"filename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"notes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"companies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:20:\"additionalProperties\";b:0;}s:11:\"AlertUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:10:\"NewsUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:20:\"additionalProperties\";b:0;}s:7:\"Country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"code\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:3;s:9:\"maxLength\";i:3;}}}s:10:\"AlertsUser\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:9:\"minLength\";i:24;s:9:\"maxLength\";i:24;}}s:20:\"additionalProperties\";b:0;}s:13:\"PrivacyPolicy\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"declarations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"additionalProperties\";b:0;}}"
+...

@@ -1,0 +1,278 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"SSCS Tribunals
+  Case API\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:18:\"tribunals-case-api\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:4:\"SSCS\";s:3:\"url\";s:16:\"http://sscs.net/\";s:5:\"email\";s:14:\"sscs@hmcts.net\";}}"
+host: localhost:8080
+basePath: /
+paths:
+  /:
+    get:
+      tags:
+      - tribunals-controller
+      summary: getRootContext
+      description: Returns root context of tribunals case api
+      operationId: getRootContextUsingGET
+      consumes:
+      - '*/*'
+      produces:
+      - '*/*'
+      responses:
+        200:
+          description: Appeal api
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /appeals:
+    post:
+      tags:
+      - sya-controller
+      summary: submitAppeal
+      description: Creates a case from the SYA details
+      operationId: createAppealsUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - in: body
+        name: syaCaseWrapper
+        description: syaCaseWrapper
+        required: true
+        schema:
+          $ref: '#/definitions/SyaCaseWrapper'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        201:
+          description: Submitted appeal successfully
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /appeals/{appealNumber}:
+    get:
+      tags:
+      - tya-controller
+      summary: getAppeal
+      description: Returns an appeal given the appeal number
+      operationId: getAppealUsingGET
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - name: appealNumber
+        in: path
+        description: appealNumber
+        required: true
+        type: string
+      responses:
+        200:
+          description: Appeal
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /appeals/{appealNumber}/subscriptions/{subscriptionId}:
+    post:
+      tags:
+      - subscriptions-controller
+      summary: UpdateSubscription
+      operationId: updateSubscriptionUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: subscriptionRequest
+        description: subscriptionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/SubscriptionRequest'
+      - name: appealNumber
+        in: path
+        description: appealNumber
+        required: true
+        type: string
+      - name: subscriptionId
+        in: path
+        description: subscriptionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Updated subscription
+          schema:
+            type: string
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /appeals/{appealNumber}/surname/{surname}:
+    get:
+      tags:
+      - tya-controller
+      summary: validateSurname
+      description: Checks valid appeal number and surname
+      operationId: validateSurnameUsingGET
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - name: appealNumber
+        in: path
+        description: appealNumber
+        required: true
+        type: string
+      - name: surname
+        in: path
+        description: surname
+        required: true
+        type: string
+      responses:
+        200:
+          description: Appeal
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /appeals/{id}/subscriptions/{subscriptionId}:
+    delete:
+      tags:
+      - subscriptions-controller
+      summary: Unsubscribe email notification
+      operationId: unsubscribeUsingDELETE
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      - name: subscriptionId
+        in: path
+        description: subscriptionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Removed email notification subscription
+          schema:
+            type: string
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+  /evidence/upload:
+    post:
+      tags:
+      - evidence-management-controller
+      summary: upload
+      operationId: uploadUsingPOST
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: file
+        required: true
+        type: array
+        items:
+          type: file
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Embedded'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /reminder:
+    post:
+      tags:
+      - reminder-controller
+      summary: reminder
+      operationId: reminderUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: reminderResponse
+        description: reminderResponse
+        required: true
+        schema:
+          $ref: '#/definitions/ReminderResponse'
+      responses:
+        200:
+          description: OK
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /tokens/{token}:
+    get:
+      tags:
+      - subscriptions-controller
+      summary: validateMacToken
+      description: Validates given mac token and returns Mac token details like subscription
+        id, appeal id, decrypted token value, benefit type in the response json
+      operationId: validateMacTokenUsingGET
+      produces:
+      - application/json
+      parameters:
+      - name: token
+        in: path
+        description: token
+        required: true
+        type: string
+      responses:
+        200:
+          description: Validated mac token
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+definitions: !php/object "O:8:\"stdClass\":19:{s:8:\"Document\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:14:\"classification\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdOn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"mimeType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"modifiedOn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:20:\"originalDocumentName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:5:\"title\";s:8:\"Document\";}s:8:\"Embedded\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"documents\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Document\";}}}s:5:\"title\";s:8:\"Embedded\";}s:4:\"Link\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:4:\"Link\";}s:5:\"Links\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"binary\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"self\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"title\";s:5:\"Links\";}s:6:\"Reason\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"reasonForAppealing\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"whatYouDisagreeWith\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:6:\"Reason\";}s:16:\"ReminderResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"caseId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"eventId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:16:\"ReminderResponse\";}s:19:\"SubscriptionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:19:\"SubscriptionRequest\";}s:12:\"SyaAppellant\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"contactDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SyaContactDetails\";}s:3:\"dob\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"dd-MM-yyyy\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"nino\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:12:\"SyaAppellant\";}s:15:\"SyaArrangements\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:21:\"accessibleHearingRoom\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"hearingLoop\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:19:\"languageInterpreter\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"other\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:23:\"signLanguageInterpreter\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:5:\"title\";s:15:\"SyaArrangements\";}s:14:\"SyaBenefitType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:14:\"SyaBenefitType\";}s:14:\"SyaCaseWrapper\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"appellant\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SyaAppellant\";}s:11:\"benefitType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/SyaBenefitType\";}s:17:\"hasRepresentative\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"hearing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SyaHearingOptions\";}s:11:\"isAppointee\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"mrn\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/SyaMrn\";}s:19:\"reasonsForAppealing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/SyaReasonsForAppealing\";}s:14:\"representative\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SyaRepresentative\";}s:13:\"signAndSubmit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/SyaSignAndSubmit\";}s:9:\"smsNotify\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SyaSmsNotify\";}}s:5:\"title\";s:14:\"SyaCaseWrapper\";}s:17:\"SyaContactDetails\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:12:\"addressLine1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"addressLine2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"county\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"emailAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"phoneNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"postCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"townCity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:17:\"SyaContactDetails\";}s:11:\"SyaEvidence\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fileName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"uploadedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"yyyy-MM-dd\";}}s:5:\"title\";s:11:\"SyaEvidence\";}s:17:\"SyaHearingOptions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:12:\"anythingElse\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"arrangements\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/SyaArrangements\";}s:15:\"datesCantAttend\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:23:\"interpreterLanguageType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"scheduleHearing\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"signLanguageType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"wantsSupport\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"wantsToAttend\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:5:\"title\";s:17:\"SyaHearingOptions\";}s:6:\"SyaMrn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"dd-MM-yyyy\";}s:19:\"dateAppealSubmitted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"dd-MM-yyyy\";}s:16:\"dwpIssuingOffice\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"reasonForBeingLate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"reasonForNoMRN\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:6:\"SyaMrn\";}s:22:\"SyaReasonsForAppealing\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"evidences\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SyaEvidence\";}}s:12:\"otherReasons\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"reasons\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Reason\";}}}s:5:\"title\";s:22:\"SyaReasonsForAppealing\";}s:17:\"SyaRepresentative\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:14:\"contactDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SyaContactDetails\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fullName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"organisation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:17:\"SyaRepresentative\";}s:16:\"SyaSignAndSubmit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"signer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:16:\"SyaSignAndSubmit\";}s:12:\"SyaSmsNotify\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"smsNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"useSameNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"wantsSMSNotifications\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:5:\"title\";s:12:\"SyaSmsNotify\";}}"
+...

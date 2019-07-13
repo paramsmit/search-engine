@@ -1,0 +1,3821 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:118:\"This is the sipgate
+  REST API documentation. We build our new applications on this API and we invite
+  you to use it too.\";s:5:\"title\";s:11:\"sipgate API\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: api.sipgate.com
+basePath: /v1
+paths:
+  /:
+    get:
+      tags:
+      - urls
+      summary: Get all toplevel API URLs
+      description: ""
+      operationId: getUrls
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiUrlsResponse'
+  /account:
+    get:
+      tags:
+      - account
+      summary: Returns account data
+      description: ""
+      operationId: getAccount
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/AccountResponse'
+        404:
+          description: Account not found
+      security:
+      - oauth2:
+        - all
+        - account:read
+  /account/verified:
+    put:
+      tags:
+      - account
+      summary: Verify your account
+      description: ""
+      operationId: verify
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AccountVerificationRequest'
+      responses:
+        404:
+          description: Verification code not found
+      security:
+      - oauth2:
+        - all
+        - account:write
+  /addresses:
+    get:
+      tags:
+      - addresses
+      summary: Returns all addresses with their corresponding addressIds
+      description: ""
+      operationId: getAddresses
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/AddressesResponse'
+      security:
+      - oauth2:
+        - all
+        - addresses:read
+  /addresses/{addressId}:
+    get:
+      tags:
+      - addresses
+      summary: Returns address with their corresponding addressId
+      description: ""
+      operationId: getAddress
+      produces:
+      - application/json
+      parameters:
+      - name: addressId
+        in: path
+        description: e.g. 12345
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/AddressResponse'
+      security:
+      - oauth2:
+        - all
+        - addresses:read
+    put:
+      tags:
+      - addresses
+      summary: Modify an address to change your location
+      description: <strong>Warning:</strong> Depending on your country of residence,
+        a change of your address may lead to the deactivation of associated telephone
+        numbers.
+      operationId: modifyAddress
+      produces:
+      - application/json
+      parameters:
+      - name: addressId
+        in: path
+        description: e.g. 12345
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ModifyAddressRequest'
+      responses:
+        400:
+          description: Bad request
+      security:
+      - oauth2:
+        - all
+        - addresses:write
+  /addresses/{addressId}/numbers:
+    get:
+      tags:
+      - addresses
+      summary: Get all associated numbers for a given address
+      description: ""
+      operationId: getNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: addressId
+        in: path
+        description: e.g. 12345
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/NumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - numbers:read
+  /app/events:
+    get:
+      tags:
+      - app
+      summary: Get the active events for this account
+      description: ""
+      operationId: getEvents
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EventsResponse'
+  /app/events/{id}:
+    delete:
+      tags:
+      - app
+      summary: Deletes an event by ID
+      description: ""
+      operationId: deleteEvent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: integer
+        format: int32
+      responses:
+        default:
+          description: successful operation
+  /app/links:
+    get:
+      tags:
+      - app
+      summary: Returns external URLs for app.sipgate.com
+      description: ""
+      operationId: getLinks
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LinksResponse'
+  /app/tacs:
+    get:
+      tags:
+      - app
+      summary: Returns true if terms and conditions for app.sipgate.com have been
+        accepted
+      description: ""
+      operationId: getTac
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TacResponse'
+    put:
+      tags:
+      - app
+      summary: Accept/Revoke terms and conditions for app.sipgate.com
+      description: ""
+      operationId: acceptTac
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/TacRequest'
+      responses:
+        default:
+          description: successful operation
+  /app/welcome:
+    get:
+      tags:
+      - app
+      summary: Returns true if welcome screen should be enabled
+      description: ""
+      operationId: getWelcomeScreen
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/WelcomeResponse'
+    put:
+      tags:
+      - app
+      summary: Enable/Disable welcome screen
+      description: ""
+      operationId: changeWelcomeScreen
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/WelcomeRequest'
+      responses:
+        default:
+          description: successful operation
+  /authorization/oauth/authorize:
+    get:
+      tags:
+      - authorization
+      summary: Redirect the user here for them to authorize your application
+      description: ""
+      operationId: letUserAuthenticate
+      parameters:
+      - name: scope
+        in: query
+        description: The scope(s) for the authentication as a space separated list
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: response_type
+        in: query
+        description: The response type for the authentication
+        required: true
+        type: string
+        enum:
+        - code
+      - name: client_id
+        in: query
+        description: Your oauth client id
+        required: true
+        type: string
+      - name: redirect_uri
+        in: query
+        description: the URL the user will be redirected to after authentication
+        required: true
+        type: string
+      - name: state
+        in: query
+        description: You may provide a state, that we will return in the redirect
+        required: false
+        type: string
+      - name: nonce
+        in: query
+        description: The Nonce will be returned in the id_token if the scope is openid
+        required: false
+        type: string
+      responses:
+        303:
+          description: See Other
+          headers: []
+  /authorization/oauth/clients:
+    get:
+      tags:
+      - authorization
+      summary: Get all OAuth clients of user
+      description: ""
+      operationId: getOAuthClients
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/OAuth2ClientsResponse'
+      security:
+      - oauth2:
+        - all
+        - authorization:oauth:clients:read
+    post:
+      tags:
+      - authorization
+      summary: Create a new OAuth client
+      description: ""
+      operationId: createOAuthClient
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateNewOAuthClientRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - authorization:oauth:clients:write
+  /authorization/oauth/clients/{clientId}:
+    get:
+      tags:
+      - authorization
+      summary: Get OAuth client
+      description: ""
+      operationId: getOAuthClient
+      produces:
+      - application/json
+      parameters:
+      - name: clientId
+        in: path
+        description: abcdefghi
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/OAuth2ClientsResponse'
+      security:
+      - oauth2:
+        - all
+        - authorization:oauth:clients:read
+  /authorization/oauth/clients/{clientId}/secret:
+    post:
+      tags:
+      - authorization
+      summary: Reset oauth2 client-secret
+      description: ""
+      operationId: resetClientSecret
+      produces:
+      - application/json
+      parameters:
+      - name: clientId
+        in: path
+        description: abcdefghi
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - authorization:oauth:clients:write
+  /authorization/oauth/token:
+    post:
+      tags:
+      - authorization
+      summary: Request an oauth session token
+      description: 'Use this session token in the <strong>Authorization</strong> header
+        to access protected routes.<br><strong>Example header:</strong><br><pre>Authorization:
+        Bearer &lt;token&gt;</pre>'
+      operationId: createOauthAccessToken
+      parameters:
+      - name: client_id
+        in: formData
+        description: client_id
+        required: true
+        type: string
+      - name: client_secret
+        in: formData
+        description: client_secret
+        required: true
+        type: string
+      - name: code
+        in: formData
+        description: code
+        required: true
+        type: string
+      - name: redirect_uri
+        in: formData
+        description: redirect_uri
+        required: true
+        type: string
+      - name: grant_type
+        in: formData
+        description: grant_type
+        required: true
+        type: string
+        enum:
+        - authorization_code
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/OauthAccessTokenResponse'
+        400:
+          description: Invalid Request
+          schema:
+            $ref: '#/definitions/OauthAccessTokenFault'
+  /authorization/token:
+    post:
+      tags:
+      - authorization
+      summary: Create a session token
+      description: 'Use this session token in the <strong>Authorization</strong> header
+        to access protected routes.<br><strong>Example header:</strong><br><pre>Authorization:
+        Bearer &lt;token&gt;</pre>'
+      operationId: create
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateSessionRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TokenCreateResponse'
+        401:
+          description: Invalid credentials supplied
+    delete:
+      tags:
+      - authorization
+      summary: Invalidate a session token
+      description: ""
+      operationId: destroy
+      parameters:
+      - name: Authorization
+        in: header
+        description: token
+        required: false
+        type: string
+      responses:
+        401:
+          description: Invalid token supplied
+  /authorization/userinfo:
+    get:
+      tags:
+      - authorization
+      summary: Returns information about the logged in user
+      description: ""
+      operationId: userinfo
+      parameters:
+      - name: Authorization
+        in: header
+        description: token
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserinfoResponse'
+        401:
+          description: Invalid token supplied
+  /balance:
+    get:
+      tags:
+      - balance
+      summary: Get the account balance
+      description: ""
+      operationId: getBalance
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/BalanceResponse'
+      security:
+      - oauth2:
+        - all
+        - balance:read
+  /contacts/internal:
+    get:
+      tags:
+      - internal contacts
+      summary: Returns all contacts
+      description: ""
+      operationId: getAllContacts
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InternalContactsResponse'
+      security:
+      - oauth2:
+        - all
+        - contacts:read
+  /devices:
+    get:
+      tags:
+      - devices
+      summary: Returns all devices
+      description: ""
+      operationId: getDevices
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DevicesResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+      deprecated: true
+  /devices/{deviceId}:
+    get:
+      tags:
+      - devices
+      summary: Returns a given devices
+      description: ""
+      operationId: getDevice
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DeviceResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+    put:
+      tags:
+      - devices
+      summary: Change device settings
+      description: ""
+      operationId: changeDeviceSettings
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangeDeviceRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+    delete:
+      tags:
+      - devices
+      summary: Deletes a given device
+      description: ""
+      operationId: deleteDevice
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /devices/{deviceId}/alias:
+    put:
+      tags:
+      - devices
+      summary: Change device alias
+      description: ""
+      operationId: changeDeviceAlias
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetDeviceAliasRequest'
+      responses:
+        403:
+          description: Device not found
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /devices/{deviceId}/callerid:
+    get:
+      tags:
+      - devices
+      summary: Caller ID for given device
+      description: ""
+      operationId: getCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CallerIdResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - devices:read
+        - devices:callerid:read
+    put:
+      tags:
+      - devices
+      summary: Change caller ID for device
+      description: ""
+      operationId: changeCallerIdSettings
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CallerIdRequest'
+      responses:
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:callerid:write
+  /devices/{deviceId}/credentials/password:
+    post:
+      tags:
+      - devices
+      summary: Change device password
+      description: ""
+      operationId: changeDevicePassword
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /devices/{deviceId}/localprefix:
+    get:
+      tags:
+      - devices
+      summary: Localprefix for given device
+      description: ""
+      operationId: getLocalprefix
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LocalprefixResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+        - devices:localprefix:read
+    put:
+      tags:
+      - devices
+      summary: Change localprefix for device
+      description: ""
+      operationId: changeLocalprefixSettings
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/LocalprefixRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:localprefix:write
+  /devices/{deviceId}/singlerowdisplay:
+    get:
+      tags:
+      - devices
+      summary: Returns whether single row display setting is enabled or disabled for
+        the given device
+      description: ""
+      operationId: getSingleRowDisplay
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SingleRowDisplayResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+        - devices:singlerowdisplay:read
+    put:
+      tags:
+      - devices
+      summary: Enable/Disable single row display setting for the given device
+      description: ""
+      operationId: changeSingleRowDisplay
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SingleRowDisplayRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:singlerowdisplay:write
+  /devices/{deviceId}/tariffannouncement:
+    get:
+      tags:
+      - devices
+      summary: Returns whether tariff announcement is enabled or disabled for the
+        given device
+      description: ""
+      operationId: getTariffAnnouncement
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TariffAnnouncementResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - devices:read
+        - devices:tariffannouncement:read
+    put:
+      tags:
+      - devices
+      summary: Enable/Disable tariff announcement for the given device
+      description: ""
+      operationId: changeTariffAnnouncement
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/TariffAnnouncementRequest'
+      responses:
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:tariffannouncement:write
+  /groupfaxlines:
+    get:
+      tags:
+      - groupfaxlines
+      summary: Returns all group fax lines
+      description: ""
+      operationId: getFaxlines
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: query
+        description: e.g. w0
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlinesResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:faxlines:read
+  /groupfaxlines/{faxlineId}/callerid:
+    get:
+      tags:
+      - groupfaxlines
+      summary: Returns the caller ID for a group fax
+      description: ""
+      operationId: getGroupFaxlineCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlineCallerIdResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:faxlines:read
+  /groupfaxlines/{faxlineId}/numbers:
+    get:
+      tags:
+      - groupfaxlines
+      summary: Returns all phone numbers for a group fax
+      description: ""
+      operationId: getGroupFaxlineNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EndpointNumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:faxlines:read
+  /groups:
+    get:
+      tags:
+      - groups
+      summary: Returns all groups
+      description: ""
+      operationId: getGroups
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: query
+        description: e.g. w0
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/GroupsResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+  /groups/{groupId}/devices:
+    post:
+      tags:
+      - groups
+      summary: Set routing for device to group
+      description: ""
+      operationId: routeDevices
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/RouteDeviceRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - groups:devices:write
+  /groups/{groupId}/devices/{deviceId}:
+    delete:
+      tags:
+      - groups
+      summary: delete routing for device to group
+      description: ""
+      operationId: deleteDeviceRouting
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - groups:devices:write
+  /groups/{groupId}/faxlines:
+    get:
+      tags:
+      - groups
+      summary: Returns all group fax lines
+      description: ""
+      operationId: getFaxlines
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlinesResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:faxlines:read
+  /groups/{groupId}/numbers:
+    get:
+      tags:
+      - groups
+      summary: Returns all numbers routed to group
+      description: ""
+      operationId: getGroupNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/GroupNumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:numbers:read
+  /groups/{groupId}/users:
+    get:
+      tags:
+      - groups
+      summary: Returns all users in group
+      description: ""
+      operationId: getGroupUsers
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/GroupUsersResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:users:read
+  /groups/{groupId}/voicemail:
+    get:
+      tags:
+      - groups
+      summary: Returns information about the group voicemail
+      description: ""
+      operationId: getGroupVoicemail
+      produces:
+      - application/json
+      parameters:
+      - name: groupId
+        in: path
+        description: e.g. g0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/VoicemailsResponse'
+      security:
+      - oauth2:
+        - all
+        - groups:read
+        - groups:voicemails:read
+  /numbers:
+    get:
+      tags:
+      - numbers
+      summary: Returns all numbers
+      description: ""
+      operationId: getNumbers
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/NumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - numbers:read
+  /numbers/quickdial:
+    post:
+      tags:
+      - numbers
+      summary: Adds a quick dial number
+      description: ""
+      operationId: addQuickDialNumber
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddDirectDialRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - numbers:write
+  /numbers/quickdial/validation/{quickDialNumber}:
+    get:
+      tags:
+      - numbers
+      summary: Validate a dial number
+      description: ""
+      operationId: validateQuickDialNumber
+      produces:
+      - application/json
+      parameters:
+      - name: quickDialNumber
+        in: path
+        description: e.g. 10
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - numbers:read
+  /numbers/quickdial/{numberId}:
+    delete:
+      tags:
+      - numbers
+      summary: Delete a quick dial number
+      description: ""
+      operationId: deleteQuickDialNumber
+      produces:
+      - application/json
+      parameters:
+      - name: numberId
+        in: path
+        description: e.g. 1234
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - numbers:write
+  /numbers/quickdial/{quickdialId}:
+    put:
+      tags:
+      - numbers
+      summary: Changes a quick dial number
+      description: ""
+      operationId: changeQuickDialNumber
+      produces:
+      - application/json
+      parameters:
+      - name: quickdialId
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangeDirectDialRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - numbers:write
+  /numbers/{numberId}:
+    put:
+      tags:
+      - numbers
+      summary: Changes number settings, e.g. route to endpoint
+      description: ""
+      operationId: changeNumberSettings
+      produces:
+      - application/json
+      parameters:
+      - name: numberId
+        in: path
+        description: e.g. 1337
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangeNumberSettingsRequest'
+      responses:
+        404:
+          description: Number not found
+      security:
+      - oauth2:
+        - all
+        - numbers:write
+  /passwordreset:
+    post:
+      tags:
+      - password reset
+      summary: Request a password change
+      description: ""
+      operationId: requestPasswordReset
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/RequestPasswordResetRequest'
+      responses:
+        default:
+          description: successful operation
+  /passwordreset/{nonce}:
+    post:
+      tags:
+      - password reset
+      summary: Change the password
+      description: ""
+      operationId: changePassword
+      produces:
+      - application/json
+      parameters:
+      - name: nonce
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangePasswordRequest'
+      responses:
+        default:
+          description: successful operation
+  /portings:
+    get:
+      tags:
+      - portings
+      summary: Returns number portings
+      description: 'Possible status codes:<br /><pre>100: Waiting for user faxn150:
+        WBCI waiting for mail opt-inn160: WBCI opt-in hash generatedn170: WBCI opt-in
+        link clickedn200: Waiting for fax from current network operatorn250: WBCI
+        sendn251: WBCI network errorn252: WBCI EKP rejectedn400: Porting acceptedn450:
+        Waiting for data exchangen451: Data exchange errorn500: Porting completen600:
+        Porting cancelledn</pre>'
+      operationId: getPortings
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PortingsResponse'
+      security:
+      - oauth2:
+        - all
+        - portings:read
+  /portings/{portingId}:
+    delete:
+      tags:
+      - portings
+      summary: Revoke a porting
+      description: ""
+      operationId: revokePorting
+      produces:
+      - application/json
+      parameters:
+      - name: portingId
+        in: path
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PortingsResponse'
+      security:
+      - oauth2:
+        - all
+        - portings:write
+  /restrictions:
+    get:
+      tags:
+      - restrictions
+      summary: Restrictions based on the users product
+      description: Get restrictions for actions the authenticated user can perform
+        for himself or another user.
+      operationId: getRestrictions
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: query
+        description: e.g. w0
+        required: false
+        type: string
+      - name: restriction
+        in: query
+        description: e.g. CAN_CREATE_REGISTER_DEVICE
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - CAN_CREATE_REGISTER_DEVICE
+          - CAN_DELETE_REGISTER_DEVICE
+          - CAN_CREATE_MOBILE_DEVICE
+          - CAN_DELETE_MOBILE_DEVICE
+          - CAN_CREATE_EXTERNAL_DEVICE
+          - CAN_DELETE_EXTERNAL_DEVICE
+          - CAN_BOOK_PHONELINE_FEATURE
+          - CAN_CREATE_PHONELINE_EXTENSION
+          - CAN_DELETE_PHONELINE_EXTENSION
+          - CAN_CREATE_QUICKDIAL_NUMBER
+          - CAN_CHANGE_QUICKDIAL_NUMBER
+          - CAN_DELETE_QUICKDIAL_NUMBER
+          - CAN_GET_HISTORY
+          - CAN_DELETE_HISTORY
+          - CAN_CREATE_FAX_EXTENSION
+          - CAN_DELETE_FAX_EXTENSION
+          - CAN_BOOK_FAX_FEATURE
+          - CAN_SEND_FAX
+          - CAN_RECEIVE_FAX
+          - CAN_CHANGE_DEVICE_EMERGENCY_LOCATION
+          - MAX_PARALLEL_FORWARDINGS
+          - MAX_FORWARDINGS
+          - NOTIFICATION_RESTRICTIONS
+          - GSUITE_EXTENSION
+        collectionFormat: multi
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContractRestrictionsResponse'
+  /sessions/calls:
+    post:
+      tags:
+      - sessions
+      summary: Initiates a new call
+      description: DeviceId is only required if the caller parameter is a phone number
+        and not a deviceId itself.<br>The parameter phonelineId is deprecated and
+        will be removed in future versions of this API.
+      operationId: newCall
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/NewCallRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InitiateNewCallSessionResponse'
+        400:
+          description: User supplied invalid callee number<br>User supplied invalid
+            caller number<br>DeviceId is required if caller is a phone number
+        402:
+          description: Insufficient funds
+        403:
+          description: User is not allowed to initiate call with given parameters
+      security:
+      - oauth2:
+        - all
+        - sessions:write
+        - sessions:calls:write
+  /sessions/fax:
+    post:
+      tags:
+      - sessions
+      summary: Send FAX
+      description: ""
+      operationId: sendFax
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SendFaxRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SendFaxSessionResponse'
+        402:
+          description: Insufficient funds
+      security:
+      - oauth2:
+        - all
+        - sessions:write
+        - sessions:fax:write
+  /sessions/fax/resend:
+    post:
+      tags:
+      - sessions
+      summary: Resend FAX
+      description: ""
+      operationId: resendFax
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ResendFaxRequest'
+      responses:
+        402:
+          description: Insufficient funds
+      security:
+      - oauth2:
+        - all
+        - sessions:write
+        - sessions:fax:write
+  /sessions/sms:
+    post:
+      tags:
+      - sessions
+      summary: Send SMS
+      description: ""
+      operationId: sendWebSms
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SendWebSmsRequest'
+      responses:
+        402:
+          description: Insufficient funds
+      security:
+      - oauth2:
+        - all
+        - sessions:write
+        - sessions:sms:write
+  /settings/sipgateio:
+    get:
+      tags:
+      - settings
+      summary: Returns sipgate.io URLs
+      description: ""
+      operationId: getSipgateIoUrls
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SipgateIoUrlResponse'
+        403:
+          description: sipgate.io feature not booked
+      security:
+      - oauth2:
+        - all
+        - settings:read
+        - settings:sipgateio:read
+    put:
+      tags:
+      - settings
+      summary: Set sipgate.io URLs
+      description: ""
+      operationId: setSipgateIoUrls
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetSipgateIoAccountSettingsRequest'
+      responses:
+        403:
+          description: sipgate.io feature not booked
+      security:
+      - oauth2:
+        - all
+        - settings:write
+        - settings:sipgateio:write
+  /translations/{language}:
+    get:
+      tags:
+      - translations
+      summary: Returns sipgate translations
+      description: ""
+      operationId: getLanguage
+      produces:
+      - application/json
+      parameters:
+      - name: language
+        in: path
+        description: e.g. de_DE
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /users:
+    get:
+      tags:
+      - users
+      summary: Returns all users
+      description: ""
+      operationId: getAllUsers
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UsersResponse'
+      security:
+      - oauth2:
+        - all
+        - users:read
+  /users/{userId}:
+    get:
+      tags:
+      - users
+      summary: Returns a user
+      description: ""
+      operationId: getUser
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserResponse'
+        404:
+          description: User not found
+      security:
+      - oauth2:
+        - all
+        - users:read
+  /users/{userId}/defaultdevice:
+    put:
+      tags:
+      - users
+      summary: Sets default device for given user
+      description: ""
+      operationId: setDefaultDevice
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetDefaultDeviceRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - users:read
+        - users:defaultdevice:write
+  /{userId}/devices:
+    get:
+      tags:
+      - devices
+      summary: Returns all user devices
+      description: ""
+      operationId: getDevices
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DevicesResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+    post:
+      tags:
+      - devices
+      summary: Creates a new device for the user.
+      description: If you want to create a new register device the Restriction CAN_CREATE_REGISTER_DEVICE
+        needs to be true for the specified userId.
+      operationId: createDevice
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateDeviceRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DeviceResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /{userId}/devices/external:
+    post:
+      tags:
+      - devices
+      summary: Creates a new external device for the user.
+      description: If you want to create a new external device the Restriction CAN_CREATE_EXTERNAL_DEVICE
+        needs to be true for the specified userId.
+      operationId: createDevice
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateExternalDeviceRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ExternalDeviceResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /{userId}/devices/mobile:
+    post:
+      tags:
+      - devices
+      summary: Creates a new mobile device for the user.
+      description: If you want to create a new mobile device the Restriction CAN_CREATE_MOBILE_DEVICE
+        needs to be true for the specified userId.
+      operationId: createDevice
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateMobileDeviceRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/MobileDeviceResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /{userId}/devices/register:
+    post:
+      tags:
+      - devices
+      summary: Creates a new register device for the user.
+      description: If you want to create a new register device the Restriction CAN_CREATE_REGISTER_DEVICE
+        needs to be true for the specified userId.
+      operationId: createDevice
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/CreateRegisterDeviceRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/RegisterDeviceResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:write
+  /{userId}/devices/{deviceId}/contingents:
+    get:
+      tags:
+      - devices
+      summary: Returns all user device contingents
+      description: ""
+      operationId: getDeviceContingents
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. y0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DeviceContingentsResponse'
+      security:
+      - oauth2:
+        - all
+        - devices:read
+  /{userId}/devices/{deviceId}/sim:
+    post:
+      tags:
+      - devices
+      summary: Activate a sim card
+      description: ""
+      operationId: activateSim
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. y0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ActivateSimRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:sim:write
+    delete:
+      tags:
+      - devices
+      summary: Deactivate a sim card
+      description: ""
+      operationId: deactivateSim
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. y0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:sim:write
+  /{userId}/devices/{deviceId}/sim/orders:
+    post:
+      tags:
+      - devices
+      summary: Order a new SIM card
+      description: ""
+      operationId: orderSim
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. y0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/OrderSimRequest'
+      responses:
+        403:
+          description: User or device not found
+      security:
+      - oauth2:
+        - all
+        - devices:write
+        - devices:sim:write
+        - devices:sims:orders:write
+  /{userId}/faxlines:
+    get:
+      tags:
+      - faxlines
+      summary: Returns all fax lines
+      description: ""
+      operationId: getFaxlines
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlinesResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - faxlines:read
+    post:
+      tags:
+      - faxlines
+      summary: Creates a new faxline for the user
+      description: ""
+      operationId: createFaxline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlineResponse'
+      security:
+      - oauth2:
+        - all
+        - faxlines:write
+  /{userId}/faxlines/{faxlineId}:
+    put:
+      tags:
+      - faxlines
+      summary: Change faxline alias
+      description: ""
+      operationId: changeFaxlineAlias
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetAliasRequest'
+      responses:
+        404:
+          description: Faxline not found
+      security:
+      - oauth2:
+        - all
+        - faxlines:write
+    delete:
+      tags:
+      - faxlines
+      summary: delete faxline
+      description: ""
+      operationId: deleteFaxline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - faxlines:write
+  /{userId}/faxlines/{faxlineId}/callerid:
+    get:
+      tags:
+      - faxlines
+      summary: Caller ID for faxline
+      description: ""
+      operationId: getFaxlineCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FaxlineCallerIdResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - faxlines:read
+    put:
+      tags:
+      - faxlines
+      summary: Change caller ID for faxline
+      description: ""
+      operationId: changeFaxlineCallerIdSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/FaxlineCallerIdRequest'
+      responses:
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - faxlines:write
+  /{userId}/faxlines/{faxlineId}/numbers:
+    get:
+      tags:
+      - faxlines
+      summary: Returns all phone numbers
+      description: ""
+      operationId: getFaxlineNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EndpointNumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - faxlines:read
+        - faxlines:numbers:read
+  /{userId}/faxlines/{faxlineId}/tagline:
+    put:
+      tags:
+      - faxlines
+      summary: Change tagline for faxline
+      description: ""
+      operationId: changeTagline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: faxlineId
+        in: path
+        description: e.g. f0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/FaxlineTaglineRequest'
+      responses:
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - faxlines:write
+  /{userId}/history:
+    get:
+      tags:
+      - history
+      summary: Returns the history of calls and voicemails
+      description: ""
+      operationId: getHistory
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: query
+        description: e.g. p0
+        required: false
+        type: string
+      - name: types
+        in: query
+        description: e.g. VOICEMAIL
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - CALL
+          - VOICEMAIL
+          - SMS
+          - FAX
+        collectionFormat: multi
+      - name: directions
+        in: query
+        description: e.g. MISSED_INCOMING
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - MISSED_INCOMING
+          - INCOMING
+          - OUTGOING
+          - MISSED_OUTGOING
+        collectionFormat: multi
+      - name: offset
+        in: query
+        description: e.g. 42
+        required: false
+        type: integer
+        default: 0
+        maximum: 2147483647
+        minimum: 0
+        format: int32
+      - name: limit
+        in: query
+        description: e.g. 23
+        required: false
+        type: integer
+        default: 10
+        maximum: 1000
+        minimum: 0
+        format: int32
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/HistoryResponse'
+      security:
+      - oauth2:
+        - all
+        - history:read
+  /{userId}/history/{entryId}:
+    delete:
+      tags:
+      - history
+      summary: Deletes a history entry
+      description: ""
+      operationId: deleteHistoryEntry
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: entryId
+        in: path
+        description: e.g. 1337
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - history:write
+  /{userId}/notifications:
+    get:
+      tags:
+      - notifications
+      summary: Get notifications
+      description: ""
+      operationId: getNotifications
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/NotificationsResponse'
+      security:
+      - oauth2:
+        - all
+        - notifications:read
+  /{userId}/notifications/call/email:
+    post:
+      tags:
+      - notifications
+      summary: Add a new call email notification
+      description: ""
+      operationId: addCallEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddCallEmailNotificationRequest'
+      responses:
+        403:
+          description: Limit reached
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/call/sms:
+    post:
+      tags:
+      - notifications
+      summary: Add a new call sms notification
+      description: ""
+      operationId: addCallEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddCallSmsNotificationRequest'
+      responses:
+        403:
+          description: Limit reached
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/fax/email:
+    post:
+      tags:
+      - notifications
+      summary: Add a new fax email notification
+      description: ""
+      operationId: addFaxEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddFaxEmailNotificationRequest'
+      responses:
+        403:
+          description: Fax feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/fax/report:
+    post:
+      tags:
+      - notifications
+      summary: Add a new fax report email notification
+      description: ""
+      operationId: addFaxReportEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddFaxReportEmailNotificationRequest'
+      responses:
+        403:
+          description: Fax feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/fax/sms:
+    post:
+      tags:
+      - notifications
+      summary: Add a new fax sms notification
+      description: ""
+      operationId: addFaxSmsNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddFaxSmsNotificationRequest'
+      responses:
+        403:
+          description: Fax feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/sms/email:
+    post:
+      tags:
+      - notifications
+      summary: Add a new email notification for incoming sms
+      description: ""
+      operationId: addSmsEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddSmsEmailNotificationRequest'
+      responses:
+        403:
+          description: SMSToMail feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/voicemail/email:
+    post:
+      tags:
+      - notifications
+      summary: Add a new voicemail email notification
+      description: ""
+      operationId: addVoicemailEmailNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddVoicemailEmailVoicemailNotificationRequest'
+      responses:
+        403:
+          description: Voicemail feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/voicemail/sms:
+    post:
+      tags:
+      - notifications
+      summary: Add a new voicemail sms notification
+      description: ""
+      operationId: addVoicemailSmsNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddVoicemailSmslVoicemailNotificationRequest'
+      responses:
+        403:
+          description: Voicemail feature not booked
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/notifications/{notificationId}:
+    delete:
+      tags:
+      - notifications
+      summary: Delete a notification
+      description: ""
+      operationId: deleteNotification
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: notificationId
+        in: path
+        description: e.g. 42
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - notifications:write
+  /{userId}/numbers:
+    get:
+      tags:
+      - numbers
+      summary: Returns all user numbers
+      description: ""
+      operationId: getNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/NumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - numbers:read
+  /{userId}/phonelines:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all telephone lines
+      description: ""
+      operationId: getPhonelines
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelinesResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+    post:
+      tags:
+      - phonelines
+      summary: Creates a new phoneline for the user
+      description: ""
+      operationId: createPhoneline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+  /{userId}/phonelines/{phonelineId}:
+    put:
+      tags:
+      - phonelines
+      summary: Change phoneline alias
+      description: ""
+      operationId: changePhoneline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetAliasRequest'
+      responses:
+        404:
+          description: Phoneline not found
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+    delete:
+      tags:
+      - phonelines
+      summary: delete phoneline
+      description: ""
+      operationId: deletePhoneline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        404:
+          description: Phoneline not found
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+  /{userId}/phonelines/{phonelineId}/blockanonymous:
+    get:
+      tags:
+      - phonelines
+      summary: Returns settings for block anonymous calls
+      description: ""
+      operationId: getBlockAnonymousSetting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineBlockAnonymousResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:blockanonymous:read
+    put:
+      tags:
+      - phonelines
+      summary: Sets settings for block anonymous calls
+      description: ""
+      operationId: setBlockAnonymousSetting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetBlockAnonymousSettingsRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineBlockAnonymousResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:blockanonymous:write
+  /{userId}/phonelines/{phonelineId}/busyonbusy:
+    get:
+      tags:
+      - phonelines
+      summary: Returns settings for busy on busy
+      description: ""
+      operationId: getBusyOnBusySetting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineBusyOnBusyResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:busyonbusy:read
+    put:
+      tags:
+      - phonelines
+      summary: Sets settings for busy on busy
+      description: ""
+      operationId: setBusyOnBusySetting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetBusyOnBusySettingsRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:busyonbusy:write
+  /{userId}/phonelines/{phonelineId}/devices:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all devices
+      description: ""
+      operationId: getDevices
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DevicesResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:devices:read
+    post:
+      tags:
+      - phonelines
+      summary: set routing for device to phoneline
+      description: ""
+      operationId: routeDevices
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/RouteDeviceRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:devices:write
+  /{userId}/phonelines/{phonelineId}/devices/{deviceId}:
+    delete:
+      tags:
+      - phonelines
+      summary: delete routing for device to phoneline
+      description: ""
+      operationId: deleteDeviceRouting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: deviceId
+        in: path
+        description: e.g. e0
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:devices:write
+  /{userId}/phonelines/{phonelineId}/forwardings:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all forwardings
+      description: ""
+      operationId: getPhonelineForwardings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ForwardingsResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:forwardings:read
+    put:
+      tags:
+      - phonelines
+      summary: Change forwarding settings
+      description: ""
+      operationId: setPhonelineForwardingSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetForwardingsRequest'
+      responses:
+        400:
+          description: Forwarding settings could not be changed due to bad request
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:forwardings:write
+  /{userId}/phonelines/{phonelineId}/numbers:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all phone numbers
+      description: ""
+      operationId: getPhonelineNumbers
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/EndpointNumbersResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:numbers:read
+  /{userId}/phonelines/{phonelineId}/parallelforwardings:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all parallel forwardings
+      description: ""
+      operationId: getPhonelineParallelForwardings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ParallelForwardingsResponse'
+        403:
+          description: Feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:parallelforwardings:read
+    post:
+      tags:
+      - phonelines
+      summary: Add parallel forwarding
+      description: ""
+      operationId: addParallelForwarding
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetParallelForwardingRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:parallelforwardings:write
+  /{userId}/phonelines/{phonelineId}/parallelforwardings/{parallelForwardingId}:
+    put:
+      tags:
+      - phonelines
+      summary: Change parallel forwarding
+      description: ""
+      operationId: changeParallelForwardingSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: parallelForwardingId
+        in: path
+        description: e.g. x0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetParallelForwardingRequest'
+      responses:
+        404:
+          description: Parallel forwarding not found
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:parallelforwardings:write
+    delete:
+      tags:
+      - phonelines
+      summary: Delete parallel forwarding
+      description: ""
+      operationId: deleteParallelForwardingSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: parallelForwardingId
+        in: path
+        description: e.g. x0
+        required: true
+        type: string
+      responses:
+        404:
+          description: Parallel forwarding not found
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:parallelforwardings:write
+  /{userId}/phonelines/{phonelineId}/sipgateio:
+    get:
+      tags:
+      - phonelines
+      summary: Returns sipgate.io settings
+      description: ""
+      operationId: getSipgateIoSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineSipgateIoResponse'
+        403:
+          description: sipgate.io feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:sipgateio:read
+    put:
+      tags:
+      - phonelines
+      summary: Set sipgate.io URLs
+      description: ""
+      operationId: setSipgateIoSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetSipgateIoPhonelineSettingsRequest'
+      responses:
+        403:
+          description: sipgate.io feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:sipgateio:write
+  /{userId}/phonelines/{phonelineId}/sipgateio/log:
+    get:
+      tags:
+      - phonelines
+      summary: Returns sipgate.io debug log
+      description: ""
+      operationId: getSipgateIoLogs
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PhonelineSipgateIoLogsResponse'
+        403:
+          description: sipgate.io feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:sipgateio:log:read
+  /{userId}/phonelines/{phonelineId}/voicemails:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all voicemails
+      description: ""
+      operationId: getVoicemails
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/VoicemailsResponse'
+        403:
+          description: Voicemail feature not booked
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:voicemails:read
+  /{userId}/phonelines/{phonelineId}/voicemails/{voicemailId}:
+    put:
+      tags:
+      - phonelines
+      summary: Change voicemail settings
+      description: ""
+      operationId: changeVoicemailSettings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: voicemailId
+        in: path
+        description: e.g. v0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangeVoicemailRequest'
+      responses:
+        400:
+          description: Voicemail settings could not be changed due to bad request
+        403:
+          description: Transcription not available
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:voicemails:write
+  /{userId}/phonelines/{phonelineId}/voicemails/{voicemailId}/greetings:
+    get:
+      tags:
+      - phonelines
+      summary: Returns all greetings
+      description: ""
+      operationId: getPhonelineVoicemailGreetings
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: voicemailId
+        in: path
+        description: e.g. v0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/GreetingsResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:read
+        - phonelines:voicemails:read
+        - phonelines:voicemails:greetings:read
+    post:
+      tags:
+      - phonelines
+      summary: Upload your base64 encoded OGG/MP3/WAV greeting
+      description: ""
+      operationId: addGreeting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: voicemailId
+        in: path
+        description: e.g. v0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AddGreetingRequest'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/GreetingsResponse'
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:voicemails:write
+        - phonelines:voicemails:greetings:write
+  /{userId}/phonelines/{phonelineId}/voicemails/{voicemailId}/greetings/{greetingId}:
+    put:
+      tags:
+      - phonelines
+      summary: Change greeting settings
+      description: ""
+      operationId: changePhonelineVoicemailGreeting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: voicemailId
+        in: path
+        description: e.g. v0
+        required: true
+        type: string
+      - name: greetingId
+        in: path
+        description: e.g. 42
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ChangeVoicemailGreetingRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:voicemails:write
+        - phonelines:voicemails:greetings:write
+    delete:
+      tags:
+      - phonelines
+      summary: Deletes a greeting
+      description: ""
+      operationId: deletePhonlineVoicemailGreeting
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: phonelineId
+        in: path
+        description: e.g. p0
+        required: true
+        type: string
+      - name: voicemailId
+        in: path
+        description: e.g. v0
+        required: true
+        type: string
+      - name: greetingId
+        in: path
+        description: e.g. 42
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - phonelines:write
+        - phonelines:voicemails:write
+        - phonelines:voicemails:greetings:write
+  /{userId}/sms:
+    get:
+      tags:
+      - sms
+      summary: Returns all short message services
+      description: ""
+      operationId: getSmsExtensions
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SmsExtensionsResponse'
+      security:
+      - oauth2:
+        - all
+        - sms:read
+  /{userId}/sms/{smsId}:
+    put:
+      tags:
+      - sms
+      summary: Change short message service alias
+      description: ""
+      operationId: changePhoneline
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetAliasRequest'
+      responses:
+        404:
+          description: Short message service not found
+      security:
+      - oauth2:
+        - all
+        - sms:write
+  /{userId}/sms/{smsId}/callerids:
+    get:
+      tags:
+      - sms
+      summary: Returns all callerids for the short message service
+      description: ""
+      operationId: getSmsCallerIds
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SmsCallerIdsResponse'
+      security:
+      - oauth2:
+        - all
+        - sms:read
+        - sms:callerid:read
+    post:
+      tags:
+      - sms
+      summary: adds a callerid
+      description: ""
+      operationId: addCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SmsCallerIdRequest'
+      responses:
+        402:
+          description: Insufficient funds
+      security:
+      - oauth2:
+        - all
+        - sms:write
+        - sms:callerid:write
+  /{userId}/sms/{smsId}/callerids/{callerId}:
+    put:
+      tags:
+      - sms
+      summary: changes a callerid
+      description: ""
+      operationId: editCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      - name: callerId
+        in: path
+        description: e.g. 4223
+        required: true
+        type: integer
+        format: int32
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/SetSmsCallerIdRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - sms:write
+        - sms:callerid:write
+    delete:
+      tags:
+      - sms
+      summary: Deletes a callerid
+      description: ""
+      operationId: deleteSmsCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      - name: callerId
+        in: path
+        description: e.g. 4223
+        required: true
+        type: integer
+        format: int32
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - sms:write
+        - sms:callerid:write
+  /{userId}/sms/{smsId}/callerids/{callerId}/verification:
+    post:
+      tags:
+      - sms
+      summary: verifies a callerid
+      description: ""
+      operationId: verifyCallerId
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: e.g. w0
+        required: true
+        type: string
+      - name: smsId
+        in: path
+        description: e.g. s0
+        required: true
+        type: string
+      - name: callerId
+        in: path
+        description: e.g. 1337
+        required: true
+        type: integer
+        format: int32
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/VerifySmsCallerIdRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - sms:write
+        - sms:callerid:write
+  /contacts:
+    get:
+      tags:
+      - contacts
+      summary: Get all contacts
+      description: ""
+      operationId: getContacts
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContactsResponse'
+      security:
+      - oauth2:
+        - all
+        - contacts:read
+    delete:
+      tags:
+      - contacts
+      summary: Delete all contacts
+      description: ""
+      operationId: deleteContacts
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - contacts:write
+  /contacts/import/csv:
+    post:
+      tags:
+      - contacts
+      summary: Import contacts from CSV file
+      description: CSV files should match the following format:<br /><pre>firstname,lastname,numbernAda,Lovelace,+4915799912345nAlan,Turing,+4915799912345n</pre>
+      operationId: importFromCSV
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ImportCSVRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - contacts:write
+  /contacts/import/google:
+    post:
+      tags:
+      - contacts
+      summary: Import contacts from Google
+      description: ""
+      operationId: importFromGoogle
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ImportGoogleRequest'
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - contacts:write
+  /contacts/{contactid}:
+    delete:
+      tags:
+      - contacts
+      summary: Delete a single contact
+      description: ""
+      operationId: deleteAllContacts
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: contactid
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+      security:
+      - oauth2:
+        - all
+        - contacts:write
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":148:{s:16:\"UserinfoResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"sub\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}s:6:\"domain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"sipgate.de\";}s:11:\"masterSipId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"0000000\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"de_DE\";}}}s:31:\"AddCallEmailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:5:\"cause\";i:1;s:9:\"direction\";i:2;s:5:\"email\";i:3;s:10:\"endpointId\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"e0/p0\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"INCOMING\";}s:5:\"cause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"MISSED\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:15:\"HistoryResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/HistoryEntryResponse\";}}}}s:20:\"OAuth2ClientResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"6UYbrU5h\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"l00Kb3h1NDY0U47hr33h34D3DM0Nk3Y\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"The
+  Secret App\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"The
+  app description\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"DEV\";s:4:\"enum\";a:3:{i:0;s:3:\"DEV\";i:1;s:6:\"REVIEW\";i:2;s:4:\"LIVE\";}}}}s:21:\"SetForwardingsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"forwardings\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Forwarding\";}s:8:\"maxItems\";i:3;s:8:\"minItems\";i:0;}}}s:27:\"CreateNewOAuthClientRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"LeChuck's
+  App\";}}}s:19:\"ForwardingsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ForwardingResponse\";}}}}s:15:\"CallEmailTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}s:5:\"cause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"MISSED\";i:1;s:10:\"SUCCESSFUL\";}}}}s:15:\"PortingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"portDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"2015-10-21\";}s:7:\"numbers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/PortingNumberResponse\";}}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:200;}s:9:\"revocable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"pending\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:36:\"SetSipgateIoPhonelineSettingsRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"incomingUrl\";i:1;s:11:\"outgoingUrl\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"incomingActive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:14:\"outgoingActive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"incomingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:39:\"https://io.sipgate.beer/my/incoming/url\";}s:11:\"outgoingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://io.sipgate.rehab/my/outgoing/url\";}s:3:\"log\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"certificate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"-----BEGIN
+  CERTIFICATE-----\";}s:15:\"allowSelfSigned\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:26:\"NumberResponseWithEndpoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:9:\"localized\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"01579-9912345\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:6:\"MOBILE\";i:1;s:8:\"LANDLINE\";i:2;s:9:\"QUICKDIAL\";i:3;s:13:\"INTERNATIONAL\";}}s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"p0\";}s:13:\"endpointAlias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"endpointUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"Forwarding\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:7:\"timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";d:600;}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:28:\"SetParallelForwardingRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"Bjarne
+  Stroustrup's mobile\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:15:\"CallerIdRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:18:\"LocalprefixRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"030\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:30:\"ChangeVoicemailGreetingRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:21:\"SetDeviceAliasRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"Theodore
+  Sturgeon's device\";}}}s:11:\"EmailTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:30:\"InitiateNewCallSessionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"sessionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"CallSmsTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"1337\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}s:5:\"cause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"MISSED\";i:1;s:10:\"SUCCESSFUL\";}}}}s:21:\"OauthAccessTokenFault\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"AddressResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"poBox\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"extendedAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"streetAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"locality\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"OAuth2ClientsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/OAuth2ClientResponse\";}}}}s:14:\"WelcomeRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:18:\"VoicemailsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/VoicemailResponse\";}}}}s:16:\"RegisteredDevice\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"userAgent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"ip\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"port\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"SendFaxRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:13:\"base64Content\";i:1;s:9:\"faxlineId\";i:2;s:8:\"filename\";i:3;s:9:\"recipient\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"faxlineId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}s:9:\"recipient\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4921112345678\";}s:8:\"filename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"fax.pdf\";}s:13:\"base64Content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"TWF5IHRoZSBmb3VydGggYmUgd2l0aCB5b3U=\";}}}s:13:\"ActiveRouting\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Alan
+  Turing\";}}}s:20:\"HistoryEntryResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"100001234\";}s:6:\"source\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"anonymous\";s:4:\"$ref\";s:20:\"#/definitions/Number\";}s:6:\"target\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"01579-9912345\";s:4:\"$ref\";s:20:\"#/definitions/Number\";}s:11:\"sourceAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Dennis
+  Ritchie\";}s:11:\"targetAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Ken
+  Thompson\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:4:\"CALL\";i:1;s:9:\"VOICEMAIL\";i:2;s:3:\"SMS\";i:3;s:3:\"FAX\";}}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2016-02-10T14:19:39Z\";}s:12:\"lastModified\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2016-02-10T14:19:39Z\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:15:\"MISSED_INCOMING\";i:1;s:8:\"INCOMING\";i:2;s:8:\"OUTGOING\";i:3;s:15:\"MISSED_OUTGOING\";}}}}s:24:\"CallNotificationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"f0/v0/p0\";}s:13:\"endpointAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"Fax/Voicemail
+  of Grace Hopper\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CallEmailTarget\";}}s:3:\"sms\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CallSmsTarget\";}}}}s:23:\"SetDefaultDeviceRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"deviceId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"deviceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}}}s:16:\"FaxlinesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/FaxlineResponse\";}}}}s:11:\"TacResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"accepted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:16:\"ResendFaxRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"faxId\";i:1;s:9:\"faxlineId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"faxId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"100018428\";}s:9:\"faxlineId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}}}s:28:\"SetBusyOnBusySettingsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:20:\"SmsCallerIdsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/SmsCallerIdResponse\";}}}}s:21:\"SmsExtensionsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/SmsExtensionResponse\";}}}}s:20:\"SmsExtensionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"s0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"SMS
+  von Douglas Engelbart\";}s:8:\"callerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:19:\"SmsCallerIdResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"phonenumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"verified\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"defaultNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:27:\"PhonelineBusyOnBusyResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:25:\"MobileCredentialsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"simId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"1234567\";}s:4:\"puk1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"12345\";}s:4:\"puk2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"67890\";}}}s:24:\"OauthAccessTokenResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"access_token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"token_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"id_token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"LocalprefixResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"0221\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:27:\"ChangeNumberSettingsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"p0\";}s:13:\"releaseForMnp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;s:7:\"default\";b:0;}s:9:\"quickDial\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;s:7:\"default\";b:0;}}}s:9:\"SmsTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"1337\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:21:\"FaxlineTaglineRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Example
+  Ltd.\";}}}s:26:\"PhonelineSipgateIoResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"incomingActive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:14:\"outgoingActive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"incomingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:39:\"https://io.sipgate.beer/my/incoming/url\";}s:11:\"outgoingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://io.sipgate.rehab/my/outgoing/url\";}s:3:\"log\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"certificate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"-----BEGIN
+  CERTIFICATE-----\";}s:15:\"allowSelfSigned\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:21:\"NotificationsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"fax\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/FaxNotificationResponse\";}}s:9:\"voicemail\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/VoicemailNotificationResponse\";}}s:4:\"call\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/CallNotificationResponse\";}}s:3:\"sms\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/SmsNotificationResponse\";}}}}s:20:\"CreateSessionRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"password\";i:1;s:8:\"username\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"EventResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"eventId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"eventType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"payload\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:31:\"PhonelineBlockAnonymousResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:6:\"target\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"REJECT\";i:1;s:9:\"VOICEMAIL\";}}}}s:15:\"OrderSimRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"addressId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"addressId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}}}s:23:\"EndpointNumbersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/NumberResponse\";}}}}s:18:\"AddGreetingRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"filename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"greeting.mp3\";}s:13:\"base64Content\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:52:\"RG8uIE9yIGRvIG5vdC4gVGhlcmUgaXMgbm8gdHJ5LiAtLVlvZGEK\";s:9:\"minLength\";i:0;s:9:\"maxLength\";i:8000000;}}}s:30:\"AddSmsEmailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"email\";i:1;s:10:\"endpointId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"y0\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:14:\"NewCallRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"callee\";i:1;s:6:\"caller\";i:2;s:8:\"deviceId\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"deviceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"p0\";}s:6:\"caller\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:6:\"callee\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:22:\"ChangeVoicemailRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"active\";i:1;s:13:\"transcription\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";d:0;}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"transcription\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:20:\"ModifyAddressRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"city\";i:1;s:11:\"countrycode\";i:2;s:8:\"postcode\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"countrycode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"DE\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"NRW\";}s:8:\"postcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"40219\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"D\xFCsseldorf\";}s:6:\"street\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Gladbacher
+  Str.\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"74\";}s:8:\"address1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"1-3
+  Spring Gardens\";}s:8:\"address2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Flat
+  A\";}}}s:23:\"FaxNotificationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"f0/v0/p0\";}s:13:\"endpointAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"Fax/Voicemail
+  of Grace Hopper\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FaxEmailTarget\";}}s:3:\"sms\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/FaxSmsTarget\";}}s:7:\"reports\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ReportTarget\";}}}}s:23:\"SingleRowDisplayRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:14:\"NumberResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:29:\"PhonelineSipgateIoLogResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2015-10-21T19:28:00Z\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"https://demo.sipgate.io\";}s:7:\"request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:88:\"event=newCall&from=492111234567&to=4915791234567&direction=in&callId=123456&user[]=Alice\";}s:8:\"response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"HTTP/1.1
+  200 OK...\";}s:8:\"xmlError\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:51:\"Response
+  does not have content type application/xml\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"200\";}}}s:25:\"DeviceContingentsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"contingents\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ContingentResponse\";}}}}s:22:\"RegisterDeviceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"REGISTER\";i:1;s:6:\"MOBILE\";i:2;s:8:\"EXTERNAL\";}}s:6:\"online\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"dnd\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:16:\"activePhonelines\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:12:\"activeGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:11:\"credentials\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CredentialsResponse\";}s:10:\"registered\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/RegisteredDevice\";}}s:18:\"emergencyAddressId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"1234\";}s:10:\"addressUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"/addresses/1234\";}}}s:20:\"SipgateIoUrlResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"incomingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:39:\"https://io.sipgate.beer/my/incoming/url\";}s:11:\"outgoingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://io.sipgate.rehab/my/outgoing/url\";}}}s:13:\"GroupResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"g0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Turings
+  Group\";}s:15:\"groupNumbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"groupUsersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"TokenCreateResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ReportTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:25:\"CreateMobileDeviceRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:34:\"Mobile
+  phone phone of Grace Hopper\";}}}s:15:\"BalanceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";s:57:\"35000
+  (Amount multiplied by 10000 (35000/10000=EUR 3.50))\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"EUR\";}}}s:23:\"SmsNotificationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"f0/v0/p0\";}s:13:\"endpointAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"Fax/Voicemail
+  of Grace Hopper\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/SmsEmailTarget\";}}}}s:20:\"MobileDeviceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"REGISTER\";i:1;s:6:\"MOBILE\";i:2;s:8:\"EXTERNAL\";}}s:6:\"online\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"dnd\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:16:\"activePhonelines\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:12:\"activeGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:11:\"credentials\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/MobileCredentialsResponse\";}}}s:18:\"GroupUsersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/GroupUserResponse\";}}}}s:15:\"RestrictionItem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"restriction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:24:{i:0;s:26:\"CAN_CREATE_REGISTER_DEVICE\";i:1;s:26:\"CAN_DELETE_REGISTER_DEVICE\";i:2;s:24:\"CAN_CREATE_MOBILE_DEVICE\";i:3;s:24:\"CAN_DELETE_MOBILE_DEVICE\";i:4;s:26:\"CAN_CREATE_EXTERNAL_DEVICE\";i:5;s:26:\"CAN_DELETE_EXTERNAL_DEVICE\";i:6;s:26:\"CAN_BOOK_PHONELINE_FEATURE\";i:7;s:30:\"CAN_CREATE_PHONELINE_EXTENSION\";i:8;s:30:\"CAN_DELETE_PHONELINE_EXTENSION\";i:9;s:27:\"CAN_CREATE_QUICKDIAL_NUMBER\";i:10;s:27:\"CAN_CHANGE_QUICKDIAL_NUMBER\";i:11;s:27:\"CAN_DELETE_QUICKDIAL_NUMBER\";i:12;s:15:\"CAN_GET_HISTORY\";i:13;s:18:\"CAN_DELETE_HISTORY\";i:14;s:24:\"CAN_CREATE_FAX_EXTENSION\";i:15;s:24:\"CAN_DELETE_FAX_EXTENSION\";i:16;s:20:\"CAN_BOOK_FAX_FEATURE\";i:17;s:12:\"CAN_SEND_FAX\";i:18;s:15:\"CAN_RECEIVE_FAX\";i:19;s:36:\"CAN_CHANGE_DEVICE_EMERGENCY_LOCATION\";i:20;s:24:\"MAX_PARALLEL_FORWARDINGS\";i:21;s:15:\"MAX_FORWARDINGS\";i:22;s:25:\"NOTIFICATION_RESTRICTIONS\";i:23;s:16:\"GSUITE_EXTENSION\";}}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"target\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}}}s:15:\"FaxlineResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"Alexander
+  Bain's fax\";}s:7:\"tagline\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Example
+  Ltd.\";}s:7:\"canSend\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:10:\"canReceive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:18:\"PhonelinesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/PhonelineResponse\";}}}}s:14:\"EventsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/EventResponse\";}}}}s:17:\"GroupUserResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}s:9:\"firstname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"Ada\";}s:8:\"lastname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Lovelace\";}s:7:\"userUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"RouteDeviceRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"deviceId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"deviceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}}}s:16:\"PortingsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PortingResponse\";}}}}s:14:\"GroupsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/GroupResponse\";}}}}s:24:\"InternalContactsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InternalContactResponse\";}}}}s:27:\"CreateExternalDeviceRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"External
+  phone of Grace Hopper\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:14:\"DeviceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"REGISTER\";i:1;s:6:\"MOBILE\";i:2;s:8:\"EXTERNAL\";}}s:6:\"online\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"dnd\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:16:\"activePhonelines\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:12:\"activeGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}}}s:21:\"PortingNumberResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:19:\"ChangeDeviceRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"dnd\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:18:\"emergencyAddressId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:21:\"SetSmsCallerIdRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"defaultNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:19:\"CreateDeviceRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"REGISTER\";i:1;s:6:\"MOBILE\";i:2;s:8:\"EXTERNAL\";}}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}}}s:10:\"TacRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"accepted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:32:\"SetBlockAnonymousSettingsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:6:\"target\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"REJECT\";i:1;s:9:\"VOICEMAIL\";}}}}s:45:\"AddVoicemailEmailVoicemailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"email\";i:1;s:11:\"voicemailId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"voicemailId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"v0\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:20:\"AddDirectDialRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"userId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}s:6:\"number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ActivateSimRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"simId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"1234567\";}}}s:27:\"CreateRegisterDeviceRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}}}s:24:\"VerifySmsCallerIdRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:16:\"verificationCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"CredentialsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"sipServer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"outboundProxy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"sipServerWebsocketUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"WelcomeResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:17:\"VoicemailResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"v0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"Voicemail
+  of Grace Hopper\";}s:7:\"timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:20;}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"transcription\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"canTranscribe\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:12:\"greetingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"activeGreetingAlias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"activeGreetingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"accessNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"50000\";}}}s:27:\"RequestPasswordResetRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"FaxlineCallerIdRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4921112345678\";}}}s:22:\"SendFaxSessionResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"sessionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"AccountResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Love
+  sipgate\";}s:15:\"mainProductType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:10:{i:0;s:9:\"AFFILIATE\";i:1;s:16:\"FORMER_AFFILIATE\";i:2;s:5:\"BASIC\";i:3;s:12:\"FORMER_BASIC\";i:4;s:10:\"SIMQUADRAT\";i:5;s:17:\"FORMER_SIMQUADRAT\";i:6;s:4:\"TEAM\";i:7;s:11:\"FORMER_TEAM\";i:8;s:8:\"TRUNKING\";i:9;s:15:\"FORMER_TRUNKING\";}}s:7:\"logoUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"verified\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:18:\"ForwardingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Accounting
+  group\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"p1\";}s:7:\"timeout\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:15:\"ApiUrlsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":63:{s:10:\"accountUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"accountVerifiedUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"addressUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"addressesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"addressNumbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:34:\"authorizationOauthClientsSecretUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:28:\"authorizationOauthClientsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:26:\"authorizationOauthTokenUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"authorizationTokenUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"balanceUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"contactsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"internalContactsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"deviceCallerIdUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"deviceUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:28:\"devicesTariffAnnouncementUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:26:\"devicesSingleRowDisplayUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"deviceSimOrdersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"devicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"faxlinesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"faxlineUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"faxlineNumbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"groupsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"groupUserUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"groupNumbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"historyEntryUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"historyUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"notificationsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"numberUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"numbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"addDirectDialUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"changeDirectDialUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"deleteDirectDialUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"phonelineUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:26:\"phonelineBlockAnonymousUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"phonelineBusyOnBusyUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"phonelineDevicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"phonelineForwardingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"phonelineNumbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:31:\"phonelinesParallelForwardingUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:32:\"phonelinesParallelForwardingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"phonelineSipgateIoUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"phonelineSipgateIoLogUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:29:\"phonelineVoicemailGreetingUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:30:\"phonelineVoicemailGreetingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"phonelineVoicemailUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"phonelineVoicemailsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"phonelinesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"portingUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"portingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"restrictionsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"sessionsCallUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"settingsSipgateioUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"smsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"smsCallerIdsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"translationsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"userInfoUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"userUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"userDefaultDeviceUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"userDevicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"userExternalDevicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"userMobileDevicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"userRegisterDevicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"usersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"UsersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/UserResponse\";}}}}s:12:\"FaxSmsTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"1337\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}}}s:25:\"TariffAnnouncementRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:15:\"NumbersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/NumberResponseWithEndpoint\";}}}}s:27:\"ParallelForwardingsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ParallelForwardingResponse\";}}}}s:21:\"ChangePasswordRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"passwordRepeat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"CallerIdResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:34:\"SetSipgateIoAccountSettingsRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"incomingUrl\";i:1;s:11:\"outgoingUrl\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"incomingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:39:\"https://io.sipgate.beer/my/incoming/url\";}s:11:\"outgoingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://io.sipgate.rehab/my/outgoing/url\";}}}s:6:\"Number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:15:\"SetAliasRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"Theodore
+  Sturgeon's connection\";}}}s:14:\"FaxEmailTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}}}s:36:\"AddFaxReportEmailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"email\";i:1;s:9:\"faxlineId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"faxlineId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:15:\"DevicesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/DeviceResponse\";}}}}s:22:\"ExternalDeviceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"VoIP
+  phone of Grace Hopper\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"REGISTER\";i:1;s:6:\"MOBILE\";i:2;s:8:\"EXTERNAL\";}}s:6:\"online\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:3:\"dnd\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:16:\"activePhonelines\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:12:\"activeGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ActiveRouting\";}}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:23:\"InternalContactResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:39:\"0a50261ebd1a390fed2bf326f2673c145582a63\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Ada
+  Lovelace\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"mobile\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"landline\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"fax\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"directdial\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:26:\"AccountVerificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:16:\"verificationCode\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:16:\"verificationCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"ABC123\";s:8:\"readOnly\";b:1;}}}s:26:\"TariffAnnouncementResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:14:\"SmsEmailTarget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}}}s:17:\"GreetingsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/GreetingResponse\";}}}}s:23:\"FaxlineCallerIdResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:24:\"SingleRowDisplayResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:16:\"GreetingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"42\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"My
+  Greeting\";}s:11:\"greetingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"https://www.example.com/greeting.mp3\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:44:\"AddVoicemailSmslVoicemailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"number\";i:1;s:11:\"voicemailId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"voicemailId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"v0\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:28:\"AddFaxSmsNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:9:\"direction\";i:1;s:9:\"faxlineId\";i:2;s:6:\"number\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"faxlineId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:12:\"UserResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}s:9:\"firstname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"Ada\";}s:8:\"lastname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Lovelace\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"ada.lovelace@sipgate.love\";}s:13:\"defaultDevice\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"e0\";}s:5:\"admin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:29:\"AddCallSmsNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:5:\"cause\";i:1;s:9:\"direction\";i:2;s:10:\"endpointId\";i:3;s:6:\"number\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"e0/p0\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"INCOMING\";}s:5:\"cause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"MISSED\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:13:\"LinksResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":40:{s:11:\"accountsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"accountTopUpUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"adminGroupsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"adminIvrSettings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"adminProductSettingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"adminPublicPhonesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"adminUsersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"affiliateUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"appsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"basicUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"bookConnectionUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"bookFaxlineUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"bookPhonelineUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"bookPhonenumberUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"conferenceUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"contactsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"dashboardUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"faxAppUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"faxRescueUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"featureStoreUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"feedbackFormUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"forwardingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:29:\"helpdeskPhoneConfigurationUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"helpdeskUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:26:\"legacyTokenAuthenticateUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"loginUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"logoutUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"notificationsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"personalSettingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"phonestatsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"rescueUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"simquadratUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"startUpPageUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"supportUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"teamUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"tokenAuthenticateUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"trunkingUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"userSettingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"mnpFaqUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"sendFaxUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:28:\"ContractRestrictionsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/RestrictionItem\";}}}}s:18:\"SmsCallerIdRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"phonenumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}}}s:17:\"PhonelineResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"p0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Alan
+  Turing\";}s:17:\"blockAnonymousUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"busyOnBusyUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"devicesUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"forwardingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"numbersUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"parallelForwardingsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"voicemailsUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ContingentResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"DATA_FAST\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:2500;}s:4:\"used\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1000;}s:4:\"left\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1500;}s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"KILOBYTE\";}s:7:\"expires\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2016-02-10T14:19:39Z\";}}}s:23:\"ChangeDirectDialRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"userId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"w0\";}s:6:\"number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:29:\"VoicemailNotificationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"endpointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"f0/v0/p0\";}s:13:\"endpointAlias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"Fax/Voicemail
+  of Grace Hopper\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/EmailTarget\";}}s:3:\"sms\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SmsTarget\";}}}}s:17:\"SendWebSmsRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:7:\"message\";i:1;s:9:\"recipient\";i:2;s:5:\"smsId\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"smsId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"s0\";}s:9:\"recipient\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:155:\"Lorem
+  ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+  invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\";}}}s:26:\"ParallelForwardingResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"x0\";}s:5:\"alias\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"Bjarne
+  Stroustrup's mobile\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"+4915799912345\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:17:\"AddressesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AddressResponse\";}}}}s:20:\"GroupNumbersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/NumberResponse\";}}}}s:30:\"PhonelineSipgateIoLogsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/PhonelineSipgateIoLogResponse\";}}}}s:30:\"AddFaxEmailNotificationRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:9:\"direction\";i:1;s:5:\"email\";i:2;s:9:\"faxlineId\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"faxlineId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"f0\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"INCOMING\";i:1;s:8:\"OUTGOING\";}}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"grace.hopper@example.com\";}}}s:16:\"ImportCSVRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"base64Content\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:108:\"Zmlyc3RuYW1lLGxhc3RuYW1lLG51bWJlcgpBZGEsTG92ZWxhY2UsKzQ5MTU3OTk5MTIzNDUKQWxhbixUdXJpbmcsKzQ5MTU3OTk5MTIzNDUK\";}}}s:15:\"ContactResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b3d9af4a-78f9-11e6-8b77-86f30ca893d3\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Ada
+  Lovelace\";}s:7:\"picture\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"4AAQSkZJRgABAQAAAQABAAD...\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/EMailResponse\";}}s:7:\"numbers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/NumberResponse\";}}s:9:\"addresses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AddressResponse\";}}s:12:\"organization\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:16:\"ContactsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ContactResponse\";}}}}s:19:\"ImportGoogleRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"EMailResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"user@example.com\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}"
+...

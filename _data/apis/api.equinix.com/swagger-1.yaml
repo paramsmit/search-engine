@@ -1,0 +1,1640 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:33:\"Equinix Cloud Exchange
+  Seller API\";s:7:\"version\";s:3:\"3.0\";s:5:\"title\";s:17:\"API Documentation\";s:14:\"termsOfService\";s:39:\"https://developer.equinix.com/terms-use\";s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:19:\"Equinix
+  Api Support\";s:5:\"email\";s:23:\"api-support@equinix.com\";}}"
+host: api.equinix.com
+paths:
+  /oauth2/v1/token:
+    post:
+      tags:
+      - Access Token
+      summary: Returns Oauth2 Access Token
+      description: The ECX Fabric APIs use a custom per request authentication system.
+        All calls to the API must use the API Oauth key that can be obtained by calling
+        the authentication API. In the case of an incorrect key, the appropriate error
+        message will be returned.
+      operationId: getAccessToken
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/OAuthRequest'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/OAuthResponse'
+        400:
+          description: Please enter a valid client id/client secret/username/password
+            and try again
+          schema:
+            $ref: '#/definitions/OAuthErrorResponse'
+  /ecx/v3/l2/common/metros:
+    get:
+      tags:
+      - Metros
+      summary: Returns list of all metros
+      description: The Get Metros API allows ECX participants to either retrieve a
+        list of all metros where they have ports or to retrieve a list of all metros
+        where ECX is enabled, depending on the API parameters.
+      operationId: getMetrosUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/GETCommonMetroResp'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ecx/v3/port/userport:
+    get:
+      tags:
+      - Ports
+      summary: Fetch List of VirtualPorts
+      description: The Get Ports API allow ECX participants to retrieve a list of
+        all their Ports assigned to their customer id (known as uuID). This is useful
+        and necessary when creating connections as all connections within the ECX
+        platform are associated with the customerufffds port and require the port
+        id when calling the Post Connections API. Detailed information about all ports
+        are returned including the encapsulation (Dot1Q or QinQ), the metro and region
+        where the ports are located, port size/bandwidth, and other pertinent information.
+      operationId: getPortInfoUsingGET_2
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      responses:
+        200:
+          description: Successfully retrieved list
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserPortResObj'
+        401:
+          description: You are not authorized to view the resource
+        403:
+          description: Accessing the resource you were trying to reach is forbidden
+        404:
+          description: The resource you were trying to reach is not found
+  /ecx/v3/l2/serviceprofiles:
+    get:
+      tags:
+      - Service Profiles
+      summary: Returns all service profiles
+      description: The GET Service Profiles API will return detailed information about
+        all ECX service profiles. The parameters include a state field that can be
+        set to one of the following- pending approval, approved, rejected or deleted.
+        The information returned via the API includes all information about the service
+        profiles as well as the ports associated with each of these profiles.
+      operationId: getAllSellerProfileUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: pageNumber
+        in: query
+        description: page number
+        required: false
+        type: integer
+        default: 0
+        format: int32
+      - name: pageSize
+        in: query
+        description: total number of records
+        required: false
+        type: integer
+        default: 20
+        format: int32
+      - name: state
+        in: query
+        description: state of the profile requested
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - PENDING_APPROVAL
+          - APPROVED
+          - REJECTED
+          - DELETED
+        collectionFormat: multi
+        enum:
+        - PENDING_APPROVAL
+        - APPROVED
+        - REJECTED
+        - DELETED
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetServiceprofilesResp'
+        204:
+          description: Record Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+      - Service Profiles
+      summary: Create Service profile for l2
+      description: This is the API used to create a new service profile which allows
+        an ECX participant to offer their services on the ECX Fabric platform. The
+        API has parameters such as what bandwidths to make available, what information
+        to request from customers wishing to connect, the type of service profiles
+        being created (private/public) and other information about how an ECX participant
+        may want to offer their services. Please refer to the ECX documentation for
+        more information about the creation of service profiles.
+      operationId: createServiceProfileUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - in: body
+        name: profileModel
+        description: profileModel
+        required: true
+        schema:
+          $ref: '#/definitions/ProfileModel'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PostServiceprofilesResponse'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+      - Service Profiles
+      summary: Update Service profile for l2
+      description: This API allows ECX participants to make changes to their existing
+        Layer 2 service profile. The payload includes all the fields required for
+        creation of a service profile but will include the updated fields that are
+        allowed to be changed. For example, participants have the ability to set a
+        threshold percentage in their service profile for which they will be notified
+        if the allocated/purchased bandwidth on their ports that are associated with
+        that profile exceeds the threshold. This threshold percentage can be changed
+        by using the PUT service profiles API.
+      operationId: updateL2ServiceProfileUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - in: body
+        name: profileModel
+        description: profileModel
+        required: true
+        schema:
+          $ref: '#/definitions/ProfileModel'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PutServiceprofilesResponse'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ecx/v3/l2/serviceprofiles/validateIntegrationId/{integrationId}:
+    get:
+      tags:
+      - Service Profiles
+      summary: Validate integration id
+      description: As some destinations on the ECX Fabric platform have been integrated
+        with the ECX APIs (ex. AWS and Azure), this API is used to validate an integration
+        id and returns all the regions that are associated with that destination (Ex.
+        AWS East Region 1, etc.).
+      operationId: validateIntegrationIdUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: integrationId
+        in: path
+        description: integrationId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ValidateIntegrationIdResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Record Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ecx/v3/l2/serviceprofiles/{uuid}:
+    delete:
+      tags:
+      - Service Profiles
+      summary: 'Delete service profile based on profile name or uuid '
+      description: This API will delete a service profile based on the service profile
+        name or uuid (the unique identifier associated with the service). The expected
+        response would be that the deletion was successful.
+      operationId: deleteProfileByProfileNameOrUUIDUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuids
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DeleteServiceProfileResponse'
+        204:
+          description: Record Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    get:
+      tags:
+      - Service Profiles
+      summary: Returns service profile based on search criteria - profile name or
+        uuid
+      description: This API returns details about all service profiles that meet a
+        particular search criterion which can be either the profile name or the uuid
+        (the unique identifier associated with a service).
+      operationId: getProfileByIdOrNameUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: service profile uuid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetServiceprofilesResContent'
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        404:
+          description: Record Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ecx/v3/l3/serviceprofiles:
+    get:
+      tags:
+      - Service Profiles
+      summary: Returns list of Service Profiles
+      description: This API is used to get all Service Profiles with respective to
+        query params
+      operationId: getAllServiceProfilesUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: state
+        in: query
+        description: state
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - PENDING_APPROVAL
+          - APPROVED
+          - REJECTED
+          - DELETED
+        collectionFormat: multi
+        enum:
+        - PENDING_APPROVAL
+        - APPROVED
+        - REJECTED
+        - DELETED
+      - name: page
+        in: query
+        description: page
+        required: false
+        type: integer
+        format: int32
+        default: 0
+      - name: total
+        in: query
+        description: total
+        required: false
+        type: integer
+        format: int32
+        default: 900
+      - name: noFilterReq
+        in: query
+        description: noFilterReq
+        required: false
+        type: boolean
+      - name: metros
+        in: query
+        description: metros
+        required: false
+        type: array
+        items:
+          type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/GetServiceProfileL3Response'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    post:
+      tags:
+      - Service Profiles
+      summary: Create Service Profile
+      description: This API is used to create Service Profiles
+      operationId: createServiceProfilesUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - in: body
+        name: request
+        description: request
+        required: false
+        schema:
+          $ref: '#/definitions/ServiceProfilesCreateRequest'
+      responses:
+        201:
+          description: created
+          schema:
+            $ref: '#/definitions/ServiceProfilesCreateResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/serviceprofiles/{uuid}:
+    get:
+      tags:
+      - Service Profiles
+      summary: Fetch seller profile based on uuid
+      operationId: getProfileById
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GETServiceProfileModelv3'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    put:
+      tags:
+      - Service Profiles
+      summary: Update service profile
+      description: API returns update seller profile details
+      operationId: editL3ServiceProfileUsingPUT
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      - name: lastUpdatedDate
+        in: header
+        description: last update date
+        required: true
+        type: string
+      - in: body
+        name: serviceProfileModel
+        description: serviceProfileModel
+        required: false
+        schema:
+          $ref: '#/definitions/ServiceProfileModelv3'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PutServiceProfileModelv3'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    delete:
+      tags:
+      - Service Profiles
+      summary: Delete seller profile for given uuid
+      operationId: deleteProfileByIdUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      responses:
+        204:
+          description: Success
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l2/connections/{connId}:
+    patch:
+      tags:
+      - Connections
+      summary: API for seller to perform operations on a virtual circuit by a buyer
+      description: When a buyer creates a connection to a service provider (cloud
+        provider or another ECX participant), that service provider may be required
+        to accept (or reject) the connection ufffd depending on if the service provider
+        has chosen to accept/reject connections. The Patch Connections API can be
+        used by that service provider to accept, reject or confirm the deletion of
+        a virtual circuit connections.
+      operationId: performUserActionUsingPATCH
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: action
+        in: query
+        description: action
+        required: true
+        type: string
+      - name: connId
+        in: path
+        description: connId
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/PatchRequest'
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/PatchConnectionresponse'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ecx/v3/l3/routinginstance:
+    get:
+      tags:
+      - Routing Instance
+      summary: Returns list of routing instances
+      description: This API is used to get all Routing Instances with respective to
+        query params
+      operationId: getAllRoutingInstancesUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: states
+        in: query
+        description: states
+        required: true
+        type: array
+        items:
+          type: string
+          enum:
+          - CREATED
+          - BEING_PROVISIONED
+          - PROVISIONED
+          - BEING_REPROVISIONED
+          - BEING_DEPROVISIONED
+          - ERRORED
+        collectionFormat: multi
+        enum:
+        - CREATED
+        - BEING_PROVISIONED
+        - PROVISIONED
+        - BEING_REPROVISIONED
+        - BEING_DEPROVISIONED
+        - ERRORED
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: true
+        type: integer
+        format: int32
+        default: 1
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: true
+        type: integer
+        format: int32
+        default: 900
+      - name: metroCode
+        in: query
+        description: metroCode
+        required: false
+        type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/GetRoutingInstancesResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    post:
+      tags:
+      - Routing Instance
+      summary: Create Routing Instance
+      description: This API is used to create Routing Instance
+      operationId: createRoutingInstanceUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - in: body
+        name: request
+        description: request
+        required: false
+        schema:
+          $ref: '#/definitions/RoutingInstanceCreateRequest'
+      responses:
+        201:
+          description: created
+          schema:
+            $ref: '#/definitions/RoutingInstanceCreateResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/routinginstance/exist/{metroCode}/{name}:
+    get:
+      tags:
+      - Routing Instance
+      summary: Validates if routing instance name already exists or not.
+      description: This API is used to check Routing Instance name exists or not
+      operationId: isRoutingInstanceExistUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: metroCode
+        in: path
+        description: Metro Code
+        required: true
+        type: string
+      - name: name
+        in: path
+        description: Routing Instance Name
+        required: true
+        type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/RoutingInstanceExistenceResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/routinginstance/{uuid}:
+    delete:
+      tags:
+      - Routing Instance
+      summary: Delete Routing Instance
+      description: This API is used to delete Routing Instance for given uuid
+      operationId: deleteRoutingInstanceUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    patch:
+      tags:
+      - Routing Instance
+      summary: Update Routing Instance
+      description: This API is used to update Routing Instance for given uuid.
+      operationId: updateRoutingInstanceUsingPATCH
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        schema:
+          $ref: '#/definitions/RoutingInstanceUpdateRequest'
+      - name: lastUpdatedDate
+        in: header
+        description: last update date
+        required: true
+        type: string
+      responses:
+        204:
+          description: OK
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/connector:
+    get:
+      tags:
+      - Connector
+      summary: Returns list of connectors
+      description: This API is used to get all Connectors with respective to query
+        params
+      operationId: getAllConnectorsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: states
+        in: query
+        description: states
+        required: true
+        type: array
+        items:
+          type: string
+          enum:
+          - BEING_PROVISIONED
+          - PROVISIONED
+          - BEING_REPROVISIONED
+          - BEING_DEPROVISIONED
+          - ERRORED
+        collectionFormat: multi
+        enum:
+        - BEING_PROVISIONED
+        - PROVISIONED
+        - BEING_REPROVISIONED
+        - BEING_DEPROVISIONED
+        - ERRORED
+      - name: pageNumber
+        in: query
+        description: pageNumber
+        required: true
+        type: integer
+        format: int32
+        default: 1
+      - name: pageSize
+        in: query
+        description: pageSize
+        required: true
+        type: integer
+        format: int32
+        default: 900
+      - name: metroCode
+        in: query
+        description: metroCode
+        required: false
+        type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/GetConnectorsResponse'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    post:
+      tags:
+      - Connector
+      summary: Create Connector
+      description: This API is used to create Connector.
+      operationId: createConnectorUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - in: body
+        name: request
+        description: request
+        required: true
+        schema:
+          $ref: '#/definitions/ConnectorCreateRequest'
+      responses:
+        201:
+          description: created
+          schema:
+            $ref: '#/definitions/ConnectorCreateResponse'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/connector/exist/{metroCode}/{name}:
+    get:
+      tags:
+      - Connector
+      summary: Validate connector name already exists or not
+      description: This API is used to check connector name exists or not
+      operationId: isConnectorExistUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: metroCode
+        in: path
+        description: Metro Code
+        required: true
+        type: string
+      - name: name
+        in: path
+        description: Connector Name
+        required: true
+        type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/ConnectorExistenceResponse'
+        204:
+          description: No Content
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l3/connector/{uuid}:
+    delete:
+      tags:
+      - Connector
+      summary: Delete Connector
+      description: This API is used to delete Connector for given uuid
+      operationId: deleteConnectorUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      responses:
+        204:
+          description: OK
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+    patch:
+      tags:
+      - Connector
+      summary: Update connector
+      description: This API is used to update connector for given uuid
+      operationId: updateConnectorUsingPATCH
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: uuid
+        in: path
+        description: uuid
+        required: true
+        type: string
+      - name: lastUpdatedDate
+        in: header
+        description: last updated date
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: request
+        schema:
+          $ref: '#/definitions/ConnectorUpdateModel'
+      responses:
+        204:
+          description: OK
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        405:
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+        503:
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/GeneralErrorMessage'
+  /ecx/v3/l2/seller/connections:
+    get:
+      tags:
+      - Connections
+      summary: As a seller, fetch all connections created on my services profiles.n
+      description: The Get Connections API (Seller) will retrieve all connections
+        to a specified service profile. This API will return details regarding all
+        connections where the specified service profile is a destination on the ECX
+        platform. For example, as an ECX participant, you may wish to make your service
+        available on the ECX platform for other partners or customers to connect to
+        your services. These partners or customers will create connections to your
+        services as a destination from their ports on the ECX (sometimes referred
+        to as the origin of the connection). This is useful to monitor the number
+        of connections on existing ports and the amount of bandwidth consumed by these
+        connections.
+      operationId: getSellerConnectionsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: Specify the OAuth Bearer token with prefix 'Bearer '.
+        required: true
+        type: string
+        x-prefix: 'Bearer '
+      - name: status
+        in: query
+        description: connection status
+        required: false
+        type: array
+        items:
+          type: string
+          enum:
+          - PROVISIONED
+          - PENDING_APPROVAL
+          - PROVISIONING
+          - ORDERING
+          - REJECTED
+          - APPROVED
+          - PENDING_DEPROVISIONING
+          - PENDING_DELETE
+          - DELETED
+          - NOT_PROVISIONED
+          - MIGRATION_STARTED
+          - MIGRATION_DEPROVISIONED
+          - MIGRATION_DEPROVISION_FAILED
+          - MIGRATION_VLAN_RELEASED
+          - MIGRATION_VLAN_RELEASE_FAILED
+          - MIGRATION_VLAN_GENERATED
+          - MIGRATION_VLAN_GENERATION_FAILED
+          - MIGRATION_PROVISION_FAILED
+        collectionFormat: multi
+        enum:
+        - PROVISIONED
+        - PENDING_APPROVAL
+        - PROVISIONING
+        - ORDERING
+        - REJECTED
+        - APPROVED
+        - PENDING_DEPROVISIONING
+        - PENDING_DELETE
+        - DELETED
+        - NOT_PROVISIONED
+        - MIGRATION_STARTED
+        - MIGRATION_DEPROVISIONED
+        - MIGRATION_DEPROVISION_FAILED
+        - MIGRATION_VLAN_RELEASED
+        - MIGRATION_VLAN_RELEASE_FAILED
+        - MIGRATION_VLAN_GENERATED
+        - MIGRATION_VLAN_GENERATION_FAILED
+        - MIGRATION_PROVISION_FAILED
+      - name: metroCode
+        in: query
+        description: Seller metro code
+        required: false
+        type: string
+      - name: portName
+        in: query
+        description: Seller port name
+        required: false
+        type: string
+      - name: state
+        in: query
+        description: Seller connection status
+        required: false
+        type: string
+      - name: profileId
+        in: query
+        description: Seller service profile id
+        required: false
+        type: string
+      - name: pageNumber
+        in: query
+        description: page number
+        required: false
+        type: integer
+        default: 0
+        format: int32
+      - name: pageSize
+        in: query
+        description: total number of records
+        required: false
+        type: integer
+        default: 20
+        format: int32
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetSellerCOnResp'
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponseArray'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":73:{s:20:\"EnabledFeaturesModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"cloudReach\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:25:\"GetOptionalNetworkService\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:18:\"biForwardDetection\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:25:\"customerProvidedPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:25:\"dedicatedSubscriptionUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"
+  \";}s:7:\"policer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Policer\";}}}s:7:\"Policer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"speed\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:200;}s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"MB\";}}}s:26:\"ConnectorExistenceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"exist\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:20:\"IncomingSubscription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"companyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Equinix\";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-03-20T16:01:40.614Z\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-03-20T16:06:16.442Z\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:47:\"PM-SFDC-RESTRICTIVE-A
+  to PAE-TEST-RESTRICTIVE-A\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/RIIncomingSubOptionalNetwork\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PROVISIONED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxx9fxxx-xxxx-4c3c-xxxx-xxx801cxxxxx\";}}}s:28:\"RIIncomingSubOptionalNetwork\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:17:\"policerSpeedValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:16:\"policerSpeedUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"MB\";}s:16:\"isEqxEnforcedNat\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"isPerformNat\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:13:\"isCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:12:\"natEqAddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"64.191.252.144/31,64.191.252.146/31\";}s:22:\"dedicatedConnectorName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:50:\"PM-SFDC-RESTRICTIVE-A
+  to Equinix_SVC-SE3-CX-PRI-01\";}s:22:\"dedicatedConnectorUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-1fac-11e7-b279-xxxxxxxxxxxx\";}}}s:23:\"ConnectorCreateResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-1fac-11e7-b279-xxxxxxxxxxxx\";}}}s:29:\"RoutingInstanceCreateResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"primaryRIUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-1fac-11e7-b279-xxxxxxxxxxxx\";}s:15:\"secondaryRIUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-1fac-11e7-b279-xxxxxxxxxxxx\";}}}s:9:\"Throwable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"cause\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Throwable\";}s:16:\"localizedMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"stackTrace\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/StackTraceElement\";}}s:10:\"suppressed\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Throwable\";}}}}s:27:\"GetRoutingInstancesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"pageNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:1;}s:8:\"pageSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:87;}s:16:\"routingInstances\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/RoutingInstancev3\";}}s:10:\"totalCount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:87;}}}s:22:\"OptionalNetworkService\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"biForwardDetection\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:7:\"policer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Policer\";}}}s:20:\"OutGoingSubscription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"companyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"SVC
+  TEST GLOBAL\";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-10-20T14:48:13.303Z\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-10-20T15:19:48.000Z\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:44:\"RI-TEST_PNI_POC_CUST
+  to RI-DC_TEST-SELLER-L3\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/RIOutSubOptionalNetwork\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DELETED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}}}s:23:\"RIOutSubOptionalNetwork\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:17:\"policerSpeedValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:16:\"policerSpeedUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"MB\";}s:16:\"isEqxEnforcedNat\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"isPerformNat\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:13:\"isCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:12:\"natEqAddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"198.32.102.8/31,198.32.102.10/31\";}s:22:\"dedicatedConnectorName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:44:\"RI-TEST_PNI_POC_TEST
+  to RI-DC_TEST-SELLER-L3\";}s:22:\"dedicatedConnectorUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}}}s:14:\"ConnectorModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":28:{s:15:\"bgpIpSubnetSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:31;}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Test\";}s:14:\"createdByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:17:\"createdByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"reg-003
+  01\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-01-12T00:16:41.571Z\";}s:4:\"ctag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:46;}s:11:\"customerAsn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"777\";}s:20:\"customerBgpPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"67.223.181.73\";}s:10:\"equinixAsn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"25658\";}s:19:\"equinixBgpPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"67.223.181.72\";}s:19:\"isLastConnectorOnRI\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:8:\"isTagged\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"test\";}s:18:\"lastUpdatedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:21:\"lastUpdatedByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"01\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-01-12T00:16:44.126Z\";}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"SV\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"test-reg-sv-1\";}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:22:\"optionalNetworkService\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/GetOptionalNetworkService\";}s:8:\"portName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"TES-003-CX-SV1-L-QinQ-TES-PRI-1G-17\";}s:8:\"portUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}s:6:\"riName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"test-reg-sv-1\";}s:6:\"riUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}s:4:\"stag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:45;}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PROVISIONED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"Fri
+  Apr 13 05:31:37 GMT 2018\";}}}s:32:\"RoutingInstanceExistenceResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"exist\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:17:\"StackTraceElement\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fileName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lineNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"methodName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"nativeMethod\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:24:\"GETServiceProfileModelv3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":24:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:37:\"xxxxxxxxx-7f7c-487e-9c12-xxxxxxxx866f\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"L3_PROFILE_NON_CLOUDREACH\";}s:12:\"authKeyLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Authorization
+  ID\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/enabledFeatures\";}s:16:\"allowCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"speedBands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SpeedBand\";}}s:35:\"onProfileApprovalRejectNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";N;}s:14:\"additionalInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdditionalInfoModel\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/OptionalNetworkServiceModel\";}s:22:\"routingInstanceDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/routingInstanceDetailsv3\";}s:19:\"activeSubscriptions\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"L3_PROFILE_NON_CLOUDREACH1\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"ECX_PORTAL\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DELETED\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-13T05:20:57.238Z\";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:17:\"createdByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:14:\"createdByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-13T18:15:58.114Z\";}s:21:\"lastUpdatedByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:18:\"lastUpdatedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:11:\"companyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}}}s:24:\"PutServiceProfileModelv3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}}}s:24:\"routingInstanceDetailsv3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"RI-TEST-SV-ad\";}s:12:\"sellerRegion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:5:\"metro\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"SV\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PROVISIONED\";}}}s:25:\"routingInstanceDetailsv31\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"b2dbxxxx-xxxx-11xx-b3xx-xxxxxxxxxxxx\";}}}s:15:\"enabledFeatures\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"cloudReach\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:21:\"ServiceProfileModelv3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"L3_PROFILE_NON_CLOUDREACH\";}s:16:\"statusForDisplay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:11:\"serviceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"CSCL3RI\";}s:12:\"authKeyLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Authorization
+  ID\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/EnabledFeaturesModel\";}s:16:\"allowCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"speedBands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SpeedBand\";}}s:35:\"onProfileApprovalRejectNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:14:\"additionalInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdditionalInfoModel\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/optionalNetworkServicesv3\";}s:22:\"routingInstanceDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/routingInstanceDetailsv31\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"L3_PROFILE_NON_CLOUDREACH1\";}}}s:25:\"optionalNetworkServicesv3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:20:\"filterIncomingRoutes\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:27:\"OptionalNetworkServiceModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:30:\"equinixRoutesNetworkPrefixSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:24;}s:20:\"filterIncomingRoutes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:31:\"RiServiceProfileOptionalNetwork\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:30:\"equinixRoutesNetworkPrefixSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:20:\"filterIncomingRoutes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:16:\"RiServiceProfile\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-09-13T16:26:02.000Z\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-09-18T21:37:02.000Z\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"RI-DC_TEST-SELLER-L3\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/RiServiceProfileOptionalNetwork\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DELETED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-297f-11e8-8ad1-xxxxxxxxxxxx\";}}}s:21:\"GetConnectorsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"connectors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectorModel\";}}s:10:\"pageNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:1;}s:8:\"pageSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:8;}s:10:\"totalCount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:8;}}}s:19:\"AdditionalInfoModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"bgpCommunityTagUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"test\";}s:13:\"inTrialMetros\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";a:0:{}}}}}s:28:\"RoutingInstanceUpdateRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"TEST-2-SV-edit\";}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"errorCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"ErrorCode\";}s:12:\"errorMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Error
+  message\";}s:8:\"moreInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"More
+  Info\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Property\";}}}s:18:\"ErrorResponseArray\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ErrorResponse\";}}s:17:\"RoutingInstancev3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":22:{s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PROVISIONED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-1fac-11e7-b279-xxxxxxxxxxxx\";}s:3:\"asn\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:8075;}s:19:\"bgpAuthorizationKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"4567
+  \";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:14:\"createdByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:17:\"createdByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Sandbox
+  User\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-04-12T18:20:57.546Z\";}s:10:\"equinixAsn\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:31425;}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:18:\"lastUpdatedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:21:\"lastUpdatedByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-04-12T11:21:17.000Z\";}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"DC\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"TEST-SEC-DC\";}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:9:\"routeType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Public\";}s:22:\"optionalNetworkService\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/RIOptionalNetwork\";}s:10:\"connectors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/RiConnector\";}}s:21:\"incomingSubscriptions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IncomingSubscription\";}}s:21:\"outgoingSubscriptions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/OutGoingSubscription\";}}s:15:\"serviceProfiles\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/RiServiceProfile\";}}}}s:17:\"RIOptionalNetwork\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:22:\"filter_incoming_routes\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:13:\"seller_config\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"prefix_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:9:\"cm_metros\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";a:2:{i:0;s:2:\"DA\";i:1;s:2:\"DC\";}}}}}s:11:\"RiConnector\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"test-us\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-08-24T07:50:48.005Z\";}s:4:\"ctag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:0;}s:6:\"device\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"xxxxxE657Cxxxxxxxxxx13897896xxxx\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-03-28T23:25:28.934Z\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:41:\"RI-12-CH-BUYER-TEST
+  to TEST-CH2-CX-TEs-02\";}s:8:\"portName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"TEST-CH2-CX-TES-02\";}s:4:\"stag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:10;}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DELETED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-88a0-11e7-b893-xxxxxxxxxxxx\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/RIConnectorOptionalNetwork\";}}}s:26:\"RIConnectorOptionalNetwork\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:18:\"biForwardDetection\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:23:\"isUserProvidedPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:17:\"policerSpeedValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:0;}s:25:\"dedicatedSubscriptionUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:20:\"customerBgpPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"67.223.180.59\";}s:16:\"policerSpeedUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"
+  \";}s:19:\"equinixBgpPeeringIp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";s:13:\"67.223.180.58\";}s:25:\"dedicatedSubscriptionName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"
+  \";}s:15:\"bgpIpSubnetSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:31;}}}s:9:\"SpeedBand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"speed\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"example\";i:0;}s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"MB\";}}}s:12:\"ProfileModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":27:{s:19:\"additionalBuyerInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdditionalBuyerInfo\";}}s:15:\"alertPercentage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"example\";i:10;}s:16:\"allowCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:12:\"apiAvailable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"authKeyLabel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Authorization
+  Key\";s:11:\"description\";s:80:\"specify the authenticaion key label that will
+  be shown while creating connection\";}s:23:\"connectionAccessibility\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"HYBRID\";s:4:\"enum\";a:3:{i:0;s:6:\"PUBLIC\";i:1;s:7:\"PRIVATE\";i:2;s:6:\"HYBRID\";}}s:19:\"connectionNameLabel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Connection
+  Names\";s:11:\"description\";s:80:\"specify the aConnection Names label that will
+  be shown while creating connection\";}s:9:\"ctagLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"C-Tag\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"this
+  profile is test profile example\";}s:25:\"equinixManagedPortAndVlan\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:44:\"specify
+  if profile is equinix managed or not\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EnabledFeatures\";}s:13:\"integrationId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"34254\";}s:9:\"namedTags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"ports\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/PortDetail\";}}s:7:\"private\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:18:\"requiredRedundancy\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;s:11:\"description\";s:59:\"spacify
+  if the redundancy of the connection required or not\";}s:10:\"speedBands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SpeedBand\";}}s:12:\"speedFromAPI\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:7:\"tagType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"BOTH\";s:4:\"enum\";a:3:{i:0;s:6:\"CTAGED\";i:1;s:4:\"BOTH\";i:2;s:5:\"NAMED\";}}s:4:\"uuid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxx02e-c2f9-xxxx-xxxx-9fba9e7xxxxx\";s:11:\"description\";s:27:\"need
+  only in case of update\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"vlanSameAsPrimary\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;s:11:\"description\";s:41:\"specify
+  if vlan is same as primary or not\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"ServiceProfileNoDuplicateName\";s:11:\"description\";s:23:\"name
+  of service profile\";}s:32:\"onBandwidthThresholdNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:30:\"sandboxuser@examplecompany.com\";}}}s:35:\"onProfileApprovalRejectNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:30:\"sandboxuser@examplecompany.com\";}}}s:33:\"onVcApprovalRejectionNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:13:\"test@test.com\";}}}s:17:\"privateUserEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:30:\"sandboxuser@examplecompany.com\";}}}}}s:19:\"AdditionalBuyerInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:14:\"captureInEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:8:\"datatype\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"STRING\";s:4:\"enum\";a:6:{i:0;s:7:\"INTEGER\";i:1;s:7:\"BOOLEAN\";i:2;s:4:\"LONG\";i:3;s:5:\"FLOAT\";i:4;s:6:\"DOUBLE\";i:5;s:6:\"STRING\";}}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"custBGPAssn
+  description\";}s:9:\"mandatory\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"custBGPAssn\";}}}s:15:\"EnabledFeatures\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"cloudReach\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"testProfile\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:10:\"PortDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"crossConnectId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"xyz:crossConnect:ws36onof3dbxv4bfywjy52u\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5E89B4A3FxxxxxxxxxxxxACC88C08A35\";}s:7:\"inTrail\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"SV\";}s:12:\"sellerRegion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"us-east-1\";}s:23:\"sellerRegionDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Added
+  for AWS\";}s:2:\"xa\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:29:\"ValidateIntegrationIdResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"Example
+  company API integration\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:10:\"redundancy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"SINGLE\";}s:13:\"sellerRegions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/EquinixRegion\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"VALID\";}}}s:8:\"Metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"crossconnect\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"true\";}}}s:13:\"EquinixRegion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"interconnectionRegion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"regionData\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SellerRegion\";}}}}s:12:\"SellerRegion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"Phoenix
+  region obmc\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"us-phoenix-1\";}}}s:10:\"MetaDataV2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}}}s:27:\"GetServiceProfileL3Response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:20;}s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/GETServiceProfileModelv3\";}}s:10:\"pageNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:10:\"isLastPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:11:\"isFirstPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:28:\"ServiceProfilesCreateRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"L3_PROFILE_NON_CLOUDREACH\";}s:16:\"statusForDisplay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:11:\"serviceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"CSCL3RI\";}s:12:\"authKeyLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Authorization
+  ID\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/EnabledFeaturesModel\";}s:16:\"allowCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"speedBands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SpeedBand\";}}s:35:\"onProfileApprovalRejectNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:14:\"additionalInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdditionalInfoModel\";}s:23:\"optionalNetworkServices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/optionalNetworkServicesv3\";}s:22:\"routingInstanceDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/routingInstanceDetailsv3\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"L3_PROFILE_NON_CLOUDREACH1\";}}}s:29:\"ServiceProfilesCreateResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-9b29-4832-9524-xxxxxxxxxxxx\";}}}s:28:\"RoutingInstanceCreateRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"asn\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:34;}s:13:\"primaryRIName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"TEST-1-SV\";}s:15:\"secondaryRIName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"TEST-2-SV\";}s:19:\"bgpAuthorizationKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"xxx\";}s:9:\"routeType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Public\";}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"SV\";}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}}}s:22:\"ConnectorCreateRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:49:\"RI-2-SV-TEST
+  to TEST-CX-SV1-NL-QinQ-TES-PRI-1G-69\";}s:6:\"riUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-5b94-4d6e-934b-xxxxxxxxxxxx\";}s:8:\"portUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:36:\"xxxxxxxx-1f36-f360-98e0-xxxxxxxxxxxx\";}s:8:\"isTagged\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:4:\"stag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:23;}s:4:\"ctag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:32;}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:22:\"OptionalNetworkService\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"biForwardDetection\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:7:\"policer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Policer\";}}}}}s:19:\"GeneralErrorMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/GeneralErrorMessageDetail\";}}s:25:\"GeneralErrorMessageDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"errorCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"ERROR-CODE\";}s:12:\"errorMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"ERROR-MESSAGE\";}s:8:\"moreInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"MORE-INFO\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PROPERTY\";}}}s:20:\"ConnectorUpdateModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:58:\"TEST-11-SV-ad
+  to TES-003-CX-SV1-L-Dot1q-TES-PRI-1G-21-edit\";}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:22:\"optionalNetworkService\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/OptionalNetworkService\";}}}s:18:\"GETCommonMetroResp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Amsterdam\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"AM\";}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"EMEA\";}s:10:\"cloudReach\";O:8:\"stdClass\":1:{s:7:\"example\";a:8:{i:0;s:2:\"LD\";i:1;s:2:\"FR\";i:2;s:2:\"PA\";i:3;s:2:\"DB\";i:4;s:2:\"SK\";i:5;s:2:\"ZH\";i:6;s:2:\"HE\";i:7;s:2:\"ML\";}}}}s:22:\"GetServiceprofilesResp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:20;}s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/GetServiceprofilesResContent\";}}s:10:\"pageNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:10:\"isLastPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2;}s:11:\"isFirstPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:28:\"GetServiceprofilesResContent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":37:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-cdaa-44e7-bd36-xxxxxxxxxxxx\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:45:\"Oracle
+  Cloud Infrastructure -OCI- FastConnect\";}s:18:\"requiredRedundancy\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:12:\"authKeyLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"Virtual
+  Circuit OCID\";}s:19:\"connectionNameLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"Example
+  company Virtual Circuit\";}s:25:\"equinixManagedPortAndVlan\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:13:\"integrationId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"Example-company-CrossConnect-01\";}s:12:\"apiAvailable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:17:\"vlanSameAsPrimary\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:7:\"tagType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"CTAGED\";}s:9:\"ctagLabel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Seller-Side
+  C-Tag\";}s:9:\"namedTags\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:51:\"#/definitions/GetServiceprofilesResContentNamedTags\";}s:15:\"alertPercentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";i:50;}s:35:\"onProfileApprovalRejectNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:63:\"sandboxuser@examplecompany.com,
+  sandboxuser1@examplecompany.com\";}}s:32:\"onBandwidthThresholdNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:63:\"sandboxuser@examplecompany.com,
+  sandboxuser1@examplecompany.com\";}}s:33:\"onVcApprovalRejectionNotification\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:63:\"sandboxuser@examplecompany.com,
+  sandboxuser1@examplecompany.com\";}}s:5:\"ports\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/PortDetail\";}}s:16:\"allowCustomSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:12:\"speedFromAPI\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:23:\"connectionAccessibility\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"HYBRID\";}s:10:\"speedBands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SpeedBand\";}}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"<p>12</p>\";}s:16:\"authorizationKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"APPROVED\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"2017-05-09T08:28:02Z\";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-03T20:28:43.911Z\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"sandboxuser2@examplecompany.com2\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/GetSErvProfRespContentMetadata\";}s:17:\"createdByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:21:\"lastUpdatedByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"sandboxuser\";}s:14:\"createdByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"sandboxuser2@examplecompany.com\";}s:14:\"updatedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"sandboxuser2@examplecompany.com\";}s:18:\"globalOrganization\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Example
+  provider\";}s:16:\"organizationName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"oracle
+  Public Cloud Group \";}s:7:\"private\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/GetservProfResContentFeatures\";}}}s:37:\"GetServiceprofilesResContentNamedTags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"-Microsoft
+  -Public -Private\";}}s:30:\"GetSErvProfRespContentMetadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:15:\"is_release_vlan\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:19:\"limit_auth_key_conn\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:29:\"GetservProfResContentFeatures\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"cloudReach\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"testProfile\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:27:\"PostServiceprofilesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:26:\"PutServiceprofilesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"ecf3b154-xxxx-4b30-xxxx-219xxxx400a0\";}}}s:12:\"OAuthRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"grant_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"client_credentials\";}s:9:\"user_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:13:\"user_password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"password\";}s:9:\"client_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"xxxxxwNHOTkxxxxxuwqWtxxxxIfB3Qyw\";}s:13:\"client_secret\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"xxxxxxqxxxxx3uGy\";}}}s:18:\"OAuthErrorResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"errorDomain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"apps-fqa\";}s:10:\"errorTitle\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"Invalid
+  Username/Password\";}s:9:\"errorCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"S1003\";}s:16:\"developerMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"Invalid
+  Username/Password\";}s:12:\"errorMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:76:\"We
+  didn't recognize the username or password you entered. Please try again..\";}}}s:13:\"OAuthResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"access_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"PgJwBdSitwxxxxxxR8yZ6xxxxx\";}s:13:\"token_timeout\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3599;}s:9:\"user_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.COM\";}s:10:\"token_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Bearer\";}s:13:\"refresh_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:42:\"20t1Qbxxxxx86HsyseyiCxxxxxxxYWcgtaFuxxxxxx\";}s:21:\"refresh_token_timeout\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:5182560;}}}s:16:\"GetSellerCOnResp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"content\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/GetsellerConResContent\";}}s:11:\"isFirstPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:10:\"isLastPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"pageNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:210;}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:20;}}}s:22:\"GetsellerConResContent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":39:{s:18:\"asideEncapsulation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"qinq\";}s:16:\"authorizationKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"xxxxxxxx-xxxx-43a0-xxxx-xxxxxxxxxxxx\";}s:11:\"billingTier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Up
+  to 50 MB\";}s:21:\"buyerOrganizationName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"Example
+  Organisation\";}s:9:\"createdBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:14:\"createdByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:17:\"createdByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"sandbox
+  user\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-03T14:53:42.603Z\";}s:9:\"deletedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:14:\"deletedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:11:\"deletedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-03T14:54:16.185Z\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:18:\"lastUpdatedByEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}s:21:\"lastUpdatedByFullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"sandbox
+  user\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2018-04-03T14:53:42.603Z\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/GetsellerConResContentMetadata\";}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"LD\";}s:16:\"metroDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"London\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"TEST\";}s:13:\"notifications\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}s:8:\"portName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"EXAMPLECOMPANY-XXXX-CX-PRI-01\";}s:8:\"portUUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"66284add-xxxx-1150-xxxx-xxxxxxxxxxxx\";}s:7:\"private\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:19:\"purchaseOrderNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Test\";}s:14:\"redundancyType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"primary\";}s:6:\"remote\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:15:\"sellerMetroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"LD\";}s:22:\"sellerOrganizationName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"EXAMPLE-COMPANY-ECP-IXP-ETHERNET\";}s:17:\"sellerServiceName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Managed
+  Services\";}s:17:\"sellerServiceUUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"53c4b828-xxxx-440b-xxxx-c74973d7c0dd\";}s:5:\"speed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:50;}s:9:\"speedUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"MB\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"NOT_AVAILABLE\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DELETED\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:37:\"52b8e097-xxxx-4a27-xxxx-xxxxxxxxxxxxx\";}s:8:\"vlanCTag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:196;}s:8:\"vlanSTag\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:198;}s:13:\"redundantUUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:38:\"ce7ac5f9-d8b9-xxxx-xxxxx-xxxxxxxxxxxxx\";}}}s:30:\"GetsellerConResContentMetadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:19:\"notification_emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"sandboxuser@examplecompany.com\";}}}}s:12:\"PatchRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:15:\"primaryPortUUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"62637774-xxxx-d580-xxxx-30ac1885134a\";}s:15:\"primaryVlanSTag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"89\";}s:15:\"primaryVlanCTag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"809\";}s:17:\"secondaryPortUUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:37:\"62637774-xxxx-d540-xxxx-xxxxxxxxxxxxx\";}s:17:\"secondaryVlanSTag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"98\";}s:17:\"secondaryVlanCTag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"980\";}s:13:\"rejectComment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"rejected\";}}}s:28:\"DeleteServiceProfileResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:60:\"[698e6100-xxxx-48ee-xxxx-xxxxxxxxxxxxx]
+  successfully deleted\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"SUCCESS\";}}}s:23:\"PatchConnectionresponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"Successfully
+  Approved\";}s:8:\"moreInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:34:\"Redundant
+  connection also approved\";}s:19:\"primaryConnectionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:37:\"7a09ad90-xxxx-4394-xxxx-xxxxxxxxxxxxx\";}s:21:\"secondaryConnectionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:37:\"15490209-xxxx-4aeb-xxxx-xxxxxxxxxxxxx\";}}}s:8:\"UserPort\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/UserPortResObj\";}}s:14:\"UserPortResObj\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":21:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:38:\"99xyZabcd-xxxx-1234-xxxx-xxxxxxxxxxxxx\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"TEST-DC5-EX-PORT4\";}s:15:\"provisionStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"ADDED\";}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"AMER\";}s:6:\"device\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"XXXX\";}s:14:\"totalBandwidth\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:10000000000;}s:6:\"buyout\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:9:\"custOrgId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:7033;}s:3:\"ibx\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"SV5\";}s:9:\"metroCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"SV\";}s:16:\"metroDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Sillicon
+  Valley\";}s:11:\"deviceGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:1;}s:14:\"devicePriority\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Primary\";}s:13:\"encapsulation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Dot1q\";}s:18:\"viewPortPermission\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:22:\"placeVcOrderPermission\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-02-21T22:01:58.000Z\";}s:15:\"lastUpdatedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"2017-02-24T19:12:44.000Z\";}s:13:\"layer3Enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:3:\"lag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:9:\"userPorts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/userPortsObj\";}}}}s:12:\"userPortsObj\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"bandwidth\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:10000000000;}s:14:\"crossConnectId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:20466763;}}}}"
+...

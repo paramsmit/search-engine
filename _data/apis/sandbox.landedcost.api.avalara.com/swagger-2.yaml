@@ -1,0 +1,741 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:26:\"LandedCost Calculation
+  API\";s:11:\"description\";s:828:\"Landed Cost API providing duty rates, calculation,
+  and item harmonization. A set of sample requests are available as a [Postman Collection](https://www.getpostman.com/collections/ad308f6c9351a18c2c12).\n##
+  Basics\n### Timestamps\nTimestamps should be formatted using ISO-8601 to the nearest
+  second, in UTC e.g `2015-06-12T09:17:37Z`\n### Expiries\nAll Requests will have
+  an associated timestamp. The validity for any request is 1 minute to account for
+  any clock-skew. \n## Authorization\nAll API requests require an http header that
+  contains your account ID and your account API Key. During account provisioning,
+  you will be issued an API Key which you must supply with every request.\n### Authorization
+  Header\nTo make an authorized API request, set the following HTTP header: \n`authorization:
+  avalaraapikey id:<accountId> key:<apiKey>`\";s:7:\"version\";s:3:\"3.0\";}"
+host: sandbox.landedcost.api.avalara.com
+basePath: /
+paths:
+  /v3/validate-creds:
+    get:
+      summary: Validate Credentials
+      operationId: validateCreds
+      tags:
+      - Landed Cost Calculation API
+      description: Convenience API to check credentials. This API is purposefully
+        non-performant.
+      responses:
+        200:
+          description: Credentials are valid and account has active Landed Cost subscription.
+        401:
+          description: Unauthorized. Invalid credentials, or no subscription to Landed
+            Cost found.
+  /v3/calculate:
+    post:
+      summary: Calculate Landed Cost
+      x-swagger-router-controller: calculate
+      operationId: calculate
+      tags:
+      - Landed Cost Calculation API
+      description: Returns the fully qualified landed cost calculation for a shipment
+      parameters:
+      - name: request
+        in: body
+        description: The document used to request a fully qualified landedcost calculation
+          for a shipment
+        required: true
+        schema:
+          $ref: '#/definitions/CalculateRequest'
+      responses:
+        200:
+          description: Successful request
+          schema:
+            $ref: '#/definitions/CalculateResponse'
+        default:
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/Error'
+  /v3/rates:
+    post:
+      summary: Get Rates
+      x-swagger-router-controller: rates
+      operationId: rates
+      tags:
+      - Landed Cost Calculation API
+      - Rates API
+      description: Returns rate information given an HS code, source country and destination
+        country
+      parameters:
+      - name: request
+        in: body
+        description: The document used to request rate data for a collection of hs
+          codes
+        required: true
+        schema:
+          $ref: '#/definitions/RatesRequest'
+      responses:
+        200:
+          description: Successful request
+          schema:
+            $ref: '#/definitions/RatesResponse'
+        default:
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/Error'
+  /v3/units:
+    post:
+      summary: Get Rate Units
+      x-swagger-router-controller: rates
+      operationId: units
+      tags:
+      - Landed Cost Calculation API
+      - Rates API
+      description: Returns units used in all rate formulas for given HS codes.nCan
+        optionally be filtered by providing source and destination country codes
+      parameters:
+      - name: request
+        in: body
+        description: The document used to request rate units data for a collection
+          of hs codes
+        required: true
+        schema:
+          $ref: '#/definitions/UnitsRequest'
+      responses:
+        200:
+          description: Successful request
+          schema:
+            $ref: '#/definitions/UnitsResponse'
+        default:
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/Error'
+  /v2/countries:
+    get:
+      summary: Get Countries
+      description: Returns the countries we currently support, along with most common
+        classification system for both import and export.n No request parameters are
+        required for this call. The method returns a full list of supported countries
+      tags:
+      - '[v2]Country and Classification API'
+      operationId: Get countries listings_
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: Successful request
+          schema:
+            $ref: '#/definitions/GetCountriesListingsResponse'
+  /v2/systems:
+    get:
+      summary: Get Systems
+      description: Returns a pair of classification (import and export) systems for
+        trade between two countries
+      tags:
+      - '[v2]Country and Classification API'
+      operationId: Get the System for a Country_
+      produces:
+      - application/json
+      parameters:
+      - name: source
+        in: query
+        required: true
+        x-is-map: false
+        type: string
+        x-example: FR
+        description: The two character ISO code for the source country
+        enum:
+        - AX
+        - AR
+        - AT
+        - BE
+        - BR
+        - BG
+        - CA
+        - IO
+        - CN
+        - HR
+        - CY
+        - CZ
+        - DK
+        - EE
+        - FI
+        - FR
+        - DE
+        - GR
+        - GP
+        - GG
+        - GF
+        - HU
+        - IN
+        - IE
+        - IT
+        - JP
+        - JE
+        - LV
+        - LT
+        - LU
+        - MT
+        - IM
+        - MQ
+        - MX
+        - MC
+        - NL
+        - PY
+        - PL
+        - PT
+        - RE
+        - RO
+        - SM
+        - SK
+        - SI
+        - ES
+        - SE
+        - TK
+        - GB
+        - US
+        - UY
+        - VE
+        - AU
+        - CX
+        - CC
+        - NF
+        - PR
+        - SG
+      - name: destination
+        in: query
+        required: true
+        x-is-map: false
+        type: string
+        x-example: US
+        description: The two character ISO code for the destination country
+        enum:
+        - AX
+        - AR
+        - AT
+        - BE
+        - BR
+        - BG
+        - CA
+        - IO
+        - CN
+        - HR
+        - CY
+        - CZ
+        - DK
+        - EE
+        - FI
+        - FR
+        - DE
+        - GR
+        - GP
+        - GG
+        - GF
+        - HU
+        - IN
+        - IE
+        - IT
+        - JP
+        - JE
+        - LV
+        - LT
+        - LU
+        - MT
+        - IM
+        - MQ
+        - MX
+        - MC
+        - NL
+        - PY
+        - PL
+        - PT
+        - RE
+        - RO
+        - SM
+        - SK
+        - SI
+        - ES
+        - SE
+        - TK
+        - GB
+        - US
+        - UY
+        - VE
+        - AU
+        - CX
+        - CC
+        - NF
+        - PR
+        - SG
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/GetSystemForCountryResponse'
+  /v2/browse:
+    get:
+      summary: Get HS Code Trees
+      description: Presents all of the available Harmonized Codes as a browesable
+        tree. Each request specifies a parent node, and the response lists all child
+        nodes of that parent. If no parent node is specified, all root-level nodes
+        will be returned
+      tags:
+      - '[v2]Harmonized Codes API'
+      operationId: Get_Browse HS Data_
+      produces:
+      - application/json
+      parameters:
+      - name: system
+        in: query
+        required: false
+        x-is-map: false
+        type: string
+        x-example: TARIC
+        description: The classification system you want to browse.
+        enum:
+        - CTCA
+        - CTIN
+        - CTMX
+        - HS
+        - HTISC
+        - HTS
+        - HTSB
+        - MCN
+        - STCCED
+        - TARIC
+        - TSCN
+        - TSJP
+      - name: parent
+        in: query
+        required: false
+        x-is-map: false
+        type: string
+        x-example: TARIC_0102
+        description: The name of the parent node. Note that it is important to use
+          the name of the node, as not all nodes have a harmonized code, and the code
+          itself is different than the name
+      responses:
+        200:
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BrowseHSDataResponse'
+  /v2/hscodes:
+    get:
+      summary: Get HS Code Details Including Rates
+      description: Search for Duty Rates for a harmonized code. Rates are dependant
+        on at least a destination country
+      tags:
+      - '[v2]Harmonized Codes API'
+      operationId: Get Rate Details_
+      produces:
+      - application/json
+      parameters:
+      - name: code
+        in: query
+        required: true
+        x-is-map: false
+        type: string
+        description: The harmonized code
+        x-example: 01022940
+      - name: system
+        in: query
+        required: true
+        x-is-map: false
+        type: string
+        description: The classification system to which the code belongs
+        x-example: CTCA
+        enum:
+        - CTCA
+        - CTIN
+        - CTMX
+        - HS
+        - HTISC
+        - HTS
+        - HTSB
+        - MCN
+        - STCCED
+        - TARIC
+        - TSCN
+        - TSJP
+      - name: destination
+        in: query
+        required: true
+        x-is-map: false
+        type: string
+        description: The destination country for which rate data is desired
+        x-example: CA
+        enum:
+        - AX
+        - AR
+        - AT
+        - BE
+        - BR
+        - BG
+        - CA
+        - IO
+        - CN
+        - HR
+        - CY
+        - CZ
+        - DK
+        - EE
+        - FI
+        - FR
+        - DE
+        - GR
+        - GP
+        - GG
+        - GF
+        - HU
+        - IN
+        - IE
+        - IT
+        - JP
+        - JE
+        - LV
+        - LT
+        - LU
+        - MT
+        - IM
+        - MQ
+        - MX
+        - MC
+        - NL
+        - PY
+        - PL
+        - PT
+        - RE
+        - RO
+        - SM
+        - SK
+        - SI
+        - ES
+        - SE
+        - TK
+        - GB
+        - US
+        - UY
+        - VE
+        - AU
+        - CX
+        - CC
+        - NF
+        - PR
+        - SG
+      - name: source
+        in: query
+        required: false
+        x-is-map: false
+        type: string
+        description: An optional filter for rates that limits results to a specific
+          origin country
+        x-example: MX
+        enum:
+        - AX
+        - AR
+        - AT
+        - BE
+        - BR
+        - BG
+        - CA
+        - IO
+        - CN
+        - HR
+        - CY
+        - CZ
+        - DK
+        - EE
+        - FI
+        - FR
+        - DE
+        - GR
+        - GP
+        - GG
+        - GF
+        - HU
+        - IN
+        - IE
+        - IT
+        - JP
+        - JE
+        - LV
+        - LT
+        - LU
+        - MT
+        - IM
+        - MQ
+        - MX
+        - MC
+        - NL
+        - PY
+        - PL
+        - PT
+        - RE
+        - RO
+        - SM
+        - SK
+        - SI
+        - ES
+        - SE
+        - TK
+        - GB
+        - US
+        - UY
+        - VE
+        - AU
+        - CX
+        - CC
+        - NF
+        - PR
+        - SG
+      responses:
+        200:
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GetRateDetailsResponse'
+  /v2/hscodes/{system}/{code}:
+    get:
+      summary: Get HS Code Details
+      description: Allows for the traversal of classification system, harmonized codes,
+        and duty rates, allowing the user to browse the available content
+      tags:
+      - '[v2]Harmonized Codes API'
+      operationId: Get Rate Data_
+      produces:
+      - application/json
+      parameters:
+      - name: system
+        in: path
+        required: true
+        x-is-map: false
+        type: string
+        description: The classification system. If omitted, the response will be all
+          current classification systems
+        x-example: TARIC
+        enum:
+        - CTCA
+        - CTIN
+        - CTMX
+        - HS
+        - HTISC
+        - HTS
+        - HTSB
+        - MCN
+        - STCCED
+        - TARIC
+        - TSCN
+        - TSJP
+      - name: code
+        in: path
+        required: true
+        x-is-map: false
+        type: string
+        description: The harmonized code within a system. If code is provided, system
+          must also be provided
+        x-example: 010229
+      - name: fullpath
+        in: query
+        required: false
+        x-is-map: false
+        type: boolean
+        description: If present, the response will include the entire chapter, subchapter,
+          etc. and description data for a code
+        x-example: true
+      responses:
+        200:
+          description: Successful request
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GetRateDataResponse'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":24:{s:5:\"Error\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Friendly
+  error response\";}s:5:\"error\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}s:11:\"description\";s:26:\"Full
+  error object response\";}}s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:5:\"error\";}}s:13:\"CalculateBase\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:7:\"charges\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Charges
+  to include\";s:4:\"enum\";a:3:{i:0;s:6:\"duties\";i:1;s:5:\"taxes\";i:2;s:4:\"fees\";}s:7:\"example\";s:6:\"duties\";}}s:4:\"date\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Transaction
+  date in ISO 8601 format\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2016-01-01T00:00:00.000Z\";}s:9:\"incoterms\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Terms
+  of sale. Used to determine buyer obligations\";s:4:\"enum\";a:2:{i:0;s:3:\"DAP\";i:1;s:3:\"DDP\";}s:7:\"example\";s:3:\"DAP\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Source\";s:5:\"title\";s:6:\"Source\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:11:\"Destination\";}s:10:\"entityType\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:59:\"Type
+  of sale. Can be used to determine applicable tax types\";s:4:\"enum\";a:2:{i:0;s:3:\"B2C\";i:1;s:3:\"B2B\";}s:7:\"example\";s:3:\"B2C\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:8:\"shipping\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:8:\"Shipping\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"cost\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:16:\"Cost
+  of shipping\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:50;}s:9:\"insurance\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"Cost
+  of shipping insurance\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:50;}s:4:\"mode\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Shipping
+  method.  Can be used to determine applicable tax types\";s:4:\"enum\";a:3:{i:0;s:6:\"ground\";i:1;s:3:\"air\";i:2;s:5:\"ocean\";}s:7:\"example\";s:6:\"ground\";}s:7:\"express\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:66:\"Is
+  Shipping method.  Can be used to determine applicable tax types\";s:7:\"example\";b:1;}}s:8:\"required\";a:3:{i:0;s:4:\"cost\";i:1;s:9:\"insurance\";i:2;s:7:\"express\";}}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}}s:8:\"required\";a:7:{i:0;s:4:\"date\";i:1;s:9:\"incoterms\";i:2;s:6:\"source\";i:3;s:11:\"destination\";i:4;s:10:\"entityType\";i:5;s:8:\"currency\";i:6;s:8:\"shipping\";}s:20:\"x-excludedProperties\";a:2:{i:0;s:8:\"discount\";i:1;s:7:\"charges\";}}s:15:\"TaxRateSections\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"The
+  rate section\";s:7:\"example\";s:10:\"Import VAT\";s:4:\"enum\";a:6:{i:0;s:10:\"Import
+  VAT\";i:1;s:20:\"Harmonized Sales Tax\";i:2;s:17:\"General Sales Tax\";i:3;s:20:\"Provincial
+  Sales Tax\";i:4;s:22:\"Goods and Services Tax\";i:5;s:15:\"Consumption Tax\";}}s:28:\"CalculateRequestRateOverride\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  rate as written in the source material\";s:7:\"example\";s:3:\"10%\";}s:7:\"formula\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  rate converted to landedCost DSL\";s:7:\"example\";s:21:\"rate(10%,costbasis())\";}s:11:\"rateSection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/TaxRateSections\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/RateTypes\";}}s:8:\"required\";a:3:{i:0;s:7:\"formula\";i:1;s:11:\"rateSection\";i:2;s:4:\"type\";}}s:9:\"RateTypes\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"The
+  type of duty\";s:4:\"enum\";a:2:{i:0;s:10:\"ad valorem\";i:1;s:5:\"units\";}}s:16:\"CalculateRequest\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CalculateBase\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Item\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Transaction
+  line number\";s:7:\"example\";s:1:\"1\";}s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"930700\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Description
+  of the product\";s:7:\"example\";s:6:\"Swords\";}s:5:\"price\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Item
+  price of the product\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:100;}s:8:\"quantity\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:28:\"Quantity
+  of the item shipped\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:1000000;s:7:\"example\";i:10;}s:13:\"extendedPrice\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:53:\"Extended
+  price (price * quantity) of the item shipped\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000000000;}s:5:\"units\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:74:\"Collection
+  of units of measure used to calculate applicable taxes and fees\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Unit\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Name
+  of the unit of measure\";s:7:\"example\";s:2:\"kg\";}s:6:\"amount\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:42:\"Value
+  associated with this unit of measure\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:10;}s:5:\"total\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:68:\"Total
+  value associated with this unit of measure (amount * quantity)\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000000000;s:7:\"example\";i:10;}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}s:5:\"rates\";O:8:\"stdClass\":4:{s:12:\"x-visibility\";s:6:\"hidden\";s:4:\"type\";s:5:\"array\";s:5:\"title\";s:5:\"Rates\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/CalculateRequestRateOverride\";}}s:13:\"taxExemptions\";O:8:\"stdClass\":3:{s:12:\"x-visibility\";s:6:\"hidden\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/TaxRateSections\";}}s:17:\"preferenceProgram\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/PreferenceProgram\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:6:\"hsCode\";i:2;s:11:\"description\";}s:20:\"x-excludedProperties\";a:2:{i:0;s:8:\"discount\";i:1;s:17:\"preferenceProgram\";}}}}s:8:\"required\";a:1:{i:0;s:5:\"items\";}}}}s:17:\"CalculateResponse\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CalculateBase\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:4:\"Item\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Item\";s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Transaction
+  line number\";s:7:\"example\";s:1:\"1\";}s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"930700\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Description
+  of the product\";s:7:\"example\";s:6:\"Swords\";}s:5:\"price\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Item
+  price of the product\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:100;}s:8:\"netPrice\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:77:\"Original
+  price of the product, returned if a discount was applied on the item\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:100;}s:8:\"quantity\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:28:\"Quantity
+  of the item shipped\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:1000000;s:7:\"example\";i:10;}s:13:\"extendedPrice\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:53:\"Extended
+  price (price * quantity) of the item shipped\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000000000;}s:5:\"units\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:74:\"Collection
+  of units of measure used to calculate applicable taxes and fees\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Unit\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Name
+  of the unit of measure\";s:7:\"example\";s:2:\"kg\";}s:6:\"amount\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:42:\"Value
+  associated with this unit of measure\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000;s:7:\"example\";i:10;}s:5:\"total\";O:8:\"stdClass\":6:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:68:\"Total
+  value associated with this unit of measure (amount * quantity)\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1000000000000;s:7:\"example\";i:10;}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}}s:5:\"rates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Rates\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"duties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Duties\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:8:\"93070000\";}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  rate as written in the source material\";s:7:\"example\";s:6:\"1\xA2/kg\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"The
+  type of duty\";s:7:\"example\";s:11:\"Import Duty\";}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:12:\"Jurisdiction\";s:11:\"description\";s:47:\"The
+  country or region that legislates this rate\";}}s:8:\"required\";a:5:{i:0;s:6:\"hsCode\";i:1;s:4:\"rate\";i:2;s:8:\"currency\";i:3;s:4:\"type\";i:4;s:12:\"jurisdiction\";}}}s:5:\"taxes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Taxes\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  rate as written in the source material\";s:7:\"example\";s:3:\"19%\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"The
+  type of tax\";s:7:\"example\";s:10:\"Import VAT\";}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:12:\"Jurisdiction\";s:11:\"description\";s:47:\"The
+  country or region that legislates this rate\";}}s:8:\"required\";a:4:{i:0;s:4:\"rate\";i:1;s:8:\"currency\";i:2;s:4:\"type\";i:3;s:12:\"jurisdiction\";}}}}}s:12:\"taxesAndFees\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:14:\"Taxes
+  and Fees\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"duties\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Duties\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:15:\"Duties
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:12:\"Duty
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:11:\"Duty
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Duty
+  name\";s:7:\"example\";s:16:\"Item Import Duty\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Duty
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:8:\"taxBasis\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:32:\"Tax
+  basis the rate is applied to\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:6:\"amount\";i:2;s:8:\"taxBasis\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:5:\"taxes\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Taxes\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Taxes
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:11:\"Tax
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Tax
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Tax
+  name\";s:7:\"example\";s:15:\"Item Import VAT\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Tax
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}s:8:\"taxBasis\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:32:\"Tax
+  basis the rate is applied to\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:6:\"amount\";i:2;s:8:\"taxBasis\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:4:\"fees\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Fees\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Fees
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:3:\"Fee\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Fee
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Fee
+  name\";s:7:\"example\";s:19:\"Item Processing Fee\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Fee
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}}}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}s:13:\"taxExemptions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/TaxRateSections\";}}s:17:\"preferenceProgram\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/PreferenceProgram\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:6:\"hsCode\";i:2;s:11:\"description\";i:3;s:5:\"rates\";i:4;s:12:\"taxesAndFees\";}}}s:12:\"taxesAndFees\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:14:\"Taxes
+  and Fees\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"duties\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Duties\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:15:\"Duties
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:12:\"Duty
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:11:\"Duty
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Duty
+  name\";s:7:\"example\";s:20:\"Shipment Import Duty\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Duty
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:5:\"taxes\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Taxes\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Taxes
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:11:\"Tax
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Tax
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Tax
+  name\";s:7:\"example\";s:19:\"Shipment Import VAT\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Tax
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:4:\"fees\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Fees\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Fees
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:11:\"Fee
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Fee
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Fee
+  name\";s:7:\"example\";s:23:\"Shipment Processing Fee\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Fee
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}}}s:10:\"landedCost\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"LandedCost\";s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:95:\"Calculated
+  landedCost.  Total of all products, shipping, and applicable duties, taxes, and
+  fees\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1121;}s:20:\"costInsuranceFreight\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:34:\"Total
+  of all products and shipping\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1000;}s:18:\"dutiesTaxesAndFees\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:47:\"Total
+  of all applicable duties, taxes, and fees\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:121;}s:13:\"isCrossBorder\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:24:\"Is
+  shipment cross-border\";s:7:\"example\";b:1;}s:7:\"details\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:7:\"Details\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Items\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Item
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1000;}}s:8:\"required\";a:1:{i:0;s:6:\"amount\";}}s:8:\"shipping\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Items\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:17:\"Shipping
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:100;}}s:8:\"required\";a:1:{i:0;s:6:\"amount\";}}s:9:\"discounts\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:9:\"Discounts\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:-424.07999999999998;s:11:\"description\";s:121:\"The
+  total discount from the order, which can include an order-level discount as well
+  as discounts on each individual item\";}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:7:\"Details\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"The
+  type of discount\";s:4:\"enum\";a:2:{i:0;s:12:\"itemDiscount\";i:1;s:13:\"orderDiscount\";}}s:6:\"amount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:344.31999999999999;s:11:\"description\";s:50:\"The
+  cash value of the item or order level discount\";}}}}}s:8:\"required\";a:1:{i:0;s:6:\"amount\";}}s:6:\"duties\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Items\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:15:\"Duties
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:12:\"Duty
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:11:\"Duty
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Duty
+  name\";s:7:\"example\";s:11:\"Import Duty\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Duty
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:5:\"taxes\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Items\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Taxes
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:11:\"Tax
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Tax
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Tax
+  name\";s:7:\"example\";s:10:\"Import VAT\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Tax
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:19;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}s:4:\"fees\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Items\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Fees
+  subtotal\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:11:\"Fee
+  Details\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Fee
+  Detail\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Fee
+  name\";s:7:\"example\";s:29:\"US Merchandise Processing Fee\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Fee
+  amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:1;}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:2:{i:0;s:6:\"amount\";i:1;s:7:\"details\";}}}s:8:\"required\";a:2:{i:0;s:5:\"items\";i:1;s:8:\"shipping\";}}s:11:\"obligations\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:11:\"Obligations\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"buyer\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Obligations
+  the buyer is responsible for paying\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:10:\"Obligation\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Buyer's
+  obligation amount\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:7:\"example\";i:28;}}s:8:\"required\";a:2:{i:0;s:8:\"currency\";i:1;s:6:\"amount\";}}}}s:8:\"required\";a:1:{i:0;s:5:\"buyer\";}}s:8:\"messages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"title\";s:8:\"Messages\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Special
+  messages that apply\";s:7:\"example\";s:29:\"US Merchandise Processing Fee\";}}}s:8:\"required\";a:3:{i:0;s:6:\"amount\";i:1;s:8:\"messages\";i:2;s:13:\"isCrossBorder\";}}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Status\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"result\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  response status\";s:4:\"enum\";a:2:{i:0;s:7:\"success\";i:1;s:5:\"error\";}s:7:\"example\";s:7:\"success\";}s:8:\"messages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"The
+  response messages, if any apply\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Status
+  message\";}}}s:8:\"required\";a:1:{i:0;s:6:\"result\";}}}s:8:\"required\";a:4:{i:0;s:5:\"items\";i:1;s:12:\"taxesAndFees\";i:2;s:10:\"landedCost\";i:3;s:6:\"status\";}}}}s:6:\"Source\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Source\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/CountryList\";s:7:\"example\";s:2:\"US\";s:11:\"description\";s:60:\"Source
+  country of the shipment, in ISO 3166-1 alpha-2 format\";}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Source
+  region of the shipment, in ISO 3166-2 format\";}}s:8:\"required\";a:1:{i:0;s:7:\"country\";}}s:6:\"Region\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"CA-BC\";s:4:\"enum\";a:13:{i:0;s:5:\"CA-ON\";i:1;s:5:\"CA-QC\";i:2;s:5:\"CA-NS\";i:3;s:5:\"CA-NB\";i:4;s:5:\"CA-MB\";i:5;s:5:\"CA-BC\";i:6;s:5:\"CA-PE\";i:7;s:5:\"CA-SK\";i:8;s:5:\"CA-AB\";i:9;s:5:\"CA-NL\";i:10;s:5:\"CA-NT\";i:11;s:5:\"CA-YT\";i:12;s:5:\"CA-NU\";}}s:11:\"Destination\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:11:\"Destination\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/DestinationCountryList\";}s:6:\"region\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:20:\"#/definitions/Region\";s:11:\"description\";s:56:\"Destination
+  region of the shipment, in ISO 3166-2 format\";s:7:\"example\";s:5:\"CA-BC\";}}s:8:\"required\";a:1:{i:0;s:7:\"country\";}}s:11:\"CountryList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";s:4:\"enum\";a:57:{i:0;s:2:\"AX\";i:1;s:2:\"AR\";i:2;s:2:\"AT\";i:3;s:2:\"BE\";i:4;s:2:\"BR\";i:5;s:2:\"BG\";i:6;s:2:\"CA\";i:7;s:2:\"IO\";i:8;s:2:\"CN\";i:9;s:2:\"HR\";i:10;s:2:\"CY\";i:11;s:2:\"CZ\";i:12;s:2:\"DK\";i:13;s:2:\"EE\";i:14;s:2:\"FI\";i:15;s:2:\"FR\";i:16;s:2:\"DE\";i:17;s:2:\"GR\";i:18;s:2:\"GP\";i:19;s:2:\"GG\";i:20;s:2:\"GF\";i:21;s:2:\"HU\";i:22;s:2:\"IN\";i:23;s:2:\"IE\";i:24;s:2:\"IT\";i:25;s:2:\"JP\";i:26;s:2:\"JE\";i:27;s:2:\"LV\";i:28;s:2:\"LT\";i:29;s:2:\"LU\";i:30;s:2:\"MT\";i:31;s:2:\"IM\";i:32;s:2:\"MQ\";i:33;s:2:\"MX\";i:34;s:2:\"MC\";i:35;s:2:\"NL\";i:36;s:2:\"PY\";i:37;s:2:\"PL\";i:38;s:2:\"PT\";i:39;s:2:\"RE\";i:40;s:2:\"RO\";i:41;s:2:\"SM\";i:42;s:2:\"SK\";i:43;s:2:\"SI\";i:44;s:2:\"ES\";i:45;s:2:\"SE\";i:46;s:2:\"TK\";i:47;s:2:\"GB\";i:48;s:2:\"US\";i:49;s:2:\"UY\";i:50;s:2:\"VE\";i:51;s:2:\"AU\";i:52;s:2:\"CX\";i:53;s:2:\"CC\";i:54;s:2:\"NF\";i:55;s:2:\"PR\";i:56;s:2:\"SG\";}}s:22:\"DestinationCountryList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";s:4:\"enum\";a:57:{i:0;s:2:\"AX\";i:1;s:2:\"AR\";i:2;s:2:\"AU\";i:3;s:2:\"AT\";i:4;s:2:\"BE\";i:5;s:2:\"BR\";i:6;s:2:\"BG\";i:7;s:2:\"CA\";i:8;s:2:\"IO\";i:9;s:2:\"CN\";i:10;s:2:\"CX\";i:11;s:2:\"CC\";i:12;s:2:\"HR\";i:13;s:2:\"CY\";i:14;s:2:\"CZ\";i:15;s:2:\"DK\";i:16;s:2:\"EE\";i:17;s:2:\"FI\";i:18;s:2:\"FR\";i:19;s:2:\"DE\";i:20;s:2:\"GR\";i:21;s:2:\"GP\";i:22;s:2:\"GG\";i:23;s:2:\"GF\";i:24;s:2:\"HU\";i:25;s:2:\"IN\";i:26;s:2:\"IE\";i:27;s:2:\"IT\";i:28;s:2:\"JP\";i:29;s:2:\"JE\";i:30;s:2:\"LV\";i:31;s:2:\"LT\";i:32;s:2:\"LU\";i:33;s:2:\"MT\";i:34;s:2:\"IM\";i:35;s:2:\"MQ\";i:36;s:2:\"MX\";i:37;s:2:\"MC\";i:38;s:2:\"NL\";i:39;s:2:\"NF\";i:40;s:2:\"PY\";i:41;s:2:\"PL\";i:42;s:2:\"PT\";i:43;s:2:\"PR\";i:44;s:2:\"RE\";i:45;s:2:\"RO\";i:46;s:2:\"SM\";i:47;s:2:\"SG\";i:48;s:2:\"SK\";i:49;s:2:\"SI\";i:50;s:2:\"ES\";i:51;s:2:\"SE\";i:52;s:2:\"TK\";i:53;s:2:\"GB\";i:54;s:2:\"US\";i:55;s:2:\"UY\";i:56;s:2:\"VE\";}}s:8:\"Currency\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";s:7:\"example\";s:3:\"USD\";s:4:\"enum\";a:295:{i:0;s:3:\"ADF\";i:1;s:3:\"ADP\";i:2;s:3:\"AED\";i:3;s:3:\"AFA\";i:4;s:3:\"AFN\";i:5;s:3:\"ALL\";i:6;s:3:\"AMD\";i:7;s:3:\"ANG\";i:8;s:3:\"AOA\";i:9;s:3:\"AON\";i:10;s:3:\"AOR\";i:11;s:3:\"ARA\";i:12;s:3:\"ARL\";i:13;s:3:\"ARP\";i:14;s:3:\"ARS\";i:15;s:3:\"ATS\";i:16;s:3:\"AUD\";i:17;s:3:\"AWG\";i:18;s:3:\"AZM\";i:19;s:3:\"AZN\";i:20;s:3:\"BAM\";i:21;s:3:\"BBD\";i:22;s:3:\"BDT\";i:23;s:3:\"BEF\";i:24;s:3:\"BGL\";i:25;s:3:\"BGN\";i:26;s:3:\"BHD\";i:27;s:3:\"BIF\";i:28;s:3:\"BMD\";i:29;s:3:\"BND\";i:30;s:3:\"BOB\";i:31;s:3:\"BOP\";i:32;s:3:\"BOV\";i:33;s:3:\"BRB\";i:34;s:3:\"BRC\";i:35;s:3:\"BRE\";i:36;s:3:\"BRL\";i:37;s:3:\"BRN\";i:38;s:3:\"BRR\";i:39;s:3:\"BRZ\";i:40;s:3:\"BSD\";i:41;s:3:\"BTC\";i:42;s:3:\"BTN\";i:43;s:3:\"BWP\";i:44;s:3:\"BYB\";i:45;s:3:\"BYR\";i:46;s:3:\"BZD\";i:47;s:3:\"CAD\";i:48;s:3:\"CDF\";i:49;s:3:\"CHE\";i:50;s:3:\"CHF\";i:51;s:3:\"CHW\";i:52;s:3:\"CLE\";i:53;s:3:\"CLF\";i:54;s:3:\"CLP\";i:55;s:3:\"CNH\";i:56;s:3:\"CNY\";i:57;s:3:\"COP\";i:58;s:3:\"COU\";i:59;s:3:\"CRC\";i:60;s:3:\"CSD\";i:61;s:3:\"CSK\";i:62;s:3:\"CUC\";i:63;s:3:\"CUP\";i:64;s:3:\"CVE\";i:65;s:3:\"CYP\";i:66;s:3:\"CZK\";i:67;s:3:\"DDM\";i:68;s:3:\"DEM\";i:69;s:3:\"DGC\";i:70;s:3:\"DJF\";i:71;s:3:\"DKK\";i:72;s:3:\"DOP\";i:73;s:3:\"DZD\";i:74;s:3:\"ECS\";i:75;s:3:\"ECV\";i:76;s:3:\"EEK\";i:77;s:3:\"EGP\";i:78;s:3:\"ERN\";i:79;s:3:\"ESA\";i:80;s:3:\"ESB\";i:81;s:3:\"ESP\";i:82;s:3:\"ETB\";i:83;s:3:\"EUR\";i:84;s:3:\"FIM\";i:85;s:3:\"FJD\";i:86;s:3:\"FKP\";i:87;s:3:\"FRF\";i:88;s:3:\"GBP\";i:89;s:3:\"GEL\";i:90;s:3:\"GGP\";i:91;s:3:\"GHC\";i:92;s:3:\"GHS\";i:93;s:3:\"GIP\";i:94;s:3:\"GMD\";i:95;s:3:\"GNE\";i:96;s:3:\"GNF\";i:97;s:3:\"GQE\";i:98;s:3:\"GRD\";i:99;s:3:\"GTQ\";i:100;s:3:\"GWP\";i:101;s:3:\"GYD\";i:102;s:3:\"HKD\";i:103;s:3:\"HNL\";i:104;s:3:\"HRD\";i:105;s:3:\"HRK\";i:106;s:3:\"HTG\";i:107;s:3:\"HUF\";i:108;s:3:\"IDR\";i:109;s:3:\"IEP\";i:110;s:3:\"ILP\";i:111;s:3:\"ILR\";i:112;s:3:\"ILS\";i:113;s:3:\"IMP\";i:114;s:3:\"INR\";i:115;s:3:\"IQD\";i:116;s:3:\"IRR\";i:117;s:3:\"ISJ\";i:118;s:3:\"ISK\";i:119;s:3:\"ITL\";i:120;s:3:\"JEP\";i:121;s:3:\"JMD\";i:122;s:3:\"JOD\";i:123;s:3:\"JPY\";i:124;s:3:\"KES\";i:125;s:3:\"KGS\";i:126;s:3:\"KHR\";i:127;s:3:\"KID\";i:128;s:3:\"KMF\";i:129;s:3:\"KPW\";i:130;s:3:\"KRW\";i:131;s:3:\"KWD\";i:132;s:3:\"KYD\";i:133;s:3:\"KZT\";i:134;s:3:\"LAJ\";i:135;s:3:\"LAK\";i:136;s:3:\"LBP\";i:137;s:3:\"LKR\";i:138;s:3:\"LRD\";i:139;s:3:\"LSL\";i:140;s:3:\"LTC\";i:141;s:3:\"LTL\";i:142;s:3:\"LUF\";i:143;s:3:\"LVL\";i:144;s:3:\"LYD\";i:145;s:3:\"MAD\";i:146;s:3:\"MAF\";i:147;s:3:\"MCF\";i:148;s:3:\"MDL\";i:149;s:3:\"MGA\";i:150;s:3:\"MGF\";i:151;s:3:\"MKD\";i:152;s:3:\"MKN\";i:153;s:3:\"MLF\";i:154;s:3:\"MMK\";i:155;s:3:\"MNT\";i:156;s:3:\"MOP\";i:157;s:3:\"MRO\";i:158;s:3:\"MTL\";i:159;s:3:\"MUR\";i:160;s:3:\"MVQ\";i:161;s:3:\"MVR\";i:162;s:3:\"MWK\";i:163;s:3:\"MXN\";i:164;s:3:\"MXP\";i:165;s:3:\"MXV\";i:166;s:3:\"MYR\";i:167;s:3:\"MZM\";i:168;s:3:\"MZN\";i:169;s:3:\"NAD\";i:170;s:3:\"NFD\";i:171;s:3:\"NGN\";i:172;s:3:\"NIO\";i:173;s:3:\"NLG\";i:174;s:3:\"NOK\";i:175;s:3:\"NPR\";i:176;s:3:\"NZD\";i:177;s:3:\"OMR\";i:178;s:3:\"PAB\";i:179;s:3:\"PEH\";i:180;s:3:\"PEI\";i:181;s:3:\"PEN\";i:182;s:3:\"PGK\";i:183;s:3:\"PHP\";i:184;s:3:\"PKR\";i:185;s:3:\"PLN\";i:186;s:3:\"PLZ\";i:187;s:3:\"PRB\";i:188;s:3:\"PTE\";i:189;s:3:\"PTP\";i:190;s:3:\"PYG\";i:191;s:3:\"QAR\";i:192;s:3:\"ROL\";i:193;s:3:\"RON\";i:194;s:3:\"RSD\";i:195;s:3:\"RUB\";i:196;s:3:\"RUR\";i:197;s:3:\"RWF\";i:198;s:3:\"SAR\";i:199;s:3:\"SBD\";i:200;s:3:\"SCR\";i:201;s:3:\"SDD\";i:202;s:3:\"SDG\";i:203;s:3:\"SDP\";i:204;s:3:\"SEK\";i:205;s:3:\"SGD\";i:206;s:3:\"SHP\";i:207;s:3:\"SIT\";i:208;s:3:\"SKK\";i:209;s:3:\"SLL\";i:210;s:3:\"SLS\";i:211;s:3:\"SML\";i:212;s:3:\"SOS\";i:213;s:3:\"SRD\";i:214;s:3:\"SRG\";i:215;s:3:\"SSP\";i:216;s:3:\"STD\";i:217;s:3:\"SUR\";i:218;s:3:\"SVC\";i:219;s:3:\"SYP\";i:220;s:3:\"SZL\";i:221;s:3:\"THB\";i:222;s:3:\"TJR\";i:223;s:3:\"TJS\";i:224;s:3:\"TMM\";i:225;s:3:\"TMT\";i:226;s:3:\"TND\";i:227;s:3:\"TNF\";i:228;s:3:\"TOP\";i:229;s:3:\"TPE\";i:230;s:3:\"TRL\";i:231;s:3:\"TRY\";i:232;s:3:\"TTD\";i:233;s:3:\"TVD\";i:234;s:3:\"TWD\";i:235;s:3:\"TZS\";i:236;s:3:\"UAH\";i:237;s:3:\"UAK\";i:238;s:3:\"UGS\";i:239;s:3:\"UGX\";i:240;s:3:\"USD\";i:241;s:3:\"USN\";i:242;s:3:\"USS\";i:243;s:3:\"UYI\";i:244;s:3:\"UYN\";i:245;s:3:\"UYU\";i:246;s:3:\"UZS\";i:247;s:3:\"VAL\";i:248;s:3:\"VEB\";i:249;s:3:\"VEF\";i:250;s:3:\"VND\";i:251;s:3:\"VUV\";i:252;s:3:\"WST\";i:253;s:3:\"XAF\";i:254;s:3:\"XAG\";i:255;s:3:\"XAU\";i:256;s:3:\"XBA\";i:257;s:3:\"XBB\";i:258;s:3:\"XBC\";i:259;s:3:\"XBD\";i:260;s:3:\"XBT\";i:261;s:3:\"XCD\";i:262;s:3:\"XDG\";i:263;s:3:\"XDR\";i:264;s:3:\"XEU\";i:265;s:3:\"XFO\";i:266;s:3:\"XFU\";i:267;s:3:\"XLT\";i:268;s:3:\"XOF\";i:269;s:3:\"XPD\";i:270;s:3:\"XPF\";i:271;s:3:\"XPT\";i:272;s:3:\"XSU\";i:273;s:3:\"XTS\";i:274;s:3:\"XUA\";i:275;s:3:\"XXX\";i:276;s:3:\"YDD\";i:277;s:3:\"YER\";i:278;s:3:\"YUD\";i:279;s:3:\"YUG\";i:280;s:3:\"YUM\";i:281;s:3:\"YUN\";i:282;s:3:\"YUO\";i:283;s:3:\"YUR\";i:284;s:3:\"ZAL\";i:285;s:3:\"ZAR\";i:286;s:3:\"ZMK\";i:287;s:3:\"ZMW\";i:288;s:3:\"ZRN\";i:289;s:3:\"ZRZ\";i:290;s:3:\"ZWC\";i:291;s:3:\"ZWD\";i:292;s:3:\"ZWL\";i:293;s:3:\"ZWN\";i:294;s:3:\"ZWR\";}}s:17:\"PreferenceProgram\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:73:\"Included
+  when a shipment item qualifies for a special rate, such as NAFTA\";s:7:\"example\";s:5:\"NAFTA\";s:4:\"enum\";a:1:{i:0;s:5:\"NAFTA\";}}s:8:\"Discount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:8:\"Discount\";s:11:\"description\";s:43:\"The
+  discount to apply at the shipment level\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:112:\"The
+  type of discount to apply. Currently, the system only supports sales discounts offered
+  directly to consumers\";s:4:\"enum\";a:1:{i:0;s:5:\"sales\";}s:7:\"example\";s:5:\"sales\";}s:4:\"rate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:45:\"A
+  percentage to discount the shipment or item\";s:7:\"example\";i:20;}s:6:\"amount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:47:\"A
+  flate amount to discount the shipment or item\";s:7:\"example\";d:8.9000000000000004;}}}s:12:\"RatesRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:7:\"Request\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"930700\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Source\";s:5:\"title\";s:6:\"Source\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:11:\"Destination\";}}s:8:\"required\";a:3:{i:0;s:6:\"hsCode\";i:1;s:6:\"source\";i:2;s:11:\"destination\";}}}s:13:\"RatesResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:8:\"Response\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"930700\";}s:6:\"source\";O:8:\"stdClass\":2:{s:5:\"title\";s:6:\"Source\";s:4:\"$ref\";s:20:\"#/definitions/Source\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:5:\"title\";s:11:\"Destination\";s:4:\"$ref\";s:25:\"#/definitions/Destination\";}s:5:\"rates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Rates\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"duties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Duties\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:8:\"93070000\";}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  rate as written in the source material\";s:7:\"example\";s:6:\"1\xA2/kg\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"The
+  type of duty\";s:7:\"example\";s:11:\"Import Duty\";}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:12:\"Jurisdiction\";s:11:\"description\";s:47:\"The
+  country or region that legislates this rate\";}}s:8:\"required\";a:5:{i:0;s:6:\"hsCode\";i:1;s:4:\"rate\";i:2;s:8:\"currency\";i:3;s:4:\"type\";i:4;s:12:\"jurisdiction\";}}}s:5:\"taxes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:5:\"Taxes\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  rate as written in the source material\";s:7:\"example\";s:3:\"19%\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";s:11:\"description\";s:28:\"Currency,
+  in ISO 4217 format\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"The
+  type of tax\";s:7:\"example\";s:10:\"Import VAT\";}s:12:\"jurisdiction\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:12:\"Jurisdiction\";s:11:\"description\";s:47:\"The
+  country or region that legislates this rate\";}}s:8:\"required\";a:4:{i:0;s:4:\"rate\";i:1;s:8:\"currency\";i:2;s:4:\"type\";i:3;s:12:\"jurisdiction\";}}}}}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Status\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"result\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  response status\";s:4:\"enum\";a:3:{i:0;s:7:\"success\";i:1;s:9:\"corrected\";i:2;s:5:\"error\";}s:7:\"example\";s:7:\"success\";}s:8:\"messages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"The
+  response messages, if any apply\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"Used
+  Avalara recommended code\";}}}s:8:\"required\";a:1:{i:0;s:6:\"result\";}}}s:8:\"required\";a:5:{i:0;s:6:\"hsCode\";i:1;s:6:\"source\";i:2;s:11:\"destination\";i:3;s:5:\"rates\";i:4;s:6:\"status\";}}}s:12:\"UnitsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:7:\"Request\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"040110\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Source\";s:5:\"title\";s:6:\"Source\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:11:\"Destination\";}}s:8:\"required\";a:1:{i:0;s:6:\"hsCode\";}}}s:13:\"UnitsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:8:\"Response\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  harmonized classification code of the product\";s:7:\"example\";s:6:\"040110\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Source\";s:5:\"title\";s:6:\"Source\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/Destination\";s:5:\"title\";s:11:\"Destination\";}s:5:\"units\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:47:\"Units
+  used in rate formulas for a given hs code\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:6:\"Status\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"result\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  response status\";s:4:\"enum\";a:2:{i:0;s:7:\"success\";i:1;s:5:\"error\";}s:7:\"example\";s:7:\"success\";}s:8:\"messages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"The
+  response messages, if any apply\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:1:{i:0;s:6:\"result\";}}}s:8:\"required\";a:5:{i:0;s:6:\"hsCode\";i:1;s:6:\"source\";i:2;s:11:\"destination\";i:3;s:5:\"units\";i:4;s:6:\"status\";}}}s:28:\"GetCountriesListingsResponse\";O:8:\"stdClass\":4:{s:5:\"title\";s:31:\"Get
+  countries listings response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:7:\"Country\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CountryList\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"The
+  United States\";}s:6:\"system\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"HTS\";}}}}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:7:\"Country\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CountryList\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"The
+  United States\";}s:6:\"system\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"HTS\";}}}}}s:8:\"required\";a:2:{i:0;s:11:\"destination\";i:1;s:6:\"source\";}}s:27:\"GetSystemForCountryResponse\";O:8:\"stdClass\":4:{s:5:\"title\";s:37:\"Get
+  the System for a Country response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"export\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:90:\"The
+  system of export classification between the source and destination countries specified\";s:5:\"title\";s:6:\"Export\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"system\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"SCHEDULEB\";s:11:\"description\";s:68:\"The
+  classification system. Must be one of:\n* TARIC\n* SCHEDULEB\n* HTS\";s:4:\"enum\";a:57:{i:0;s:2:\"AX\";i:1;s:2:\"AR\";i:2;s:2:\"AT\";i:3;s:2:\"BE\";i:4;s:2:\"BR\";i:5;s:2:\"BG\";i:6;s:2:\"CA\";i:7;s:2:\"IO\";i:8;s:2:\"CN\";i:9;s:2:\"HR\";i:10;s:2:\"CY\";i:11;s:2:\"CZ\";i:12;s:2:\"DK\";i:13;s:2:\"EE\";i:14;s:2:\"FI\";i:15;s:2:\"FR\";i:16;s:2:\"DE\";i:17;s:2:\"GR\";i:18;s:2:\"GP\";i:19;s:2:\"GG\";i:20;s:2:\"GF\";i:21;s:2:\"HU\";i:22;s:2:\"IN\";i:23;s:2:\"IE\";i:24;s:2:\"IT\";i:25;s:2:\"JP\";i:26;s:2:\"JE\";i:27;s:2:\"LV\";i:28;s:2:\"LT\";i:29;s:2:\"LU\";i:30;s:2:\"MT\";i:31;s:2:\"IM\";i:32;s:2:\"MQ\";i:33;s:2:\"MX\";i:34;s:2:\"MC\";i:35;s:2:\"NL\";i:36;s:2:\"PY\";i:37;s:2:\"PL\";i:38;s:2:\"PT\";i:39;s:2:\"RE\";i:40;s:2:\"RO\";i:41;s:2:\"SM\";i:42;s:2:\"SK\";i:43;s:2:\"SI\";i:44;s:2:\"ES\";i:45;s:2:\"SE\";i:46;s:2:\"TK\";i:47;s:2:\"GB\";i:48;s:2:\"US\";i:49;s:2:\"UY\";i:50;s:2:\"VE\";i:51;s:2:\"AU\";i:52;s:2:\"CX\";i:53;s:2:\"CC\";i:54;s:2:\"NF\";i:55;s:2:\"PR\";i:56;s:2:\"SG\";}}}}s:6:\"import\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:90:\"The
+  system of import classification between the source and destination countries specified\";s:5:\"title\";s:6:\"Import\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"system\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"TARIC\";s:11:\"description\";s:68:\"The
+  classification system. Must be one of:\n* TARIC\n* SCHEDULEB\n* HTS\";s:4:\"enum\";a:57:{i:0;s:2:\"AX\";i:1;s:2:\"AR\";i:2;s:2:\"AT\";i:3;s:2:\"BE\";i:4;s:2:\"BR\";i:5;s:2:\"BG\";i:6;s:2:\"CA\";i:7;s:2:\"IO\";i:8;s:2:\"CN\";i:9;s:2:\"HR\";i:10;s:2:\"CY\";i:11;s:2:\"CZ\";i:12;s:2:\"DK\";i:13;s:2:\"EE\";i:14;s:2:\"FI\";i:15;s:2:\"FR\";i:16;s:2:\"DE\";i:17;s:2:\"GR\";i:18;s:2:\"GP\";i:19;s:2:\"GG\";i:20;s:2:\"GF\";i:21;s:2:\"HU\";i:22;s:2:\"IN\";i:23;s:2:\"IE\";i:24;s:2:\"IT\";i:25;s:2:\"JP\";i:26;s:2:\"JE\";i:27;s:2:\"LV\";i:28;s:2:\"LT\";i:29;s:2:\"LU\";i:30;s:2:\"MT\";i:31;s:2:\"IM\";i:32;s:2:\"MQ\";i:33;s:2:\"MX\";i:34;s:2:\"MC\";i:35;s:2:\"NL\";i:36;s:2:\"PY\";i:37;s:2:\"PL\";i:38;s:2:\"PT\";i:39;s:2:\"RE\";i:40;s:2:\"RO\";i:41;s:2:\"SM\";i:42;s:2:\"SK\";i:43;s:2:\"SI\";i:44;s:2:\"ES\";i:45;s:2:\"SE\";i:46;s:2:\"TK\";i:47;s:2:\"GB\";i:48;s:2:\"US\";i:49;s:2:\"UY\";i:50;s:2:\"VE\";i:51;s:2:\"AU\";i:52;s:2:\"CX\";i:53;s:2:\"CC\";i:54;s:2:\"NF\";i:55;s:2:\"PR\";i:56;s:2:\"SG\";}}}}}s:8:\"required\";a:2:{i:0;s:6:\"export\";i:1;s:6:\"import\";}}s:20:\"BrowseHSDataResponse\";O:8:\"stdClass\":4:{s:5:\"title\";s:23:\"Browse
+  HS Data response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"9301\";s:11:\"description\";s:19:\"The
+  harmonized code\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:76:\"Military
+  weapons, other than revolvers, pistols and the arms of heading 9307\";s:11:\"description\";s:52:\"The
+  human-readable description of the classification\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"HS_9302\";s:11:\"description\";s:62:\"The
+  name of the node; this can be used to find the child nodes\";}}s:8:\"required\";a:3:{i:0;s:6:\"hsCode\";i:1;s:11:\"description\";i:2;s:4:\"name\";}}s:22:\"GetRateDetailsResponse\";O:8:\"stdClass\":4:{s:5:\"title\";s:25:\"Get
+  Rate Details response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"hsCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"9307000000\";}s:6:\"system\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"HTS\";}s:8:\"codePath\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:8:\"CodePath\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  harmonized code\";s:7:\"example\";s:2:\"93\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Harmonized
+  code description\";s:7:\"example\";s:50:\"ARMS AND AMMUNITION; PARTS AND ACCESSORIES
+  THEREOF\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"A
+  concatenation of the system and harmonized code: `<system>_<harmonizedCode>`\";s:7:\"example\";s:5:\"HS_93\";}}}}s:5:\"rates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"title\";s:4:\"Rate\";s:10:\"properties\";O:8:\"stdClass\":8:{s:13:\"sourceCountry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"The
+  two-character ISO code identifying the origin country associated with the duty\";s:7:\"example\";s:6:\"`null`\";}s:7:\"formula\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"The
+  formula used to calculate the rate, presented in Avalara-specific format\";s:7:\"example\";s:22:\"rate(2.7%,costbasis())\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:474:\"There
+  are three types of landed cost rates that may be returned.\n * ad valorem: this
+  rate applies to the declared `customs-value` This is typically represented as a
+  percentage of the cost.\n * units: this is a rate that is tied to unit of meaure.
+  This is typically expressed as a monetary value per quantity, such as: $1/kg\n *
+  unknown: there is no stored rate data (or no applicable taxes) for the specified
+  combination. Note that these will always have `\"formula\": \"notax()\"\";s:7:\"example\";s:10:\"ad
+  valorem\";}s:4:\"unit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:132:\"If
+  the rate is assessed at a unit level, the appropriate unit involved. If `type` is
+  not `units`, this value will be an empty string\";s:7:\"example\";s:0:\"\";}s:3:\"raw\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  human-readable version of the rate\";s:7:\"example\";s:11:\"2.7% (Cost)\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"The
+  three-character ISO code for the currency in which the duty should be assessed\";s:7:\"example\";s:3:\"USD\";}s:8:\"required\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  required input values to calculate the correct duty amount\";s:7:\"example\";s:5:\"value\";}}s:12:\"customsValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:97:\"The
+  customs value describes how to apply the duty rate. There are two current types\n
+  * fob\n * cif\";s:7:\"example\";s:3:\"fob\";}}}}}s:8:\"required\";a:4:{i:0;s:6:\"hsCode\";i:1;s:6:\"system\";i:2;s:8:\"codePath\";i:3;s:5:\"rates\";}}s:19:\"GetRateDataResponse\";O:8:\"stdClass\":5:{s:5:\"title\";s:22:\"Get
+  Rate Data response\";s:4:\"type\";s:6:\"object\";s:11:\"description\";s:95:\"Array
+  of rate information by source country, formatted as for retrieval for Duty Rate
+  retrieval\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"hsCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  harmonized code\";s:7:\"example\";s:10:\"5703201000\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"A
+  concatenation of the system and harmonized code: `<system>_<harmonizedCode>`\";s:7:\"example\";s:14:\"HTS_5703201000\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"A
+  description of the harmonized code classification\";s:7:\"example\";s:89:\"Hand-hooked,
+  that is, in which the tufts were inserted by hand or by means of a hand tool\";}}s:8:\"required\";a:3:{i:0;s:6:\"hsCode\";i:1;s:4:\"name\";i:2;s:11:\"description\";}}}"
+...

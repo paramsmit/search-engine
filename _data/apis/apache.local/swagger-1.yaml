@@ -1,0 +1,273 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:6:\"TheASF\";}s:11:\"description\";s:26:\"API
+  for Qakka Queue System\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:5:\"title\";s:5:\"Qakka\";s:7:\"version\";s:2:\"v1\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"messaging\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:79:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_TheASF_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:80:\"https://raw.githubusercontent.com/apache/usergrid-qakka/master/docs/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:10:\"apache.org\";s:13:\"x-serviceName\";s:5:\"qakka\";}"
+host: apache.local
+paths:
+  /queues:
+    get:
+      description: ""
+      operationId: getListOfQueues
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+      summary: Get list of all Queues.
+      tags:
+      - queues
+    post:
+      consumes:
+      - application/json
+      description: ""
+      operationId: createQueue
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: No Queue object posted, or name field is missing
+      summary: Create new queue.
+      tags:
+      - queues
+  /queues/{queueName}:
+    delete:
+      description: ""
+      operationId: deleteQueue
+      parameters:
+      - in: path
+        name: queueName
+        required: true
+        type: string
+      - default: false
+        in: query
+        name: confirm
+        required: false
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: Queue name or confirm flag missing.
+      summary: Delete Queue.
+      tags:
+      - queues
+  /queues/{queueName}/config:
+    get:
+      description: ""
+      operationId: getQueueConfig
+      parameters:
+      - description: Name of Queue
+        in: path
+        name: queueName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: Queue name or confirm flag missing.
+      summary: Get Queue config.
+      tags:
+      - queues
+    put:
+      consumes:
+      - application/json
+      description: ""
+      operationId: updateQueueConfig
+      parameters:
+      - in: path
+        name: queueName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: No Queue object posted, or name field is missing
+      summary: Update Queue configuration.
+      tags:
+      - queues
+  /queues/{queueName}/data/{queueMessageId}:
+    get:
+      description: ""
+      operationId: getMessageData
+      parameters:
+      - description: Name of Queue
+        in: path
+        name: queueName
+        required: true
+        type: string
+      - description: ID of Queue Message for which data is to be returned
+        in: path
+        name: queueMessageId
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: Message ID invalid
+        404:
+          description: Queue Message or data not found
+      summary: Get data associated with a Queue Message.
+      tags:
+      - queues
+  /queues/{queueName}/messages:
+    get:
+      description: ""
+      operationId: getNextMessages
+      parameters:
+      - description: Name of Queue
+        in: path
+        name: queueName
+        required: true
+        type: string
+      - default: "1"
+        description: Number of messages to get
+        in: query
+        name: count
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: Invalid count parameter
+      summary: Get next Queue Messages from a Queue
+      tags:
+      - queues
+    post:
+      consumes:
+      - application/octet-stream
+      description: ""
+      operationId: sendMessageBinary
+      parameters:
+      - description: Name of Queue
+        in: path
+        name: queueName
+        required: true
+        type: string
+      - description: Regions to which message is to be sent
+        in: query
+        name: regions
+        required: false
+        type: string
+      - in: query
+        name: delay
+        required: false
+        type: string
+      - in: query
+        name: expiration
+        required: false
+        type: string
+      - description: Content type of the data to be sent with Queue Message
+        in: query
+        name: contentType
+        required: true
+        type: string
+      - description: Data to be send with Queue Message
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            format: byte
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+      summary: Send Queue Message with a binary data (blob) payload.
+      tags:
+      - queues
+  /queues/{queueName}/messages/{queueMessageId}:
+    delete:
+      description: ""
+      operationId: ackMessage
+      parameters:
+      - description: Name of Queue
+        in: path
+        name: queueName
+        required: true
+        type: string
+      - description: ID of Queue Message to be acknowledged
+        in: path
+        name: queueMessageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        400:
+          description: Queue Message ID invalid, or message not in-flight
+      summary: Acknowledge that Queue Message has been processed.
+      tags:
+      - queues
+  /status:
+    get:
+      description: ""
+      operationId: status
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+      summary: Status of webapp.
+      tags:
+      - status
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":3:{s:11:\"ApiResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"Response
+  returned by most Queue API calls.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"count\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"Count
+  of Queues or QueueMessages returned by the call.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Informative
+  message intended for client.\";s:4:\"type\";s:6:\"string\";}s:13:\"queueMessages\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"Queues
+  Messages returned by the call, or empty if not applicable.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/QueueMessage\";}s:4:\"type\";s:5:\"array\";}s:6:\"queues\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"Queues
+  returned but the call, or empty if not applicable.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Queue\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Queue\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"Specifies
+  the configuration for a Queue.\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Name
+  of queue, must be unique.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:4:\"type\";s:6:\"object\";}s:12:\"QueueMessage\";O:8:\"stdClass\":4:{s:11:\"description\";s:15:\"A
+  Queue Message\";s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"contentType\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Content-type
+  of data associated with QueueMessage.\";s:4:\"type\";s:6:\"string\";}s:10:\"createDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Date
+  that message was received by system.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"data\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Embedded
+  JSON to be sent with Queue Message.\";s:4:\"type\";s:6:\"string\";}s:4:\"href\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"URL
+  of data associated with Queue Message (if not embedded JSON)\";s:4:\"type\";s:6:\"string\";}s:9:\"messageId\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"UUID
+  of Message Data associated with this Queue Message\";s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";}s:14:\"queueMessageId\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"UUID
+  of Queue Message in local region.\";s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";}s:9:\"queueName\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Name
+  of Queue for message.\";s:4:\"type\";s:6:\"string\";}s:15:\"receivingRegion\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Regions
+  to which message will be sent\";s:4:\"type\";s:6:\"string\";}s:13:\"sendingRegion\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Region
+  from which was sent\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:9:\"queueName\";}s:4:\"type\";s:6:\"object\";}}"
+...

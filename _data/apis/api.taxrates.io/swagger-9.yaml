@@ -1,0 +1,272 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:19:\"apiteam@taxrates.io\";}s:11:\"description\";s:330:\"Taxrates.io
+  API - the successfully streamlined tax rates monitoring process. Use 'Expand operation'
+  link on the right to see details. Start with authentication: get your token and
+  generate authorization string. We recommend using <a href='https://www.getpostman.com/'
+  target=_new>Postman</a> when discovering our API. Happy using!\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:69:\"Private
+  licence - only for using by authorized Members of taxrates.io\";s:3:\"url\";s:27:\"http://taxrates.io/license/\";}s:14:\"termsOfService\";s:25:\"http://taxrates.io/terms/\";s:5:\"title\";s:11:\"Taxrates.io\";s:7:\"version\";s:5:\"0.0.1\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"financial\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:110:\"https://api.apis.guru/v2/cache/logo/https_pbs.twimg.com_profile_images_919999226955927553_lLFntE3W_400x400.jpg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:44:\"https://api.taxrates.io/taxrates_io_API.yaml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:11:\"taxrates.io\";}"
+host: api.taxrates.io
+basePath: /api/v1
+paths:
+  /oauth/dialog:
+    get:
+      description: This is the second endpoint you have to hit. When you got your
+        token here you can generate your Bearer authorization header. The header will
+        be used to authorize every API call.
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: The token you got from <<token>> endpoint
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: You have to use api_member as a scope.
+        in: query
+        name: clientscope
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success. JSON formatted authorization string in return.
+          schema:
+            properties:
+              Authorization:
+                description: 'Bearer: __Your authorization key will appear here__'
+                type: string
+            type: object
+        404:
+          description: No valid token found You have to call <<token>> endpoint to
+            get/refresh your token first.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Authorization endpoint
+      tags:
+      - Authentication
+  /oauth/token:
+    get:
+      description: This the very first URL you must hit when you want to use taxrates.io
+        API. When you got your Client ID key and Client Secret key you are able to
+        use our API resources.
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: Your Client ID goes here. Check the dashboard if you do not know
+          your Client ID.
+        in: query
+        name: clientid
+        required: true
+        type: string
+      - description: Your Client Secret key goes here. Check the dashboard if you
+          do not know your Client Secret key.
+        in: query
+        name: clientsecret
+        required: true
+        type: string
+      - description: You have to use api_member as a scope.
+        in: query
+        name: clientscope
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success. JSON formatted string in return.
+          schema:
+            properties:
+              clientid:
+                description: Your Client ID key
+                type: string
+              domain:
+                description: The domain you are operating
+                type: string
+              token:
+                description: Your token
+                type: string
+              valid_to:
+                description: The date until your token is valid
+                type: string
+            type: object
+        404:
+          description: No Client ID found.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Token generating URL
+      tags:
+      - Authentication
+  /tax/byaddress:
+    post:
+      description: This endpoint returns tax rates for the country based on the address
+        provided
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: Address
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/Address'
+      - description: 'You can filter your taxes by one of following types: ''standard'',
+          ''reduced'', ''second reduced'', ''third reduced'' and ''super reduced''.'
+        in: query
+        name: filter
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Rates'
+        404:
+          description: Country not found. Please check you address and make sure it
+            is valid.
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - Bearer: []
+      summary: Get tax rates by address
+      tags:
+      - Tax service
+  /tax/countrycode:
+    get:
+      description: This endpoint returns all available tax rates for selected country
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: Country code alpha 2
+        in: query
+        name: country_code
+        required: true
+        type: string
+      - description: 'You can filter your taxes by one of following types: ''standard'',
+          ''reduced'', ''second reduced'', ''third reduced'' and ''super reduced''.'
+        in: query
+        name: filter
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Rates'
+        404:
+          description: Country not found. Have you provided correct alpha-2 country
+            code?
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - Bearer: []
+      summary: Returns tax rate for selected country
+      tags:
+      - Tax service
+  /tax/ip:
+    get:
+      description: This endpoint will return tax rates for country discovered based
+        on Customer's IP address
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: Customer's IP address
+        in: query
+        name: ip
+        required: true
+        type: string
+      - description: 'You can filter your taxes by one of following types: ''standard'',
+          ''reduced'', ''second reduced'', ''third reduced'' and ''super reduced''.'
+        in: query
+        name: filter
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of tax rates for VAT, GST & TAX
+          schema:
+            items:
+              $ref: '#/definitions/Rates'
+            type: array
+        404:
+          description: Geolocation can not be processed/No matching country found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - Bearer: []
+      summary: Tax rates by geolocation based on Customer IP address
+      tags:
+      - Tax service
+  /tax/rates:
+    get:
+      description: This method returns all tax rates configured on Member's account
+      parameters:
+      - description: 'Domain name: api.taxrates.io'
+        in: query
+        name: domain
+        required: true
+        type: string
+      - description: 'You can filter your taxes by one of following types: ''standard'',
+          ''reduced'', ''second reduced'', ''third reduced'' and ''super reduced''.'
+        in: query
+        name: filter
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of tax rates
+          schema:
+            items:
+              $ref: '#/definitions/Rates'
+            type: array
+        404:
+          description: No configured tax rates found. Have you added any country to
+            your account?
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - Bearer: []
+      summary: Get all tax rates
+      tags:
+      - Tax service
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":4:{s:7:\"Address\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:16:\"apartment_number\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Apartment
+  number if any\";s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"City
+  name\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Country
+  name\";s:4:\"type\";s:6:\"string\";}s:11:\"postal_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"City
+  zip code\";s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Province
+  or state\";s:4:\"type\";s:6:\"string\";}s:6:\"street\";O:8:\"stdClass\":2:{s:11:\"description\";s:6:\"Street\";s:4:\"type\";s:6:\"string\";}s:13:\"street_number\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Street
+  number\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Error\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Rates\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"country_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  country name\";s:4:\"type\";s:6:\"string\";}s:5:\"taxes\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tax\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"Tax\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"Country\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  country name\";s:4:\"type\";s:6:\"string\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"The
+  tax type\";s:4:\"type\";s:6:\"string\";}s:9:\"data_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"The
+  tax name and description (VAT, GST, PIT, CIT etc)\";s:4:\"type\";s:6:\"string\";}s:10:\"data_value\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  tax value in percents\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

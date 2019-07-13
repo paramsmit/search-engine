@@ -1,0 +1,303 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:2:\"v2\";s:5:\"title\";s:18:\"Checkmarx
+  REST API\";s:11:\"description\";s:509:\"The login method (/auth/login) under the
+  GENERAL section is now obsolete and will be removed in future Checkmarx versions.
+  It is recommended to only use this method to explore the CxREST API through Swagger.
+  In order to authenticate the CxREST API from a custom application, use OAuth2 according
+  to the <a href=http://AreYouOK/cxrestapi/auth/identity/.well-known/openid-configuration
+  >discovery document</a> and <a href ='https://checkmarx.atlassian.net/wiki/spaces/KC/overview'
+  >Checkmarx documentation</a>. \";}"
+host: 192.168.124.9
+basePath: /cxrestapi/help
+paths:
+  /osa/scans:
+    get:
+      tags:
+      - OSA
+      summary: Returns basic scan details for all scans associated with a specified
+        project id
+      operationId: OsaScanRequests_GetV2ByprojectIdpageitemsPerPage
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: projectId
+        in: query
+        description: Unique Id of the specific project
+        required: true
+        type: integer
+        format: int64
+      - name: page
+        in: query
+        description: Page number (default 1)
+        required: false
+        type: integer
+        format: int32
+      - name: itemsPerPage
+        in: query
+        description: Number of items per page (default 100)
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cx.Osa.Application.DTOs.Responses.ScanDtoV2'
+    post:
+      tags:
+      - OSA
+      summary: Creates a new scan request
+      operationId: OsaScanRequests_PostByscanRequestInfo.projectIdscanRequestInfo.originscanRequestInfo.hashedFilesList
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: projectId
+        in: formData
+        description: The Project Id associated with requested scan
+        required: false
+        type: integer
+      - name: origin
+        in: formData
+        description: The location from which scan was requested (if not specified
+          (Portal) will be selected)
+        required: false
+        type: string
+      - name: zippedSource
+        in: formData
+        description: Zipped source code to scan
+        required: false
+        type: file
+      responses:
+        202:
+          description: Accepted
+          schema:
+            $ref: '#/definitions/Cx.Osa.Presentation.DTOs.NewDTOs.NewScanResponseDTO'
+        400:
+          description: Bad Request
+  /auth/login:
+    post:
+      tags:
+      - GENERAL
+      summary: Defines the API authentication credentials
+      operationId: Auth_LoginByuser
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: user
+        in: body
+        description: User credentails
+        required: true
+        schema:
+          $ref: '#/definitions/Cx.AccessControl.API.DTOs.Credentials'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+  /projects/{id}:
+    get:
+      tags:
+      - GENERAL
+      summary: Gets details of a specific project
+      operationId: ProjectsManagement_GetV2Byid
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: id
+        in: path
+        description: Unique ID of a specific project
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.ProjectBaseDtoV2'
+        400:
+          description: Bad Request
+    put:
+      tags:
+      - GENERAL
+      summary: Updates an existing project
+      operationId: ProjectsManagement_PutByidproject
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: id
+        in: path
+        description: Unique ID of a project to update
+        required: true
+        type: integer
+        format: int64
+      - name: project
+        in: body
+        description: Project details
+        required: true
+        schema:
+          $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.UpdateFullProjectDto'
+      responses:
+        204:
+          description: No Content
+          schema:
+            type: object
+        400:
+          description: Bad Request
+    delete:
+      tags:
+      - GENERAL
+      summary: Deletes an existing project with all related scans
+      operationId: ProjectsManagement_DeleteByiddeleteProjectDto
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: id
+        in: path
+        description: Unique ID of a project to delete
+        required: true
+        type: integer
+        format: int64
+      - name: deleteProjectDto
+        in: body
+        description: A set of rules that specifies how the project should be deleted
+        required: true
+        schema:
+          $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.DeleteProjectDto'
+      responses:
+        202:
+          description: Accepted
+          schema:
+            type: object
+        400:
+          description: Bad Request
+    patch:
+      tags:
+      - GENERAL
+      summary: Updates an existing project's name or team Id
+      operationId: ProjectsManagement_PatchByidproject
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: id
+        in: path
+        description: Unique ID of a project to update
+        required: true
+        type: integer
+        format: int64
+      - name: project
+        in: body
+        description: Project details
+        required: true
+        schema:
+          $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.UpdateProjectDto'
+      responses:
+        204:
+          description: No Content
+          schema:
+            type: object
+        400:
+          description: Bad Request
+  /projects:
+    get:
+      tags:
+      - GENERAL
+      summary: Gets details of all visible projects
+      operationId: ProjectsManagement_GetV2ByprojectNameteamId
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: projectName
+        in: query
+        description: ""
+        required: false
+        type: string
+      - name: teamId
+        in: query
+        description: ""
+        required: false
+        type: string
+      responses:
+        200:
+          description: Ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.ProjectBaseDtoV2'
+    post:
+      tags:
+      - GENERAL
+      summary: Creates a new project with default preset and configuration settings
+      operationId: ProjectsManagement_PostByproject
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: project
+        in: body
+        description: Project details
+        required: true
+        schema:
+          $ref: '#/definitions/Cx.ProjectManagement.Presentation.Dtos.SaveProjectDto'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Cx.SuperTypes.API.Dtos.LinkedResource'
+        400:
+          description: Bad Request
+  /osa/scans/{scanId}:
+    get:
+      tags:
+      - OSA
+      operationId: OsaScanRequests_GetV2ByscanId
+      consumes:
+      - application/json;v=2.0
+      produces:
+      - application/json;v=2.0
+      parameters:
+      - name: scanId
+        in: path
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Cx.Osa.Application.DTOs.Responses.ScanDtoV2'
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":15:{s:55:\"Cx.ProjectManagement.Presentation.Dtos.ProjectBaseDtoV2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:6:\"teamId\";O:8:\"stdClass\":4:{s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:36:\"00000000-0000-0000-0000-000000000000\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:8:\"isPublic\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;}s:12:\"customFields\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:73:\"#/definitions/Cx.ProjectManagement.Domain.ValueObjects.ProjectCustomField\";}s:8:\"readOnly\";b:1;}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/Cx.SuperTypes.API.Dtos.LinkDtoBase\";}}}}s:59:\"Cx.ProjectManagement.Domain.ValueObjects.ProjectCustomField\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:34:\"Cx.SuperTypes.API.Dtos.LinkDtoBase\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"rel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:3:\"uri\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}}}s:59:\"Cx.ProjectManagement.Presentation.Dtos.UpdateFullProjectDto\";O:8:\"stdClass\":3:{s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:10:\"owningTeam\";i:2;s:12:\"customFields\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Specifies
+  the name of the project\";s:4:\"type\";s:6:\"string\";}s:10:\"owningTeam\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Specifies
+  the team id which owns the project\";s:4:\"type\";s:6:\"string\";}s:12:\"customFields\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"Specifies
+  the custom fields in a project\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:73:\"#/definitions/Cx.ProjectManagement.Presentation.Dtos.UpdateCustomFieldDto\";}}}}s:59:\"Cx.ProjectManagement.Presentation.Dtos.UpdateCustomFieldDto\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:55:\"Cx.ProjectManagement.Presentation.Dtos.UpdateProjectDto\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Specifies
+  the name of the project\";s:4:\"type\";s:6:\"string\";}s:10:\"owningTeam\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Specifies
+  the team id which owns the project\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"SomeProject\";s:10:\"owningTeam\";s:36:\"12345678-1234-1234-1234-123996789012\";}}s:55:\"Cx.ProjectManagement.Presentation.Dtos.DeleteProjectDto\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:18:\"deleteRunningScans\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Specifies
+  whether the running scans must be deleted\";s:4:\"type\";s:7:\"boolean\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:18:\"deleteRunningScans\";b:1;}}s:53:\"Cx.ProjectManagement.Presentation.Dtos.SaveProjectDto\";O:8:\"stdClass\":4:{s:8:\"required\";a:2:{i:0;s:10:\"owningTeam\";i:1;s:8:\"isPublic\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Specifies
+  the name of the project\";s:4:\"type\";s:6:\"string\";}s:10:\"owningTeam\";O:8:\"stdClass\":4:{s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:44:\"Specifies
+  the team id which owns the project\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"00000000-0000-0000-0000-000000000000\";}s:8:\"isPublic\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Specifies
+  whether the project public or not\";s:4:\"type\";s:7:\"boolean\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:4:\"name\";s:11:\"SomeProject\";s:10:\"owningTeam\";s:36:\"12345678-1234-1234-1234-123456789012\";s:8:\"isPublic\";b:1;}}s:37:\"Cx.SuperTypes.API.Dtos.LinkedResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:4:\"link\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:48:\"#/definitions/Cx.SuperTypes.API.Dtos.LinkDtoBase\";s:8:\"readOnly\";b:1;}}}s:37:\"Cx.AccessControl.API.DTOs.Credentials\";O:8:\"stdClass\":3:{s:11:\"description\";s:0:\"\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"userName\";O:8:\"stdClass\":2:{s:11:\"description\";s:0:\"\";s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":2:{s:11:\"description\";s:0:\"\";s:4:\"type\";s:6:\"string\";}}}s:43:\"Cx.Osa.Application.DTOs.Responses.ScanDtoV2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:14:\"findingsStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":3:{s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"00000000-0000-0000-0000-000000000000\";}s:16:\"startAnalyzeTime\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:14:\"endAnalyzeTime\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"sourceCodeOrigin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:46:\"#/definitions/Cx.Osa.Application.DTOs.StateDTO\";}s:25:\"sharedSourceLocationPaths\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:32:\"Cx.Osa.Application.DTOs.StateDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"failureReason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:48:\"Cx.Osa.Presentation.DTOs.NewDTOs.ScanRequestInfo\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Scan
+  request details\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"projectId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:45:\"The
+  Project Id associated with requested scan\";s:7:\"minimum\";i:1;s:4:\"type\";s:7:\"integer\";}s:6:\"origin\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"The
+  location from which scan was requested (if not specified (Portal) will be selected)\";s:4:\"type\";s:6:\"string\";}s:15:\"hashedFilesList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:60:\"#/definitions/Cx.Osa.Presentation.DTOs.NewDTOs.HashedFileDTO\";}}}}s:46:\"Cx.Osa.Presentation.DTOs.NewDTOs.HashedFileDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"sha1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"filename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:51:\"Cx.Osa.Presentation.DTOs.NewDTOs.NewScanResponseDTO\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:6:\"scanId\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"scanId\";O:8:\"stdClass\":3:{s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"00000000-0000-0000-0000-000000000000\";}}}}"
+...

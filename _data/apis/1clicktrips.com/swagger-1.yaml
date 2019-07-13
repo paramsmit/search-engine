@@ -1,0 +1,619 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:15:\"1ClickTrips API\";s:11:\"description\";s:27:\"Business
+  travel at its best\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: 1clicktrips.com
+basePath: /api
+paths:
+  /auth/register:
+    post:
+      summary: User Signup
+      description: The user signup takes a username and a password as post argumentsnand
+        returns an auth token with its expiration date.n
+      tags:
+      - Auth
+      parameters:
+      - name: email
+        in: body
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: body
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Authentication token for a user
+          schema:
+            $ref: '#/definitions/Authentication'
+        401:
+          description: Authentication failure
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /auth/local:
+    post:
+      summary: User Signin
+      description: The user signin takes a username and a password as post argumentsnand
+        returns an auth token.n
+      tags:
+      - Auth
+      parameters:
+      - name: email
+        in: body
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: body
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Authentication token for a user
+          schema:
+            $ref: '#/definitions/Authentication'
+        401:
+          description: Authentication failure
+          schema:
+            type: string
+        500:
+          description: Internal server error
+          schema:
+            type: string
+  /auth/twitter:
+    get:
+      summary: Twitter Signin
+      description: The Twitter authentication will be done with Twitter oauth2.n
+      tags:
+      - Auth
+      responses:
+        200:
+          description: Twitter signin successful
+          schema:
+            $ref: '#/definitions/Authentication'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /auth/unlink/twitter:
+    get:
+      summary: Unlink Twitter Accout
+      description: The Twitter account can be unlinked from the local account. n
+      tags:
+      - Auth
+      responses:
+        200:
+          description: Twitter unlink successful
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /auth/logout:
+    get:
+      summary: Log out
+      description: Log out the user and delete the cookie from the server.n
+      tags:
+      - Auth
+      - User
+      responses:
+        200:
+          description: Logout successful
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /account/profile:
+    get:
+      summary: User Profile
+      description: The User Profile endpoint returns information about the 1clicktripsnuser
+        that has authenticated with the application.n
+      tags:
+      - User
+      - Settings
+      responses:
+        200:
+          description: Profile information for a user
+          schema:
+            $ref: '#/definitions/Profile'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Update User Profile
+      description: The User Profile can be only updated collectively.n
+      tags:
+      - User
+      - Settings
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Profile'
+      responses:
+        200:
+          description: Update of Profile successful
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /account/settings:
+    get:
+      summary: User Settings
+      description: The Settings endpoint returns information on the user settings
+        of nthe currently authenticated user. n
+      tags:
+      - Settings
+      - User
+      parameters:
+      - name: category
+        in: query
+        type: string
+        description: Settings category to retrieve.n
+      responses:
+        200:
+          description: An array of settings
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Setting'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Update User Settings
+      description: User settings can be updated one at a time. It must be assured,
+        thatnall information are supplied to be able to create a new setting or nupdate
+        an existing one.n
+      tags:
+      - Settings
+      - User
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Setting'
+      responses:
+        200:
+          description: Update of setting successful
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /account/favorites:
+    get:
+      summary: Get User Favorites
+      description: The User Favorites endpoint returns data about a user's favorites
+        nthat he saved before.n
+      tags:
+      - User
+      parameters:
+      - name: limit
+        in: query
+        type: integer
+        format: int32
+        description: Number of items to retrieve. Default is 5, maximum is 100.n
+      responses:
+        200:
+          description: Array of favorites for the authenticated user.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Favorite'
+        404:
+          description: No favorites found
+    post:
+      summary: Update Favorites
+      description: Save a new favorite or edit an existing one.
+      tags:
+      - User
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Favorite'
+      responses:
+        200:
+          description: Creation/Update of favorites successful.
+        400:
+          description: Request malformed.
+        500:
+          description: Internal server error.
+  /account/favorites/{favoriteId}:
+    delete:
+      summary: Delete Favorite
+      description: Deletes the favorite with the given id.
+      tags:
+      - User
+      parameters:
+      - name: favoriteId
+        in: path
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Deletion of favorite sucessful
+        500:
+          description: Internal server error.
+  /account/bookings:
+    get:
+      summary: Booking History
+      description: The Bookings endpoint returns data about a user's lifetime nactivity
+        with 1clicktrips.n
+      tags:
+      - User
+      parameters:
+      - name: offset
+        in: query
+        required: false
+        type: integer
+        format: int64
+        description: The offset is given as seconds since the UNIX epoche. Only nlook
+          for trips that have been booked after this date. Defaultnis zero.n
+      - name: limit
+        in: query
+        required: false
+        type: integer
+        format: int32
+        description: Number of items to retrieve. Default is 5, maximum is 30.n
+      responses:
+        200:
+          description: Booking history for the given user.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Booking'
+        404:
+          description: No booking available.
+        500:
+          description: Internal server error.
+    post:
+      summary: Add Booking
+      description: Create a new booking.
+      tags:
+      - User
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Booking'
+      responses:
+        200:
+          description: Creation of booking successful
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /account/messages:
+    get:
+      summary: Get Messages for the user
+      description: The Messages endpoint returns data that is supposed tonbe presented
+        to the user in the frontend.n
+      tags:
+      - User
+      responses:
+        200:
+          description: Array of messages for the given user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /search/events:
+    get:
+      summary: Event List
+      description: The events endpoint will deliver a list of events to the clientnthat
+        match with the given query criteria.n
+      tags:
+      - Search
+      parameters:
+      - name: qs
+        in: query
+        description: The search string to filter the events
+        required: true
+        type: string
+      - name: start_date
+        in: query
+        description: The start date of the trip to be planned
+        required: false
+        type: string
+      - name: end_date
+        in: query
+        description: The end date of the trip to be planned
+        required: false
+        type: string
+      - name: limit
+        in: query
+        description: The maximum number of events to return
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: An array of events
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Event'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /search/spaces:
+    get:
+      summary: Meeting Spaces List
+      description: The spaces endpoint will deliver a list of meeting spacesnto the
+        client that match with the given query criteria.n
+      tags:
+      - Search
+      parameters:
+      - name: qs
+        in: query
+        description: The search string to filter the meeting spaces
+        required: true
+        type: string
+      - name: start_date
+        in: query
+        description: The start date of the trip to be planned
+        required: false
+        type: string
+      - name: end_date
+        in: query
+        description: The end date of the trip to be planned
+        required: false
+        type: string
+      - name: limit
+        in: query
+        description: The maximum number of meeting spaces to return
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: An array of meeting spaces
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MeetingSpace'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /search/trips:
+    post:
+      summary: Trip Results
+      description: The Trips endpoint returns a collection of trips that matches with
+        nthe given parameters. n
+      tags:
+      - Search
+      parameters:
+      - name: origin
+        in: body
+        description: Origin location
+        required: true
+        schema:
+          type: object
+          $ref: '#/definitions/Location'
+      - name: originDescription
+        in: body
+        description: Description of the origin location
+        required: false
+        schema:
+          type: string
+      - name: appointments
+        in: body
+        description: Array of appointments
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Appointment'
+      - name: roundTrip
+        in: body
+        description: Roundtrip option
+        required: true
+        schema:
+          type: integer
+          format: int16
+          description: This should be boolean, but Swagger UI is not nable to render
+            it proberly.n
+      - name: currency
+        in: body
+        description: Active currency
+        required: true
+        schema:
+          type: string
+      - name: locale
+        in: body
+        description: Active locale
+        required: true
+        schema:
+          type: string
+      - name: numberOfTravelers
+        in: body
+        required: false
+        schema:
+          type: integer
+          format: int16
+      - name: numberOfChildren
+        in: body
+        required: false
+        schema:
+          type: integer
+          format: int16
+      - name: preferences
+        in: body
+        description: A preference set that will be used for finding a nproper custom
+          trip.n
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Setting'
+      responses:
+        200:
+          description: An array of trips
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Itinerary'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /search/alternatives:
+    get:
+      summary: Trip Alternatives
+      description: The Alternatives endpoint returns a collection of alternatives
+        nfor a given trip segment. n
+      tags:
+      - Search
+      parameters:
+      - name: tripId
+        in: query
+        description: The trip ID of the requested trip
+        required: true
+        type: string
+      - name: segmentId
+        in: query
+        description: The segment ID of the segment to be replaced
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: The maximum number of alternatives
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: An array of alternatives
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Segment'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /locales:
+    get:
+      summary: Language File
+      description: The language file for a given language code.n
+      tags:
+      - Language
+      - Localization
+      responses:
+        200:
+          description: A JSON array with the available languages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Language'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /locales/{languageCode}:
+    get:
+      summary: Language File
+      description: The language file for a given language code.n
+      tags:
+      - Language
+      - Localization
+      parameters:
+      - name: languageCode
+        in: path
+        required: true
+        type: string
+        description: ISO 639-1 Language Codes
+      responses:
+        200:
+          description: A JSON object with the translations
+          schema:
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /currencies:
+    get:
+      summary: List of Currencies
+      description: The list of available currencies.n
+      tags:
+      - Language
+      - Localization
+      responses:
+        200:
+          description: A JSON array with the available currencies
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Currency'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":21:{s:14:\"Authentication\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:5:\"token\";i:1;s:7:\"expires\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Authentication
+  token\";}s:7:\"expires\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:33:\"Expiration
+  date of the auth token\";}}}s:8:\"Language\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"ISO
+  639-1 Language Code (e.g. en-US)\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"The
+  name of the language (e.g. English)\";}}}s:8:\"Currency\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"EUR\";}s:6:\"symbol\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"\u20AC\";}s:18:\"thousandsSeparator\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"decimalSeparator\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int16\";}s:12:\"symbolOnLeft\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:27:\"spaceBetweenAmountAndSymbol\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:19:\"roundingCoefficient\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int16\";}s:13:\"decimalDigits\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int16\";}}}s:7:\"Setting\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  category of the key-value pair\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  settings key (e.g. early bird)\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  settings value (e.g. true)\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  description for the key-value pair\";}}}s:9:\"Itinerary\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"outbound\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Trip\";}s:7:\"inbound\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Trip\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  ISO 4217 currency code\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:67:\"Defines
+  the trip result type\n  0 = budget\n  1 = time\n  2 = comfort\n\";}}}s:4:\"Trip\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:13:\"departureTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2014-11-12T19:05:00\";}s:11:\"arrivalTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2014-11-12T19:05:00\";}s:8:\"distance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"segments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Segment\";}}}}s:8:\"Location\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:9:\"longitude\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}}s:5:\"Place\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}}}s:7:\"Segment\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:13:\"departureTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2014-11-12T19:05:00\";}s:11:\"arrivalTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2014-11-12T19:05:00\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:19:\"Duration
+  in minutes\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:96:\"Travel
+  option used. \nWalk = 1, Car = 2, Bus = 4, Train = 8, \nFlight = 16, Taxi = 32,
+  Ferry = 64\n\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  ISO 4217 currency code\";}}}s:7:\"Profile\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"first-name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"First
+  name of the user\";}s:9:\"last-name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Last
+  name of the user\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Email
+  address of the user\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Image
+  URL of the user\";}}}s:7:\"Address\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"street\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"zip\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Favorite\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:6:\"origin\";i:1;s:11:\"destination\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Unique
+  identifier for the favorite\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Place\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Place\";}s:9:\"transport\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:96:\"Travel
+  option used. \nWalk = 1, Car = 2, Bus = 4, Train = 8, \nFlight = 16, Taxi = 32,
+  Ferry = 64\n\";}}}}s:7:\"Booking\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:11:\"destination\";i:3;s:9:\"startDate\";i:4;s:7:\"endDate\";i:5;s:12:\"participants\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Unique
+  identifier for the booking\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"A
+  speaking title for the booking\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:96:\"The
+  destination location of the booking. Can be an address\nor a description (e.g. company
+  name)\n\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Tags
+  that can be used to identify the trip.\";}}s:9:\"startDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"2015-02-09T02:54:51+00:0\";}s:7:\"endDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"2015-02-09T02:54:51+00:0\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:98:\"A
+  url to any sort of information for that trip. Could\nbe a link to the event or the
+  host company.\n\";}s:5:\"hotel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:19:\"#/definitions/Hotel\";}s:12:\"participants\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:25:\"#/definitions/Participant\";}}}}s:5:\"Hotel\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"checkIn\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:10:\"decription\";s:25:\"Link
+  to the hotel website\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:10:\"decription\";s:23:\"Link
+  to the hotel image\";}}}s:11:\"Participant\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:5:\"email\";i:1;s:6:\"booked\";i:2;s:5:\"image\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"booked\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"arrivalTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"2015-02-09T02:54:51+00:0\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Image
+  url for the participant\";}s:7:\"profile\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Link
+  to a user profile.\";}}}s:5:\"Event\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:8:\"location\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"dates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Timing\";}}s:4:\"open\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:75:\"Indicates
+  if the event is open, when the user planned \nthe according trip.\n\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Image
+  url of the event\";}}}s:6:\"Timing\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"start\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"ISO
+  8601 time and date\n\"2015-02-09T02:54:51+00:0\"\n\";}s:3:\"end\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"ISO
+  8601 time and date\n\"2015-02-09T02:54:51+00:0\"\n\";}}}s:11:\"Appointment\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:8:\"location\";i:1;s:5:\"start\";i:2;s:3:\"end\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:5:\"start\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2015-02-09T02:54:51\";}s:3:\"end\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"2015-02-09T02:54:51\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"MeetingSpace\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:5:\"title\";i:1;s:8:\"location\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:14:\"seatsAvailable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"catering\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:7:\"Message\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"2015-02-10T02:54:51+00:0\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"Can
+  be used to store any type of information that \nthen can be used to show an icon
+  in the frontend.\n\";}s:6:\"action\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"The
+  action property can be used to store some action\nthat will be executed, if the
+  user accepts the message.\n\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

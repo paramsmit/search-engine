@@ -1,0 +1,536 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:5:\"0.0.1\";s:5:\"title\";s:14:\"OpenTrials
+  API\";}"
+basePath: /v1
+paths:
+  /swagger.yaml: []
+  /search:
+    get:
+      tags:
+      - trials
+      description: Returns trials based on a search query. By default, it'll search
+        in all of a trial's attributes.n- `q` is a [ElasticSearch query string](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-query-string-query.html#query-string-syntax)
+        (e.g. `public_title:(depressive OR depression)`)n- `page` can take a value
+        between `1` and `100`n- `per_page` can take a value between `10` and `100`
+      operationId: searchTrials
+      parameters:
+      - name: q
+        in: query
+        description: The search query (follows the [ElasticSearch Query String](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-query-string-query.html#query-string-syntax)
+          syntax)
+        type: string
+      - name: page
+        in: query
+        description: The page number
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of items per page
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 20
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/TrialSearchResults'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /search/autocomplete/{in}:
+    get:
+      tags:
+      - search
+      description: Autocomplete search feature for supported database entities (`location`).
+        It has the same options as a regular `search` operation, with an extra **required**
+        `in` parameter indicating the entity type to search.
+      operationId: autocomplete
+      parameters:
+      - name: in
+        in: path
+        required: true
+        description: The entity to search for
+        type: string
+        enum:
+        - location
+      - name: q
+        in: query
+        description: The search query
+        type: string
+      - name: page
+        in: query
+        description: The page number
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of items per page
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 20
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/AutocompleteResults'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /search/fda_documents:
+    get:
+      tags:
+      - search
+      description: Search the FDA documents
+      operationId: searchFDADocuments
+      parameters:
+      - name: q
+        in: query
+        description: The search query (follows the [ElasticSearch Query String](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-query-string-query.html#query-string-syntax)
+          syntax)
+        type: string
+      - name: text
+        in: query
+        description: Search query on the documents file's text (follows the [ElasticSearch
+          Simple Query String](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
+          syntax)
+        type: string
+      - name: page
+        in: query
+        description: The page number
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of items per page
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 20
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/FDADocumentSearchResults'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /trials/{id}:
+    get:
+      tags:
+      - trials
+      description: Returns a trial's details and related entities (e.g. `conditions`).
+      operationId: getTrial
+      parameters:
+      - name: id
+        in: path
+        description: ID of the trial
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Trial'
+        404:
+          description: Trial not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /publications/{id}:
+    get:
+      tags:
+      - publications
+      description: Returns publication details
+      operationId: getPublication
+      parameters:
+      - name: id
+        in: path
+        description: ID of the publication
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Publication'
+        404:
+          description: Publication not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /conditions/{id}:
+    get:
+      tags:
+      - conditions
+      description: Returns condition details
+      operationId: getCondition
+      parameters:
+      - name: id
+        in: path
+        description: ID of the condition
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Condition'
+        404:
+          description: Condition not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /organisations/{id}:
+    get:
+      tags:
+      - organisations
+      description: Returns organisation details
+      operationId: getOrganisation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the organisation
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Organisation'
+        404:
+          description: Organisation not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /trials/{id}/records:
+    get:
+      tags:
+      - trials
+      description: Returns a trial's raw records from its sources
+      operationId: getRecords
+      parameters:
+      - name: id
+        in: path
+        description: ID of the trial
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/RecordList'
+        404:
+          description: Trial not found
+  /trials/{trialId}/records/{id}:
+    get:
+      tags:
+      - trials
+      description: Returns a trial's raw record from its sources
+      operationId: getRecord
+      parameters:
+      - name: trialId
+        in: path
+        description: ID of the trial
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: ID of the trial's record
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Record'
+        404:
+          description: Trial not found
+  /persons/{id}:
+    get:
+      tags:
+      - persons
+      description: Returns person details
+      operationId: getPerson
+      parameters:
+      - name: id
+        in: path
+        description: ID of the person
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Person'
+        404:
+          description: Person not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /interventions/{id}:
+    get:
+      tags:
+      - interventions
+      description: Returns intervention details
+      operationId: getIntervention
+      parameters:
+      - name: id
+        in: path
+        description: ID of the intervention
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Intervention'
+        404:
+          description: Intervention not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /sources:
+    get:
+      tags:
+      - sources
+      description: Returns list of sources
+      operationId: list
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/SourceList'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /fda_applications:
+    get:
+      tags:
+      - fda_applications
+      description: Returns FDA applications
+      operationId: listFDAApplications
+      parameters:
+      - name: page
+        in: query
+        description: The page number
+        type: integer
+        minimum: 1
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of items per page
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 20
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/FDAApplicationList'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /fda_applications/{id}:
+    get:
+      tags:
+      - fda_applications
+      description: Returns an FDA application details
+      operationId: getFDAApplication
+      parameters:
+      - name: id
+        in: path
+        description: ID of the FDA application
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/FDAApplication'
+        404:
+          description: FDA application not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /documents:
+    get:
+      tags:
+      - documents
+      description: Returns documents
+      operationId: listDocuments
+      parameters:
+      - name: page
+        in: query
+        description: The page number
+        type: integer
+        minimum: 1
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of items per page
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 20
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DocumentList'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /documents/{id}:
+    get:
+      tags:
+      - documents
+      description: Returns details of a document
+      operationId: getDocument
+      parameters:
+      - name: id
+        in: path
+        description: ID of the document
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Document'
+        404:
+          description: Document not found
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /document_categories:
+    get:
+      tags:
+      - document_categories
+      description: Returns document categories
+      operationId: listDocumentCategories
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DocumentCategoryList'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":40:{s:5:\"Trial\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:11:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:12:\"public_title\";i:3;s:9:\"locations\";i:4;s:13:\"interventions\";i:5;s:7:\"persons\";i:6;s:13:\"organisations\";i:7;s:7:\"records\";i:8;s:12:\"publications\";i:9;s:7:\"sources\";i:10;s:13:\"risks_of_bias\";}s:10:\"properties\";O:8:\"stdClass\":27:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"ID
+  of the trial\";}s:9:\"source_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"ID
+  of the trial's source\";}s:11:\"identifiers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:62:\"Object
+  that maps the trial's sources ids with its identifiers.\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Source
+  URL (where the trial was collected from)\";}s:12:\"public_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Title
+  of the trial\";}s:13:\"brief_summary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Summary
+  of the trial\";}s:18:\"target_sample_size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:11:\"description\";s:32:\"Target
+  sample size for the trial\";}s:6:\"gender\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Gender
+  of the subjects of the trial\";s:4:\"enum\";a:3:{i:0;s:4:\"both\";i:1;s:4:\"male\";i:2;s:6:\"female\";}}s:9:\"age_range\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"min_age\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:150:\"Minimum
+  participant age (e.g. \"12 Years\", \"1 Month\", \"15 Days\"). If unknown, it's
+  `undefined`. If no limit, it's \"any\". If not applicable, it's \"N/A\".\";}s:7:\"max_age\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:150:\"Maximum
+  participant age (e.g. \"12 Years\", \"1 Month\", \"15 Days\"). If unknown, it's
+  `undefined`. If no limit, it's \"any\". If not applicable, it's \"N/A\".\";}}}s:21:\"has_published_results\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:44:\"Trial
+  has its results published (true/false)\";}s:17:\"registration_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Date
+  the trial was registered\";s:6:\"format\";s:9:\"date-time\";}s:15:\"completion_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Date
+  the trial was completed\";s:6:\"format\";s:9:\"date-time\";}s:22:\"results_exemption_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"Date
+  when a certification of exemption has been filed for the trial\";s:6:\"format\";s:9:\"date-time\";}s:11:\"study_phase\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:68:\"Phases
+  of the study (e.g. `[\"Phase 2\"]` or `[\"Phase 1\", \"Phase 2\"]`)\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Completion
+  status of the trial\";s:4:\"enum\";a:7:{i:0;s:7:\"ongoing\";i:1;s:9:\"withdrawn\";i:2;s:9:\"suspended\";i:3;s:10:\"terminated\";i:4;s:8:\"complete\";i:5;s:7:\"unknown\";i:6;s:5:\"other\";}}s:18:\"recruitment_status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Recruitment
+  status of the trial\";s:4:\"enum\";a:4:{i:0;s:10:\"recruiting\";i:1;s:14:\"not_recruiting\";i:2;s:7:\"unknown\";i:3;s:5:\"other\";}}s:9:\"locations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"Locations
+  related to the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TrialLocation\";}}s:13:\"interventions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:34:\"Interventions
+  related to the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Intervention\";}}s:10:\"conditions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"Conditions
+  the trial refers to\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Condition\";}}s:7:\"persons\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:27:\"People
+  related to the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/TrialPerson\";}}s:13:\"organisations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:34:\"Organisations
+  related to the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TrialOrganisation\";}}s:7:\"records\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:32:\"(published)
+  records of the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/RecordSummary\";}}s:12:\"publications\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:32:\"Publications
+  referring the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PublicationSummary\";}}s:13:\"discrepancies\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:58:\"Discrepancies
+  in trial's details between different sources\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Discrepancies\";}}s:9:\"documents\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"Documents
+  related to the trial\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DocumentSummary\";}}s:7:\"sources\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Source\";}}s:13:\"risks_of_bias\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/RiskOfBias\";}}}}s:13:\"TrialLocation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:21:\"recruitment_countries\";i:1;s:5:\"other\";}}}}}s:11:\"description\";s:19:\"Location
+  of a trial\";}s:12:\"TrialSummary\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:12:\"public_title\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"ID
+  of the trial\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"OpenTrials
+  API URL for this trial\";}s:12:\"public_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Title
+  of the record\";}}}s:8:\"Location\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"ID
+  of the location\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Name
+  of the location\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Type
+  of the location (country / city / other)\";s:4:\"enum\";a:3:{i:0;s:7:\"country\";i:1;s:4:\"city\";i:2;s:5:\"other\";}}}}s:12:\"Intervention\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"ID
+  of the intervention\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Name
+  of the intervention\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"OpenTrials
+  API URL of the intervention\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Type
+  of the intervention (drug / other)\";s:4:\"enum\";a:3:{i:0;s:4:\"drug\";i:1;s:9:\"procedure\";i:2;s:5:\"other\";}}}}s:9:\"Condition\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"ID
+  of the condition\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Name
+  of the condition\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"OpenTrials
+  API URL of the condition\";}}}s:11:\"TrialPerson\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Person\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:22:\"principal_investigator\";i:1;s:14:\"public_queries\";i:2;s:18:\"scientific_queries\";i:3;s:5:\"other\";}}}}}s:11:\"description\";s:25:\"People
+  related to a trial\";}s:6:\"Person\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"ID
+  of the person\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the person\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"OpenTrials
+  API URL of the person\";}}}s:17:\"TrialOrganisation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organisation\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:15:\"primary_sponsor\";i:1;s:7:\"sponsor\";i:2;s:6:\"funder\";i:3;s:5:\"other\";}}}}}}s:12:\"Organisation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"ID
+  of the organisation\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Name
+  of the organisation\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"OpenTrials
+  API URL of the organisation\";}}}s:10:\"RecordList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Record\";}}s:6:\"Record\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:9:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:8:\"trial_id\";i:3;s:9:\"trial_url\";i:4;s:6:\"source\";i:5;s:10:\"source_url\";i:6;s:12:\"public_title\";i:7;s:10:\"created_at\";i:8;s:10:\"updated_at\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"ID
+  of the record\";}s:11:\"identifiers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:62:\"Object
+  that maps the trial's sources ids with its identifiers.\";}s:9:\"source_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"ID
+  of the record's source\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"OpenTrials
+  API URL of the record\";}s:8:\"trial_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"ID
+  of the trial referenced in the record\";}s:9:\"trial_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"OpenTrials
+  API URL of the trial referenced in the record\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Source\";}s:10:\"source_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"URL
+  of the record's source (where it was collected from)\";}s:12:\"public_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Title
+  of the record\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Trial's
+  status (e.g. ongoing, withdrawn, complete etc.)\";s:4:\"enum\";a:7:{i:0;s:7:\"ongoing\";i:1;s:9:\"withdrawn\";i:2;s:9:\"suspended\";i:3;s:10:\"terminated\";i:4;s:8:\"complete\";i:5;s:7:\"unknown\";i:6;s:5:\"other\";}}s:18:\"recruitment_status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Trial's
+  recruitment status (e.g. recruiting, unknown etc.)\";s:4:\"enum\";a:4:{i:0;s:10:\"recruiting\";i:1;s:14:\"not_recruiting\";i:2;s:7:\"unknown\";i:3;s:5:\"other\";}}s:10:\"is_primary\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:55:\"Is
+  this record the primary source of data for its trial\";}s:22:\"last_verification_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:57:\"Date
+  when the record's data was last verified by provider\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:32:\"Date
+  when the record was created\";}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Date
+  when the record was updated\";s:6:\"format\";s:9:\"date-time\";}}}s:11:\"Publication\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:6:\"source\";i:3;s:10:\"source_url\";i:4;s:5:\"title\";i:5;s:8:\"abstract\";}s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"ID
+  of the publication\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Source\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"source_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"abstract\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"authors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"journal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:4:\"slug\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"RecordSummary\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:9:\"source_id\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"source_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"is_primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:22:\"last_verification_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:18:\"PublicationSummary\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:3:\"url\";i:2;s:5:\"title\";i:3;s:9:\"source_id\";i:4;s:10:\"source_url\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"source_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"source_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"Discrepancies\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:44:\"Object
+  listing the Trial's discrepant fields\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"gender\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/DiscrepantFieldString\";}}s:18:\"target_sample_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/DiscrepantFieldInteger\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/DiscrepantFieldString\";}}s:18:\"recruitment_status\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/DiscrepantFieldString\";}}s:21:\"has_published_results\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/DiscrepantFieldBoolean\";}}}}s:21:\"DiscrepantFieldString\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DiscrepancyFieldBase\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:22:\"DiscrepantFieldInteger\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DiscrepancyFieldBase\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}s:22:\"DiscrepantFieldBoolean\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DiscrepancyFieldBase\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}}s:20:\"DiscrepancyFieldBase\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"record_id\";i:1;s:11:\"source_name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"record_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"source_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Document\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";i:3;s:17:\"document_category\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"ID
+  of the document\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"OpenTrials
+  API URL of the document\";}s:17:\"document_category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:30:\"#/definitions/DocumentCategory\";}s:10:\"source_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"URL
+  of origin for this document\";}s:6:\"trials\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TrialSummary\";}}s:4:\"file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:18:\"#/definitions/File\";}s:15:\"fda_application\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FDAApplication\";}s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:20:\"#/definitions/Source\";}}}s:15:\"DocumentSummary\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:3:\"url\";i:3;s:17:\"document_category\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"OpenTrials
+  API URL of the document\";}s:17:\"document_category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:30:\"#/definitions/DocumentCategory\";}s:6:\"trials\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TrialSummary\";}}s:4:\"file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:25:\"#/definitions/FileSummary\";}s:15:\"fda_application\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FDAApplication\";}s:9:\"source_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"ID
+  of the document's source\";}s:10:\"source_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"URL
+  of origin for this document\";}}}s:16:\"DocumentCategory\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Name
+  of document category\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Name
+  of document sub-category\";}}}s:20:\"DocumentCategoryList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/DocumentCategory\";}}}}s:12:\"DocumentList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DocumentSummary\";}}}}s:11:\"FileSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"ID
+  of the file\";}s:4:\"sha1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"source_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"URL
+  of origin for this file\";}s:16:\"documentcloud_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"File\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FileSummary\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"pages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:43:\"Array
+  with text of each of the file's pages\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:3:\"num\";i:1;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"num\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;s:11:\"description\";s:11:\"Page
+  number\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}}}s:10:\"RiskOfBias\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:9:\"source_id\";i:2;s:10:\"source_url\";i:3;s:8:\"study_id\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"source_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"source_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"study_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"risk_of_bias_criteria\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/RiskOfBiasCriteria\";}}}}s:18:\"RiskOfBiasCriteria\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"yes\";i:1;s:2:\"no\";i:2;s:7:\"unknown\";}}}}s:10:\"SourceList\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Source\";}}s:6:\"Source\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"source_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"URL
+  to source's website\";}s:24:\"terms_and_conditions_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"register\";i:1;s:7:\"journal\";i:2;s:5:\"other\";}}}}s:24:\"FDADocumentSearchResults\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/FDADocumentSearchResult\";}}}}s:23:\"FDADocumentSearchResult\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DocumentSummary\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"file\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/File\";}}}}}s:18:\"TrialSearchResults\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Trial\";}}}}s:19:\"AutocompleteResults\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AutocompleteResult\";}}}}s:18:\"AutocompleteResult\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"FDAApplicationList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FDAApplication\";}}}}s:14:\"FDAApplication\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"FDA
+  application ID\";}s:9:\"drug_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the drug\";}s:18:\"active_ingredients\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Active
+  ingredients contained in the drug\";}s:13:\"fda_approvals\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:24:\"Associated
+  FDA approvals\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FDAApproval\";}}s:12:\"organisation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:23:\"Associated
+  organisation\";s:4:\"$ref\";s:26:\"#/definitions/Organisation\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  FDA application type (e.g. \"NDA\", \"ANDA\", etc.)\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"OpenTrials
+  API URL for this FDA application\";}}}s:11:\"FDAApproval\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:11:\"action_date\";i:2;s:17:\"supplement_number\";i:3;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"FDA
+  approval ID\";}s:17:\"supplement_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Type
+  of FDA approval\";}s:11:\"action_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:5:\"notes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Additional
+  information about the FDA approval\";}s:15:\"fda_application\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FDAApplication\";}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

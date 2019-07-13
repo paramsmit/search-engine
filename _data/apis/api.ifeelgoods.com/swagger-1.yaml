@@ -1,0 +1,356 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:26:\"Ifeelgoods Fulfillment
+  API\";s:11:\"description\";s:76:\"Get started delivering Rewards using the Ifeelgoods
+  Platform Fulfillment API\";s:7:\"version\";s:5:\"2.1.0\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:11:\"API
+  Support\";s:3:\"url\";s:33:\"http://www.ifeelgoods.com/contact\";s:5:\"email\";s:25:\"apisupport@ifeelgoods.com\";}}"
+host: api.ifeelgoods.com
+basePath: /fulfillment/v2
+paths:
+  /accounts/me:
+    get:
+      tags:
+      - Account
+      summary: Show current
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      responses:
+        200:
+          $ref: '#/responses/Account'
+  /rewards:
+    get:
+      tags:
+      - Reward
+      summary: List all
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      responses:
+        200:
+          $ref: '#/responses/RewardsList'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+  /rewards/{reward_sku}:
+    get:
+      tags:
+      - Reward
+      summary: Show
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/RewardSku'
+      responses:
+        200:
+          $ref: '#/responses/Reward'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+  /clients:
+    get:
+      tags:
+      - Client
+      summary: List all
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      responses:
+        200:
+          $ref: '#/responses/ClientsList'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+  /clients/{client_id}:
+    get:
+      tags:
+      - Client
+      summary: Show
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/ClientId'
+      responses:
+        200:
+          $ref: '#/responses/Client'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+  /clients/{client_id}/promotions:
+    get:
+      tags:
+      - Promotion
+      summary: List all (for a given Client)
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/ClientId'
+      responses:
+        200:
+          $ref: '#/responses/PromotionsList'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+  /promotions/{promotion_id}:
+    get:
+      tags:
+      - Promotion
+      summary: Show
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/PromotionId'
+      responses:
+        200:
+          $ref: '#/responses/Promotion'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+  /promotions/{promotion_id}/redemptions:
+    get:
+      tags:
+      - Redemption
+      summary: List all
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/PromotionId'
+      - name: reward_sku
+        in: query
+        schema:
+          type: string
+          example: APP-ITC-10USD-US
+      - name: user_email
+        in: query
+        schema:
+          type: string
+          example: james.brown@example.com
+      - name: order_id
+        in: query
+        schema:
+          type: string
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - pending
+          - redeemed
+          - denied
+          - failed
+          example: redeemed
+      responses:
+        200:
+          $ref: '#/responses/RedemptionsList'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+    post:
+      tags:
+      - Redemption
+      summary: Create
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/PromotionId'
+      - name: data
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            order_id:
+              type: string
+            user:
+              $ref: '#/definitions/User'
+            reward:
+              type: object
+              properties:
+                sku:
+                  type: string
+                  example: APP-ITC-10USD-US
+          required:
+          - order_id
+      responses:
+        200:
+          $ref: '#/responses/Redemption'
+        201:
+          $ref: '#/responses/RedemptionCreated'
+  /promotions/{promotion_id}/rewards/{reward_sku}/redemptions/actions/redeem:
+    post:
+      tags:
+      - Redemption
+      summary: Create and Redeem
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/PromotionId'
+      - $ref: '#/parameters/RewardSku'
+      - name: data
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            order_id:
+              type: string
+            user:
+              $ref: '#/definitions/User'
+          required:
+          - order_id
+          - user
+      responses:
+        200:
+          $ref: '#/responses/Redemption'
+        201:
+          $ref: '#/responses/RedemptionCreated'
+  /redemptions/{redemption_id}:
+    get:
+      tags:
+      - Redemption
+      summary: Show
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/RedemptionId'
+      responses:
+        200:
+          $ref: '#/responses/Redemption'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+  /redemptions/{redemption_id}/actions/redeem:
+    post:
+      tags:
+      - Redemption
+      summary: Redeem
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - $ref: '#/parameters/RedemptionId'
+      - name: data
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            user:
+              $ref: '#/definitions/User'
+            reward:
+              type: object
+              properties:
+                sku:
+                  type: string
+                  example: APP-ITC-10USD-US
+          required:
+          - user
+      responses:
+        200:
+          $ref: '#/responses/Redemption'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+  /stats:
+    get:
+      tags:
+      - Stats
+      summary: Data relative to the Reward Delivery activity of a specific __Client__
+      parameters:
+      - $ref: '#/parameters/Api-Key'
+      - $ref: '#/parameters/Api-Secret'
+      - name: client_id
+        in: query
+        type: integer
+      - name: promotion_id
+        in: query
+        type: integer
+      - name: reward_sku
+        in: query
+        type: string
+      - name: start_date
+        description: ISO-8601 String representing the start date for the date range
+          for which activity stats are extracted
+        in: query
+        type: string
+        format: date-time
+      - name: end_date
+        description: ISO-8601 String representing the end date for the date range
+          for which activity stats are extracted
+        in: query
+        type: string
+        format: date-time
+      - name: interval
+        description: Aggregation granularity - daily, monthly, hourly (available only
+          when states parameter is redeemed)
+        in: query
+        type: string
+        enum:
+        - hourly
+        - daily
+        - weekly
+        - monthly
+        - yearly
+      - name: states
+        description: Filter to specify the state of the redemptions to include in
+          the stats
+        in: query
+        type: string
+        enum:
+        - pending
+        - redeemed
+        - denied
+        - failed
+      responses:
+        200:
+          $ref: '#/responses/Stats'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":9:{s:7:\"Account\";O:8:\"stdClass\":3:{s:11:\"description\";s:100:\"An
+  __Account__ allows you to access the Ifeelgoods API. Permissions are granted based
+  on your roles.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:170;}s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"John
+  Doe\";}s:5:\"email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";s:7:\"example\";s:18:\"john.doe@gmail.com\";}s:12:\"phone_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:11234567890;}s:5:\"roles\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"fulfillment_api\";}}s:8:\"timezone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"America/Los_Angeles\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"en\";}s:11:\"access_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"service\";}}}s:6:\"Reward\";O:8:\"stdClass\":3:{s:11:\"description\";s:156:\"A
+  __Reward__ (aka Product SKU) is a specific denomination of a Digital or Physical
+  Gift that can be delivered to a User. \"iTunes Code 10$ (US)\" is a Reward.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"APP-ITC-10USD-US\";}s:12:\"denomination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"$10\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"$10
+  iTunes\xAE Code\";}s:4:\"cost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:10;}s:13:\"cost_currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:10:\"face_value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:10;}s:10:\"categories\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:3:{i:0;s:21:\"Games
+  & Entertainment\";i:1;s:6:\"Sports\";i:2;s:8:\"Shopping\";}}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:1:{i:0;s:2:\"US\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:1:{i:0;s:8:\"featured\";}}s:9:\"targeting\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"gender\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:4:\"male\";i:1;s:6:\"female\";}}s:9:\"age_range\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:5:\"18-24\";i:1;s:5:\"25-34\";}}s:5:\"reach\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"500
+  Millions App Store Account\";}}}s:17:\"catalog_badge_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:104:\"//cdn.ifeelgoods.com/media/a308a55a5b865ca43d4eda67dffa188a/b62a6cd46a327bfcfba41a4bed2083d7.png/raw.png\";}s:16:\"catalog_card_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:104:\"//cdn.ifeelgoods.com/media/a308a55a5b865ca43d4eda67dffa188a/b62a6cd46a327bfcfba41a4bed2083d7.png/raw.png\";}s:8:\"logo_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:104:\"//cdn.ifeelgoods.com/media/a308a55a5b865ca43d4eda67dffa188a/3d8028726d101e970e7f3b49e178ca85.png/raw.png\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:364:\"iTunes
+  Gift Cards are the perfect way to give the gift of entertainment! <br><br> Reward
+  your customers with iTunes Gift Codes, which allow users to shop for everything
+  in the iTunes Store : music, movies, TV shows, apps, books, and more ! <br><br>
+  Get the most of your ad dollars by using official iTunes creative and benefit from
+  Apple\u2019s great brand awareness!\";}s:24:\"terms_and_conditions_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:71:\"http://www.apple.com/legal/internet-services/itunes/us/terms.html#GIFTS\";}s:20:\"terms_and_conditions\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:114:\"Valid
+  only on iTunes Store for U.S. Requires iTunes account and prior acceptance of license
+  and usage terms. (...)\";}}}s:6:\"Client\";O:8:\"stdClass\":3:{s:11:\"description\";s:224:\"A
+  __Client__ represents a customer account that will be either retrieving or delivering
+  __Rewards__ to end users. Inventory and Budget are set at the Client level, however
+  one Client can run several different __Promotions__.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:237;}s:5:\"ui_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"ifeelgoods-inc\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Ifeelgoods,
+  Inc.\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"active\";}s:16:\"billing_location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:16:\"billing_currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:13:\"contact_email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";s:7:\"example\";s:18:\"joe@ifeelgoods.com\";}s:13:\"contact_phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:11234567890;}s:7:\"website\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:25:\"http://www.ifeelgoods.com\";}s:19:\"operating_countries\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:3:{i:0;s:2:\"CA\";i:1;s:2:\"JP\";i:2;s:2:\"US\";}}s:6:\"locale\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"en\";}s:8:\"logo_url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:104:\"//cdn.ifeelgoods.com/media/a308a55a5b865ca43d4eda67dffa188a/e90ddb6726bdb9171badc3d90097746a.png/raw.png\";}s:10:\"promotions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:115;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"Christmas
+  gifts delivery\";}}}}}}s:9:\"Promotion\";O:8:\"stdClass\":3:{s:11:\"description\";s:123:\"A
+  __Promotion__ represents the settings of a campaign in which a __Client__ distributes
+  their __Rewards__ to the end-users.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:944;}s:5:\"ui_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"christmas-gifts\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"en\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"Christmas
+  gifts delivery\";}s:14:\"start_datetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2017-12-25T00:00:00.000Z\";}s:12:\"end_datetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2017-12-25T23:59:59.000Z\";}s:6:\"client\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:237;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Ifeelgoods,
+  Inc.\";}}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"ready\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"pending\";}s:7:\"rewards\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"APP-ITC-10USD-US\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"$10
+  iTunes\xAE Code\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"ready\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"enabled\";}}}}s:11:\"fraud_level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"standard\";}s:16:\"redeem_frequency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"multiple\";}s:22:\"authentication_systems\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:1:{i:0;s:5:\"email\";}}s:17:\"secured_order_ids\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:10:\"Redemption\";O:8:\"stdClass\":3:{s:11:\"description\";s:146:\"A
+  __Redemption__ defines the status of a __Reward__ delivery (user eligibility, reward
+  selected, authentication settings, notification channels..)\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"MUC3B-JTQGN\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:55:\"https://redemption-sandbox.ifeelgoods.com/#/MUC3B-JTQGN\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"pending\";i:1;s:8:\"redeemed\";i:2;s:6:\"denied\";i:3;s:6:\"failed\";}s:7:\"example\";s:8:\"redeemed\";}s:8:\"order_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"856b0cb2-b40e-410f-93e8-182a1e13f8f9\";}s:7:\"testing\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:19:\"activation_datetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2015-09-29T10:40:06.000Z\";}s:17:\"redeemed_datetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2015-09-29T10:40:11.000Z\";}s:16:\"updated_datetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2015-12-11T17:47:42.000Z\";}s:6:\"client\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:45;}}}s:9:\"promotion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:402;}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"enabled\";i:1;s:8:\"disabled\";i:2;s:6:\"paused\";i:3;s:9:\"completed\";}s:7:\"example\";s:7:\"enabled\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"pending\";i:1;s:5:\"ready\";i:2;s:5:\"ended\";}s:7:\"example\";s:5:\"ready\";}}}s:6:\"reward\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"APP-ITC-10USD-US\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"enabled\";i:1;s:8:\"disabled\";i:2;s:6:\"paused\";}s:7:\"example\";s:7:\"enabled\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:14:\"invalid_reward\";i:1;s:13:\"no_allocation\";i:2;s:5:\"ready\";}s:7:\"example\";s:5:\"ready\";}}}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:281;}}}s:22:\"authentication_systems\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:16:\"facebook_connect\";i:1;s:6:\"google\";i:2;s:5:\"email\";i:3;s:3:\"sms\";}}s:7:\"example\";a:1:{i:0;s:5:\"email\";}}s:32:\"activation_notification_channels\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"email\";i:1;s:3:\"sms\";}}s:7:\"example\";a:1:{i:0;s:5:\"email\";}}s:21:\"notification_channels\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"email\";i:1;s:3:\"sms\";}}s:7:\"example\";a:2:{i:0;s:5:\"email\";i:1;s:3:\"sms\";}}}}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";s:7:\"example\";s:23:\"james.brown@example.com\";}s:12:\"phone_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"+16502899294\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"James\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Brown\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}}}s:7:\"Address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"line_1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Ifeelgoods,
+  Inc\";}s:6:\"line_2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"550
+  Hamilton Avenue\";}s:6:\"line_3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Suite
+  226\";}s:6:\"line_4\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"zipcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";i:94301;}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Palo
+  Alto\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"California\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}}}s:5:\"Stats\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"time_frame\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"start\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2016-03-16T08:00:00.000Z\";}s:3:\"end\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:24:\"2016-03-17T08:00:00.000Z\";}}}s:6:\"values\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"group_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"client\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:237;}s:9:\"promotion\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:115;}s:6:\"reward\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"APP-ITC-10USD-US\";}}}s:6:\"states\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"pending\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"redeemed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"denied\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"failed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}}}s:6:\"Paging\";O:8:\"stdClass\":3:{s:11:\"description\";s:82:\"Pagination
+  current state (current page number, number of items per page and total)\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:8:\"per_page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:20;}s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:186;}}}}"
+...

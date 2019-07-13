@@ -1,0 +1,608 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:5:\"0.1.1\";s:5:\"title\";s:15:\"Swappy
+  REST API\";s:11:\"description\";s:144:\"This is Swappy's REST API. See below for
+  all available endpoints. This is an <strong>alpha version</strong> and might still
+  be subject to change\";}"
+host: api.swappy.com
+basePath: /
+paths:
+  /oauth2/authorize:
+    get:
+      description: oAuth authorize endpoint, the user should be redirected to this
+        page to allow the application.
+      tags:
+      - oauth
+      parameters:
+      - name: client_id
+        in: query
+        type: integer
+        description: Application ID
+        required: true
+      - name: redirect_uri
+        in: query
+        type: string
+        description: URI where the user will be returned to, must match application's
+          configuration
+        required: true
+      - name: state
+        in: query
+        type: string
+        description: State that will be passed back to return_uri
+        required: true
+      - name: scope
+        in: query
+        type: string
+        description: Space separated scopes
+      - name: response_type
+        in: query
+        type: string
+        enum:
+        - code
+        - token
+        description: Type of request
+        required: true
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Member'
+  /oauth2/token:
+    post:
+      description: Get access token
+      tags:
+      - oauth
+      parameters:
+      - name: client_id
+        in: formData
+        type: integer
+        description: App API id
+        required: true
+      - name: client_secret
+        in: formData
+        type: string
+        description: App API secret
+        required: true
+      - name: grant_type
+        in: formData
+        type: string
+        enum:
+        - authorization_code
+        - client_credentials
+        description: Grant type for this token request
+        required: true
+      - name: code
+        in: formData
+        type: string
+        description: Access code, **required** for `authorization_code` grant type.
+      - name: scope
+        in: formData
+        type: string
+        description: Space separated scope for `authorization_code` grant type.
+      - name: redirect_uri
+        in: formData
+        type: string
+        description: Return URI for security purpose, must match the one sent to `/authorize`,
+          **required** for `authorization_code` grant type.
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+  /v1/me:
+    get:
+      operationId: getMe
+      description: Get info of current usern
+      security:
+      - oauth:
+        - email
+      tags:
+      - oauth
+      responses:
+        200:
+          description: Successful responsen
+          schema:
+            $ref: '#/definitions/Member'
+      parameters:
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+  /v1/me/addresses:
+    get:
+      operationId: getMyAddresses
+      description: Get users addressesn
+      security:
+      - oauth:
+        - addresses
+      parameters:
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      tags:
+      - oauth
+      responses:
+        200:
+          description: Successful responsen
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Address'
+  /v1/categories:
+    get:
+      operationId: getCategories
+      tags:
+      - data
+      description: Get all categories from the websiten
+      parameters:
+      - name: depth
+        in: query
+        type: integer
+        description: Number sublevels wanted, `1` for top level only. **default:**
+          no limit
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Category'
+  /v1/categories/{id}:
+    get:
+      operationId: getCategory
+      tags:
+      - data
+      description: Get one category categories from the websiten
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Category'
+        404:
+          description: Category not found
+          schema:
+            $ref: '#/definitions/Error'
+  /v1/products/{id}:
+    get:
+      operationId: getProduct
+      tags:
+      - products
+      description: Get a specific product by IDn
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/ShortProduct'
+        404:
+          description: Product not found
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      operationId: updateProduct
+      security:
+      - oauth:
+        - sell
+      tags:
+      - products
+      description: Edit an existing productn
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      - in: body
+        name: body
+        description: Informations that you are editing, images will be added
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Product'
+        403:
+          description: Product not yours
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Product not found
+          schema:
+            $ref: '#/definitions/Error'
+        422:
+          description: Data Validation Error
+          schema:
+            $ref: '#/definitions/ValidationError'
+    delete:
+      operationId: endProduct
+      security:
+      - oauth:
+        - sell
+      tags:
+      - products
+      description: End a product before it's normal end daten
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Product'
+        403:
+          description: Product is not yours or cannot be canceled
+          schema:
+            $ref: '#/definitions/Error'
+        422:
+          description: Product is not online
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Product not found
+          schema:
+            $ref: '#/definitions/Error'
+  /v1/pictures:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: uploadPicture
+      security:
+      - oauth:
+        - sell
+      tags:
+      - products
+      description: Upload imagesnImages will be deleted after 30 days if not used
+        in a product.
+      parameters:
+      - name: files
+        in: formData
+        type: file
+        description: The images, can be an array
+        required: true
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TempImage'
+        422:
+          description: At least one error upload failed
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Error'
+  /v1/products:
+    post:
+      operationId: createProduct
+      security:
+      - oauth:
+        - sell
+      tags:
+      - products
+      description: Submit a new product to your accountn
+      parameters:
+      - in: body
+        name: body
+        description: Product object that will be added to the store
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Product'
+        403:
+          description: Product not yours or cannot be edited
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Product not found
+          schema:
+            $ref: '#/definitions/Error'
+        422:
+          description: Data Validation Error
+          schema:
+            $ref: '#/definitions/ValidationError'
+  /v1/bulkjobs:
+    post:
+      operationId: createBulkJob
+      security:
+      - oauth:
+        - sell
+      tags:
+      - bulk
+      description: Start a bulk product jobn
+      parameters:
+      - in: body
+        name: body
+        description: Product list to be uploaded
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Product'
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/BulkJob'
+  /v1/bulkjobs/{id}:
+    get:
+      operationId: getBulkJob
+      security:
+      - oauth:
+        - sell
+      tags:
+      - bulk
+      description: Get infos about a jobn
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/BulkJob'
+  /v1/bulkjobs/{id}/results:
+    get:
+      operationId: getBulkJobResult
+      security:
+      - oauth:
+        - sell
+      tags:
+      - bulk
+      description: Get results for a job
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        description: Product ID
+        required: true
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BulkJobResult'
+  /v1/shippingmethods:
+    get:
+      operationId: getShippingMethods
+      tags:
+      - data
+      description: Get all shipping methodsn
+      parameters:
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ShippingMethod'
+  /v1/durations:
+    get:
+      operationId: getDurations
+      tags:
+      - data
+      description: Get available durationsn
+      parameters:
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              auctions:
+                type: array
+                items:
+                  $ref: '#/definitions/Duration'
+              fixed:
+                type: array
+                items:
+                  $ref: '#/definitions/Duration'
+  /v1/options:
+    get:
+      operationId: getOptions
+      tags:
+      - data
+      description: Get paying options for a productn
+      parameters:
+      - name: If-None-Match
+        in: header
+        type: string
+        description: Etag, will return `304 Not Modified` if content hasn't changed
+      - name: If-Modified-Since
+        in: header
+        type: string
+        format: date-time
+        description: Will return `304 Not Modified` if content hasn't changed
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Option'
+  /v1/version:
+    get:
+      operationId: getSoftwareVersion
+      description: Get current software version, this is NOT the api versionn
+      tags:
+      - misc
+      parameters:
+      - name: version
+        in: query
+        type: string
+        description: Will return an error if version is lower then current version
+        required: false
+      - name: language
+        in: query
+        type: string
+        description: Language for the response
+      responses:
+        200:
+          description: Successful responsen
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+        403:
+          description: Version parameters is out of daten
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":22:{s:5:\"Error\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}}s:15:\"ValidationError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/FieldError\";}}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}}s:10:\"FieldError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"field\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Error
+  code\";s:4:\"enum\";a:5:{i:0;s:13:\"unknown_field\";i:1;s:13:\"missing_field\";i:2;s:9:\"not_found\";i:3;s:14:\"already_exists\";i:4;s:7:\"invalid\";}}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Message
+  in case <code>code</code> is <code>invalid</code>\";}}s:8:\"required\";a:2:{i:0;s:5:\"field\";i:1;s:4:\"code\";}}s:8:\"Category\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"children\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:8:\"Delivery\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"cost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:7:\"Payment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"user_info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Paypal
+  email when using paypal\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:19:\"ProductBulkResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:56:\"Inserted
+  product ID, null if a validation error occurred\";}}}s:7:\"Product\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":21:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"quantity\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"images\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductImage\";}}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"auction\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"date_start\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:83:\"ISO-8601
+  date or Duration, if it is a duration, it will be relative to process time\";}s:4:\"live\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Live\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:13:\"reserve_price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:12:\"buynow_price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:10:\"lot_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"delivery\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Delivery\";}}s:7:\"payment\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Payment\";}}s:10:\"auto_renew\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"taxes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"charge\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"include_shipping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:3:\"max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}}s:5:\"offer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"accept\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"accept_over\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:12:\"refuse_under\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}}s:8:\"duration\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:7:{i:0;s:5:\"title\";i:1;s:11:\"description\";i:2;s:7:\"payment\";i:3;s:8:\"delivery\";i:4;s:7:\"auction\";i:5;s:8:\"category\";i:6;s:5:\"price\";}}s:12:\"ShortProduct\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":24:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"seller\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ShortMember\";}s:8:\"quantity\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"images\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductImage\";}}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShortAddress\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"auction\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"date_end\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"live\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Live\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:14:\"starting_price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:13:\"reserve_price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:12:\"buynow_price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:10:\"lot_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"delivery\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Delivery\";}}s:7:\"payment\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Payment\";}}s:10:\"auto_renew\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"taxes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"charge\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"include_shipping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:3:\"max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}}s:5:\"offer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"accept\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"duration\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:11:\"ShortMember\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:5:\"login\";}}s:6:\"Member\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"last_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"first_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";}s:9:\"birthdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"bio\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"enum\";a:3:{i:0;s:9:\"activated\";i:1;s:8:\"disabled\";i:2;s:8:\"verified\";}}}s:8:\"required\";a:7:{i:0;s:9:\"last_name\";i:1;s:10:\"first_name\";i:2;s:5:\"login\";i:3;s:5:\"email\";i:4;s:9:\"birthdate\";i:5;s:5:\"phone\";i:6;s:6:\"status\";}}s:7:\"BulkJob\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"progress\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"enum\";a:3:{i:0;s:7:\"pending\";i:1;s:7:\"running\";i:2;s:4:\"done\";}}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:13:\"BulkJobResult\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"success\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"message_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"ID
+  that was/is given with the add request and that will be given back\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ValidationError\";}s:7:\"product\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ProductBulkResponse\";}}s:8:\"required\";a:1:{i:0;s:7:\"success\";}}s:12:\"ProductImage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"cover\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}}s:9:\"TempImage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"File
+  type (jpg, png...)\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Temp
+  URL of the image, used for product submission\";}s:7:\"expires\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:47:\"This
+  temp image will be deleted after this date\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}}s:14:\"ShippingMethod\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:164:\"The
+  country FROM wich this shipping method can be use (2 letter code). Can also be ALL
+  (Available everywhere) or INT (Available for all origin countries but Canada)\";}s:7:\"methods\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/DeliveryType\";}}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"methods\";}}s:8:\"Duration\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Duration
+  in days\";}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:8:\"duration\";}}s:6:\"Option\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:5:\"price\";}}s:12:\"DeliveryType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"international\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}}s:4:\"Live\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:12:\"ShortAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"locality\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"postal_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"administrative_area\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"country_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:7:\"Address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"line1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"line2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"postal_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"locality\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"administrative_area\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"country_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:5:\"line1\";i:3;s:11:\"postal_code\";i:4;s:8:\"locality\";i:5;s:19:\"administrative_area\";i:6;s:7:\"country\";}}}"
+...

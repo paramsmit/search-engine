@@ -1,0 +1,1797 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:5:\"0.1.3\";s:5:\"title\";s:17:\"Shoutpoint
+  API v1\";s:11:\"description\";s:32:\"Client SDK for Shoutpoint API v1\";}"
+host: api.shoutpoint.com
+basePath: /v1
+paths:
+  /Account:
+    get:
+      operationId: getAccountDetail
+      summary: View Account Detail
+      tags:
+      - Account
+      description: Returns account owneru2019s information.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/AccountResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - username: []
+  /Account/Logs/Calls:
+    get:
+      operationId: listCallLogs
+      summary: List Call Logs (Account)
+      tags:
+      - Account
+      description: Returns a list of call logs which may be filtered by date, direction
+        and connect time. A maximum of 1,000 logs can be returned. If more than 1,000
+        logs are found, `is_truncated` will equal true.
+      parameters:
+      - name: begin_date
+        in: query
+        description: The date of the earliest log to retrieve. Inclusive. The default
+          value is one hour before now. Expects ISO 8601 format.
+        type: string
+        format: date-time
+      - name: end_date
+        in: query
+        description: The date of the most recent log to retrieve. Non-inclusive. The
+          default value is NOW. Expects ISO 8601 format.
+        type: string
+        format: date-time
+      - name: app_id
+        in: query
+        description: An applicationu2019s ID.
+        type: string
+      - name: subaccount_id
+        in: query
+        description: An applicationu2019s Sub Account ID.
+        type: integer
+      - name: direction
+        in: query
+        description: 'Accepts: `inbound`, `outbound`. Omitting this parameter will
+          return both.'
+        type: string
+        enum:
+        - inbound
+        - outbound
+        default: ""
+      - name: connect_time
+        in: query
+        description: Returns logs with connect times (in seconds) greater than or
+          equal to this amount.
+        type: integer
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/CallLogsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - username: []
+  /Account/Recordings:
+    get:
+      operationId: listRecordings
+      summary: List Recordings (Account)
+      tags:
+      - Recordings
+      - Account
+      description: Returns a filtered list of recordings across all applications.A
+        maximum of 1,000 recordings can be returned per request. If `is_truncated`
+        indicates that more recordings were available, narrow your date range.
+      parameters:
+      - name: begin_date
+        in: query
+        description: 'Set the earliest recording to return by date/time in ISO 8601
+          format. Default: one hour before now.'
+        required: false
+        type: string
+        format: date-time
+      - name: end_date
+        in: query
+        description: 'Set the latest recording to return by date/time in ISO format.
+          Default: now.'
+        required: false
+        type: string
+        format: date-time
+      - name: group
+        in: query
+        description: 'Returns all recordings with the specified group value set in
+          the Record action. Default: audio_recording.'
+        required: false
+        type: string
+        default: audio_recording
+      - name: app_id
+        in: query
+        description: Returns all recordings for the given application ID.
+        required: false
+        type: string
+      - name: subaccount_id
+        in: query
+        description: Returns all recordings for the given application Sub Account
+          ID.
+        required: false
+        type: integer
+      - name: call_no
+        in: query
+        description: Returns all recordings originated with the given phone number.
+          Expects E164 format.
+        required: false
+        type: string
+      - name: call_id
+        in: query
+        description: Returns all recordings originated on the given call id.
+        required: false
+        type: string
+      - name: direction
+        in: query
+        description: Returns recordings based on the originating callu2019s direction.
+          Omit to include all.
+        required: false
+        type: string
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListRecordingsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - username: []
+  /Account/Recordings/{id}/{format}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+    - name: format
+      in: path
+      required: true
+      type: string
+      enum:
+      - ulw
+      - vox
+      - mp3
+      - wav
+      - wavM
+      - ogg
+      - aac
+      - au
+    get:
+      operationId: downloadRecording
+      summary: Download Recording
+      tags:
+      - Recordings
+      - Account
+      description: 'Returns downloaded audio files of recordings. Available formats:
+        ulw, vox, mp3, wav, wavM, ogg, aac, au.'
+      responses:
+        200:
+          description: ""
+          schema:
+            type: file
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - username: []
+  /CallFlows/Callbacks:
+    post:
+      operationId: createCallFlowCallback
+      summary: Create Call Flow Callback
+      tags:
+      - CallFlows
+      description: Creates the settings of one or more phone numbers that have been
+        provisioned and assigned to `/PhoneNumbers/CallFlows`.This is where you will
+        set the callback URL for each number.nnThis method does not assign the phone
+        number to CallFlows.nnConfigurations are cached (by phone number) for up to
+        one hour. If you need to bypass the cache, initiate a call with `Dials/Connect`
+        and set the u2018debug_modeu2019 to u2018trueu2019. Predictably, any changes
+        made to the configuration will take up to an hour to go live.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/CallFlowsRequest'
+      responses:
+        201:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    get:
+      operationId: listCallbackConfigurations
+      summary: List Callback Configurations
+      tags:
+      - CallFlows
+      description: Returns current callback configurations.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/CallFlowsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deleteCallbackConfigurations
+      summary: Delete Callback Configurations
+      tags:
+      - CallFlows
+      description: 'Deletes the callback configuration settings of the specified phone
+        numbers. Phone number must be in E.164 format. (example: 17145551212)nnThis
+        method does not release the phone number.'
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DeleteCallbackRequestBody'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/CallFlowsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /CallFlows/Callbacks/{phone_number}:
+    parameters:
+    - name: phone_number
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getCallbackConfiguration
+      summary: View Callback Configuration
+      tags:
+      - CallFlows
+      description: 'Returns the callback configuration of a specific phone number.
+        Phone number must be in E.164 format. (example: 17145551212)'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/CallFlowsConfiguration'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /CallFlows/Logs/{call_id}:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getCallFlowDetail
+      summary: View Call Flow Detail
+      tags:
+      - CallFlows
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/GetCallFlowDetailResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - username: []
+  /Dials/Connect:
+    post:
+      operationId: createCall
+      summary: Make Call
+      tags:
+      - Dials
+      description: Creates a call to the specified phone number. On connection, the
+        call is put in the specified `inbound_api` and the callback config for the
+        specified `caller_id_no` is executed.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/MakeCallRequestBody'
+      responses:
+        201:
+          description: ""
+          schema:
+            $ref: '#/definitions/MakeCallResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Hold:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: holdParticipant
+      summary: Hold Participant
+      tags:
+      - LiveCalls
+      description: Places the specified conference participant on hold.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequestMin'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Join:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: joinConference
+      summary: Join Conference
+      tags:
+      - LiveCalls
+      description: Places a caller into the specified conference.nnThis method modifies
+        the specified call upon being invoked regardless of the current call state.
+        To accomplish this same functionality in a synchronous manner, please reference
+        the `CONFERENCE` action.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequest'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Leave:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: leaveConference
+      summary: Leave Conference
+      tags:
+      - LiveCalls
+      description: Forces the specified conference participant to leave a conference.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequestMin'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Mute:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: muteParticipant
+      summary: Mute Participant
+      tags:
+      - LiveCalls
+      description: Mutes the specified conference participant during a conference.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequestMin'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Resume:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: resumeParticipant
+      summary: Resume Participant
+      tags:
+      - LiveCalls
+      description: Resume the specified conference participant from hold.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequestMin'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Conference/Unmute:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: unmuteParticipant
+      summary: Unmute Participant
+      tags:
+      - LiveCalls
+      description: Unmutes the specified conference participant during a conference.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ConferencesRequestMin'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Recording/Pause:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: pauseRecording
+      summary: Pause Recording
+      tags:
+      - Recordings
+      - LiveCalls
+      description: This method allows developers to pause a call recording. This is
+        useful for when itu2019s desirable to excerpt portions of a conversation while
+        generating one audio file.nnThis method modifies the specified call upon being
+        invoked regardless of the current call state. To accomplish this same functionality
+        in a synchronous manner, please reference the `RECORD` action.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Recording/Resume:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: resumeRecording
+      summary: Resume Recording
+      tags:
+      - Recordings
+      - LiveCalls
+      description: This method allows developers to resume a paused call recording.nnThis
+        method modifies the specified call upon being invoked regardless of the current
+        call state. To accomplish this same functionality in a synchronous manner,
+        please reference the `RECORD` action.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Recording/Start:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: startRecording
+      summary: Start Recording
+      tags:
+      - Recordings
+      - LiveCalls
+      description: Creates a call recording.nnThis method modifies the specified call
+        upon being invoked regardless of the current call state. To accomplish this
+        same functionality in a synchronous manner, please reference the `RECORD`
+        action.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/StartRecordingRequestBody'
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/Recording/Stop:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: stopRecording
+      summary: Stop Recording
+      tags:
+      - Recordings
+      - LiveCalls
+      description: This method allows developers to stop a call recording.nnThis method
+        modifies the specified call upon being invoked regardless of the current call
+        state. To accomplish this same functionality in a synchronous manner, please
+        reference the `RECORD` action.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}/Actions/SessionData:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: createSessionData
+      summary: Modify Session Data
+      tags:
+      - LiveCalls
+      description: Write/overwrite `session_data` on a live call by ID. nnThis new
+        session data will not change the unfinished ACTIONS being executed in the
+        current callback.nnThe body must be a plain JavaScript object. This object
+        will completely replace the current session data.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls:
+    get:
+      operationId: listLiveCalls
+      summary: List Live Calls
+      tags:
+      - LiveCalls
+      description: Returns a list of all live calls.
+      parameters:
+      - name: sort_by
+        in: header
+        description: Sort the call list by `connected_time` or id. Defaults to `connected_time`.
+        type: string
+        default: connected_time
+      - name: sort_order
+        in: header
+        description: The order of call list uses the sort_by field.
+        type: string
+        enum:
+        - asc
+        - desc
+        default: asc
+      - name: filter_on_nos
+        in: header
+        description: A comma-separated list of phone numbers to filter on.
+        type: string
+      - name: filter_on_call_id_nos
+        in: header
+        description: A comma-separated list of provisioned phone numbers to filter
+          on
+        type: string
+      - name: filter_on_apis
+        in: header
+        description: 'A comma-separated list of APIs to filter on. Accepts: `CallFlows`'
+        type: string
+      - name: include_subaccounts
+        in: header
+        description: Should the results include the applicationu2019s Sub Account
+          calls. Defaults to `true`
+        type: boolean
+        default: true
+      - name: max_results
+        in: header
+        description: The maximum number of calls to return. Default is unlimited.
+        type: integer
+      - name: min_connected_time
+        in: header
+        description: Return calls with `connected_time` greater than or equal to this
+          value.
+        type: integer
+      - name: max_connected_time
+        in: header
+        description: Returns calls with `connected_time` less than or equal to this
+          value.
+        type: integer
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListLiveCallsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/{call_id}:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getCallDetail
+      summary: View Call Detail
+      tags:
+      - LiveCalls
+      description: Returns the details of a call by ID.nnThe details of a call are
+        available to this method for five minutes after the call ends. After that,
+        this method pulls the detail from our logs. There is a chance of this method
+        returning a 404 should the logs take longer than five minutes to update.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Call'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deleteCall
+      summary: End Call
+      tags:
+      - LiveCalls
+      description: Deletes the specified call by ID.nnIn order to place a message
+        before ending the call, see hangup.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Conferences:
+    get:
+      operationId: listConferences
+      summary: List Conferences
+      tags:
+      - LiveCalls
+      description: Returns the list of live conferences for this application.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Conferences'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Conferences/{call_id}:
+    parameters:
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getConferenceDetail
+      summary: View Conference Detail
+      tags:
+      - LiveCalls
+      description: Returns details about the specified conference.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Conference'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Conferences/{conf_id}/Participants/{part_id}:
+    parameters:
+    - name: conf_id
+      in: path
+      required: true
+      type: string
+    - name: part_id
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getParticipantDetail
+      summary: View Participant Detail
+      tags:
+      - LiveCalls
+      description: Returns information about the specified participant of the specified
+        conference.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/GetParticipantDetailResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues:
+    get:
+      operationId: listQueues
+      summary: List Queues
+      tags:
+      - LiveCalls
+      description: Returns a list of Call Queues.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListQueuesResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues/{queue_name}:
+    parameters:
+    - name: queue_name
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getQueueDetails
+      summary: View Queue Details
+      tags:
+      - LiveCalls
+      description: Returns the details of a queue.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Queue'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deleteQueue
+      summary: Delete Queue
+      tags:
+      - LiveCalls
+      description: Deletes the specified queue. Any queued calls will be released
+        to continue their regular call flows. A deleted queue will not appear in the
+        list of queues. To recreate the queue, simply offer a call.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Queue'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues/{queue_name}/Calls:
+    parameters:
+    - name: queue_name
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: listQueuedCalls
+      summary: List Queued Calls
+      tags:
+      - LiveCalls
+      description: Returns all of the calls in the specified queue.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListQueuedCallsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues/{queue_name}/Calls/{call_id}:
+    parameters:
+    - name: queue_name
+      in: path
+      required: true
+      type: string
+    - name: call_id
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: getQueuedCallDetail
+      summary: View Queued Call Detail
+      tags:
+      - LiveCalls
+      description: Returns the details of a queued call.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/QueuedCall'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deleteQueuedCall
+      summary: Remove Queued Call
+      tags:
+      - LiveCalls
+      description: Deletes the specified call from the queue, regardless of position.
+        When the call exits, it will continue its normal call flow. nnThis method
+        modifies the specified call upon being invoked regardless of the current call
+        state. To accomplish this same functionality in a synchronous manner, please
+        reference the `QUEUE` action.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues/{queue_name}/Peek:
+    parameters:
+    - name: queue_name
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: peekAtQueue
+      summary: Peek at Queue
+      tags:
+      - LiveCalls
+      description: Returns the next call in the queue. Peek does not remove the queued
+        call.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/QueuedCall'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /LiveCalls/Queues/{queue_name}/Poll:
+    parameters:
+    - name: queue_name
+      in: path
+      required: true
+      type: string
+    get:
+      operationId: pollQueue
+      summary: Poll Queue
+      tags:
+      - LiveCalls
+      description: Returns the next call from the queue. The call will then continue
+        to execute its regular call flow.This request will block/long poll for up
+        to 15 seconds on an empty queue. To avoid blocking, `PEEK` then `POLL`.nnThis
+        method modifies the specified call upon being invoked regardless of the current
+        call state. To accomplish this same functionality in a synchronous manner,
+        please reference the `QUEUE` action.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/QueuedCall'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /PhoneNumbers/{inbound_api}:
+    parameters:
+    - name: inbound_api
+      in: path
+      required: true
+      type: string
+    post:
+      operationId: createPhoneNumbers
+      summary: Provision Phone Numbers
+      tags:
+      - PhoneNumbers
+      description: Purchase, if new, and assign phone numbers to an API. Accepts `CallFlows`
+        and `ParkingLot`.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/PhoneNumbersRequest'
+      responses:
+        201:
+          description: ""
+          schema:
+            $ref: '#/definitions/PhoneNumberMinResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    get:
+      operationId: listProvisionedNumbers
+      summary: List Provisioned Numbers
+      tags:
+      - PhoneNumbers
+      description: Returns a list of phone numbers assigned to inbound APIs. Accepts
+        `CallFlows` and `ParkingLot`. Omit the API name to retrieve all provisioned
+        phone numbers.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ProvisionedNumbers'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deletePhoneNumbers
+      summary: Release Phone Numbers
+      tags:
+      - PhoneNumbers
+      description: Deletes one or more previously provisioned phone numbers from the
+        specified API. This will make the phone number(s) provisionable by anyone.
+        If youu2019d like to hang on to phone numbers, assign them to `ParkingLot`.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/PhoneNumbersRequest'
+      responses:
+        204:
+          description: ""
+          schema:
+            $ref: '#/definitions/PhoneNumberMinResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /PhoneNumbers/Available:
+    get:
+      operationId: listAvailableInboundNumbers
+      summary: List Available Inbound Numbers
+      tags:
+      - PhoneNumbers
+      description: Returns a list of phone numbers available for provisioning and
+        purchase.
+      parameters:
+      - name: is_sms
+        in: query
+        description: Set this parameter to `true` to return SMS-enabled numbers. Higher
+          fees may apply.
+        required: true
+        type: boolean
+      - name: is_toll_free
+        in: query
+        description: Set this parameter to `true` to return non-prefix specific toll-free
+          numbers. If set to `true`, all `search_by` and `search_on` will be ignored.
+          For prefix specific toll-free searches, ignore this parameter, set the `search_by`
+          to `prefixes`, and pass a three-digit toll free area code(s) into `search_on`.
+          Most toll free numbers do not support SMS.
+        required: false
+        type: boolean
+      - name: max_results
+        in: query
+        description: Sets the number of results to return. Max value is `500`. Default
+          is `10`.
+        required: false
+        type: integer
+        maximum: 500
+        default: 10
+      - name: search_by
+        in: query
+        description: Search by this criteria. Accepts `region`, `prefixes`, `postal-code`,
+          `rate-center`, `latas`. Default is `region`.
+        required: false
+        type: string
+        default: region
+        enum:
+        - region
+        - prefixes
+        - postal-code
+        - rate-center
+        - latas
+      - name: search_on
+        in: query
+        description: 'The value to search for, based on the `search_by` parameter.
+          See `search_on` details in the next table.nnregiontAccepts state or city
+          and state. Separate city and state by a comma. Examples: u201cIrvineu201d
+          and u201cIrvine, CAu201d.nprefixestAccepts a comma-delimited list of area
+          codes. Example: u201c714,310,949u201d.npostal-codetAccepts a five digit
+          postal code.nrate-centertAccepts rate center name and state. Example: NEWPORTBCH,
+          CA.nlatastAccepts a comma-delimited list of latas. Example: u201c123,456,789u201d.'
+        required: false
+        type: string
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/PhoneNumbersMin'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /History/Logs/Calls:
+    get:
+      operationId: listCallLogsWithApiKey
+      summary: List Call Logs (Application)
+      tags:
+      - History
+      description: Returns a list of call logs which may be filtered by date, direction
+        and connect time. A maximum of 1,000 logs can be returned. If more than 1,000
+        logs are found, `is_truncated` will equal true.
+      parameters:
+      - name: begin_date
+        in: query
+        description: The date of the earliest log to retrieve. Inclusive. The default
+          value is one hour before now. Expects ISO 8601 format.
+        type: string
+        format: date-time
+      - name: end_date
+        in: query
+        description: The date of the most recent log to retrieve. Non-inclusive. The
+          default value is NOW. Expects ISO 8601 format.
+        type: string
+        format: date-time
+      - name: direction
+        in: query
+        description: 'Accepts: `inbound`, `outbound`. Omitting this parameter will
+          return both.'
+        type: string
+        enum:
+        - inbound
+        - outbound
+        default: ""
+      - name: connect_time
+        in: query
+        description: Returns logs with connect times (in seconds) greater than or
+          equal to this amount.
+        type: integer
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/CallLogsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /History/Recordings:
+    get:
+      operationId: listRecordingsWithApiKey
+      summary: List Recordings (Application)
+      tags:
+      - Recordings
+      - History
+      description: Returns a filtered list of recordings across all applications.A
+        maximum of 1,000 recordings can be returned per request. If `is_truncated`
+        indicates that more recordings were available, narrow your date range.
+      parameters:
+      - name: begin_date
+        in: query
+        description: 'Set the earliest recording to return by date/time in ISO 8601
+          format. Default: one hour before now.'
+        required: false
+        type: string
+        format: date-time
+      - name: end_date
+        in: query
+        description: 'Set the latest recording to return by date/time in ISO format.
+          Default: now.'
+        required: false
+        type: string
+        format: date-time
+      - name: group
+        in: query
+        description: 'Returns all recordings with the specified group value set in
+          the Record action. Default: audio_recording.'
+        required: false
+        type: string
+        default: audio_recording
+      - name: call_no
+        in: query
+        description: Returns all recordings originated with the given phone number.
+          Expects E164 format.
+        required: false
+        type: string
+      - name: call_id
+        in: query
+        description: Returns all recordings originated on the given call id.
+        required: false
+        type: string
+      - name: direction
+        in: query
+        description: Returns recordings based on the originating callu2019s direction.
+          Omit to include all.
+        required: false
+        type: string
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListRecordingsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /SubAccounts:
+    post:
+      operationId: createSubAccount
+      summary: Create SubAccount
+      tags:
+      - SubAccounts
+      description: Create a new SubAccount under the appropriate application based
+        upon the API key used to authenticate.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/CreateSubAccountRequestBody'
+      responses:
+        201:
+          description: ""
+          schema:
+            $ref: '#/definitions/SubAccountResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    get:
+      operationId: listSubAccounts
+      summary: List SubAccounts
+      tags:
+      - SubAccounts
+      description: Returns a list of all SubAccounts under your application.
+      parameters:
+      - $ref: '#/parameters/trait:pagination:page'
+      - $ref: '#/parameters/trait:pagination:page_size'
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/ListSubAccountsResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+  /SubAccounts/{id}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: integer
+    get:
+      operationId: getSubAccountDetail
+      summary: View SubAccount Detail
+      tags:
+      - SubAccounts
+      description: Returns the SubAccount detail for any individual SubAccount based
+        upon the SubAccount ID.
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/SubAccountResponse'
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+    delete:
+      operationId: deleteSubAccount
+      summary: Delete SubAccount
+      tags:
+      - SubAccounts
+      description: Deletes the specific SubAccount based on the SubAccount ID.
+      responses:
+        204:
+          description: ""
+        400:
+          $ref: '#/responses/trait:commonErrorHandler:400'
+        401:
+          $ref: '#/responses/trait:commonErrorHandler:401'
+        403:
+          $ref: '#/responses/trait:commonErrorHandler:403'
+        404:
+          $ref: '#/responses/trait:commonErrorHandler:404'
+        500:
+          $ref: '#/responses/trait:commonErrorHandler:500'
+      security:
+      - X-API-Key: []
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":41:{s:8:\"Callback\";O:8:\"stdClass\":4:{s:5:\"title\";s:8:\"Callback\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  endpoint URL where the request will be sent.\";}s:6:\"method\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:4:\"POST\";s:11:\"description\";s:60:\"The
+  request method. Accepts: `POST`, `GET`. Default: `POST`.\";s:4:\"enum\";a:2:{i:0;s:4:\"POST\";i:1;s:3:\"GET\";}}s:12:\"content_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EnumContentType\";}s:7:\"headers\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:76:\"An
+  associative array of header names and values to include in every request.\";}s:7:\"timeout\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:7:\"default\";i:5;s:11:\"description\";s:122:\"In
+  seconds, the time for the callback request to wait for a response before timing
+  out. Allowed range: 1 - 15. Default: 5.\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:15;}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}}s:15:\"CallbackRequest\";O:8:\"stdClass\":3:{s:5:\"title\";s:15:\"CallbackRequest\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":27:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Options:
+  `init_call`, `live_call`, `end_call`, `sms`\";}s:6:\"app_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  application ID for this request.\";}s:13:\"subaccount_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"The
+  Sub Account ID for this request.\";}s:7:\"call_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  ID of the call or SMS.\";}s:10:\"start_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  time the call started.\";s:6:\"format\";s:9:\"date-time\";}s:6:\"api_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  phone number provisioned to the API (E.164 format: +17145551212).\";}s:9:\"caller_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"The
+  phone number of the connected (or far end) call (E.164 format: +17145551212).\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Specifies
+  the direction of the call: `inbound` or `outbound`\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:39:\"The
+  length of the call in milliseconds.\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/EnumCallStatus\";}s:11:\"key_presses\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:42:\"The
+  keys pressed during the request block.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"The
+  name of the `COLLECT` action that recorded these digits. Query string converts to
+  \u201Ckey_presses.{name}={digits}\u201D.\";}s:6:\"digits\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  keys pressed during the `COLLECT`.\";}}}}s:28:\"last_queue_poll_connect_call\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:63:\"The
+  last call bridged to this call via a `QUEUE` poll_connect.\t\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  bridged call\u2019s ID.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  bridged call\u2019s phone number.\";}}}s:11:\"custom_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:50:\"The
+  custom data set in the callback configuration.\";}s:12:\"session_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:96:\"The
+  session_data set in the /Dials/Connect request and/or the `DIALS` and `SESSIONDATA`
+  actions.\";}s:8:\"end_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  time the call ended.\";s:6:\"format\";s:9:\"date-time\";}s:10:\"sip_domain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"The
+  SIP domain assigned to the application or sub-account.\";}s:17:\"sip_forwarded_for\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  origin IP address of the SIP request.\";}s:12:\"text_message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  inbound text message.\";}s:10:\"is_webhook\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:86:\"If
+  true, the request originated from a webhook action. Else, this property is omitted.\";}s:16:\"caller_no_region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  two-character region (state) code of the connected call\u2019s phone number. Possibly
+  null.\";}s:17:\"caller_no_country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"The
+  two-character country code of the connected call\u2019s phone number. Possibly null.\";}s:18:\"caller_no_timezone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:189:\"The
+  time zone of the connected call\u2019s phone number (America/Los_Angeles). Possibly
+  null. Click [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+  for list of time zones.\";}s:13:\"api_no_region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"The
+  two-character region (state) code of the API phone number. Possibly null.\";}s:14:\"api_no_country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"The
+  two-character country code of the API phone number. Possibly null.\";}s:15:\"api_no_timezone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:110:\"The
+  time zone of the API phone number (America/Los_Angeles). Possibly null. Click here
+  for list of time zones.\";}s:10:\"event_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:96:\"The
+  event_name set in the `WEBHOOKS` action. If not a webhook request, this property
+  is omitted.\";}s:12:\"webhook_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:98:\"The
+  webhook_data set in the `WEBHOOKS` action. If not a webhook request, this property
+  is omitted.\";}}}s:14:\"EnumCallStatus\";O:8:\"stdClass\":3:{s:5:\"title\";s:14:\"EnumCallStatus\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:8:{i:0;s:11:\"live-queued\";i:1;s:12:\"live-ringing\";i:2;s:16:\"live-in-progress\";i:3;s:9:\"completed\";i:4;s:4:\"busy\";i:5;s:8:\"canceled\";i:6;s:6:\"failed\";i:7;s:9:\"no-answer\";}}s:15:\"EnumContentType\";O:8:\"stdClass\":3:{s:5:\"title\";s:15:\"EnumContentType\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:16:\"application/json\";i:1;s:15:\"application/xml\";i:2;s:33:\"application/x-www-form-urlencoded\";}}s:13:\"ErrorResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:13:\"ErrorResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"ref_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"A
+  unique identifier for the error.\";}s:6:\"status\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  HTTP status code of the error.\";s:4:\"type\";s:7:\"integer\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:138:\"A
+  more detailed error code, often prepended with the status code. For example, 401005.
+  Note: These codes are subject to revision until v1.\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"A
+  human readable message about the error.\";}s:4:\"help\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Any
+  information that may help resolve this error.\";}s:12:\"user_message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"A
+  diplomatic message that can be shown to the end user.\";}}}s:9:\"Recording\";O:8:\"stdClass\":3:{s:5:\"title\";s:9:\"Recording\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  ID of the recording.\";}s:6:\"app_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  ID of the application used for this call.\";}s:13:\"subaccount_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:57:\"The
+  Sub Account ID of the application used for this call.\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  user-defined group.\";}s:4:\"call\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  tried and true call ID.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  phone number of the originating caller (E.164 format: +17145551212).\";}}}s:10:\"start_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  time the recording started.\";s:6:\"format\";s:9:\"date-time\";}s:8:\"end_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  time the recording ended.\";s:6:\"format\";s:9:\"date-time\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  length of the recording in milliseconds.\";s:4:\"type\";s:7:\"integer\";}}}s:15:\"AccountResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:15:\"AccountResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Account
+  ID\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Account
+  Owner's Email\";}s:9:\"firstname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Account
+  Owner\u2019s First Name\";}s:8:\"lastname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Account
+  Owner\u2019s Last Name\";}s:8:\"username\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Account
+  Owner\u2019s Username (will be email)\";s:6:\"format\";s:5:\"email\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Returns:
+  `active` or `inactive`\";}s:8:\"max_apps\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:73:\"The
+  maximum number of Apps an account can create (includes deleted Apps)\t\";}s:15:\"max_subaccounts\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:74:\"The
+  maximum number of Sub Accounts per App (includes deleted Sub Accounts)\";}}}s:21:\"SubAccountResponseMin\";O:8:\"stdClass\":3:{s:5:\"title\";s:21:\"SubAccountResponseMin\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:25:\"The
+  ID of the Sub Account\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  name of the Sub Account\";}}}s:18:\"SubAccountResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:18:\"SubAccountResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:25:\"The
+  ID of the Sub Account\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  name of the Sub Account\";}s:11:\"sip_domains\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:52:\"The
+  available SIP URI endpoints for this Sub Account\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"callflows\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"The
+  unique SIP URI for CallFlows\";}}}}}s:16:\"CallFlowsRequest\";O:8:\"stdClass\":4:{s:5:\"title\";s:16:\"CallFlowsRequest\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"no\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"JSON
+  object with value and type parameters\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:121:\"The
+  phone number in E.164 format (example: +17145551212) or SIP_DOMAIN (example: 1234-56789.accounts.sip.shoutpoint.com).\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  country code of the phone number (ISO Alpha-2 Code) or `SIP_DOMAIN`.\";}}}s:8:\"callback\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Callback\";}s:17:\"callback_failover\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Callback\";}s:12:\"callback_sms\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Callback\";}s:21:\"callback_sms_failover\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Callback\";}s:19:\"log_callbacks_until\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:180:\"The
+  date/time the callbacks for calls will stopped being logged. This date/time cannot
+  be further out than 24 hours from \u201Cnow\u201D. Accepts ISO Date strings. Default:
+  current time.\";s:6:\"format\";s:9:\"date-time\";}s:14:\"answer_on_ring\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:10;s:7:\"default\";i:1;}s:11:\"is_template\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:69:\"If
+  true, Template Mapping. will be found and replaced. Default: true.\";s:7:\"default\";b:1;}s:11:\"custom_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:91:\"Any
+  data you want included in every request. For example, a private key to verify requests.\";}}s:8:\"required\";a:2:{i:0;s:2:\"no\";i:1;s:8:\"callback\";}}s:17:\"CallFlowsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:17:\"CallFlowsResponse\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/CallFlowsConfiguration\";}}s:4:\"Call\";O:8:\"stdClass\":3:{s:5:\"title\";s:4:\"Call\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  ID of the call.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  phone number of the caller.\";}s:12:\"caller_id_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  from phone number. Basically, not the caller\u2019s number.\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/EnumCallStatus\";}s:4:\"date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"The
+  date and time the call was connected (ISO 8601).\";s:6:\"format\";s:9:\"date-time\";}s:14:\"connected_time\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"The
+  call\u2019s duration in milliseconds.\";}s:5:\"error\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:112:\"`null`,
+  unless an error occurs. This is an internal diagnostic error and may not be useful
+  to the API developer.\";s:7:\"default\";N;}s:6:\"app_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"subaccount_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"CallDuration\";O:8:\"stdClass\":3:{s:5:\"title\";s:12:\"CallDuration\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  ID of the call.\";}s:14:\"connected_time\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"The
+  call\u2019s duration in milliseconds.\";}}}s:16:\"MakeCallResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:16:\"MakeCallResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"call\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:27:\"The
+  call object to connect.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  ID of the call.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  phone number dialed.\";}s:12:\"caller_id_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  from phone number appearing as the caller ID.\t\";}}}s:11:\"inbound_api\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:65:\"The
+  inbound CallFlow type the `call.caller_id_no` is assigned to.\";}}}s:10:\"Conference\";O:8:\"stdClass\":3:{s:5:\"title\";s:10:\"Conference\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  ID of the conference.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  name given to the conference.\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  status of the conference: in-progress, on-hold.\";s:4:\"enum\";a:2:{i:0;s:11:\"in-progress\";i:1;s:7:\"on-hold\";}}s:16:\"num_participants\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:55:\"The
+  number of participants currently in the conference.\";}s:12:\"participants\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:54:\"An
+  array of participants currently in the conference.\t\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Participant\";}}}}s:18:\"ConferencesRequest\";O:8:\"stdClass\":4:{s:5:\"title\";s:18:\"ConferencesRequest\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:15:\"conference_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:179:\"The
+  name of the conference. Conference name is scoped to the application. To avoid unwanted
+  behavior, use unique conference names. Accepts: alpha-numeric, dashes, and underscores.\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:5:\"array\";}s:11:\"description\";s:158:\"The
+  message to play before joining the conference. Accepts one or more strings of TTS,
+  Audio URL, and/or DTMF (example: `dtmf://1234`). Default is no message.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"join_muted\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:60:\"If
+  `true`, the participant will join the conference on mute.\";s:7:\"default\";b:0;}s:11:\"mute_on_key\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"The
+  key to press to mute one\u2019s self. Default is \u201C1\u201D.\";s:7:\"default\";i:1;}s:13:\"unmute_on_key\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  key to press to unmute one\u2019s self. Default is \u201C2\u201D.\";s:7:\"default\";i:2;}s:11:\"exit_on_key\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"The
+  key to press to leave the conference. Default is \u201C#\u201D.\";s:7:\"default\";s:1:\"#\";}s:5:\"async\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:68:\"If
+  true, this action will not block the call flow. Default is false.\";s:7:\"default\";b:0;}s:16:\"max_participants\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:138:\"The
+  maximum number of participants allowed at one time. Join attempts that would exceed
+  the max throw an error event. Default is Infinite.\";}s:10:\"hold_audio\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"The
+  URL to the audio file to play when a participant is placed on hold. If omitted,
+  our default hold music will be used.\";}}s:8:\"required\";a:1:{i:0;s:15:\"conference_name\";}}s:21:\"ConferencesRequestMin\";O:8:\"stdClass\":4:{s:5:\"title\";s:21:\"ConferencesRequestMin\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:15:\"conference_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:179:\"The
+  name of the conference. Conference name is scoped to the application. To avoid unwanted
+  behavior, use unique conference names. Accepts: alpha-numeric, dashes, and underscores.\";}s:7:\"message\";O:8:\"stdClass\":3:{s:11:\"description\";s:158:\"The
+  message to play before joining the conference. Accepts one or more strings of TTS,
+  Audio URL, and/or DTMF (example: `dtmf://1234`). Default is no message.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:1:{i:0;s:15:\"conference_name\";}}s:11:\"Participant\";O:8:\"stdClass\":3:{s:5:\"title\";s:11:\"Participant\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  ID of the participant. This is different than the call ID.\";}s:4:\"call\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"The
+  ID of the caller.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  phone number of the caller.\";}}}s:5:\"muted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:46:\"Is
+  the participant on mute in this conference?\";}s:7:\"on_hold\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:46:\"Is
+  the participant on hold in this conference?\";}s:13:\"start_on_join\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:67:\"The
+  value of this conference parameter when the participant joined.\";}s:12:\"hold_on_join\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:67:\"The
+  value of this conference parameter when the participant joined.\";}s:11:\"end_on_exit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:67:\"The
+  value of this conference parameter when the participant joined.\";}s:12:\"hold_on_exit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:67:\"The
+  value of this conference parameter when the participant joined.\";}}}s:16:\"CallLogsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:16:\"CallLogsResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"is_truncated\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:110:\"If
+  the query finds more results than can be returned, this property is true. Solution:
+  narrow your date range.\";}s:10:\"begin_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  begin date of the search.\";s:6:\"format\";s:9:\"date-time\";}s:8:\"end_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  end date of the search.\";s:6:\"format\";s:9:\"date-time\";}s:4:\"logs\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"The
+  ID of the log.\";}s:7:\"call_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  tried and true call ID.\";}s:6:\"api_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  phone number provisioned to the API (E.164 format: +17145551212).\";}s:9:\"caller_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  phone number of the caller (E.164 format: +17145551212).\";}s:10:\"start_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  time the call started.\";s:6:\"format\";s:9:\"date-time\";}s:8:\"end_time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  time the call ended.\";s:6:\"format\";s:9:\"date-time\";}s:6:\"app_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  ID of the application the log belongs to.\";}s:13:\"subaccount_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:57:\"The
+  Sub Account ID of the application the log belongs to.\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  type of call: voice or sms.\";s:4:\"enum\";a:2:{i:0;s:5:\"voice\";i:1;s:3:\"sms\";}}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:39:\"The
+  length of the call in milliseconds.\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:113:\"The
+  call state. Codes: live-queued, live-ringing, live-in-progress, completed, busy,
+  canceled, failed, no-answer.\";s:4:\"enum\";a:8:{i:0;s:11:\"live-queued\";i:1;s:12:\"live-ringing\";i:2;s:16:\"live-in-progress\";i:3;s:9:\"completed\";i:4;s:4:\"busy\";i:5;s:8:\"canceled\";i:6;s:6:\"failed\";i:7;s:9:\"no-answer\";}}s:19:\"connect_time_billed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:56:\"The
+  multiplier of seconds billed. 1 = one second billed.\";}s:16:\"connect_time_sec\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:45:\"The
+  number of seconds the call was connected.\";}s:10:\"origin_api\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:75:\"The
+  API the call interacted with. CallFlows, Dials_SMS, Notifications, etc.\";}s:12:\"text_message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"For
+  SMS calls, this is the message sent to received.\";}s:6:\"config\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CallFlowsResponse\";}}}}}}s:11:\"PhoneNumber\";O:8:\"stdClass\":3:{s:5:\"title\";s:11:\"PhoneNumber\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  phone number in E.164 format.\";}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"A
+  human-friendly phone number format.\";}s:11:\"assigned_to\";O:8:\"stdClass\":2:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}s:11:\"description\";s:65:\"Which
+  API this number is assigned to. NULL for available numbers.\";}s:10:\"is_inbound\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:44:\"Is
+  this a number that accepts inbound calls.\";}s:9:\"is_routed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:51:\"Is
+  this a number that that was routed successfully.\";}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Any
+  error that occurred when provisioning the number.\";}}}s:14:\"PhoneNumberMin\";O:8:\"stdClass\":3:{s:5:\"title\";s:14:\"PhoneNumberMin\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  phone number in E.164 format.\";}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"A
+  human-friendly phone number format.\";}}}s:5:\"Queue\";O:8:\"stdClass\":3:{s:5:\"title\";s:5:\"Queue\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  queue\u2019s unique name.\";}s:10:\"hold_times\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:30:\"Hold
+  time stats for the queue.\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"estimated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:35:\"The
+  estimated hold time in seconds.\";}}}}}s:10:\"QueuedCall\";O:8:\"stdClass\":3:{s:5:\"title\";s:10:\"QueuedCall\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"call\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:16:\"The
+  call object.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  unique ID for the call.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  phone number for the call.\";}s:12:\"caller_id_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  phone number provisioned to the application.\";}}}s:9:\"queued_on\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  date and time the call was queued in ISO 8601.\";s:6:\"format\";s:9:\"date-time\";}s:9:\"hold_time\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:47:\"The
+  number of seconds the call has been queued.\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"The
+  position of the call in the queue.\";}}}s:25:\"DeleteCallbackRequestBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:25:\"DeleteCallbackRequestBody\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"The
+  phone number to delete. Accepts: E.164 format. (example: +17145551212)\";}}}}s:19:\"MakeCallRequestBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:19:\"MakeCallRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"call\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:27:\"The
+  call object to connect.\";s:8:\"required\";a:2:{i:0;s:2:\"no\";i:1;s:12:\"caller_id_no\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:159:\"The
+  phone number or SIP destination to call. Phone numbers are in E.164 format (example:
+  +19495551212). SIP destinations are formatted as abc123@sip.mypbx.com.\";}s:12:\"caller_id_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:235:\"The
+  phone number that will appear as the Caller ID. Phone numbers are in E.164 format
+  (example: +19495551212). This phone number should have been previously provisioned
+  and assigned to CallFlows and configured with a CallFlow Callback.\";}}}s:12:\"session_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:98:\"This
+  object will be included in the CallFlows callback, allowing custom data to be passed
+  on dial.\";}s:11:\"inbound_api\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Defaults
+  to `CallFlows`.\";}s:10:\"debug_mode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:80:\"If
+  `true`, forces the call to skip the Configuration cache. Defaults to `false`.\";}}s:8:\"required\";a:1:{i:0;s:4:\"call\";}}s:25:\"StartRecordingRequestBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:25:\"StartRecordingRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"A
+  queryable name for the recording.\";}s:11:\"pre_message\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:53:\"The
+  message to play before the recording has started.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:49:\"The
+  message to place after recording has started.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:27:\"CreateSubAccountRequestBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:27:\"CreateSubAccountRequestBody\";s:4:\"type\";s:6:\"object\";s:11:\"description\";s:26:\"The
+  name of the SubAccount\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  name of the SubAccount\";}}}s:22:\"ListRecordingsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"ListRecordingsResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"recordings\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"An
+  array of recording objects.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Recording\";}}s:12:\"is_truncated\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"If
+  the query finds more results than can be returned, this property is true.\";s:4:\"type\";s:7:\"boolean\";}}}s:25:\"GetCallFlowDetailResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:25:\"GetCallFlowDetailResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"call\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:14:\"A
+  call object.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  ID of the call.\";}s:2:\"no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  phone number the call is connected to.\";}s:12:\"caller_id_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  phone number of the caller.\";}}}s:8:\"start_on\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  date and time the call began.\";s:6:\"format\";s:9:\"date-time\";}s:6:\"end_on\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  date and time the call ended.\";s:6:\"format\";s:9:\"date-time\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:50:\"An
+  array of callback data, requests and responses.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"requested_on\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  date and time the callback request was sent.\";s:6:\"format\";s:9:\"date-time\";}s:7:\"request\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  actual request sent to the server.\";s:4:\"type\";s:6:\"object\";}s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CallbackRequest\";}s:4:\"json\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:41:\"The
+  JSON, if any, in the server response.\";}s:4:\"ccml\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:91:\"The
+  CCML sent to Shoutpoint. Either translated from the JSON response or the CCML response.\";}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:98:\"Any
+  error that occurred during the callback. Not the errors during call execution. Try
+  /CallFlows.\";}}}}}}s:28:\"GetParticipantDetailResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:28:\"GetParticipantDetailResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"participants\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Participant\";}}}}s:21:\"ListLiveCallsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:21:\"ListLiveCallsResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"calls\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"An
+  array of calls.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Call\";}}s:12:\"longest_call\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CallDuration\";}s:13:\"shortest_call\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CallDuration\";}s:11:\"total_calls\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"The
+  total number of calls retrieved.\";}}}s:18:\"ListQueuesResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:18:\"ListQueuesResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"queues\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:27:\"A
+  list of available queues.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Queue\";}}}}s:23:\"ListQueuedCallsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:23:\"ListQueuedCallsResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"calls\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"An
+  array of queued calls, sorted from first to last.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/QueuedCall\";}}s:10:\"queue_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  name of the queue.\";}s:10:\"hold_times\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/HoldTimes\";}}}s:9:\"HoldTimes\";O:8:\"stdClass\":4:{s:5:\"title\";s:9:\"HoldTimes\";s:4:\"type\";s:6:\"object\";s:11:\"description\";s:26:\"A
+  group of hold time data.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"average\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:76:\"The
+  average hold time of all current calls. This is not estimated hold time.\";}s:5:\"least\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:29:\"The
+  lowest current hold time.\";}s:8:\"greatest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:30:\"The
+  highest current hold time.\";}}}s:22:\"PhoneNumberMinResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"PhoneNumberMinResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"assigned_to\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  API the provisioned number(s) were assigned to.\";}s:13:\"phone_numbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:51:\"The
+  API the provisioned number(s) were assigned to.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PhoneNumberMin\";}}}}s:15:\"PhoneNumbersMin\";O:8:\"stdClass\":3:{s:5:\"title\";s:15:\"PhoneNumbersMin\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"phone_numbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:22:\"List
+  of phone numbers.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PhoneNumberMin\";}}}}s:23:\"ListSubAccountsResponse\";O:8:\"stdClass\":3:{s:5:\"title\";s:23:\"ListSubAccountsResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"app_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  ID of the App\";}s:11:\"subaccounts\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"List
+  of Sub Accounts\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/SubAccountResponseMin\";}}}}s:18:\"ProvisionedNumbers\";O:8:\"stdClass\":3:{s:5:\"title\";s:18:\"ProvisionedNumbers\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"phone_numbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:22:\"List
+  of phone numbers.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PhoneNumber\";}}}}s:19:\"PhoneNumbersRequest\";O:8:\"stdClass\":4:{s:5:\"title\";s:19:\"PhoneNumbersRequest\";s:4:\"type\";s:5:\"array\";s:11:\"description\";s:36:\"A
+  string array of e164 phone numbers\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:22:\"CallFlowsConfiguration\";O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"CallFlowsConfiguration\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"no\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:42:\"JSON
+  object with value and type parameters\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:121:\"The
+  phone number in E.164 format (example: +17145551212) or SIP_DOMAIN (example: 1234-56789.accounts.sip.shoutpoint.com).\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  country code of the phone number (ISO Alpha-2 Code) or `SIP_DOMAIN`.\";}}}s:8:\"callback\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Callback\";}s:11:\"last_set_on\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:14:\"answer_on_ring\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:10;s:7:\"default\";i:1;}s:11:\"is_template\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:70:\"If
+  true, Template Mapping. will be found and replaced. Default: false.\";s:7:\"default\";b:0;}s:11:\"custom_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:91:\"Any
+  data you want included in every request. For example, a private key to verify requests.\";}}}s:11:\"Conferences\";O:8:\"stdClass\":3:{s:5:\"title\";s:11:\"Conferences\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"conferences\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Conference\";}}}}}"
+...

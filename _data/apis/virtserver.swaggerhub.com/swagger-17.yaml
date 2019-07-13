@@ -1,0 +1,380 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Park-n-Charge Charge
+  API\";s:7:\"version\";s:5:\"1.0.1\";s:5:\"title\";s:16:\"Charge Point API\";}"
+host: virtserver.swaggerhub.com
+basePath: /Charge-Point/v1
+paths:
+  /updateChargePointStatus:
+    post:
+      summary: updates the charge point status in the hub and returns bookings from
+        the Park-n-Charge system
+      description: 'This service updates the Park-n-Charge system with the current
+        status of charge points associated with the account.  It can contain an array
+        of all charge points or simply update an individual charge point.  Typical
+        usage is to update all charge points every 10 mins. (after 15 mins Park-n-Charge
+        will record all charge points as not in service automatically).  '
+      operationId: updateChargePointStatus
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: UpdateChargePointStatus_Object
+        required: false
+        schema:
+          $ref: '#/definitions/UpdateChargePointStatus_Object'
+      responses:
+        200:
+          description: an array of bookings
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                $ref: '#/definitions/Bookings'
+  /requestCharge:
+    post:
+      summary: checks to see if the vehicle is authorised to charge
+      description: This service is called to request permission to begin charging
+        and is used to ensure that the connected vehicle is authorised.  The service
+        may need to be called several times to allow time for the customer to register
+        and pre-authorise.
+      operationId: requestCharge
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: RequestCharge_Object
+        required: false
+        schema:
+          $ref: '#/definitions/RequestCharge_Object'
+      responses:
+        200:
+          description: A request charge response object.
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                $ref: '#/definitions/RequestCharge_Response_Payload'
+  /chargePointListing:
+    post:
+      summary: add a new charge point to the Park-n-Charge system
+      description: Used to create a new charge point in the Park-n-Charge system programatically
+        rather than manually create a charge point.
+      operationId: addChargePoint
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: ChargePoint_Object
+        required: false
+        schema:
+          $ref: '#/definitions/ChargePointDetails'
+      responses:
+        200:
+          description: the internal Park-n-Charge Id of the newly created listing
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                type: string
+                example: fcb1af22a80c4852ac16893933568848
+                description: Park-n-Charge reference Id
+    put:
+      summary: uptate an existing charge point in the Park-n-Charge system
+      description: Used to update an existing charge point in the Park-n-Charge system
+        programatically rather than manually edit a charge point.
+      operationId: updateChargePoint
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: Add_ChargePoint_Request_Object
+        required: false
+        schema:
+          $ref: '#/definitions/ChargePointDetails'
+      responses:
+        200:
+          description: the internal Park-n-Charge Id of the updated created listing
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                type: string
+                example: fcb1af22a80c4852ac16893933568848
+                description: Park-n-Charge reference Id
+  /chargePointListing/{id}:
+    get:
+      summary: add a new charge point to the Park-n-Charge system
+      description: Used to create a new charge point in the Park-n-Charge system programatically
+        rather than manually create a charge point.
+      operationId: getChargePoint
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the charge point
+        required: true
+        type: string
+      responses:
+        200:
+          description: the Park-n-Charge listing
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                $ref: '#/definitions/ChargePointDetails'
+    delete:
+      summary: delete a charge point from the Park-n-Charge system
+      description: Used to delete a charge point from the Park-n-Charge system programatically
+        rather than manually delete a charge point.
+      operationId: deleteChargePoint
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the charge point
+        required: true
+        type: string
+      responses:
+        200:
+          description: the Park-n-Charge deletion confirmation
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                type: string
+                example: fcb1af22a80c4852ac16893933568848
+                description: Park 'n' Charge reference Id of the deleted listing
+  /getBookings:
+    post:
+      summary: get a list of bookings from the Park-n-Charge system
+      description: This service is called to retrieve the list of bookings within
+        the Park-n-Charge system associated with the account.
+      operationId: getBookings
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: GetBookings_Object
+        required: false
+        schema:
+          $ref: '#/definitions/GetBookings_Object'
+      responses:
+        200:
+          description: An array of bookings between the specified start and end dates.
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                $ref: '#/definitions/GetBookings_Response_Payload'
+  /getBookingDetails/{id}:
+    get:
+      summary: retrieve an individual booking
+      description: This service is used to retrieve a single booking within the Parku2019nu2019Charge
+        system associated with the account.
+      operationId: getBookingDetails
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the booking
+        required: true
+        type: string
+      responses:
+        200:
+          description: A booking object.
+          schema:
+            type: object
+            required:
+            - success
+            properties:
+              success:
+                type: boolean
+                example: true
+                description: returns the status of the request. If false an error
+                  object is included in the response
+              error:
+                $ref: '#/definitions/Error'
+              payload:
+                $ref: '#/definitions/BookingDetails_Response_Payload'
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":32:{s:30:\"UpdateChargePointStatus_Object\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:12:\"chargePoints\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"chargePoints\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:76:\"an
+  array of charge points that are to be updated in the Park-n-Charge system\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ChargePointStatus\";}}}s:11:\"description\";s:63:\"the
+  request body required in the updateChargePointStatus method\";}s:20:\"RequestCharge_Object\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:13:\"chargePointId\";i:1;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"chargePointId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5e53b2285f28487cbcd46dd3070175c1\";s:11:\"description\";s:19:\"the
+  charge point Id\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"0001\";s:11:\"description\";s:92:\"an
+  informational string containing vendor specific status codes, not displayed to the
+  driver\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:53:\"Confirm
+  you are authorized to charge at this location\";s:11:\"description\";s:80:\"a UTF-8
+  English language message that will be displayed to the driver in the app\";}}s:11:\"description\";s:53:\"the
+  request body required in the requestCharge method\";}s:30:\"RequestCharge_Response_Payload\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:13:\"authorization\";i:1;s:9:\"bookingId\";i:2;s:13:\"chargePointId\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"chargePointId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5e53b2285f28487cbcd46dd3070175c1\";s:11:\"description\";s:19:\"the
+  charge point Id\";}s:13:\"authorization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/AuthorizationEnumeration\";}s:9:\"bookingId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"11b39777c9b74bb9b5b5f1affe2a3145\";s:11:\"description\";s:56:\"the
+  internal booking Id used by the Park-n-Charge system\";}}s:11:\"description\";s:73:\"the
+  response returned in the payload property of the RequestCharge method\";}s:28:\"GetBookings_Response_Payload\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"endDate\";i:1;s:9:\"startDate\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2018-02-01T00:00:00-00:00\";s:11:\"description\";s:64:\"the
+  start date and time of the booking search in ISO 8601 format\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2018-03-01T00:00:00-00:00\";s:11:\"description\";s:62:\"the
+  end date and time of the booking search in ISO 8601 format\";}s:8:\"bookings\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Bookings\";}}s:11:\"description\";s:71:\"the
+  response returned in the payload property of the GetBookings method\";}s:31:\"BookingDetails_Response_Payload\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:7:\"booking\";i:1;s:6:\"driver\";i:2;s:7:\"vehicle\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"booking\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Booking\";}s:7:\"vehicle\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Vehicle\";}s:6:\"driver\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Driver\";}}s:11:\"description\";s:50:\"an
+  object containing information about the booking\";}s:17:\"ChargePointStatus\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:13:\"chargePointId\";i:1;s:9:\"inService\";i:2;s:7:\"message\";i:3;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"chargePointId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"QDFTUUUDFBDIK3W\";}s:9:\"inService\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/BookingStatusEnumeration\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:41:\"connect
+  the charging cable to the vehicle\";}s:6:\"energy\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Energy\";}}s:11:\"description\";s:67:\"an
+  object describing a charge point and includes its current status\";}s:8:\"Bookings\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"bookings\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"bookings\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Booking\";}}}s:11:\"description\";s:27:\"an
+  array of booking objects\";}s:7:\"Booking\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:9:\"bookingId\";i:1;s:13:\"chargePointId\";i:2;s:8:\"duration\";i:3;s:9:\"startDate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"chargePointId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5e53b2285f28487cbcd46dd3070175c1\";s:11:\"description\";s:26:\"the
+  charge point device Id\";}s:9:\"bookingId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"11b39777c9b74bb9b5b5f1affe2a3145\";s:11:\"description\";s:14:\"the
+  booking Id\";}s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"2018-02-01T09:28:56.321-10:00\";s:11:\"description\";s:58:\"the
+  start date and time of the booking in  ISO 8601 format\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:180;s:11:\"description\";s:48:\"the
+  duration of the booking expressed in minutes\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/BookingStatusEnumeration\";}}s:11:\"description\";s:78:\"an
+  object containing information about the booking start date, duration and id\";}s:6:\"Energy\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"consumption\";i:1;s:17:\"currentChargeRate\";i:2;s:13:\"unitOfMeasure\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:17:\"currentChargeRate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:3.23;s:11:\"description\";s:116:\"a
+  real number containing the actual rate of charge that is going into the vehicle
+  expressed in the units of measure.\";}s:11:\"consumption\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:34;s:11:\"description\";s:127:\"a
+  real number containing the total amount of energy consumed during the current charge
+  cycle expressed in the units of measure.\";}s:13:\"unitOfMeasure\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"kWH\";s:11:\"description\";s:114:\"a
+  string containing the units that the above two measurements were recorded in.  Usually
+  this is expressed as kWH.\";}s:18:\"percentageComplete\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:66;s:11:\"description\";s:71:\"an
+  integer expressing an estimate of how much charge is in the vehicle.\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:100;}}s:11:\"description\";s:86:\"a
+  mandatory object containing information about the energy consumption for the booking\";}s:7:\"Vehicle\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"regNo\";i:1;s:9:\"vehicleId\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"vehicleId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"fcb1af22a80c4852ac16893933568848\";s:11:\"description\";s:22:\"the
+  id of the vehicle.\";}s:5:\"regNo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"MD66
+  ADG\";s:11:\"description\";s:39:\"the registration number of the vehicle.\";}s:4:\"make\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Tesla\";s:11:\"description\";s:24:\"the
+  make of the vehicle.\";}s:5:\"model\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";s:7:\"Model
+  S\";s:11:\"description\";s:25:\"the model of the vehicle.\";}}s:11:\"description\";s:60:\"a
+  manadatory object containing inforamtion about the vehicle\";}s:6:\"Driver\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"driverId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"driverId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5048763c4dc84027863d58293ee8f073\";s:11:\"description\";s:21:\"the
+  id of the driver.\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Timothy
+  Taylor\";s:11:\"description\";s:144:\"the drivers name '\"firstName or initial\"
+  \"family name\"'. This may be with-held due to EU General Data Protection Regulation
+  (GDPR) requirements.\";}}s:11:\"description\";s:61:\"a mandatory object that contains
+  information about the driver\";}s:18:\"ChargePointDetails\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:6:\"device\";i:1;s:8:\"deviceId\";i:2;s:10:\"deviceText\";i:3;s:8:\"location\";i:4;s:8:\"operator\";i:5;s:7:\"pricing\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"deviceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"2e7936ac1ab8b00b943b2af4d7d8aa44\";}s:9:\"deviceRef\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"DBTDQ_ZCF116\";}s:10:\"deviceText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:57:\"A
+  long text description to be used in the listing details\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ChargePointLocation\";}s:7:\"pricing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ChargePointPricing\";}s:8:\"operator\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ChargePointOperator\";}s:6:\"device\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ChargePointDevice\";}}s:11:\"description\";s:85:\"The
+  full definition of the charge point listing to appear in the Park-n-Charge system\";}s:19:\"ChargePointLocation\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:6:\"access\";i:1;s:7:\"address\";i:2;s:8:\"latitude\";i:3;s:9:\"longitude\";i:4;s:16:\"shortDescription\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"latitude\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:53.961359999999999;s:11:\"description\";s:43:\"the
+  latitude of the charge point's location\";}s:9:\"longitude\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:-2.759671;s:11:\"description\";s:44:\"the
+  longitude of the charge point's location\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ChargePointPhysicalAddress\";}s:16:\"shortDescription\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"M6
+  Northbound\";s:11:\"description\";s:56:\"the short name appearing in the map on
+  the mobile device\";}s:15:\"longDescription\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"M6
+  Forton Sevice Station, Northbound\";s:11:\"description\";s:58:\"the long name appearing
+  on the mobile device detail screen\";}s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ChargePointAccess\";}}s:11:\"description\";s:68:\"the
+  charge point's geo-location, physical address and access details\";}s:26:\"ChargePointPhysicalAddress\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:7:\"country\";i:1;s:8:\"postCode\";i:2;s:4:\"town\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:15:\"subBuildingName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Unit
+  A\";}s:12:\"buildingName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Kelburn
+  Court\";}s:14:\"buildingNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"11A\";}s:12:\"thoroughfare\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:33:\"M6
+  Motorway Northbound, Jct 32/33\";}s:6:\"street\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"White
+  Carr Lane\";}s:4:\"town\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Lancaster\";}s:6:\"county\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"Lancashire\";}s:8:\"postCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"LA2
+  9DU\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"gb\";}}s:11:\"description\";s:54:\"the
+  charge point's physical address and access details\";}s:17:\"ChargePointAccess\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:23:\"accessRestrictionsApply\";i:1;s:17:\"accessible24Hours\";i:2;s:8:\"onStreet\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:23:\"accessRestrictionsApply\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:24:\"accessRestrictionDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:27:\"Max
+  1.8m height restriction\";}s:8:\"onStreet\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:17:\"accessible24Hours\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"accessTimes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/AccessTime\";}}}s:11:\"description\";s:33:\"the
+  charge point's access details\";}s:10:\"AccessTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:3:\"day\";i:1;s:7:\"endTime\";i:2;s:9:\"startTime\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"day\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"inUse\";s:11:\"description\";s:33:\"the
+  current status of the booking\";s:4:\"enum\";a:7:{i:0;s:6:\"Monday\";i:1;s:7:\"Tuesday\";i:2;s:9:\"Wednesday\";i:3;s:8:\"Thursday\";i:4;s:6:\"Friday\";i:5;s:8:\"Saturday\";i:6;s:6:\"Sunday\";}}s:9:\"startTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"00:00:00-00:00\";s:11:\"description\";s:33:\"the
+  start time in ISO 8601 format\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"T00:00:00-00:00\";s:11:\"description\";s:31:\"the
+  end time in ISO 8601 format\";}}s:11:\"description\";s:31:\"the charge point's access
+  dates\";}s:18:\"ChargePointPricing\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"chargingFee\";i:1;s:16:\"parkingFeesApply\";i:2;s:11:\"parkingOnly\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:16:\"parkingFeesApply\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"parkingOnly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"parkingFee\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ChargePointFees\";}}s:11:\"chargingFee\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ChargePointFees\";}}}s:11:\"description\";s:34:\"the
+  charge point's pricing details\";}s:15:\"ChargePointFees\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"amount\";i:1;s:8:\"currency\";i:2;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"\xA36
+  / 30 mins charge\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:6;}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"GBP\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:30;s:11:\"description\";s:39:\"time
+  the vehicle may be left in minutes\";}s:13:\"chargingUnits\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:146:\"if
+  the charging fee is based on consumption the number of kWH is used e.g. if the fee
+  is \xA36 for up to 5kWH then the value entered here would be 5\";}}s:11:\"description\";s:11:\"fee
+  details\";}s:19:\"ChargePointOperator\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:12:\"operatorName\";i:1;s:11:\"telephoneNo\";i:2;s:7:\"website\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"operatorName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Company
+  Name\";}s:10:\"schemeCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"QFD33DS\";}s:7:\"website\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"www.parkncharge.co.uk\";}s:11:\"telephoneNo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"020123456789\";}}s:11:\"description\";s:11:\"fee
+  details\";}s:17:\"ChargePointDevice\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:10:\"connectors\";i:1;s:12:\"manufacturer\";i:2;s:5:\"model\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"manufacturer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"Acme
+  Charge Point Co.\";}s:5:\"model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Mk
+  IV\";}s:10:\"connectors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ChargePointConnector\";}}}s:11:\"description\";s:29:\"charge
+  point physical details\";}s:20:\"ChargePointConnector\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"description\";i:1;s:14:\"outputRatingkW\";i:2;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:48:\"x
+  7-pin Type 2 Mennekes \u2013 Rapid AC (43kW 120A)\";s:11:\"description\";s:41:\"the
+  text description seen by the customer\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"Type
+  2 Mennekes (IEC62196)\";}s:14:\"outputRatingkW\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";d:43;}s:13:\"outputVoltage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:400;}s:13:\"outputCurrent\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:63;}s:12:\"chargeMethod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Three
+  phase AC\";}}s:11:\"description\";s:25:\"connector type and rating\";}s:5:\"Error\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"code\";i:1;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;s:11:\"description\";s:10:\"error
+  code\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"unrecognised
+  chargePointId\";s:11:\"description\";s:49:\"a UTF-8 English language description
+  of the error\";}}s:11:\"description\";s:231:\"an object that is only returend if
+  an error has occured and comprises an errorCode and a UTF-8 English language text
+  description of the error.  This may not necessarily be a customer friendly format
+  fit for display to the end user.\";}s:24:\"BookingStatusEnumeration\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"the
+  current status of the booking\";s:7:\"example\";s:5:\"inUse\";s:4:\"enum\";a:8:{i:0;s:6:\"booked\";i:1;s:5:\"inUse\";i:2;s:6:\"locked\";i:3;s:8:\"charging\";i:4;s:14:\"chargeComplete\";i:5;s:11:\"chargeError\";i:6;s:4:\"paid\";i:7;s:8:\"declined\";}}s:24:\"AuthorizationEnumeration\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"the
+  payment authorization status\";s:7:\"example\";s:8:\"approved\";s:4:\"enum\";a:3:{i:0;s:7:\"pending\";i:1;s:8:\"approved\";i:2;s:8:\"declined\";}}s:19:\"inline_response_200\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Bookings\";}}}s:21:\"inline_response_200_1\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/RequestCharge_Response_Payload\";}}}s:21:\"inline_response_200_2\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"fcb1af22a80c4852ac16893933568848\";s:11:\"description\";s:26:\"Park-n-Charge
+  reference Id\";}}}s:21:\"inline_response_200_3\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ChargePointDetails\";}}}s:21:\"inline_response_200_4\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"fcb1af22a80c4852ac16893933568848\";s:11:\"description\";s:51:\"Park
+  'n' Charge reference Id of the deleted listing\";}}}s:18:\"GetBookings_Object\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"chargePointId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"5e53b2285f28487cbcd46dd3070175c1\";s:11:\"description\";s:26:\"the
+  charge point device Id\";}s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2018-02-01T00:00:00-00:00\";s:11:\"description\";s:64:\"the
+  start date and time of the booking search in ISO 8601 format\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2018-03-01T00:00:00-00:00\";s:11:\"description\";s:62:\"the
+  end date and time of the booking search in ISO 8601 format\";}}}s:21:\"inline_response_200_5\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/GetBookings_Response_Payload\";}}}s:21:\"inline_response_200_6\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"success\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;s:11:\"description\";s:87:\"returns
+  the status of the request. If false an error object is included in the response\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/BookingDetails_Response_Payload\";}}}}"
+...

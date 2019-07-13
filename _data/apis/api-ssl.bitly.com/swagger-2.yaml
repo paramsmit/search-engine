@@ -1,0 +1,1895 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":7:{s:14:\"termsOfService\";s:40:\"https://bitly.com/pages/terms-of-service\";s:11:\"description\";s:25226:\"#
+  Introduction\nWelcome to the Bitly API! If you'd like to use Bitly to shorten, brand,
+  share, or retrieve data from links programmatically, you've come to the right place.\n\nIf
+  you're interested in integrating your app or software platform with Bitly, you'll
+  need to [register and authenticate your service with our API](/app_guidelines.html).
+  To do so please contact us at [API_sales@bit.ly](mailto:API_sales@bit.ly)\n\nWe
+  currently provide our documentation in the form of an OpenAPI 2.0 document. We do
+  not support any code-generation at this time but feel free to use the specification
+  if you would like.\n# Authentication\n## OAuth 2\nIf you are shortening URLs on
+  behalf of end-users, we ask that you use our OAuth 2 implementation to authenticate
+  end-users before shortening. URLs shortened in this manner will be added to the
+  specified end-user\u2019s history, allowing the end-user to manage and track the
+  shortened URLs. To register an OAuth application, see the page on [authentication](/v4/#section/Authentication).\n\nPrevious
+  versions of the API used a query parameter to submit the token. This is no longer
+  applicable in v4.0. Tokens should be made using the OAuth Bearer Token specification,
+  using the Authorization header in the request.\n\nHere is an example: `Authorization:
+  Bearer {token}`.\n\n## OAuth Web Flow\nWeb applications can easily acquire an OAuth
+  access token for a Bitly end user by following these steps:\n1. Register your application
+  here -- your application will be assigned a `client_id` and a `client_secret`.\n2.
+  Redirect the user to `https://bitly.com/oauth/authorize`, using the `client_id`
+  and `redirect_uri` parameters to pass your client ID and the page you would like
+  to redirect to upon acquiring an access token. You can also pass an optional `state`
+  parameter which will be included unchanged in the redirect. An example redirect
+  URL looks like: `https://bitly.com/oauth/authorize?client_id=...&state=...&redirect_uri=http://myexamplewebapp.com/oauth_page`\n3.
+  Upon authorizing your application, the user is directed to the page specified in
+  the `redirect_uri` parameter. We append a code parameter to this URI that contains
+  a value that can be exchanged for an OAuth access token using the oauth/access_token
+  endpoint documented below. For example, if you passed a redirect_uri value of `http://myexamplewebapp.com/oauth_page`,
+  a successful authentication will redirect the user to `http://myexamplewebapp.com/oauth_page?code=.....`
+  If the state parameter was included in the request, it will be added unchanged to
+  the redirect URI, eg. `http://myexamplewebapp.com/oauth_page?code=...&state=...`\n4.
+  Use the `/oauth/access_token` API endpoint documented below to acquire an OAuth
+  access token, passing the `code` value appended by Bitly to the previous redirect
+  and the same `redirect_uri` value that was used previously. This API endpoint will
+  return an OAuth access token, as well as the specified Bitly user's login and API
+  key, allowing your application to utilize the Bitly API on that user's behalf.\n\nAn
+  example request might look like:\n```\nPOST /oauth/access_token HTTP/1.1\nHost:
+  api-ssl.bitly.com\nContent-Type: application/x-www-form-urlencoded\n\nclient_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&code=CODE&redirect_uri=REDIRECT_URI\n```\n\nAnd
+  an example response:\n\n```\nHTTP/1.1 200 OK\nContent-Type: application/x-www-form-urlencoded\nContent-Length:
+  57\n\naccess_token=TOKEN&login=BITLY_LOGIN&apiKey=BITLY_API_KEY\n```\n\n\n### Parameters
+  for OAuth Web Flow\n\n* `client_id` - your application's Bitly client id.\n* `client_secret`
+  - your application's Bitly client secret.\n* `code` - the OAuth verification code
+  acquired via OAuth's webauthentication protocol.\n* `redirect_uri` - the page to
+  which a user was redirected upon successfully authenticating.\n* `state` - optional
+  state to include in the redirect URI.\n* `grant_type` - optional, if present must
+  be `authorization_code`.\n\n### Response Value\n\nBy default, a URL encoded string
+  in the format of `access_token=%s&login=%s&apiKey=%s`. If you set the `Accept` request
+  header to `application/json`, we'll return a JSON dictionary and appropriate `Content-Type`
+  response header.\n\n* `access_token` - the OAuth access token for specified user.\n*
+  `login` - the end-user's Bitly username.\n\n## Exchanging a Username and Password
+  for an Access Token\n\nThere are two ways to convert a username and password directly
+  into an access token:\n\n* Resource Owner Credentials Grants\n* HTTP Basic Authentication\n\n###
+  Resource Owner Credentials Grants\nBitly supports the [Resource Owner Credential
+  Grant](https://tools.ietf.org/html/rfc6749#section-4.3) flow of the OAuth2 specification
+  to exchange a user's Bitly username and password for an access token.\n\nA `POST`
+  request is made to `/oauth/access_token` with `grant_type` set to `password`, and
+  the `Authorization` header set with the `client_id` and `client_secret`.\n\n***NOTE:
+  You should only make this call once and store the returned token securely. You should
+  not make this call per shorten or at any other high-frequency interval. To protect
+  our users' security, we aggressively rate limit calls to these endpoints.***\n\nFor
+  example:\n\n```\nPOST /oauth/access_token HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization:
+  Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=password&username=bitlyuser&password=bitlypassword\n```\n\nWhere
+  `Authorization:` is set to `\"Basic \" + base64encode(client_id + \":\" + client_secret)`.
+  An example response might look like:\n\n```\nHTTP/1.1 200 OK\nContent-Type: text/javascript;
+  charset=UTF-8\nContent-Length: 60\n\n{\"access_token\": \"e663e30818201d28dd07803e57333bed4f15803a\"}\n```\n\nApplications
+  MUST NOT store the Bitly credentials locally.\n\nYou can use the following `curl`
+  command to generate an access token for your own application (line breaks inserted
+  for readability):\n\n```\ncurl -u \"CLIENT_ID:CLIENT_SECRET\" -d \"grant_type=password\"
+  -d \"username=USERNAME\" \\\n-d \"password=PASSWORD\" https://api-ssl.bitly.com/oauth/access_token\n```\n###
+  Parameters for Resource Owner Credentials Grant Flow\n\n`grant_type` - must be `password`.\n`username`
+  - the user's Bitly username.\n`password` - the user's Bitly password.\n\n\n## HTTP
+  Basic Authentication Flow\nFor some applications it's impractical to use a web flow
+  for access tokens (e.g.: command line scripts). An OAuth access token can be acquired
+  by making a single call to the /oauth/access_token API endpoint documented below.
+  The easiest way to do so is by running the `curl` command also documented below.\n\n```\ncurl
+  -u \"username:password\" -X POST \"https://api-ssl.bitly.com/oauth/access_token\"\n```\n\nApplications
+  using OAuth Basic Authentication Flow **MUST NOT** store Bitly end-user passwords.\n\nSpecifically,
+  applications using this flow should make the authentication call *once* and store
+  the returned access token in a secure manner for use in all subsequent API calls.
+  Frequent calls to this endpoint (e.g. making a call per-shorten) will result in
+  your account getting rate limited.\n\nAn example request:\n```\nPOST /oauth/access_token
+  HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization: Basic czZCaGRSa3F0MzpnWDF\nContent-Type:
+  application/x-www-form-urlencoded\n\nclient_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET\n```\nAnd
+  an example response:\n\n```\nHTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length:
+  40\n\ne663e30818201d28dd07803e57333bed4f15803a\n```\n\n### Parameters for HTTP Basic
+  Authentication flow\n\n* `client_id` - (optional) your application's Bitly client
+  id.\n* `client_secret` - (optional) your application's Bitly client secret.\n* `Authorization`
+  Header with the value `\"Basic \" + base64encode(username + \":\" + password)`\n\n**Note:**\n\n*
+  This request MUST be a HTTP POST request.\n* This endpoint is only available on
+  https://api-ssl.bitly.com/.\n\n# Best Practices\n\n## OAUTH TOKEN / API KEY SECURITY\nOAuth
+  access tokens (and API keys) should be treated as secret data and not exposed to
+  any users. To ensure the security of your OAuth access token or API key, we strongly
+  suggest that you make requests to the Bitly API server-side whenever possible.\n\nAny
+  requests to the Bitly API made via client-side JavaScript present the risk of your
+  OAuth token or API key being compromised. It is possible to partially obfuscate
+  the token or key, but anything sent to the browser can be read by a determined user.
+  Most importantly, never include your api_key or access_token inline in the page.
+  Keep any references to your api_key or access_token in code that is contained in
+  external javascript files which are included in the page. For additional security,
+  don't have the key or token itself contained anywhere in your JavaScript code, but
+  rather make an ajax call to load it, and keep it in a variable stored in a privately
+  scoped method.\n\n## URL Encoding\nAll long URLs sent to the Bitly API must be URL
+  encoded, even if these links already contain escaped characters. For more information
+  about URL encoding, see this [Wikipedia article](https://en.wikipedia.org/wiki/Percent-encoding).\n\n##
+  Rate Limiting\nBitly currently institutes per-month, per-hour, per-minute, and per-IP
+  rate limits for each API method, and limits API users to a maximum of five concurrent
+  connections from a single IP address. Our default limits are more than sufficient
+  for nearly all use cases. Please read through this documentation in its entirety
+  to avoid common causes of rate limiting issues. If you would like to increase your
+  rate limits, please [contact us](mailto:API_sales@bit.ly) to find out more about
+  Bitly for Enterprise.\nHere are the rate limits of a basic account for our most
+  popular API method, /v4/shorten:\n\n* 10,000 new Bitlinks created per month\n* 1,000
+  calls per hour\n* 100 calls per minute\nIf you are a paid customer, these rates
+  will differ and you should visit the Organization Details within the Bitly dashboard.
+  To access the Organization, click on the Group selector and select \"Manage\" next
+  to the Organization that you would like to see the usage for.\n\nPlease note that
+  some API rate limits reset once each hour. If you are experiencing rate limiting
+  errors, please wait 60 minutes to resume making API calls.\n\nWhen contacting [Bitly
+  Support](mailto:api@bitly.com) include a description of how you are using the Bitly
+  API, which API endpoints you are using, an estimate of current request volumes for
+  a 24 hour period, and the email associated with your Bitly account.\n\n## Caching\nSince
+  Bitlinks never change or expire, we ask that you cache data locally wherever possible.\n\n#
+  Migrating from V3\nAt Bity we are always updating our products and technology to
+  make them more modern, secure, efficient, and usable. To that end we are proud to
+  introduce the latest version of the Bitly API 4.0.0 (V4). This documentation will
+  highlight some of the changes that we\u2019ve made and how to adapt your V3 integrations
+  to work with V4.\n## Authentication\nHow you authenticate to the Bitly API has changed
+  with V4. Previously your authentication token would be provided as the **access_token**
+  query parameter on each request. V4 instead requires that the token be provided
+  as part of the Authorization header on each request.  For example:\n```\nAuthorization:
+  Bearer {token}\n```\nFor further information including full details on how to request
+  an access token via the API, please see the documentation [here](/v4/#section/Authentication).\n##
+  Group Aware\nWith the introduction of [Bitly Brand Manager](https://support.bitly.com/hc/en-us/articles/115004396107-What-is-Brand-Manager-),
+  Bitlinks and other data elements now roll up to a group. Previously in V3 you were
+  required to generate a different OAuth token to view each group\u2019s data, but
+  in V4 you can provide the group GUID as part of the request. If you\u2019re a user
+  of the basic Bitly product, you only have a single group associated with your account.
+  If you\u2019re an Enterprise customer you may have multiple groups associated with
+  your account. These groups can be retrieved via the following request:\n```\nGET
+  https://api-ssl.bitly.com/v4/groups HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization:
+  Bearer {ACCESS_TOKEN}\nAccept: application/json\n```\nSome endpoints within the
+  application, especially those dealing with Bitlinks and metrics, will require a
+  group GUID to request the data.  For example, to request all the bitlinks for a
+  group requires the following request:\n```\nGET https://api-ssl.bitly.com/v4/groups/GUID/bitlinks
+  HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization: Bearer ACCESS_TOKEN\n```\nThe
+  API also provides a default group GUID on the user. There are endpoints and dashboard
+  functionality available to set this default group GUID. This is used in the event
+  of a group GUID not being provided on shortening calls. The default group GUID is
+  **only** used for shortening endpoints.\n\n**One important note, even if you are
+  only a user of the basic Bitly product, the group GUID will still be required in
+  these requests.**\n## RESTfulness\nThe Bitly V4 API follows the more standard REST
+  convention of utilizing the HTTP response codes to identify the status of the response.
+  \ These include, but are not limited to:\n* **200 - SUCCESS**\n* **400 - INVALID**\n*
+  **403 - FORBIDDEN**\n* **404 - NOT FOUND**\n* **500 - INTERNAL ERROR**\n\nIn addition,
+  V4 makes better use of the the various methods for submitting data. GET requests
+  will return data, POST requests are for creation, PATCH requests are for modification
+  and DELETE requests are for removal.\n\nA major difference is how the data is delivered.
+  \ Under V3 responses were contained in a data envelope and would look like this:\n```json\n{\n
+  \ \u201Cstatus_code\u201D: 200,\n  \u201Cstatus_text\u201D: \u201CSUCCESS\u201D,\n
+  \ \u201Cdata\u201D: {\n  //response data object\n  }\n}\n```\nV4 instead returns
+  a JSON object containing all the data provided by the response. For example a standard
+  Bitlink response is structured like this:\n```json\n{\n  \"references\": {\n    \"property1\":
+  \"string\",\n    \"property2\": \"string\"\n  },\n  \"archived\": true,\n  \"tags\":
+  [\n    \"string\"\n  ],\n  \"created_at\": \"string\",\n  \"title\": \"string\",\n
+  \ \"deeplinks\": [\n    {\n      \"bitlink\": \"string\",\n      \"install_url\":
+  \"string\",\n      \"created\": \"string\",\n      \"app_uri_path\": \"string\",\n
+  \     \"modified\": \"string\",\n      \"install_type\": \"string\",\n      \"app_guid\":
+  \"string\",\n      \"guid\": \"string\",\n      \"os\": \"string\"\n    }\n  ],\n
+  \ \"created_by\": \"string\",\n  \"long_url\": \"string\",\n  \"custom_bitlinks\":
+  [\n    \"string\"\n  ],\n  \"link\": \"string\",\n  \"id\": \"string\"\n}\n```\nV4
+  has also simplified how much data is returned on an individual request. Because
+  of the nested nature of some of our data and to improve the overall performance
+  of the API we now include a collection of **references** which provide request URLs
+  for returning additional data. For example, here is the **references** collection
+  for a Bitlink:\n```json\n\"references\":{\n  \"group\":\"https://api-ssl.bitly.com/v4/groups/GUID\"\n}\n```\nInstead
+  of nesting the full Group object and any additional objects it may reference, this
+  request URL is provided to retrieve that additional data if required.\n\nThe goal
+  of the Bitly V4 API is to improve our customers\u2019 interactions with our platform.
+  With the latest version of the Bitly API, we are implementing standards, reducing
+  complexity, improving documentation, and decreasing the level of effort for integrations.
+  Full documentation for the Bitly V4 API is available below.\n## V3 Documentation\nThe
+  V3 documentation is available [here](/api.html).\n\n# Transitioning from Google\nFor
+  those of you coming to Bitly from Google, welcome! If you formerly used Google to
+  shorten links and retrieve data programmatically, or simply want to start doing
+  so with Bitly, this guide is for you. The Bitly API allows you to shorten, brand,
+  and share links through existing or custom integrations, retrieve link-level and
+  user-level analytics programmatically, and more. For inspiration on how the Bitly
+  API can help you streamline your current processes and user experiences, check out
+  some of its most popular [uses](https://bitly.com/blog/bitly-api/).\n\nMigrating
+  from Google's URL Shortener API to the Bitly API is straightforward and simple,
+  though our API has additional endpoints that offer more options. We'll go through
+  each of those endpoints in detail, but first you'll need to know how to obtain authorization
+  and different levels of access to the Bitly API.\n## Authorization\nSimilar to Google
+  URL Shortener, the Bitly API uses OAuth 2.0 access tokens to identify your application
+  and authorize your account. Unlike Google's tokens, Bitly access tokens do not expire
+  after a set period of time. You can generate a token and reuse it in perpetuity.
+  If your token leaks, you can expire it through our web application.\n\nAn OAuth
+  2.0 access token both identifies the account and authorizes API endpoint requests.\n###
+  Rate Limits\nBasic Bitly accounts have a rate limit of 10000 new short URLs created
+  per month, 1000 requests to our URL shorten endpoint per hour, and 100 requests
+  to our URL shorten endpoint per minute. Higher limits are available for paid accounts,
+  as are additional functionality, including deep linking. If you are interested in
+  a commercial account, please contact our [sales team](https://bitly.com/pages/landing/get-enterprise?utm_source=APIDocumentation&utm_medium=BitlyWebsite&utm_campaign=GetStartedForm).\n###
+  Application using a single account\nMost folks using the Bitly API will be writing
+  one or more applications that are used within a single account, such as a CMS integration
+  or bulk shortening script that creates all short URLs in a single account. For this
+  use case, you don't need to worry about implementing entire OAuth 2.0 flows just
+  to obtain an access token. Instead, you can use our Generic Access Token. Log in
+  to Bitly and navigate to the [OAuth Apps page](https://bitly.com/a/oauth_apps),
+  click \"Generic Access Token\", enter your Bitly password, copy the access token,
+  and paste it into your application for use in making API requests.\n### Application
+  designed for multiple users\nFor applications where you expect to have multiple
+  users, each with their own Bitly account, you may need to implement the full OAuth
+  2.0 web flow, as described on our [Authentication](/v4/#section/Authentication).\n##
+  API Endpoints\nGoogle's URL Shortener has four functions: shortening a long URL,
+  expanding a short URL, retrieving a short URL's analytics, and retrieving a user's
+  link history. The Bitly API has matching API endpoints for shortening, expanding,
+  retrieving link history, and multiple endpoints that allow retrieval of different
+  types of analytics data.\n### Shorten a long URL\nFirst, you will need to retrieve
+  the guid of the group that you would like this Bitlink to belong to.\n```\nGET https://api-ssl.bitly.com/v4/groups
+  HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization: Bearer {ACCESS_TOKEN}\nAccept:
+  application/json\n```\nYou will get the following response:\n\n```json\n{\n  \"groups\":
+  [\n    {\n      \"references\": {\n        \"property1\": \"string\",\n        \"property2\":
+  \"string\"\n      },\n      \"name\": \"string\",\n      \"bsds\": [],\n      \"created\":
+  \"string\",\n      \"is_active\": true,\n      \"modified\": \"string\",\n      \"organization_guid\":
+  \"string\",\n      \"role\": \"string\",\n      \"guid\": \"string\"\n    }\n  ]\n}\n```\nOnce
+  you have the guid for the group that you would like, you are ready to shorten a
+  link. To shorten a long URL `http://google.com/`, send the following request replacing
+  ACCESS_TOKEN and GROUP_GUID with the appropriate values:\n```\nPOST https://api-ssl.bitly.com/v4/shorten
+  HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization: Bearer ACCESS_TOKEN\nContent-Type:
+  application/json\n{\n  \"long_url\": \"http://google.com\",\n  \"group_guid\": \"GROUP_GUID\"\n}\n```\nYou
+  will get a response that will contain values like:\n```json\n{\n  \"references\":
+  {\n    \"property1\": \"string\",\n    \"property2\": \"string\"\n  },\n  \"archived\":
+  true,\n  \"tags\": [],\n  \"created_at\": \"string\",\n  \"title\": \"string\",\n
+  \ \"deeplinks\": [],\n  \"created_by\": \"string\",\n  \"long_url\": \"string\",\n
+  \ \"custom_bitlinks\": [],\n  \"link\": \"string\",\n  \"id\": \"string\"\n}\n```\n###
+  Expand a Bitlink\nTo expand a short URL http://bit.ly/ze6poY, send the following
+  request:\n```\nPOST https://api-ssl.bitly.com/v4/expand HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization:
+  Bearer ACCESS_TOKEN\nContent-Type: application/json\n{\n  \"bitlink_id\": \"bit.ly/ze6poY\",\n}\n\n```\nand
+  you will receive the following response:\n```json\n{\n  \"long_url\": \"http://google.com/\",\n
+  \ \"id\": \"bit.ly/ze6poY\",\n  \"link\": \"http://bit.ly/ze6poY\",\n  \"created_at\":
+  \"2012-03-12T16:18:23+0000\"\n}\n```\n### Retrieving your Group's Bitlink History\nYou
+  can only retrieve the link history for the group guid. To retrieve your link history,
+  send the following request:\n```\nGET https://api-ssl.bitly.com/v4/groups/:guid/bitlinks
+  HTTP/1.1\nHost: api-ssl.bitly.com\nAuthorization: Bearer ACCESS_TOKEN\n```\nand
+  you will get an example response:\n```json\n{\n  \"links\": [\n    {\n      \"references\":
+  {\n        \"property1\": \"string\",\n        \"property2\": \"string\"\n      },\n
+  \     \"archived\": true,\n      \"tags\": [],\n      \"created_at\": \"string\",\n
+  \     \"title\": \"string\",\n      \"deeplinks\": [],\n      \"created_by\": \"string\",\n
+  \     \"long_url\": \"string\",\n      \"custom_bitlinks\": [],\n      \"link\":
+  \"string\",\n      \"id\": \"string\"\n    }\n  ],\n  \"pagination\": {\n    \"total\":
+  1,\n    \"size\": 50,\n    \"prev\": \"string\",\n    \"page\": 1,\n    \"next\":
+  \"string\"\n  }\n}\n```\nAs part of the response, you will see a field output `total`
+  under pagination, which tells you how many links are in your history. By default
+  results are paginated, with the default page size being 50 results returned. You
+  can add `size` and `page` parameters to the query to control the number of results
+  returned, and which page of results to return. Full documentation for the endpoint
+  is available at [/v4/groups/:guid/bitlinks](/v4/#operation/getBitlinksByGroup).\n\n##
+  Analytics\nGoogle provides analytics that are all wrapped into a single call, including
+  all-time totals of clicks on the specific short URL, clicks on the long URL, referrers
+  counts, clicks by country, clicks by browser and platform, and most-recent clicks
+  for the last month, week, day and last two hours. Bitly's API breaks these analytics
+  out into different endpoints and combinations of calls.\n\n### Clicks\nThe primary
+  endpoint you will need for retrieving click counts is [/v4/bitlinks/:bitlink/clicks](/v4/#operation/getClicksForBitlink).
+  By varying the query parameters you include, you can control the time period for
+  which you want to retrieve clicks. The parameters you will need to use are `unit`,
+  `units`, and `unit_reference`.\n\nThe `unit` parameter controls the scope of the
+  request, and can be `month`, `week`, `day`, `hour`, or `minute`. The parameter defaults
+  to `day`.\n\nThe `units` parameter controls the number of units to count backwards,
+  and must be a positive integer or -1. The default for units is -1, which means 'for
+  all time'.\n\nThese three units are a bit complicated, so they deserve a few examples
+  to make things clear. For our first example, we want to know clicks for all time,
+  so we use the defaults, `day`, `-1` and `now`. We can omit the parameters entirely,
+  since we are asking for default values:\n```\nGET https://api-ssl.bitly.com/v4/bitlinks/:bitlink/clicks
+  HTTP/1.1 Host: api-ssl.bitly.com Authorization: Bearer ACCESS_TOKEN\n```\nand we
+  receive the following response:\n```\n{\n  \"units\": -1,\n  \"unit_reference\":
+  \"string\",\n  \"unit\": \"day\",\n  \"link_clicks\": [\n    {\n      \"date\":
+  \"string\",\n      \"clicks\": 0\n    }\n  ]\n}\n```\n### Clicks per referrer\nTo
+  retrieve clicks per referrer, your primary endpoint should be [/v4/bitlinks/:bitlink/referrers](/v4/#operation/getMetricsForBitlinkByReferrers).
+  This endpoint will return click counts per referring domain. The endpoint, much
+  like [/v4/bitlinks/:bitlink/clicks](/v4/#operation/getClicksForBitlink), also takes
+  `unit`, `units` and `unit_reference` to establish the time period for which you
+  want to retrieve data.\nWe also have additional endpoints for referrer information,
+  [/v4/bitlinks/:bitlink/referrers](/v4/#operation/getMetricsForBitlinkByReferrers)
+  and /v4/bitlinks/:bitlink/referrers_by_domain. The /v3/link/referrers endpoint will
+  return specific referring web pages and their referring click counts, and /v3/link/referrers_by_domain
+  groups the same data by domain. However, these endpoints have significantly lower
+  rate limits than [/v4/bitlinks/:bitlink/referring_domains](/v4/#operation/getMetricsForBitlinkByReferringDomains),
+  so if the information returned by /v3/link/referring_domains meets your needs, you
+  are better off using that endpoint. You will be able to make more calls and retrieve
+  more information.\n\n### Clicks per country\nTo retrieve clicks per country, you
+  will call [/bitlinks/:bitlink/countries](v4/#operation/getMetricsForBitlinkByCountries).
+  This endpoint also takes `unit`, `units` and `unit_reference` to specify the time
+  period. The returned data consists of a list of two-letter country codes and the
+  number of clicks per country.\n### Clicks by operating system or platform\nBitly
+  does not currently offer API endpoints to retrieve clicks by operating system or
+  platform. Instead, we offer that information as part of our [data stream](mailto:API_sales@bit.ly),
+  an option we offer to our paid customers.\n\";s:7:\"license\";O:8:\"stdClass\":2:{s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";s:4:\"name\";s:10:\"Apache
+  2.0\";}s:5:\"title\";s:9:\"Bitly API\";s:7:\"version\";s:5:\"4.0.0\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:13:\"api@bitly.com\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:19:\"/v4/header-logo.png\";}}"
+host: api-ssl.bitly.com
+basePath: /v4
+paths:
+  /bitlinks/{bitlink}/countries:
+    get:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getMetricsForBitlinkByCountries
+      produces:
+      - application/json
+      summary: Get Metrics for a Bitlink by countries
+      description: This endpoint will return metrics about the countries referring
+        click traffic to a single Bitlink.
+  /domains/{domain}/register: []
+  /groups/{group_guid}/preferences:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/GroupPreferences'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      produces:
+      - application/json
+      operationId: getGroupPreferences
+      tags:
+      - Groups
+      summary: Retrieve Group Preferences
+      description: Retrieve preferences for a specific group
+    patch:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/GroupPreferences'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      - $ref: '#/parameters/GroupPreferences'
+      produces:
+      - application/json
+      operationId: updateGroupPreferences
+      tags:
+      - Groups
+      summary: Update Group Preferences
+      description: Update preferences for a specific group
+  /expand:
+    post:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ExpandedBitlink'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/ExpandBitlink'
+      produces:
+      - application/json
+      operationId: expandBitlink
+      tags:
+      - Bitlinks
+      summary: Expand a Bitlink
+      description: This endpoint returns public information for a Bitlink.
+  /bsds/search: []
+  /organizations/{organization_guid}:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Organization'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/OrganizationGUID'
+      tags:
+      - Organizations
+      operationId: getOrganization
+      produces:
+      - application/json
+      summary: Retrieve an Organization
+      description: Retrive details for an organization
+  /bitlinks/{bitlink}/referrers:
+    get:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getMetricsForBitlinkByReferrers
+      produces:
+      - application/json
+      summary: Get Metrics for a Bitlink by referrers
+      description: This endpoint will return metrics about the referrers referring
+        click traffic to a single Bitlink.
+  /bitlinks:
+    post:
+      responses:
+        417:
+          headers:
+            X-Bsd-Error:
+              type: string
+              description: An explanation of the DNS error recieved
+          description: EXPECTATION_FAILED
+          schema:
+            $ref: '#/definitions/ExpectationFailed'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Bitlink'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/FullShorten'
+      tags:
+      - Bitlinks
+      operationId: createFullBitlink
+      produces:
+      - application/json
+      summary: Create a Bitlink
+      description: Convert a long url to a Bitlink and set additional parameters
+  /custom_bitlinks:
+    post:
+      x-premium: true
+      responses:
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/CustomBitlink'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/AddCustomBitlink'
+      tags:
+      - Custom Bitlinks
+      produces:
+      - application/json
+      summary: Add Custom Bitlink
+      operationId: addCustomBitlink
+      description: Add a Keyword to a Bitlink
+  /groups/{group_guid}/bitlinks:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Bitlinks'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/Keyword'
+      - $ref: '#/parameters/Query'
+      - $ref: '#/parameters/CreatedBefore'
+      - $ref: '#/parameters/CreatedAfter'
+      - $ref: '#/parameters/ModifiedAfter'
+      - $ref: '#/parameters/Archived'
+      - $ref: '#/parameters/Deeplinks'
+      - $ref: '#/parameters/DomainDeeplinks'
+      - $ref: '#/parameters/FilterCampaignGUID'
+      - $ref: '#/parameters/FilterChannelGUID'
+      - $ref: '#/parameters/FilterCustomBitlink'
+      - $ref: '#/parameters/Tags'
+      - $ref: '#/parameters/EncodingLogin'
+      tags:
+      - Groups
+      - Bitlinks
+      operationId: getBitlinksByGroup
+      produces:
+      - application/json
+      summary: Retrieve Bitlinks by Group
+      description: Retrieve a paginated collection of Bitlinks for a Group
+  /groups/{group_guid}/tags:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Tags'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      tags:
+      - Groups
+      operationId: getGroupTags
+      produces:
+      - application/json
+      summary: Retrieve Tags by Group
+      description: Retrieve the currently used tags for a group
+  /campaigns:
+    post:
+      x-premium: true
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Campaign'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/CampaignModify'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Create Campaign
+      operationId: createCampaign
+      description: Create a new campaign
+    get:
+      x-premium: true
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Campaigns'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        502:
+          description: BAD_GATEWAY
+          schema:
+            $ref: '#/definitions/BadGateway'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/GroupGUIDFilter'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Retrieve Campaigns
+      operationId: getCampaigns
+      description: Retrieve the campaigns for the current user
+  /apps/{client_id}:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/OAuthApp'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/ClientID'
+      produces:
+      - application/json
+      operationId: getOAuthApp
+      summary: Retrieve OAuth App
+      description: Retrieve the details for the provided OAuth App client ID
+  /channels:
+    post:
+      x-premium: true
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Channel'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/ChannelModify'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Create Channel
+      operationId: createChannel
+      description: Create a new channel
+    get:
+      x-premium: true
+      responses:
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Channels'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/GroupGUIDFilter'
+      - $ref: '#/parameters/CampaignGUIDFilter'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Retrieve Channels
+      operationId: getChannels
+      description: Retrieve the channels available to a user
+  /groups/{group_guid}/countries:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      produces:
+      - application/json
+      operationId: getGroupMetricsByCountries
+      tags:
+      - Groups
+      summary: Get Click Metrics for a Group by countries
+      description: This endpoint will return metrics about the countries referring
+        click traffic rolled up to a Group
+  /groups/{group_guid}/referring_networks:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      produces:
+      - application/json
+      operationId: GetGroupMetricsByReferringNetworks
+      tags:
+      - Groups
+      summary: Get Click Metrics for a Group by referring networks
+      description: This endpoint will return metrics about the referring network click
+        traffic rolled up to a Group
+  /bitlinks/{bitlink}/clicks/summary:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClicksSummary'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getClicksSummaryForBitlink
+      produces:
+      - application/json
+      summary: Get Clicks Summary for a Bitlink
+      description: This will return the click counts for a specified Bitlink. This
+        rolls up all the data into a single field of clicks.
+  /users: []
+  /custom_bitlinks/{custom_bitlink}/clicks_by_destination:
+    get:
+      x-premium: true
+      responses:
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/CustomBitlink'
+      tags:
+      - Custom Bitlinks
+      produces:
+      - application/json
+      summary: Get Metrics for a Custom Bitlink by destination
+      operationId: getCustomBitlinkMetricsByDestination
+      description: Get Click Metrics for a Custom Bitlink by historical Bitlink destinations
+  /bitlinks/{bitlink}/clicks:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Clicks'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getClicksForBitlink
+      produces:
+      - application/json
+      summary: Get Clicks for a Bitlink
+      description: This will return the click counts for a specified Bitlink. This
+        returns an array with clicks based on a date.
+  /custom_bitlinks/{custom_bitlink}:
+    patch:
+      x-premium: true
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/CustomBitlink'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/CustomBitlink'
+      - $ref: '#/parameters/UpdateCustomBitlink'
+      tags:
+      - Custom Bitlinks
+      produces:
+      - application/json
+      summary: Update Custom Bitlink
+      operationId: updateCustomBitlink
+      description: Move a Keyword to a different Bitlink
+    get:
+      x-premium: true
+      responses:
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/CustomBitlink'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/CustomBitlink'
+      tags:
+      - Custom Bitlinks
+      produces:
+      - application/json
+      summary: Retrieve Custom Bitlink
+      operationId: getCustomBitlink
+      description: Retrieve the details and history of a Custom Bitlink
+  /share: []
+  /groups/{group_guid}/shorten_counts:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Metrics'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      produces:
+      - application/json
+      operationId: getGroupShortenCounts
+      tags:
+      - Groups
+      summary: Retrieve Group Shorten Counts
+      description: Get all the shorten counts for a specific group
+  /bitlinks/{bitlink}:
+    patch:
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Bitlink'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/BitlinkBody'
+      tags:
+      - Bitlinks
+      operationId: updateBitlink
+      produces:
+      - application/json
+      summary: Update a Bitlink
+      description: Update fields in the Bitlink
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Bitlink'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      produces:
+      - application/json
+      operationId: getBitlink
+      tags:
+      - Bitlinks
+      summary: Retrieve a Bitlink
+      description: This endpoint returns information for a Bitlink.
+  /campaigns/{campaign_guid}:
+    get:
+      x-premium: true
+      responses:
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Campaign'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/CampaignGUID'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Retrieve a Campaign
+      operationId: getCampaign
+      description: Retrive details for a campaign
+    patch:
+      x-premium: true
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Campaign'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/CampaignGUID'
+      - $ref: '#/parameters/CampaignModify'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Update Campaign
+      operationId: updateCampaign
+      description: Update a campaign's details
+  /shorten:
+    post:
+      responses:
+        417:
+          headers:
+            X-Bsd-Error:
+              type: string
+              description: An explanation of the DNS error recieved
+          description: EXPECTATION_FAILED
+          schema:
+            $ref: '#/definitions/ExpectationFailed'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          headers:
+            X-Bsd-Error:
+              type: string
+              description: An explanation of the DNS error recieved
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Bitlink'
+        201:
+          headers:
+            X-Bsd-Error:
+              type: string
+              description: An explanation of the DNS error recieved
+          description: CREATED
+          schema:
+            $ref: '#/definitions/Bitlink'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          headers:
+            X-Ratelimit-Reason:
+              type: string
+              description: An explanation of the ratelimit received.
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/Shorten'
+      tags:
+      - Bitlinks
+      operationId: createBitlink
+      produces:
+      - application/json
+      summary: Shorten a Link
+      description: Convert a long url to a Bitlink
+  /groups:
+    get:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Groups'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/OrganizationGUIDFilter'
+      tags:
+      - Groups
+      operationId: getGroups
+      produces:
+      - application/json
+      summary: Retrieve Groups
+      description: Retrieve a list of Groups
+  /domains/{domain}/status: []
+  /share_accounts/{group_guid}: []
+  /organizations:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Organizations'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      produces:
+      - application/json
+      operationId: getOrganizations
+      tags:
+      - Organizations
+      summary: Retrieve Organizations
+      description: Retrieve a list of organizations
+  /bitlinks/{bitlink}/referrers_by_domains:
+    get:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ReferrersByDomains'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getMetricsForBitlinkByReferrersByDomains
+      produces:
+      - application/json
+      summary: Get Metrics for a Bitlink by referrers by domain
+      description: This endpoint will group referrers metrics about a single Bitlink.
+  /groups/{group_guid}/bitlinks/{sort}:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/SortedLinks'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      - $ref: '#/parameters/Sort'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      - $ref: '#/parameters/Size'
+      produces:
+      - application/json
+      operationId: getSortedBitlinks
+      tags:
+      - Groups
+      - Bitlinks
+      summary: Retrieve Sorted Bitlinks for Group
+      description: This will retrieve a paginated response for Bitlinks that are sorted
+        for the Group
+  /organizations/{organization_guid}/shorten_counts:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Metrics'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/OrganizationGUID'
+      produces:
+      - application/json
+      operationId: getOrganizationShortenCounts
+      tags:
+      - Organizations
+      summary: Retrieve Organization Shorten Counts
+      description: Retrieve all the shorten counts for a specific organization
+  /user:
+    patch:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/User'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/User'
+      tags:
+      - User
+      operationId: updateUser
+      produces:
+      - application/json
+      summary: Update a User
+      description: Update fields in the user
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      tags:
+      - User
+      operationId: getUser
+      produces:
+      - application/json
+      summary: Retrieve a User
+      description: Retrive information for the current authenticated user
+  /bsds:
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/BSDsResponse'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      produces:
+      - application/json
+      operationId: getBSDs
+      tags:
+      - BSDs
+      summary: Get BSDs
+      description: Fetch all Branded Short Domains
+  /users/{login}/groups: []
+  /bitlinks/{bitlink}/referring_domains:
+    get:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/ClickMetrics'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/Bitlink'
+      - $ref: '#/parameters/TimeUnit'
+      - $ref: '#/parameters/UnitAmount'
+      - $ref: '#/parameters/Size'
+      - $ref: '#/parameters/UnitReferenceTimeStamp'
+      tags:
+      - Bitlinks
+      operationId: getMetricsForBitlinkByReferringDomains
+      produces:
+      - application/json
+      summary: Get Metrics for a Bitlink by referring domains
+      description: This endpoint will rollup the click counts to a referrer about
+        a single Bitlink.
+  /groups/{group_guid}:
+    patch:
+      responses:
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Group'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      - $ref: '#/parameters/Group'
+      tags:
+      - Groups
+      operationId: updateGroup
+      produces:
+      - application/json
+      summary: Update a Group
+      description: Update the details of a group
+    get:
+      responses:
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Group'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+      parameters:
+      - $ref: '#/parameters/GroupGUID'
+      tags:
+      - Groups
+      operationId: getGroup
+      produces:
+      - application/json
+      summary: Retrieve a Group
+      description: Retrive details for a group
+  /channels/{channel_guid}:
+    get:
+      x-premium: true
+      responses:
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Channel'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+      parameters:
+      - $ref: '#/parameters/ChannelGUID'
+      produces:
+      - application/json
+      tags:
+      - Campaigns
+      summary: Get A Channel
+      operationId: getChannel
+      description: Get a channel's details
+    patch:
+      x-premium: true
+      responses:
+        422:
+          description: UNPROCESSABLE_ENTITY
+          schema:
+            $ref: '#/definitions/UnprocessableEntity'
+        200:
+          description: SUCCESS
+          schema:
+            $ref: '#/definitions/Channel'
+        400:
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/BadRequest'
+        402:
+          description: UPGRADE_REQUIRED
+          schema:
+            $ref: '#/definitions/UpgradeRequired'
+        403:
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/NotFound'
+        503:
+          description: TEMPORARILY_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/TemporarilyUnavailable'
+        500:
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/InternalError'
+      parameters:
+      - $ref: '#/parameters/ChannelGUID'
+      - $ref: '#/parameters/ChannelModify'
+      tags:
+      - Campaigns
+      operationId: updateChannel
+      summary: Update A Channel
+      description: Update an existing Channel
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":68:{s:10:\"UserUpdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"default_group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Metrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BaseMetrics\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"metrics\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Metric\";}s:4:\"type\";s:5:\"array\";}}}}}s:5:\"Group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HasReferences\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"bsds\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"modified\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"organization_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:20:\"CustomBitlinkHistory\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:4:\"hash\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"keyword\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"first_created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"long_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"deactivated\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"bsd\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"ClickLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"clicks\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"channels\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Channel\";}s:4:\"type\";s:5:\"array\";}}}s:13:\"InternalError\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"INTERNAL_ERROR\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:7:\"Shorten\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:8:\"long_url\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":2:{s:7:\"default\";s:6:\"bit.ly\";s:4:\"type\";s:6:\"string\";}s:8:\"long_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"DomainStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:11:\"unavailable\";i:1;s:9:\"available\";}s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"zone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"BSDsResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"bsds\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}}s:13:\"ExpandBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"bitlink_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Bitlinks\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}s:5:\"links\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Bitlink\";}s:4:\"type\";s:5:\"array\";}}}s:16:\"GroupPreferences\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"domain_preference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ShareAccount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:10:\"numeric_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"account_login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"account_type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:7:\"twitter\";i:1;s:8:\"facebook\";}s:4:\"type\";s:6:\"string\";}s:10:\"account_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"oauth_error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"visible\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"connected\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  timestamp\";}s:12:\"account_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"DomainRegister\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"redirect_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ClicksSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"units\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"enum\";a:5:{i:0;s:6:\"minute\";i:1;s:4:\"hour\";i:2;s:3:\"day\";i:3;s:4:\"week\";i:4;s:5:\"month\";}s:4:\"type\";s:6:\"string\";}s:12:\"total_clicks\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"unit_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"BaseMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"units\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"facet\";O:8:\"stdClass\":2:{s:4:\"enum\";a:6:{i:0;s:9:\"countries\";i:1;s:9:\"referrers\";i:2;s:19:\"referrers_by_domain\";i:3;s:17:\"referring_domains\";i:4;s:18:\"referring_networks\";i:5;s:14:\"shorten_counts\";}s:4:\"type\";s:6:\"string\";}s:14:\"unit_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"unit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"BadGateway\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"BAD_GATEWAY\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:6:\"Clicks\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"units\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"unit_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"enum\";a:5:{i:0;s:6:\"minute\";i:1;s:4:\"hour\";i:2;s:3:\"day\";i:3;s:4:\"week\";i:4;s:5:\"month\";}s:4:\"type\";s:6:\"string\";}s:11:\"link_clicks\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/LinkClicks\";}s:4:\"type\";s:5:\"array\";}}}s:7:\"Channel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BaseChannel\";}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HasReferences\";}}}s:17:\"ExpectationFailed\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"EXPECTATION_FAILED\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:9:\"Campaigns\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"campaigns\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Campaign\";}s:4:\"type\";s:5:\"array\";}}}s:13:\"EncodingLogin\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"encoding_login\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}}s:5:\"Users\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}s:5:\"users\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/UserInternal\";}s:4:\"type\";s:5:\"array\";}}}s:4:\"Tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"tags\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}}s:9:\"Forbidden\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"FORBIDDEN\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:5:\"Email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"is_primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"is_verified\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ShareAccounts\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"share_accounts\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShareAccount\";}s:4:\"type\";s:5:\"array\";}}}s:12:\"ClickMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BaseMetrics\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"metrics\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ClickMetric\";}s:4:\"type\";s:5:\"array\";}}}}}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:18:\"default_group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"modified\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"is_sso_user\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"is_2fa_enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Email\";}s:4:\"type\";s:5:\"array\";}}}s:6:\"Groups\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"groups\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Group\";}s:4:\"type\";s:5:\"array\";}}}s:11:\"BaseChannel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO_TIMESTAMP\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  TIMESTAMP\";}}}s:11:\"SortedLinks\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"sorted_links\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/ClickLink\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Bitlink\";}s:4:\"type\";s:5:\"array\";}}}s:14:\"CampaignModify\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"channel_guids\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"FullShorten\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:8:\"long_url\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":2:{s:7:\"default\";s:6:\"bit.ly\";s:4:\"type\";s:6:\"string\";}s:8:\"long_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"deeplinks\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Deeplink\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"Organizations\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"organizations\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}s:4:\"type\";s:5:\"array\";}}}s:10:\"Pagination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"total\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"size\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"prev\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"next\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"ChannelBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"campaign_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"bitlink_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"NotFound\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"NOT_FOUND\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:19:\"UpdateCustomBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"bitlink_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"CustomBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"bitlink\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Bitlink\";}s:15:\"bitlink_history\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CustomBitlinkHistory\";}s:4:\"type\";s:5:\"array\";}s:14:\"custom_bitlink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"ReferrersByDomain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"Referrers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Metric\";}s:4:\"type\";s:5:\"array\";}s:7:\"network\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"BadRequest\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"BAD_REQUEST\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:11:\"ClickMetric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"clicks\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Metric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"ExpandedBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"long_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"CreateShare\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"bitlink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"account_type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:7:\"twitter\";i:1;s:8:\"facebook\";}s:4:\"type\";s:6:\"string\";}s:10:\"account_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/FieldError\";}s:4:\"type\";s:5:\"array\";}s:8:\"resource\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"UpgradeRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"UPGRADE_REQUIRED\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:12:\"Organization\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HasReferences\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"bsds\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"modified\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"tier_display_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"tier_family\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tier\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:16:\"BSDSearchResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/BSDSearchResult\";}s:4:\"type\";s:5:\"array\";}}}s:10:\"LinkClicks\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"clicks\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:7:\"Bitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HasReferences\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":11:{s:8:\"archived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"deeplinks\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/DeeplinkRule\";}s:4:\"type\";s:5:\"array\";}s:10:\"created_by\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"long_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"client_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"custom_bitlinks\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:8:\"Campaign\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/HasReferences\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  timestamp\";}s:10:\"group_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  timestamp\";}s:10:\"created_by\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:19:\"UnprocessableEntity\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"UNPROCESSABLE_ENTITY\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:13:\"HasReferences\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"references\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}}}s:5:\"Share\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"numeric_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"account_type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:7:\"twitter\";i:1;s:8:\"facebook\";}s:4:\"type\";s:6:\"string\";}s:10:\"account_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"account_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"BSDSearchResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:9:\"affiliate\";i:1;s:8:\"reseller\";}s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"subdomain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"zone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"OAuthApp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"client_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"TemporarilyUnavailable\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"TEMPORARILY_UNAVAILABLE\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}s:10:\"FieldError\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"field\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"error_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"AddCustomBitlink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"bitlink_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"custom_bitlink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ChannelModify\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BaseChannel\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"bitlinks\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ChannelBitlink\";}s:4:\"type\";s:5:\"array\";}}}}}s:18:\"ReferrersByDomains\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"units\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"facet\";O:8:\"stdClass\":2:{s:4:\"enum\";a:1:{i:0;s:20:\"referrers_by_domains\";}s:4:\"type\";s:6:\"string\";}s:19:\"referrers_by_domain\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ReferrersByDomain\";}s:4:\"type\";s:5:\"array\";}s:14:\"unit_reference\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"unit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Deeplink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"app_uri_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"install_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"install_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"app_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"GroupUpdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"organization_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"DeeplinkRule\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:7:\"bitlink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"install_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  timestamp\";}s:12:\"app_uri_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ISO
+  timestamp\";}s:12:\"install_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"app_guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"guid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"os\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"UserInternal\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"role_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}"
+...

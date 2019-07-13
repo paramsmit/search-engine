@@ -1,0 +1,245 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:36:\"Register a food business
+  collections\";s:7:\"version\";s:3:\"1.1\";}"
+host: fsa-rof-gateway.azure-api.net
+basePath: /api/registrations
+paths:
+  /unified:
+    get:
+      description: Returns registrations from all local authorities for Unified View.
+        Results are filtered according to the supplied date/time range.
+      operationId: get-registrations-for-unified-view
+      summary: Get registrations for Unified View.
+      parameters:
+      - name: after
+        in: query
+        description: Filter registrations to those created/updated after an ISO formatted
+          UTC date-time e.g. 2019-04-29T16:01:12Z.
+        required: true
+        type: string
+        format: date-time
+      - name: before
+        in: query
+        description: Filter registrations to those created/updated before an ISO formatted
+          UTC date-time e.g. 2019-04-30T16:01:12Z.
+        required: true
+        type: string
+        format: date-time
+      - name: double-mode
+        in: header
+        description: Return a hard-coded test result according to the value specified
+          instead of querying the database.
+        type: string
+        enum:
+        - success
+        - fail
+        - single
+        - update
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/ArrayOfRegistrations'
+        400:
+          description: Bad request, invalid options.
+        404:
+          description: Resource not found.
+        500:
+          description: Internal server error.
+  /{lc}:
+    get:
+      description: Returns registrations from the supplied local authority. By default,
+        results are filtered to exclude data marked as collected.
+      operationId: get-registrations-for-local-authority
+      summary: Get registrations for local authority.
+      parameters:
+      - name: lc
+        in: path
+        description: The local authority name.
+        required: true
+        type: string
+      - name: fields
+        in: query
+        description: Extra fields to return as part of the response.
+        type: array
+        items:
+          type: string
+      - name: new
+        in: query
+        description: Filter registrations to those not yet marked as collected.
+        type: boolean
+        default: "true"
+        enum:
+        - "true"
+        - "false"
+      - name: double-mode
+        in: header
+        description: Return a hard-coded test result according to the value specified
+          instead of querying the database.
+        type: string
+        enum:
+        - success
+        - fail
+        - single
+        - update
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/ArrayOfRegistrations'
+        400:
+          description: Bad request, invalid options.
+        404:
+          description: Resource not found.
+        500:
+          description: Internal server error.
+  /{lc}/{fsa_rn}:
+    get:
+      description: Returns a single registration in full from the supplied reference
+        number.
+      operationId: get-single-registration-for-local-authority
+      summary: Get a single registration in full.
+      parameters:
+      - name: lc
+        in: path
+        description: The local authority name.
+        required: true
+        type: string
+      - name: fsa_rn
+        in: path
+        description: The reference number of the registration.
+        required: true
+        type: string
+      - name: double-mode
+        in: header
+        description: Return a hard-coded test result according to the value specified
+          instead of querying the database.
+        type: string
+        enum:
+        - success
+        - fail
+        - single
+        - update
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/Registration'
+        400:
+          description: Bad request, invalid options.
+        404:
+          description: Resource not found.
+        500:
+          description: Internal server error.
+    put:
+      description: Updates a single registration according to the supplied reference
+        number and collection status.
+      operationId: update-single-registration-for-local-authority
+      summary: Update the collected status of a single registration.
+      parameters:
+      - name: lc
+        in: path
+        description: The local authority name.
+        required: true
+        type: string
+      - name: fsa_rn
+        in: path
+        description: The reference number for the registration.
+        required: true
+        type: string
+      - name: double-mode
+        in: header
+        description: Return a hard-coded test result according to the value specified
+          instead of querying the database.
+        type: string
+        enum:
+        - success
+        - fail
+        - single
+        - update
+      - name: collected
+        in: body
+        description: The collection status with which to update the registration.
+        schema:
+          type: object
+          properties:
+            collected:
+              type: boolean
+      responses:
+        200:
+          description: OK.
+          schema:
+            type: object
+            properties:
+              fsa_rn:
+                type: string
+              collected:
+                type: boolean
+        400:
+          description: Bad request, invalid options.
+        404:
+          description: Resource not found.
+        500:
+          description: Internal server error.
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":13:{s:20:\"ArrayOfRegistrations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Registration\";}}s:12:\"Registration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"fsa_rn\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/fsa_rn\";}s:7:\"council\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/council\";}s:9:\"collected\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/collected\";}s:12:\"collected_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/collected_at\";}s:13:\"establishment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Establishment\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}s:6:\"fsa_rn\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:20;s:7:\"minimum\";i:20;s:11:\"description\";s:58:\"The
+  unique reference number to identify this registration.\";}s:7:\"council\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  local authority that the registration belongs to.\";}s:9:\"collected\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:91:\"Flag
+  indicating whether this registration has been collected by the local authority or
+  not.\";}s:12:\"collected_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"The
+  date and time that the registration was collected.\";}s:13:\"Establishment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:21:\"establishment_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/EstablishmentDetails\";}s:8:\"operator\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Operator\";}s:7:\"premise\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Premise\";}s:10:\"activities\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Activities\";}}}s:20:\"EstablishmentDetails\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:26:\"establishment_trading_name\";i:1;s:28:\"establishment_primary_number\";i:2;s:19:\"establishment_email\";i:3;s:26:\"establishment_opening_date\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:26:\"establishment_trading_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:28:\"establishment_primary_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:5;s:7:\"maximum\";i:20;s:11:\"description\";s:43:\"Numeric
+  string. Blank spaces and + allowed.\";}s:30:\"establishment_secondary_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:5;s:7:\"maximum\";i:20;s:11:\"description\";s:43:\"Numeric
+  string. Blank spaces and + allowed.\";}s:19:\"establishment_email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:255;s:11:\"description\";s:70:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isEmail.\";}s:26:\"establishment_opening_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"Uses
+  YYYY-MM-DD [npm Validator](https://www.npmjs.com/package/validator) isISO8601.\";}}}s:8:\"Operator\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:19:\"operator_first_line\";i:1;s:23:\"operator_primary_number\";i:2;s:25:\"operator_secondary_number\";i:3;s:14:\"operator_email\";i:4;s:13:\"operator_type\";i:5;s:17:\"operator_postcode\";}s:10:\"properties\";O:8:\"stdClass\":20:{s:19:\"operator_first_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:119:\"ASCII
+  string - Required if operator_type is Sole trader', 'Partnership', or A person (registered
+  by a representative)'.\";s:7:\"maximum\";i:255;}s:18:\"operator_last_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"ASCII
+  string - required if operator_type is 'Sole trader', 'Partnership', or A person
+  (registered by a representative)'.\";s:7:\"maximum\";i:255;}s:17:\"operator_postcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:80:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isPostalCode (GB).\";}s:13:\"operator_uprn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:12;s:11:\"description\";s:33:\"Unique
+  Property Reference Number.\";}s:19:\"operator_first_line\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:15:\"operator_street\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:13:\"operator_town\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:23:\"operator_primary_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:5;s:7:\"maximum\";i:20;s:11:\"description\";s:43:\"Numeric
+  string. Blank spaces and + allowed.\";}s:25:\"operator_secondary_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"minimum\";i:5;s:7:\"maximum\";i:20;s:11:\"description\";s:43:\"Numeric
+  string. Blank spaces and + allowed.\";}s:14:\"operator_email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:255;s:11:\"description\";s:70:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isEmail.\";}s:27:\"contact_representative_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:137:\"ASCII
+  string - requried if operator_type is 'A company (registered by a representative)'
+  or 'A charity (registered by a representative)'.\";s:7:\"maximum\";i:255;}s:27:\"contact_representative_role\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:137:\"ASCII
+  string - Required if operator_type is 'A company (registered by a representative)'
+  or 'A charity (registered by a representative)'.\";s:7:\"maximum\";i:255;}s:29:\"contact_representative_number\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:137:\"ASCII
+  string - Required if operator_type is 'A company (registered by a representative)'
+  or 'A charity (registered by a representative)'.\";s:7:\"maximum\";i:255;}s:28:\"contact_representative_email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:255;s:11:\"description\";s:194:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isEmail - Required if operator_type
+  is 'A company (registered by a representative)' or 'A charity (registered by a representative)'.\";}s:13:\"operator_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:184:\"Possible
+  values: 'Sole trader', 'Partnership', 'A person (registered by a representative)'
+  'A company (registered by a representative)' or 'A charity (registered by a representative)'.\";}s:21:\"operator_company_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:50;s:11:\"description\";s:74:\"Required
+  if operator_type is 'A company (registered by a representative)'.\";}s:29:\"operator_company_house_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:8;s:7:\"minimum\";i:8;s:11:\"description\";s:195:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isAlphanumeric (GB), first
+  two characters can be letters - Required if operator_type is 'A company (registered
+  by a representative)'.\";}s:21:\"operator_charity_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:50;s:11:\"description\";s:74:\"Required
+  if operator_type is 'A charity (registered by a representative)'.\";}s:23:\"operator_charity_number\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:8;s:7:\"minimum\";i:6;s:11:\"description\";s:173:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isAlphanumeric (GB), allows
+  ''-'' -  Required if operator_type is 'A charity (registered by a representative)'.\";}s:8:\"partners\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Partner\";}}}}s:7:\"Partner\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:12:\"partner_name\";i:1;s:26:\"partner_is_primary_contact\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"partner_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";}s:26:\"partner_is_primary_contact\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:59:\"Flag
+  indicating whether the partner is the primary contact.\";}}}s:7:\"Premise\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:22:\"establishment_postcode\";i:1;s:24:\"establishment_first_line\";i:2;s:18:\"establishment_type\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:22:\"establishment_postcode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:80:\"Uses
+  [npm Validator](https://www.npmjs.com/package/validator) isPostalCode (GB).\";}s:18:\"establishment_uprn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:12;s:11:\"description\";s:33:\"Unique
+  Property Reference Number.\";}s:24:\"establishment_first_line\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:20:\"establishment_street\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:18:\"establishment_town\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ASCII
+  string.\";s:7:\"maximum\";i:255;}s:18:\"establishment_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"Possible
+  values: 'Place of business or commercial premises', 'Mobile or moveable premises',
+  'Home or domestic premises'.\";}}}s:10:\"Activities\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:13:\"customer_type\";i:1;s:13:\"business_type\";i:2;s:24:\"import_export_activities\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:13:\"customer_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Possible
+  values: 'Other businesses', 'End consumer', 'End consumer and other businesses'.\";}s:13:\"business_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"Predetermined
+  values, see separate document for full business type list.\";}s:25:\"business_type_search_term\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"import_export_activities\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"Possible
+  values: 'Directly import', 'Directly export', 'Directly import and export', 'None'.\";}s:22:\"business_other_details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:1500;}s:22:\"opening_days_irregular\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"maximum\";i:1500;}s:18:\"opening_day_monday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:19:\"opening_day_tuesday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"opening_day_wednesday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"opening_day_thursday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"opening_day_friday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"opening_day_saturday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"opening_day_sunday\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"Metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"declaration1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"I
+  declare that the information I have given on this form is correct and complete to
+  the best of my knowledge and belief.\";}s:12:\"declaration2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:156:\"The
+  operator will notify their local council of any significant changes to the business
+  activity, including closure, within 28 days of the change happening.\";}s:12:\"declaration3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:145:\"The
+  operator understands they are legally responsible for the safety and authenticity
+  of the food being produced or served at this establishment.\";}}}}"
+...

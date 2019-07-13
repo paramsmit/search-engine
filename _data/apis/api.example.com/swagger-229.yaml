@@ -1,0 +1,1046 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:131:\"Use the Oracle
+  Integration Cloud Service REST API to manage and monitor integrations, adapters,
+  connections, lookups, and packages.\";s:7:\"version\";s:10:\"2016.11.23\";s:5:\"title\";s:56:\"REST
+  API for Oracle Integration Cloud Service, Version 2\";s:9:\"x-summary\";s:131:\"Use
+  the Oracle Integration Cloud Service REST API to manage and monitor integrations,
+  adapters, connections, lookups, and packages.\";}"
+basePath: /icsapis
+paths:
+  /v2/connections:
+    get:
+      tags:
+      - connections
+      summary: Retrieve Connections
+      description: Retrieves a list of connections.
+      operationId: getConnections
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=utf-8
+      - application/xml; charset=utf-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name and status.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name, last updated time, or type.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionsResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-connections-get
+  /v2/connections/{id}:
+    get:
+      tags:
+      - connections
+      summary: Retrieve a Connection
+      description: Retrieves a connection. The response includes only the data visible
+        in the ICS console.
+      operationId: getConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=utf-8
+      - application/xml; charset=utf-8
+      parameters:
+      - name: id
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionResource'
+        404:
+          description: Connection not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-connections-{id}-get
+    post:
+      tags:
+      - connections
+      summary: Update a Connection
+      description: Updates a connection's security and connection properties (only
+        wsdl, username, and password).
+      operationId: updateConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=utf-8
+      - application/xml; charset=utf-8
+      parameters:
+      - name: id
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      - name: X-HTTP-Method-Override
+        in: header
+        description: HTTP Method override in the header
+        required: true
+        type: string
+        default: ""
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ConnectionResource'
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ConnectionResource'
+        404:
+          description: Connection not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-connections-{id}-post
+    delete:
+      tags:
+      - connections
+      summary: Delete a connection
+      description: Deletes a connection.
+      operationId: deleteConnection
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=utf-8
+      - application/xml; charset=utf-8
+      parameters:
+      - name: id
+        in: path
+        description: Connection identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Connection not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-connections-{id}-delete
+  /v2/integrations:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve Integrations
+      description: Retrieves a list of integrations.
+      operationId: getIntegrations
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name, status, and type.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name or last updated time.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationsResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-get
+  /v2/integrations/archive:
+    post:
+      tags:
+      - integrations
+      summary: Import (Add) an Integration
+      description: Imports (adds) an integration that was exported previously. Importing
+        an integration under a different user name or version that was exported is
+        not supported. If you are using cURL, use the -F option to specify the file
+        to import.
+      operationId: importAsNewIntegration
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported integration file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationResource'
+        400:
+          description: Incomplete or invalid integration
+        409:
+          description: Integration already exists
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-archive-post
+    put:
+      tags:
+      - integrations
+      summary: Import (Replace) an Integration
+      description: Imports (replaces) an integration with the same name that was exported
+        previously. If you are using cURL, use the -F option to specify the file to
+        import.
+      operationId: importAsUpdateIntegration
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported integration file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationResource'
+        400:
+          description: Incomplete or invalid integration
+        409:
+          description: Integration already exists
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-archive-put
+  /v2/integrations/{id}:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve an Integration
+      description: Retrieves the current version of an integration by ID.
+      operationId: getIntegrationVersionsWithId
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationIdResource'
+        400:
+          description: Malformed parameters
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-get
+  /v2/integrations/{id}/versions:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve All Integration Versions
+      description: Retrieves all versions of an integration by ID.
+      operationId: getIntegrationVersions
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationVersionsResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-versions-get
+  /v2/integrations/{id}/versions/{version}:
+    get:
+      tags:
+      - integrations
+      summary: Retrieve an Integration Version
+      description: Retrieves a single integration specified by the ID and version.
+      operationId: getIntegration
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationResource'
+        400:
+          description: Malformed parameters
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-versions-{version}-get
+    delete:
+      tags:
+      - integrations
+      summary: Delete an Integration Version
+      description: Deletes a single integration specified by the ID and version.
+      operationId: deleteIntegration
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationVersionsResource'
+        400:
+          description: Malformed parameters
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-versions-{version}-delete
+  /v2/integrations/{id}/versions/{version}/archive:
+    get:
+      tags:
+      - integrations
+      summary: Export an Integration
+      description: Exports an integration. This operation returns a byte stream that
+        is output to the display by default. If you are using cURL, use the -o option
+        to save the response to a file.
+      operationId: exportIntegration
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+        404:
+          description: Integration not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-versions-{version}-archive-get
+  /v2/integrations/{id}/versions/{version}/status:
+    post:
+      tags:
+      - integrations
+      summary: Update Integration Status
+      description: Updates an integration's status.
+      operationId: updateIntegrationStatus
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/IntegrationResource'
+      - name: X-HTTP-Method-Override
+        in: header
+        description: HTTP Method override in the header
+        required: true
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IntegrationResource'
+        400:
+          description: Incomplete or invalid integration
+        404:
+          description: Integration not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-integrations-{id}-versions-{version}-status-post
+  /v2/monitoring/errors:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Error Instances
+      description: Retrieves a list of error instances.
+      operationId: getErrors
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filter parameter
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ErrorsResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-errors-get
+  /v2/monitoring/errors/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve an Error Instance
+      description: Retrieves an error instance.
+      operationId: getErrorInstance
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: ErrorInstance identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ErrorResource'
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-errors-{id}-get
+  /v2/monitoring/instances:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Instances
+      description: Retrieves a list of flow instances.
+      operationId: getInstances
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filter parameter
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/InstancesResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-instances-get
+  /v2/monitoring/instances/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve an Instance
+      description: Retrieves a flow instance.
+      operationId: getInstance
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Instance identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/InstanceResource'
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-instances-{id}-get
+  /v2/monitoring/integrations:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Monitoring Metrics for All Integrations
+      description: Retrieves monitoring metrics (statistics) for all integrations.
+      operationId: getMonitoringIntegrations
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/MonitoringIntegrationsResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-integrations-get
+  /v2/monitoring/integrations/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Monitoring Metrics for an Integration
+      description: Retrieves monitoring metrics for the current version of an integration.
+      operationId: getMonitoringIntegrationVersionsById
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/MonitoringIntegrationVerResource'
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-integrations-{id}-get
+  /v2/monitoring/integrations/{id}/versions:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Monitoring Metrics for All Integration Versions
+      description: Retrieves monitoring metrics for all versions of an integration.
+      operationId: getMonitoringIntegrationVersions
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/MonitoringIntegrationVerResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-integrations-{id}-versions-get
+  /v2/monitoring/integrations/{id}/versions/{version}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Monitoring Metrics for an Integration Version
+      description: Retrieves monitoring metrics for a single version of an integration.
+      operationId: getMonitoringIntegration
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: id
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: Integration version
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/MonitoringIntegrationResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-integrations-{id}-versions-{version}-get
+  /v2/monitoring/logs:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve Monitoring Log Files
+      description: Retrieves a list of monitoring log files.
+      operationId: getMonitoringLogs
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/LogFilesResource'
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-logs-get
+  /v2/monitoring/logs/{id}:
+    get:
+      tags:
+      - monitoring
+      summary: Retrieve a Monitoring Log File
+      description: Retrieves a monitoring log file by ID.
+      operationId: getMonitoringLog
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/bin
+      parameters:
+      - name: id
+        in: path
+        description: Log file identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-monitoring-logs-{id}-get
+  /v2/lookups:
+    get:
+      tags:
+      - lookups
+      summary: Retrieve Lookups
+      description: Retrieves a list of lookups.
+      operationId: getLookups
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name.
+        required: false
+        type: string
+      - name: orderBy
+        in: query
+        description: Orders results by name or last updated time.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/LookupsResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-lookups-get
+  /v2/lookups/{name}:
+    get:
+      tags:
+      - lookups
+      summary: Retrieve a Lookup
+      description: Retrieves a lookup by ID.
+      operationId: getLookup
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: name
+        in: path
+        description: Integration identifier
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/LookupResource'
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-lookups-{name}-get
+  /v2/adapters:
+    get:
+      tags:
+      - adapters
+      summary: Retrieve Adapters
+      description: Retrieves a list of adapters.
+      operationId: getAdapters
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name and source.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/AdaptersResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-adapters-get
+  /v2/adapters/{name}:
+    get:
+      tags:
+      - adapters
+      summary: Retrieve an Adapter
+      description: Retrieves an adapter by name and lists details.
+      operationId: getAdapter
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: name
+        in: path
+        description: Adapter name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/AdapterTypeResource'
+        404:
+          description: Adapter not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-adapters-{name}-get
+  /v2/packages:
+    get:
+      tags:
+      - packages
+      summary: Retrieve Packages
+      description: Retrieves a list of packages.
+      operationId: getPackages
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: q
+        in: query
+        description: Filters results by name.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PackagesResource'
+        400:
+          description: Malformed parameters
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-packages-get
+  /v2/packages/archive:
+    post:
+      tags:
+      - packages
+      summary: Import (Add) a Package
+      description: Imports (adds) a package that was exported previously. If you are
+        using cURL, use the -F option to specify the file to import.
+      operationId: importPackage
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: file
+        in: formData
+        description: Previously exported package file
+        required: true
+        type: file
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/ICSPackages'
+        400:
+          description: Incomplete or invalid Package
+        409:
+          description: Package already exists
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-packages-archive-post
+  /v2/packages/{packagename}:
+    get:
+      tags:
+      - packages
+      summary: Retrieve a Package
+      description: Retrieves a package by name.
+      operationId: getPackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PackageResource'
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-packages-{packagename}-get
+    delete:
+      tags:
+      - packages
+      summary: Delete a Package
+      description: Deletes a package.
+      operationId: deletePackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/json; charset=UTF-8
+      - application/xml; charset=UTF-8
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PackageResource'
+        404:
+          description: Not found
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-packages-{packagename}-delete
+  /v2/packages/{packagename}/archive:
+    get:
+      tags:
+      - packages
+      summary: Export a Package
+      description: Exports a package. This operation returns a byte stream that is
+        output to the display by default. If you are using cURL, use the -o option
+        to save the response to a file.
+      operationId: exportPackage
+      consumes:
+      - application/xml
+      - application/json
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: packagename
+        in: path
+        description: Package name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+      security:
+      - integrationservicedeveloper Role: []
+      x-internal-id: v2-packages-{packagename}-archive-get
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":39:{s:23:\"AdapterTypeBaseResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"adapterbase\";}}s:26:\"ConnectionPropertyResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:12:\"propertyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"propertyValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"requiredFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:12:\"propertyType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:13:{i:0;s:6:\"STRING\";i:1;s:6:\"NUMBER\";i:2;s:3:\"URL\";i:3;s:8:\"WSDL_URL\";i:4;s:7:\"XSD_URL\";i:5;s:8:\"WADL_URL\";i:6;s:4:\"FILE\";i:7;s:8:\"PASSWORD\";i:8;s:11:\"URL_OR_FILE\";i:9;s:4:\"LIST\";i:10;s:3:\"MAP\";i:11;s:4:\"TEXT\";i:12;s:6:\"CHOICE\";}}s:13:\"propertyGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:11:\"CREDENTIALS\";i:1;s:16:\"SOURCE_ARTIFACTS\";i:2;s:16:\"CONNECTION_PROPS\";i:3;s:5:\"OTHER\";}}s:15:\"integrationRole\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"SOURCE\";i:1;s:6:\"TARGET\";i:2;s:17:\"SOURCE_AND_TARGET\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:18:\"connectionproperty\";}}s:18:\"ConnectionResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"securityPolicy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:14:{i:0;s:10:\"BASIC_AUTH\";i:1;s:23:\"USERNAME_PASSWORD_TOKEN\";i:2;s:34:\"USERNAME_PASSWORD_IGNORE_TIMESTAMP\";i:3;s:24:\"OAUTH_CLIENT_CREDENTIALS\";i:4;s:41:\"OAUTH_RESOURCE_OWNER_PASSWORD_CREDENTIALS\";i:5;s:4:\"SAML\";i:6;s:5:\"OAUTH\";i:7;s:6:\"CUSTOM\";i:8;s:11:\"TOKEN_BASED\";i:9;s:4:\"NONE\";i:10;s:36:\"OAUTH_AUTHORIZATION_CODE_CREDENTIALS\";i:11;s:19:\"CUSTOM_THREE_LEGGED\";i:12;s:17:\"CUSTOM_TWO_LEGGED\";i:13;s:35:\"PAAS_INTEGRATION_USING_OWSM_OAUTH20\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"percentageComplete\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"adapterType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/AdapterTypeBaseResource\";}s:20:\"connectionProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ConnectionPropertyResource\";}}s:18:\"securityProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ConnectionPropertyResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"connection\";}}s:19:\"ConnectionsResource\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ConnectionResource\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"connections\";}}s:4:\"Link\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"rel\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:22:\"ConnectionBaseResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"EndPointResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"connection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/ConnectionBaseResource\";}}}s:21:\"IntegrationIdResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"versions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/IntegrationVersionsResource\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:22:\"integrationsidversions\";}}s:19:\"IntegrationResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":29:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"endPoints\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/EndPointResource\";}}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:18:\"percentageComplete\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:8:\"lockedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lockedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"endPointURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"proxyWSDL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"tracingEnabledFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"packageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"projectType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"modelType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"modelTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"mepType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"mepTypeDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"trackingInstanceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"trackingVariables\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TrackingVariableType\";}}s:22:\"scheduleApplicableFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:19:\"scheduleDefinedFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:19:\"projectModelVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"integration\";}}s:26:\"IntegrationVersionResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"IntegrationVersionsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/IntegrationVersionResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:19:\"integrationversions\";}}s:20:\"IntegrationsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/IntegrationIdResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:12:\"integrations\";}}s:12:\"PropertyType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ReferenceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subRole\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PropertyType\";}}s:6:\"refUri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"TrackingVariableType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:17:\"messageContextRef\";i:1;s:4:\"name\";i:2;s:5:\"xpath\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subRole\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"xpath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"messageContextRef\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ReferenceType\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PropertyType\";}}}}s:13:\"ErrorResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"integrationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"integrationVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"pkName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"pkValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"secondaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"secondaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"tertiaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"tertiaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"faults\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Faults\";}s:10:\"actionable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"error\";}}s:14:\"ErrorsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ErrorResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"timeWindow\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"errors\";}}s:11:\"FaultDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"connectionName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"errordateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"retryCount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"faultId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"detailErrorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Faults\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"fault\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FaultDetail\";}}}}s:16:\"InstanceResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"integrationVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:11:\"IN_PROGRESS\";i:1;s:6:\"FAILED\";i:2;s:9:\"COMPLETED\";i:3;s:18:\"PARTIAL_COMPLETION\";i:4;s:7:\"ABORTED\";i:5;s:10:\"RECOVERING\";i:6;s:11:\"RESUBMITTED\";}}s:6:\"pkName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"pkValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"trackings\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TrackingDataResource\";}}s:21:\"secondaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"secondaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"tertiaryTrackingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"tertiaryTrackingValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"integrationName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"instance\";}}s:17:\"InstancesResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/InstanceResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"timeWindow\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:9:\"instances\";}}s:23:\"IntegrationBaseResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"LogFileResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"logfile\";}}s:16:\"LogFilesResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/LogFileResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"logfiles\";}}s:29:\"MonitoringIntegrationResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":21:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"flowId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"optimizedVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"noOfMsgsReceived\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:17:\"noOfMsgsProcessed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"noOfErrors\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"noOfSuccess\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:11:\"successRate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:11:\"avgRespTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:11:\"endPointURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"proxyWSDL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"scheduleApplicableFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:19:\"scheduleDefinedFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"mepType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:21:\"monitoringintegration\";}}s:32:\"MonitoringIntegrationVerResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"versions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/IntegrationBaseResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:29:\"monitoringintegrationsversion\";}}s:30:\"MonitoringIntegrationsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/IntegrationBaseResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:22:\"monitoringintegrations\";}}s:20:\"TrackingDataResource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"LookupResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"rowCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"lastUpdatedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"lockedBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lockedDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"lockedDVMFlag\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"columns\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"lookup\";}}s:15:\"LookupsResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LookupResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"lookups\";}}s:19:\"AdapterTypeResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:25:\"supportedSecurityPolicies\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"defaultSecurityPolicies\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"features\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"integrationRole\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"SOURCE\";i:1;s:6:\"TARGET\";i:2;s:17:\"SOURCE_AND_TARGET\";}}s:10:\"vendorInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/VendorInfo\";}s:20:\"connectionProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ConnectionPropertyResource\";}}s:20:\"credentialProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ConnectionPropertyResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"adapter\";}}s:16:\"AdaptersResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AdapterTypeResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"adapters\";}}s:10:\"VendorInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"supportURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"contactUS\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"documentationURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"releaseNotes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"ICSPackages\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PackageItem\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:8:\"itemSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:19:\"PackageBaseResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"countOfIntegrations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:13:\"packages_item\";}}s:11:\"PackageItem\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"items\";i:1;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"packageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:14:\"packageContent\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PackageItemContent\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:8:\"itemSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:17:\"exportPackageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"packageitem\";}}s:18:\"PackageItemContent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"links\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}}s:15:\"PackageResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"countOfIntegrations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:12:\"integrations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/IntegrationBaseResource\";}}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"package\";}}s:16:\"PackagesResource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/PackageBaseResource\";}}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"selfLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"packages\";}}}"
+...

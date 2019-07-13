@@ -1,0 +1,277 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:58:\"This document describes
+  the Amalgam8 Service Registry API.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:34:\"Amalgam8
+  Service Registry REST API\";s:14:\"termsOfService\";s:24:\"http://swagger.io/terms/\";}"
+basePath: /
+paths:
+  /api/v1/services:
+    get:
+      summary: List of services
+      description: Returns a list of all registered services
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      tags:
+      - Services
+      responses:
+        200:
+          description: A list of registered services
+          schema:
+            $ref: '#/definitions/Services'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /api/v1/services/{service_name}:
+    get:
+      deprecated: true
+      summary: List of instances
+      description: Returns a list of all registered instances for service named {service_name}
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: service_name
+        in: path
+        description: Service name
+        type: string
+        required: true
+      tags:
+      - Services
+      responses:
+        200:
+          description: A service object with a list of registered instances
+          schema:
+            $ref: '#/definitions/Service'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: The service name does not exist
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /api/v1/instances:
+    post:
+      summary: Register a service instance
+      description: Register a new service instance
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: instance
+        in: body
+        description: instance registration information
+        schema:
+          $ref: '#/definitions/Instance'
+        required: true
+      tags:
+      - Instances
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              type: string
+              description: URL of the registered instance
+          schema:
+            $ref: '#/definitions/Registration'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: List of instances
+      description: Returns a list of registered service instances
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: fields
+        in: query
+        description: Comma separated list of instance fields to include in the response.
+          If the parameter is missing, all fields are returned
+        type: string
+        required: false
+      - name: tags
+        in: query
+        description: Comma separated list of tags of the instances. Only instances
+          matching all tags are returned
+        type: string
+        required: false
+      - name: service_name
+        in: query
+        description: Service name of the instances
+        type: string
+        required: false
+      - name: status
+        in: query
+        description: Status of the instances
+        type: string
+        required: false
+      tags:
+      - Instances
+      responses:
+        200:
+          description: An Instances object with a list of registered instances
+          schema:
+            $ref: '#/definitions/Instances'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /api/v1/instances/{id}:
+    delete:
+      summary: De-register a service instance
+      description: Removes the registration for an existing service instance
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: instance identifier
+        type: string
+        required: true
+      tags:
+      - Instances
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid
+          schema:
+            $ref: '#/definitions/Error'
+        410:
+          description: The instance does not exist
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /api/v1/instances/{id}/heartbeat:
+    put:
+      summary: Renew an existing service instance registration
+      description: Sends a heartbeat for an existing service instance registration.
+        Failing to renew the registration will result in the instance being removed
+        from the registry.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: instance identifier
+        type: string
+        required: true
+      tags:
+      - Instances
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized. The token is not valid
+          schema:
+            $ref: '#/definitions/Error'
+        410:
+          description: The instance does not exist
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+- http
+definitions: !php/object "O:8:\"stdClass\":7:{s:8:\"Endpoint\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Endpoint
+  type: 'udp', 'tcp', 'http', 'https',  or 'user'.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:86:\"Endpoint
+  value, formatted according to the defined type (e.g., host[:port] for 'tcp').\";}}}s:8:\"Instance\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"service_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"endpoint\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Endpoint\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:95:\"Client's
+  requested time to live, measured in seconds. The value may be overriden by the server.\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Status
+  of the instance\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:53:\"Optional
+  array of tags to associate with the instance\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:11:\"description\";s:91:\"Optional
+  user metadata. The value can be null, a primitive, an array or an arbitrary object\";}}}s:9:\"Instances\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"instances\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Array
+  of instances\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Instance
+  identifier (opaque)\";}s:12:\"service_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Service
+  name\";}s:8:\"endpoint\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Endpoint\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:32:\"Time
+  to live measured in seconds\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Status
+  of the instance\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:51:\"Optional
+  array of tags associated with the instance\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:11:\"description\";s:50:\"Optional
+  metadata, as set in instance registration\";}s:14:\"last_heartbeat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:19:\"Last
+  heartbeat time\";}}}}}}s:7:\"Service\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"service_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:90:\"Unique
+  identifier representing the service name. For example, mysql, database or frontend.\";}s:9:\"instances\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Array
+  of instances\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Instance
+  identifier (opaque)\";}s:8:\"endpoint\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Endpoint\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:32:\"Time
+  to live measured in seconds\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Status
+  of the instance\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:51:\"Optional
+  array of tags associated with the instance\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:11:\"description\";s:50:\"Optional
+  metadata, as set in instance registration\";}s:14:\"last_heartbeat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:19:\"Last
+  heartbeat time\";}}}}}}s:8:\"Services\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"services\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Array
+  of services\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:12:\"Registration\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Instance
+  identifier (opaque)\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:32:\"Time
+  to live measured in seconds\";}s:5:\"links\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"URL
+  of this instance\";}s:9:\"heartbeat\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"URL
+  to use for sending heartbeats on behalf of this instance\";}}}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

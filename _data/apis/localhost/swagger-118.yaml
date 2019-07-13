@@ -1,0 +1,551 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:11:\"Kasisto
+  API\";s:11:\"description\";s:23:\"Kasisto Integration API\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:16:\"Kasisto
+  API team\";s:5:\"email\";s:16:\"info@kasisto.com\";s:3:\"url\";s:18:\"http://kasisto.com\";}}"
+host: localhost:8000
+basePath: /api
+paths:
+  /token:
+    post:
+      x-name: Token
+      tags:
+      - Customer
+      description: Get access token for a customer
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token_credentials
+        in: body
+        schema:
+          $ref: '#/definitions/token_credentials'
+      responses:
+        200:
+          description: token response
+          schema:
+            $ref: '#/definitions/token_response'
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /validate_otp:
+    post:
+      x-name: Validate OTP
+      tags:
+      - Customer
+      description: Validate One-Time Password and return new user token
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: validate_otp_request
+        in: body
+        schema:
+          $ref: '#/definitions/validate_otp_request'
+      responses:
+        200:
+          description: token response
+          schema:
+            $ref: '#/definitions/validate_otp_response'
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        451:
+          description: Invalid One-Time Password
+          schema:
+            $ref: '#/definitions/error_response'
+        452:
+          description: Expired One-Time Password
+          schema:
+            $ref: '#/definitions/error_response'
+        453:
+          description: Too Many One-Time Password Failures
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /customer:
+    post:
+      x-name: Customer
+      tags:
+      - Customer
+      description: Get customer object
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: customer_request
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/customer_request'
+      responses:
+        200:
+          description: customer response
+          schema:
+            $ref: '#/definitions/customer'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        450:
+          description: One-Time Password is required
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /accounts:
+    post:
+      x-name: Accounts
+      tags:
+      - Accounts
+      description: Get customer accounts
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: accounts_request
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/accounts_request'
+      responses:
+        200:
+          description: accounts response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/account'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        450:
+          description: One-Time Password is required
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /transactions:
+    post:
+      x-name: Transactions
+      tags:
+      - Transactions
+      description: Search customer transactions
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: transaction_criteria
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/transaction_criteria'
+      responses:
+        200:
+          description: transactions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/transaction'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        450:
+          description: One-Time Password is required
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /payment:
+    post:
+      x-name: Payment
+      tags:
+      - Payments
+      description: Pay funds to a payee
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: payment_request
+        in: body
+        schema:
+          $ref: '#/definitions/payment_request'
+      responses:
+        200:
+          description: payment response
+          schema:
+            $ref: '#/definitions/payment'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        450:
+          description: One-Time Password is required
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /transfer:
+    post:
+      x-name: Transfer
+      tags:
+      - Transfers
+      description: Transfer funds between two accounts
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: transfer_request
+        in: body
+        schema:
+          $ref: '#/definitions/transfer_request'
+      responses:
+        200:
+          description: transfer response
+          schema:
+            $ref: '#/definitions/transfer'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        450:
+          description: One-Time Password is required
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /payees:
+    post:
+      x-name: Payees
+      tags:
+      - Payments
+      description: Get list of payees for a user
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: payees_request
+        in: body
+        schema:
+          $ref: '#/definitions/payees_request'
+      responses:
+        200:
+          description: payees response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/payee'
+            headers:
+              token:
+                description: Valid auth token for subsequent requests if using SSO
+                  tokens
+                type: string
+                required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /categories:
+    post:
+      x-name: Categories
+      tags:
+      - Transactions
+      description: Get transaction categories
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: categories_request
+        in: body
+        schema:
+          $ref: '#/definitions/categories_request'
+      responses:
+        200:
+          description: categories response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/category'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+  /merchants:
+    post:
+      x-name: Merchants
+      tags:
+      - Transactions
+      description: Get merchants
+      parameters:
+      - name: secret
+        in: header
+        required: true
+        type: string
+      - name: token
+        in: header
+        required: true
+        type: string
+      - name: merchants_request
+        in: body
+        schema:
+          $ref: '#/definitions/merchants_request'
+      responses:
+        200:
+          description: merchants response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/merchant'
+          headers:
+            token:
+              description: Valid auth token for subsequent requests if using SSO tokens
+              type: string
+              required: false
+        401:
+          description: Authentication Failed
+          schema:
+            $ref: '#/definitions/error_response'
+        403:
+          description: Access Denied
+          schema:
+            $ref: '#/definitions/error_response'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/error_response'
+        501:
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/error_response'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":24:{s:14:\"error_response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:17:\"merchants_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"payees_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"categories_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"transfer_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:17:\"source_account_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"source
+  account of transfer\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"string\";}s:15:\"dest_account_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"destination
+  account of transfer\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"amount\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"amount
+  of transfer\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:13:\"currency_code\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"currency
+  of amounts (USD, etc.)\";s:8:\"required\";b:0;s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":4:{s:11:\"description\";s:16:\"date
+  of transfer\";s:8:\"required\";b:0;s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:15:\"payment_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:17:\"source_account_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"source
+  account of payment\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"string\";}s:8:\"payee_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"destination
+  payee of payment\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"amount\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"amount
+  of transfer\";s:8:\"required\";b:1;s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:13:\"currency_code\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"currency
+  of amounts (USD, etc.)\";s:8:\"required\";b:0;s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":4:{s:11:\"description\";s:15:\"date
+  of payment\";s:8:\"required\";b:0;s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:16:\"accounts_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"account_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"customer_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"validate_otp_request\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"otp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:21:\"validate_otp_response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"token_credentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"token_response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"transaction_criteria\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"account_ids\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"start_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:8:\"end_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}}}s:10:\"meta_field\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Name
+  of data field\";s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Value
+  of data field\";s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}}}s:9:\"auth_info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"New
+  valid token if using SSO tokens\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:17:\"transfer_response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"auth_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/auth_info\";}s:8:\"transfer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/transfer\";}}}s:8:\"customer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"full_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"first_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"last_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:8:\"transfer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"transfer_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"reference_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:9:\"processed\";i:1;s:7:\"pending\";i:2;s:9:\"cancelled\";i:3;s:6:\"failed\";i:4;s:11:\"unspecified\";}}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:7:\"payment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"payment_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"reference_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:9:\"processed\";i:1;s:7:\"pending\";i:2;s:9:\"cancelled\";i:3;s:6:\"failed\";i:4;s:11:\"unspecified\";}}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:7:\"account\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:10:\"account_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"internal
+  ID used by bank for transaction search API\";s:4:\"type\";s:6:\"string\";}s:14:\"account_number\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"number
+  used by kasisto - may be masked\";s:4:\"type\";s:6:\"string\";}s:12:\"account_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"account
+  name or nickname\";s:4:\"type\";s:6:\"string\";}s:12:\"account_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"checking,savings,loan,credit_card\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:15:{i:0;s:2:\"cd\";i:1;s:8:\"checking\";i:2;s:11:\"credit_card\";i:3;s:5:\"heloc\";i:4;s:3:\"ira\";i:5;s:10:\"investment\";i:6;s:3:\"loc\";i:7;s:4:\"loan\";i:8;s:12:\"money_market\";i:9;s:8:\"mortgage\";i:10;s:20:\"overdraft_protection\";i:11;s:4:\"sloc\";i:12;s:7:\"savings\";i:13;s:4:\"wire\";i:14;s:11:\"unspecified\";}}s:13:\"currency_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"currency
+  of amounts (USD, etc.)\";s:4:\"type\";s:6:\"string\";}s:17:\"available_balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:15:\"current_balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:16:\"available_credit\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"(for
+  credit_card only)\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:16:\"payment_due_date\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"(for
+  credit_card and loan)\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:18:\"payment_due_amount\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"(for
+  credit_card and loan)\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:13:\"interest_rate\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Interest
+  rate if applicable\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:11:\"transaction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:10:\"account_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"ID
+  of account transaction is from\";s:4:\"type\";s:6:\"string\";}s:14:\"transaction_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"ID
+  of this transaction\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Short
+  description of transaction\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Description
+  of transaction\";s:4:\"type\";s:6:\"string\";}s:16:\"transaction_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Type
+  of transaction\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:10:{i:0;s:3:\"atm\";i:1;s:4:\"cash\";i:2;s:5:\"check\";i:3;s:13:\"check_deposit\";i:4;s:6:\"credit\";i:5;s:5:\"debit\";i:6;s:3:\"fee\";i:7;s:8:\"dividend\";i:8;s:8:\"interest\";i:9;s:11:\"unspecified\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"Amount
+  of transaction (can be positive or negative)\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:13:\"currency_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"Currency
+  type of the amount\";s:4:\"type\";s:6:\"string\";}s:10:\"categories\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"Category
+  of transaction if provided\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"merchant\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Merchent
+  or vendor of transaction if provided\";s:8:\"required\";b:0;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Status
+  of transaction\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:6:\"posted\";i:1;s:7:\"pending\";i:2;s:9:\"cancelled\";i:3;s:11:\"unspecified\";}}s:12:\"check_number\";O:8:\"stdClass\":4:{s:11:\"description\";s:38:\"Check
+  number of transaction is a check\";s:8:\"required\";b:0;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:16:\"transaction_date\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Date
+  of transaction\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:9:\"post_date\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Date
+  of transaction\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:8:\"merchant\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"merchant_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"ID
+  of merchant\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Name
+  of merchant\";s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Optional
+  alternative names for this merchant\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:8:\"category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"category_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"ID
+  of transaction category\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Name
+  of transaction category\";s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Optional
+  alternative names for this category\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}s:5:\"payee\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"payee_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"ID
+  of payee\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Name
+  of payee\";s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Optional
+  alternative names for this payee\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"meta\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Optional
+  data if needed for application\";s:8:\"required\";b:0;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/meta_field\";}}}}}"
+...

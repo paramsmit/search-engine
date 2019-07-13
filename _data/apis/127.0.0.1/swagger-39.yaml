@@ -1,0 +1,722 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:12:\"Location API\";s:7:\"version\";s:5:\"1.1.1\";s:11:\"description\";s:161:\"The
+  ETSI MEC ISG MEC012 Location API described using OpenAPI. The API is based on the
+  Open Mobile Alliance's specification RESTful Network API for Zonal Presence\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:27:\"ETSI
+  Forge copyright notice\";s:3:\"url\";s:54:\"https://forge.etsi.org/etsi-forge-copyright-notice.txt\";}}"
+host: 127.0.0.1:8081
+basePath: /exampleAPI/location/v1
+paths:
+  /zones:
+    get:
+      tags:
+      - zones
+      operationId: zonesGet
+      description: Used to get a list of identifiers for zones authorized for use
+        by the application.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful response to a query regarding the status of a zone
+          schema:
+            properties:
+              zoneList:
+                $ref: '#/definitions/ZoneList'
+          examples:
+            application/json:
+              zoneList:
+                zone:
+                - zoneId: zone01
+                  numberOfAccessPoints: "3"
+                  numberOfUnserviceableAccessPoints: "1"
+                  numberOfUsers: "10"
+                  resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01
+                - zoneId: zone02
+                  numberOfAccessPoints: "12"
+                  numberOfUnserviceableAccessPoints: "0"
+                  numberOfUsers: "36"
+                  resourceURL: http://example.com/exampleAPI/location/v1/zones/zone02
+                resourceURL: http://example.com/exampleAPI/location/v1/zones
+  /zones/{zoneId}:
+    parameters:
+    - $ref: '#/parameters/Path.ZoneId'
+    get:
+      tags:
+      - zones
+      operationId: zonesGetById
+      description: Used to get the status of a zone.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful response to a query regarding the status of a zone
+          schema:
+            properties:
+              zoneInfo:
+                $ref: '#/definitions/ZoneInfo'
+          examples:
+            application/json:
+              zoneInfo:
+                zoneId: zone01
+                numberOfAccessPoints: "3"
+                numberOfUnserviceableAccessPoints: "1"
+                numberOfUsers: "10"
+                resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01
+  /zones/{zoneId}/accessPoints:
+    parameters:
+    - $ref: '#/parameters/Path.ZoneId'
+    get:
+      tags:
+      - zones
+      operationId: zonesByIdGetAps
+      description: Access point status can be retrieved for sets of access points
+        matching attribute in the request.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Query.InterestRealm'
+      responses:
+        200:
+          description: Successful response to a query a named set of access point
+            status request
+          schema:
+            properties:
+              accessPointList:
+                $ref: '#/definitions/AccessPointList'
+          examples:
+            application/json:
+              accessPointList:
+                zoneId: zone01
+                accessPoint:
+                - accessPointId: "001010000000000000000000000000001"
+                  locationInfo:
+                    latitude: "90.123"
+                    longitude: "80.123"
+                    altitude: "10.0"
+                    accuracy: "0"
+                  connectionType: Macro
+                  operationStatus: Serviceable
+                  numberOfUsers: "5"
+                  interestRealm: LA
+                  resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap001
+                - accessPointId: "001010000000000000000000000000010"
+                  locationInfo:
+                    latitude: "91.123"
+                    longitude: "81.123"
+                    altitude: "12.0"
+                    accuracy: "1"
+                  connectionType: Macro
+                  operationStatus: Unserviceable
+                  numberOfUsers: "0"
+                  interestRealm: DC
+                  resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap002
+                - accessPointId: "001010000000000000000000000000011"
+                  locationInfo:
+                    latitude: "93.123"
+                    longitude: "83.123"
+                    altitude: "16.0"
+                    accuracy: "3"
+                  connectionType: Macro
+                  operationStatus: Serviceable
+                  numberOfUsers: "5"
+                  interestRealm: NJ
+                  resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap003
+                resourceURL: http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints
+  /zones/{zoneId}/accessPoints/{accessPointId}:
+    parameters:
+    - $ref: '#/parameters/Path.ZoneId'
+    - $ref: '#/parameters/Path.AccessPointId'
+    get:
+      tags:
+      - zones
+      operationId: zonesByIdGetApsById
+      description: Access point status can be retrieved for sets of access points
+        matching attribute in the request.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful response to a query a named set of access point
+            status request
+          schema:
+            properties:
+              accessPointInfo:
+                $ref: '#/definitions/AccessPointInfo'
+          examples:
+            application/json:
+              accessPointInfo:
+                accessPointId: "001010000000000000000000000000001"
+                locationInfo:
+                  latitude: "90.123"
+                  longitude: "80.123"
+                  altitude: "10.0"
+                  accuracy: "0"
+                connectionType: Macro
+                operationStatus: Serviceable
+                numberOfUsers: "5"
+                interestRealm: LA
+                resourceURL: http://example.com/exampleAPI/location/v1/zones/zone001/accessPoints/ap001
+  /users:
+    get:
+      tags:
+      - users
+      operationId: usersGet
+      description: Users currently using a zone may be retrieved for sets of access
+        points matching attribute in the request
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Query.ZoneId'
+      - $ref: '#/parameters/Query.AccessPointId'
+      responses:
+        200:
+          description: Successful response to a query users within a zone request
+          schema:
+            properties:
+              userList:
+                $ref: '#/definitions/UserList'
+          examples:
+            application/json:
+              userList:
+                user:
+                - address: acr:192.0.2.1
+                  accessPointId: "001010000000000000000000000000001"
+                  zoneId: zone01
+                  resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.1
+                - address: acr:192.0.2.2
+                  accessPointId: "001010000000000000000000000000001"
+                  zoneId: zone01
+                  resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.2
+                - address: acr:192.0.2.3
+                  accessPointId: "001010000000000000000000000000010"
+                  zoneId: zone01
+                  resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.3
+                - address: acr:192.0.2.4
+                  accessPointId: "001010000000000000000000000000001"
+                  zoneId: zone02
+                  resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.4
+                - address: acr:192.0.2.5
+                  accessPointId: "001010000000000000000000000000010"
+                  zoneId: zone02
+                  resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.5
+                resourceURL: http://example.com/exampleAPI/location/v1/users
+  /users/{userId}:
+    parameters:
+    - $ref: '#/parameters/Path.UserId'
+    get:
+      tags:
+      - users
+      operationId: usersGetById
+      description: Users currently using a zone may be retrieved for sets of access
+        points matching attribute in the request
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful response to a query users within a zone request
+          schema:
+            properties:
+              userInfo:
+                $ref: '#/definitions/UserInfo'
+          examples:
+            application/json:
+              userInfo:
+                address: acr:192.0.2.1
+                accessPointId: "001010000000000000000000000000001"
+                zoneId: zone01
+                resourceURL: http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.1
+                locationInfo:
+                  latitude: "90.123"
+                  longitude: "80.123"
+                  altitude: "10.0"
+                  accuracy: "0"
+                contextLocationInfo: GroundFloor
+  /subscriptions/zonalTraffic:
+    get:
+      tags:
+      - subscriptions
+      operationId: zonalTrafficSubGet
+      description: This operation is used for retrieving all active subscriptions
+        to zonal traffic change notifications.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve zonal traffic subscriptions
+          schema:
+            type: object
+            properties:
+              notificationSubscriptionList:
+                type: object
+                properties:
+                  zonalTrafficSubscription:
+                    type: array
+                    items:
+                      $ref: '#/definitions/ZonalTrafficSubscription'
+                  resourceURL:
+                    $ref: '#/definitions/ResourceURL'
+          examples:
+            application/json:
+              notificationSubscriptionList:
+                zonalTrafficSubscription:
+                - clientCorrelator: "0123"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                  zoneId: zone01
+                  interestRealm: LA
+                  userEventCriteria: Transferring
+                - clientCorrelator: "0124"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription124
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123457
+                  zoneId: zone02
+                  interestRealm: LA
+                  userEventCriteria: Transferring
+                resourceURL: http://example.com/exampleAPI/location/v1/zonalTraffic
+    post:
+      tags:
+      - subscriptions
+      operationId: zonalTrafficSubPost
+      description: This operation is used for creating a new subscription to zonal
+        traffic change notification.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.ZonalTrafficSubscription'
+      responses:
+        201:
+          description: Response to create new zonal traffic subscription
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/definitions/ZonalTrafficSubscription'
+          examples:
+            application/json:
+              zonalTrafficSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                interestRealm: LA
+                userEventCriteria: Transferring
+  /subscriptions/zonalTraffic/{subscriptionId}:
+    parameters:
+    - $ref: '#/parameters/Path.SubscriptionId'
+    get:
+      tags:
+      - subscriptions
+      operationId: zonalTrafficSubGetById
+      description: This operation is used for updating an individual subscription
+        to zonal traffic change notification.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve individual zonal traffic subscription
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/definitions/ZonalTrafficSubscription'
+          examples:
+            application/json:
+              zonalTrafficSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                interestRealm: LA
+                userEventCriteria: Transferring
+    put:
+      tags:
+      - subscriptions
+      operationId: zonalTrafficSubPutById
+      description: This operation is used for updating an individual subscription
+        to zonal traffic change notification.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.ZonalTrafficSubscription'
+      responses:
+        200:
+          description: Response to update individual zonal traffic subscription
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/definitions/ZonalTrafficSubscription'
+          examples:
+            application/json:
+              zonalTrafficSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                interestRealm: LA
+                userEventCriteria: Transferring
+    delete:
+      tags:
+      - subscriptions
+      operationId: zonalTrafficSubDelById
+      description: This operation is used for cancelling a subscription and stopping
+        corresponding notifications.
+      produces:
+      - application/json
+      responses:
+        204:
+          description: No content
+  /subscriptions/userTracking:
+    get:
+      tags:
+      - subscriptions
+      operationId: userTrackingSubGet
+      description: This operation is used for retrieving all active subscriptions
+        to user tracking change notifications.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve user tracking subscriptions
+          schema:
+            type: object
+            properties:
+              notificationSubscriptionList:
+                type: object
+                properties:
+                  userTrackingSubscription:
+                    type: array
+                    items:
+                      $ref: '#/definitions/UserTrackingSubscription'
+                  resourceURL:
+                    $ref: '#/definitions/ResourceURL'
+          examples:
+            application/json:
+              notificationSubscriptionList:
+                userTrackingSubscription:
+                - clientCorrelator: "0123"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                  address: acr:192.0.2.1
+                  userEventCriteria: Transferring
+                - clientCorrelator: "0124"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription124
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                  address: acr:192.0.2.2
+                  userEventCriteria: Transferring
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking
+    post:
+      tags:
+      - subscriptions
+      operationId: userTrackingSubPost
+      description: This operation is used for creating a new subscription to user
+        tracking change notification
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.UserTrackingSubscription'
+      responses:
+        201:
+          description: Response to create new user tracking subscription
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: '#/definitions/UserTrackingSubscription'
+          examples:
+            application/json:
+              userTrackingSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:192.0.2.1
+                userEventCriteria: Transferring
+  /subscriptions/userTracking/{subscriptionId}:
+    parameters:
+    - $ref: '#/parameters/Path.SubscriptionId'
+    get:
+      tags:
+      - subscriptions
+      operationId: userTrackingSubGetById
+      description: This operation is used for retrieving an individual subscription
+        to user tracking change notification.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve individual user tracking subscription
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: '#/definitions/UserTrackingSubscription'
+          examples:
+            application/json:
+              userTrackingSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:192.0.2.1
+                userEventCriteria: Transferring
+    put:
+      tags:
+      - subscriptions
+      operationId: userTrackingSubPutById
+      description: This operation is used for updating an individual subscription
+        to user tracking change notification.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.UserTrackingSubscription'
+      responses:
+        200:
+          description: Response to update individual user tracking subscription
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: '#/definitions/UserTrackingSubscription'
+          examples:
+            application/json:
+              userTrackingSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:192.0.2.1
+                userEventCriteria: Transferring
+    delete:
+      tags:
+      - subscriptions
+      operationId: userTrackingSubDelById
+      description: This operation is used for retrieving an individual subscription
+        to user tracking change notification.
+      produces:
+      - application/json
+      responses:
+        204:
+          description: No Content
+  /subscriptions/zonalStatus:
+    get:
+      tags:
+      - subscriptions
+      operationId: zoneStatusGet
+      description: This operation is used for creating a new subscription to zone
+        status change notification.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve zone status subscriptions
+          schema:
+            type: object
+            properties:
+              notificationSubscriptionList:
+                type: object
+                properties:
+                  zonalTrafficSubscription:
+                    type: array
+                    items:
+                      $ref: '#/definitions/ZoneStatusSubscription'
+                  resourceURL:
+                    $ref: '#/definitions/ResourceURL'
+          examples:
+            application/json:
+              notificationSubscriptionList:
+                zoneStatusSubscription:
+                - clientCorrelator: "0123"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                  zoneId: zone01
+                  numberOfUsersZoneThreshold: "500"
+                  operationStatus: Serviceable
+                - clientCorrelator: "0124"
+                  resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription124
+                  callbackReference:
+                    notifyURL: http://clientApp.example.com/location_notifications/123457
+                  zoneId: zone02
+                  numberOfUsersAPThreshold: "50"
+                  operationStatus: Serviceable
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus
+    post:
+      tags:
+      - subscriptions
+      operationId: zoneStatusPost
+      description: This operation is used for creating a new subscription to zone
+        status change notification.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.ZoneStatusSubscription'
+      responses:
+        201:
+          description: Response to create new zone status subscription
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/definitions/ZoneStatusSubscription'
+          examples:
+            application/json:
+              zoneStatusSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                numberOfUsersZoneThreshold: "500"
+                operationStatus: Serviceable
+  /subscriptions/zoneStatus/{subscriptionId}:
+    parameters:
+    - $ref: '#/parameters/Path.SubscriptionId'
+    get:
+      tags:
+      - subscriptions
+      operationId: zoneStatusGetById
+      description: This operation is used for retrieving an individual subscription
+        to zone status change notification.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Response to retrieve individual zone status subscription
+          schema:
+            properties:
+              zoneStatusSubscription:
+                $ref: '#/definitions/ZoneStatusSubscription'
+          examples:
+            application/json:
+              zoneStatusSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                numberOfUsersZoneThreshold: "500"
+                operationStatus: Serviceable
+    put:
+      tags:
+      - subscriptions
+      operationId: zoneStatusPutById
+      description: This operation is used for updating an individual subscription
+        to zone status change notification.
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Body.ZoneStatusSubscription'
+      responses:
+        200:
+          description: Response to update individual zone status subscription
+          schema:
+            properties:
+              zoneStatusSubscription:
+                $ref: '#/definitions/ZoneStatusSubscription'
+          examples:
+            application/json:
+              zoneStatusSubscription:
+                clientCorrelator: "0123"
+                resourceURL: http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123
+                callbackReference:
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                zoneId: zone01
+                numberOfUsersZoneThreshold: "500"
+                operationStatus: Serviceable
+    delete:
+      tags:
+      - subscriptions
+      operationId: zoneStatusDelById
+      description: This operation is used for cancelling a subscription and stopping
+        corresponding notifications.
+      produces:
+      - application/json
+      responses:
+        204:
+          description: No content
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":40:{s:13:\"AccessPointId\";O:8:\"stdClass\":3:{s:11:\"description\";s:259:\"Identifier
+  of access point, <E-CGI><Cell Portion ID> (reference ETSI TS 129 171). Where the
+  E-CGI is made up of the PLMN and Cell Identity (28 bit string). Then the PLMN is
+  made up of the 3 digit MCC & 2 or 3 digit MNC. The Cell Portion is an optional element\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:33:\"001010000000000000000000000000001\";}s:15:\"AccessPointInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"A
+  type containing access point information.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:13:\"accessPointId\";i:1;s:14:\"connectionType\";i:2;s:15:\"operationStatus\";i:3;s:13:\"numberOfUsers\";i:4;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:13:\"accessPointId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AccessPointId\";}s:12:\"locationInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/LocationInfo\";}s:14:\"connectionType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectionType\";}s:15:\"operationStatus\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/OperationStatus\";}s:13:\"numberOfUsers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/NumberOfUsers\";}s:8:\"timezone\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Timezone\";}s:13:\"interestRealm\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/InterestRealm\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:15:\"AccessPointList\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"A
+  type containing list of access points.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"zoneId\";i:1;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:11:\"accessPoint\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Collection
+  of the access point information list.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AccessPointInfo\";}}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:7:\"Address\";O:8:\"stdClass\":4:{s:11:\"description\";s:55:\"Address
+  of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI).\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:7:\"example\";s:13:\"acr:192.0.2.1\";}s:13:\"AncillaryInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Reserved
+  for future use.\";s:4:\"type\";s:6:\"string\";}s:12:\"CallbackData\";O:8:\"stdClass\":3:{s:11:\"description\";s:154:\"CallBackData
+  if passed by the application during the associated ZonalTrafficSubscription and
+  UserTrackingSubscription operation. See [REST_NetAPI_Common].\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"1234\";}s:17:\"CallbackReference\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"Notification
+  callback definition.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"notifyURL\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"notifyURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/NotifyURL\";}}}s:16:\"ClientCorrelator\";O:8:\"stdClass\":3:{s:11:\"description\";s:231:\"Uniquely
+  identifies this create subscription request. If there is a communication failure
+  during the request, using the same clientCorrelator when retrying the request allows
+  the operator to avoid creating a duplicate subscription.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"0123\";}s:14:\"ConnectionType\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"The
+  connection type for the access point\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:10:{i:0;s:5:\"Femto\";i:1;s:9:\"LTE-femto\";i:2;s:9:\"Smallcell\";i:3;s:13:\"LTE-smallcell\";i:4;s:4:\"Wifi\";i:5;s:4:\"Pico\";i:6;s:5:\"Micro\";i:7;s:5:\"Macro\";i:8;s:5:\"Wimax\";i:9;s:7:\"Unknown\";}s:7:\"example\";s:5:\"Macro\";}s:19:\"ContextLocationInfo\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"Contextual
+  information of a user location (e.g., aisle, floor, room number, etc.)\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"GroundFloor\";}s:20:\"CurrentAccessPointId\";O:8:\"stdClass\":3:{s:11:\"description\";s:7:\"Zone
+  ID\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"zone01\";}s:8:\"Duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:614:\"Period
+  (in seconds) of time notifications are provided for. If set to \"0\" (zero), a default
+  duration time, which is specified by the service policy, will be used. If the parameter
+  is omitted, the notifications will continue until the maximum duration time, which
+  is specified by the service policy, unless the notifications are stopped by deletion
+  of subscription for notifications. This element MAY be given by the client during
+  resource creation in order to signal the desired lifetime of the subscription. The
+  server MUST return in this element the period of time for which the subscription
+  will still be valid.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"0\";}s:13:\"InterestRealm\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"Interest
+  realm of access point (e.g. geographical area, a type of industry etc.).\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"LA\";}s:4:\"Link\";O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"Link
+  to other resources\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:3:\"rel\";i:1;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"rel\";O:8:\"stdClass\":3:{s:11:\"description\";s:60:\"Describes
+  the relationship between the URI and the resource.\";s:4:\"type\";s:6:\"object\";s:6:\"format\";s:6:\"string\";}s:4:\"href\";O:8:\"stdClass\":3:{s:11:\"description\";s:3:\"URI\";s:4:\"type\";s:6:\"object\";s:6:\"format\";s:6:\"anyURI\";}}}s:12:\"LocationInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:135:\"A
+  type containing location information with latitude, longitude and altitude, in addition
+  the accuracy of the information are provided.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:8:\"latitude\";i:1;s:9:\"longitude\";i:2;s:8:\"accuracy\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"latitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";s:6:\"80.123\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";s:6:\"70.123\";}s:8:\"altitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:7:\"example\";s:4:\"10.0\";}s:8:\"accuracy\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";s:2:\"10\";}}}s:9:\"NotifyURL\";O:8:\"stdClass\":4:{s:11:\"description\";s:41:\"The
+  URL of your own listener application.\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:58:\"http://clientApp.example.com/location_notifications/123456\";}s:20:\"NumberOfAccessPoints\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"The
+  number of access points within the zone\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:2:\"10\";}s:33:\"NumberOfUnserviceableAccessPoints\";O:8:\"stdClass\":4:{s:11:\"description\";s:51:\"Number
+  of inoperable access points within the zone.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:1:\"9\";}s:13:\"NumberOfUsers\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"The
+  number of users currently on the access point.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:1:\"7\";}s:24:\"NumberOfUsersAPThreshold\";O:8:\"stdClass\":4:{s:11:\"description\";s:89:\"Threshold
+  number of users in an access point which if crossed shall cause a notification.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:2:\"20\";}s:17:\"NumberOfUsersInAP\";O:8:\"stdClass\":4:{s:11:\"description\";s:193:\"This
+  element shall be present when ZoneStatusSubscription includes numberOfUsersAPThreshold
+  element and the number of users in an access point exceeds the threshold defined
+  in the subscription.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:2:\"12\";}s:19:\"NumberOfUsersInZone\";O:8:\"stdClass\":4:{s:11:\"description\";s:187:\"This
+  element shall be present when ZoneStatusSubscription includes numberOfUsersZoneThreshold
+  element and the number of users in a zone exceeds the threshold defined in this
+  subscription.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:2:\"20\";}s:26:\"NumberOfUsersZoneThreshold\";O:8:\"stdClass\":4:{s:11:\"description\";s:80:\"Threshold
+  number of users in a zone which if crossed shall cause a notification.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint32\";s:7:\"example\";s:2:\"40\";}s:15:\"OperationStatus\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"The
+  operation status of the access point\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:11:\"Serviceable\";i:1;s:13:\"Unserviceable\";i:2;s:7:\"Unknown\";}s:7:\"example\";s:11:\"Serviceable\";}s:21:\"PreviousAccessPointId\";O:8:\"stdClass\":3:{s:11:\"description\";s:7:\"Zone
+  ID\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"zone02\";}s:11:\"ResourceURL\";O:8:\"stdClass\":4:{s:11:\"description\";s:19:\"Self
+  referring URL.\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:7:\"example\";s:84:\"http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123\";}s:9:\"Timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:58:\"Indicates
+  the time of day for zonal presence notification.\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-01-01T02:51:43Z\";}s:8:\"Timezone\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Time
+  zone of access point\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-01-01T02:51:43Z\";}s:17:\"UserEventCriteria\";O:8:\"stdClass\":3:{s:11:\"description\";s:193:\"List
+  of user event values to generate notifications for (these apply to address specified).
+  If this element is missing, a notification is requested to be generated for any
+  change in user event.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserEventType\";}}s:13:\"UserEventType\";O:8:\"stdClass\":4:{s:11:\"description\";s:10:\"User
+  event\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"Entering\";i:1;s:7:\"Leaving\";i:2;s:12:\"Transferring\";}s:7:\"example\";s:8:\"Entering\";}s:8:\"UserInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"A
+  type containing user information.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:7:\"address\";i:1;s:13:\"accessPointId\";i:2;s:6:\"zoneId\";i:3;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:13:\"accessPointId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AccessPointId\";}s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}s:12:\"locationInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/LocationInfo\";}s:19:\"contextLocationInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ContextLocationInfo\";}s:13:\"ancillaryInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AncillaryInfo\";}}}s:8:\"UserList\";O:8:\"stdClass\":4:{s:11:\"description\";s:32:\"A
+  type containing list of users.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"user\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"Collection
+  of the zone information list.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/UserInfo\";}}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:24:\"UserTrackingSubscription\";O:8:\"stdClass\":4:{s:11:\"description\";s:45:\"A
+  type containing user tracking subscription.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:17:\"callbackReference\";i:1;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:16:\"clientCorrelator\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ClientCorrelator\";}s:17:\"callbackReference\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CallbackReference\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:17:\"userEventCriteria\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/UserEventCriteria\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:25:\"ZonalPresenceNotification\";O:8:\"stdClass\":4:{s:11:\"description\";s:45:\"A
+  type containing zonal presence notification\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:6:\"zoneId\";i:1;s:7:\"address\";i:2;s:13:\"userEventType\";i:3;s:20:\"currentAccessPointId\";i:4;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:12:\"callbackData\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CallbackData\";}s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:13:\"interestRealm\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/InterestRealm\";}s:13:\"userEventType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserEventType\";}s:20:\"currentAccessPointId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CurrentAccessPointId\";}s:21:\"previousAccessPointId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/PreviousAccessPointId\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Timestamp\";}s:4:\"link\";O:8:\"stdClass\":4:{s:11:\"description\";s:198:\"Link
+  to other resources that are in relationship with this notification. The server SHOULD
+  include a link to the related subscription. No other links are required or suggested
+  by this specification.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:7:\"example\";s:114:\"rel=\"ZonalTrafficSubscription\"
+  href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/sub123\"/\";}}}s:24:\"ZonalTrafficSubscription\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"A
+  type containing zonal traffic subscription\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:17:\"callbackReference\";i:1;s:6:\"zoneId\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:16:\"clientCorrelator\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ClientCorrelator\";}s:17:\"callbackReference\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CallbackReference\";}s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:13:\"interestRealm\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"Interest
+  realms of access points within a zone (e.g. geographical area, a type of industry
+  etc.).\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/InterestRealm\";}}s:17:\"userEventCriteria\";O:8:\"stdClass\":3:{s:11:\"description\";s:247:\"List
+  of user event values to generate notifications for (these apply to zone identifier
+  or all interest realms within zone identifier specified). If this element is missing,
+  a notification is requested to be generated for any change in user event.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserEventType\";}}s:8:\"duration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Duration\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:6:\"ZoneId\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Identifier
+  of zone\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"zone01\";}s:8:\"ZoneInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"A
+  type containing zone information.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:6:\"zoneId\";i:1;s:20:\"numberOfAccessPoints\";i:2;s:32:\"numberOfUnservicableAccessPoints\";i:3;s:13:\"numberOfUsers\";i:4;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:20:\"numberOfAccessPoints\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/NumberOfAccessPoints\";}s:32:\"numberOfUnservicableAccessPoints\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/NumberOfUnserviceableAccessPoints\";}s:13:\"numberOfUsers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/NumberOfUsers\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:8:\"ZoneList\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"Collection
+  of the zone information list.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"resourceURL\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"zone\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"Collection
+  of the zone information list.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ZoneInfo\";}}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}}}s:22:\"ZoneStatusNotification\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"A
+  type containing zone status notification.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"zoneId\";i:1;s:9:\"timestamp\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:12:\"callbackData\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CallbackData\";}s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:13:\"accessPointId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AccessPointId\";}s:19:\"numberOfUsersInZone\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/NumberOfUsersInZone\";}s:17:\"numberOfUsersInAP\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/NumberOfUsersInAP\";}s:15:\"operationStatus\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/OperationStatus\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Timestamp\";}s:4:\"link\";O:8:\"stdClass\":4:{s:11:\"description\";s:198:\"Link
+  to other resources that are in relationship with this notification. The server SHOULD
+  include a link to the related subscription. No other links are required or suggested
+  by this specification.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:7:\"example\";s:111:\"rel=\"ZonalStatusSubscription\"
+  href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalStatus/sub123\"\";}}}s:22:\"ZoneStatusSubscription\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"A
+  type containing zone status subscription.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:17:\"callbackReference\";i:1;s:6:\"zoneId\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:16:\"clientCorrelator\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ClientCorrelator\";}s:11:\"resourceURL\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ResourceURL\";}s:17:\"callbackReference\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CallbackReference\";}s:6:\"zoneId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/ZoneId\";}s:26:\"numberOfUsersZoneThreshold\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/NumberOfUsersZoneThreshold\";}s:24:\"numberOfUsersAPThreshold\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/NumberOfUsersAPThreshold\";}s:15:\"operationStatus\";O:8:\"stdClass\":3:{s:11:\"description\";s:111:\"List
+  of operation status values to generate notifications for (these apply to all access
+  points within a zone).\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/OperationStatus\";}}}}}"
+...

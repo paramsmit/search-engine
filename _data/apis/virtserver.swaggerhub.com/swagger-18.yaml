@@ -1,0 +1,320 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:213:\"This is the test
+  of the SDC REST API  \n[SDC REST API Doc](https://goo.gl/YLo7Fq) and more on SDC
+  at \n[http://wiki.ihe.net/index.php/Structured_Data_Capture](http://wiki.ihe.net/index.php/Structured_Data_Capture).\n\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:31:\"IHE
+  Structured Data Capture API\";s:14:\"termsOfService\";s:24:\"http://swagger.io/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:20:\"sdcworkgroup@ihe.net\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: virtserver.swaggerhub.com
+basePath: /IHE-SDC4/ihesdc0/1.0.0
+paths:
+  /manager/formPackage:
+    get:
+      tags:
+      - SDC API Test
+      summary: Retrieves a Form Package
+      description: Form Filler requests a Form Package from Form Manager
+      operationId: RetrievePackage
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: _baseURI
+        in: query
+        description: The ID that uniquely identifies the author organization
+        required: false
+        type: string
+      - name: _sdcSchemaVersion
+        in: query
+        description: The Schema version the Package is using
+        required: false
+        type: string
+      - name: _lineage
+        in: query
+        description: Shared ID for all versions of an SDC package
+        required: false
+        type: string
+      - name: _version
+        in: query
+        description: The version of the package you wish to retrieve
+        required: false
+        type: array
+        items:
+          type: string
+          default: last
+          enum:
+          - last
+          - first
+          - version_string
+        collectionFormat: multi
+      - name: _offset
+        in: query
+        description: An integer which can be set to retrieve version prior or later
+          than requested version (e.g. -1 will retrieve version before)
+        required: false
+        type: integer
+      - name: _docType
+        in: query
+        description: the type of document being requested
+        required: false
+        type: array
+        items:
+          type: string
+          default: sdcPKG
+          enum:
+          - sdcPKG
+          - sdcFDF
+          - sdcDE
+        collectionFormat: multi
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: string
+            format: xml
+        400:
+          description: Invalid status value
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+    post:
+      tags:
+      - SDC API Test
+      summary: Upload submit a form to Form Manager
+      operationId: insertPackage
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      parameters:
+      - in: body
+        name: body
+        description: The SDC Form Package
+        required: true
+        schema:
+          $ref: '#/definitions/SDCFormPackage'
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+  /manager/formPackage/list:
+    get:
+      tags:
+      - SDC API Test
+      summary: Retrieves a list of Form Packages
+      description: Form Filler requests a list of Form Packages from Form Manager
+      operationId: RetrievePackageList
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: _baseURI
+        in: query
+        description: The ID that uniquely identifies the author organization
+        required: false
+        type: string
+      - name: _contentDomain
+        in: query
+        description: The specialty the form is related to. contentDomain can be specified
+          as Pathology, Radiology, Surgery, etc
+        required: false
+        type: string
+      - name: _sdcSchemaVersion
+        in: query
+        description: The Schema version the Package is using
+        required: false
+        type: string
+      - name: _lineage
+        in: query
+        description: Shared ID for all versions of an SDC package
+        required: false
+        type: string
+      - name: _version
+        in: query
+        description: The version of the package you wish to retrieve
+        required: false
+        type: array
+        items:
+          type: string
+          default: last
+          enum:
+          - all
+          - last
+          - current
+          - first
+        collectionFormat: multi
+      - name: _offset
+        in: query
+        description: An integer which can be set to retrieve version prior or later
+          than requested version (e.g. -1 will retrieve version before)
+        required: false
+        type: integer
+        collectionFormat: multi
+      - name: status
+        in: query
+        description: The current status of the form
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SDCFormPackageMetaData'
+        400:
+          description: Invalid status value
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+  /receiver/responsePackage:
+    get:
+      tags:
+      - SDC API Test
+      summary: Retrieves a response package
+      operationId: retrieveResponsePackage
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      parameters:
+      - name: _pkgInstanceID
+        in: query
+        description: The ID for a particular instance of a package
+        required: false
+        type: string
+      - name: _pkgInstanceVersionID
+        in: query
+        description: The ID for a particular version of an instance of a package
+        required: false
+        type: string
+      - name: _baseURI
+        in: query
+        description: The ID that uniquely identifies the author organization
+        required: false
+        type: string
+      - name: _fullPkgURI
+        in: query
+        description: The full URI of a package, including the baseURI
+        required: false
+        type: string
+      - name: _patientID1
+        in: query
+        description: A single ID for a particular patient
+        required: false
+        type: string
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+    post:
+      tags:
+      - SDC API Test
+      summary: Submit a form to Form Receiver
+      operationId: submitPackage
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      parameters:
+      - in: body
+        name: body
+        description: The SDC Form Package
+        required: true
+        schema:
+          $ref: '#/definitions/SDCFormPackage'
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+  /receiver/responsePackage/list:
+    get:
+      tags:
+      - SDC API Test
+      summary: Retrieves a response package list
+      operationId: retrieveResponsePackagelist
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/xml
+      parameters:
+      - name: _baseURI
+        in: query
+        description: The ID that uniquely identifies the author organization
+        required: false
+        type: string
+      - name: _contentDomain
+        in: query
+        description: The specialty the form is related to. contentDomain can be specified
+          as Pathology, Radiology, Surgery, etc
+        required: false
+        type: string
+      - name: _sdcSchemaVersion
+        in: query
+        description: The Schema version the Package is using
+        required: false
+        type: string
+      - name: _lineage
+        in: query
+        description: Shared ID for all versions of an SDC package
+        required: false
+        type: string
+      - name: _version
+        in: query
+        description: The version of the package you wish to retrieve
+        required: false
+        type: array
+        items:
+          type: string
+          default: last
+          enum:
+          - all
+          - last
+          - current
+          - first
+        collectionFormat: multi
+      - name: _offset
+        in: query
+        description: An integer which can be set to retrieve version prior or later
+          than requested version (e.g. -1 will retrieve version before)
+        required: false
+        type: integer
+        collectionFormat: multi
+      - name: status
+        in: query
+        description: The current status of the form
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SDCFormPackage'
+        405:
+          description: Invalid input
+      security:
+      - SDC_auth:
+        - write:pets
+        - read:pets
+schemes:
+- https
+- http
+definitions: !php/object "O:8:\"stdClass\":2:{s:22:\"SDCFormPackageMetaData\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:8:\"_baseURI\";i:1;s:14:\"_contentDomain\";i:2;s:15:\"_formManagerURI\";i:3;s:7:\"_format\";i:4;s:11:\"_pkgLineage\";i:5;s:17:\"_sdcSchemaVersion\";i:6;s:8:\"_version\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"_baseURI\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"www.cap.org/eCC/SDC/IHE\";}s:14:\"_contentDomain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"test\";}s:15:\"_formManagerURI\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"www.cap.org/eCC/SDC/IHE/FormManager\";}s:17:\"_sdcSchemaVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"_pkgLineage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PKG_Adrenal\";}s:8:\"_version\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"version\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"_format\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"XML\";s:4:\"enum\";a:4:{i:0;s:3:\"XML\";i:1;s:4:\"JSON\";i:2;s:4:\"HTML\";i:3;s:3:\"URL\";}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:14:\"SDCFormPackage\";}s:7:\"example\";O:8:\"stdClass\":7:{s:8:\"_baseURI\";s:23:\"www.cap.org/eCC/SDC/IHE\";s:15:\"_formManagerURI\";s:35:\"www.cap.org/eCC/SDC/IHE/FormManager\";s:14:\"_contentDomain\";s:4:\"test\";s:17:\"_sdcSchemaVersion\";s:17:\"_sdcSchemaVersion\";s:11:\"_pkgLineage\";s:11:\"PKG_Adrenal\";s:7:\"_format\";s:3:\"XML\";s:8:\"_version\";a:2:{i:0;s:8:\"_version\";i:1;s:8:\"_version\";}}}s:14:\"SDCFormPackage\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:8:\"_baseURI\";i:1;s:14:\"_contentDomain\";i:2;s:7:\"_offset\";i:3;s:11:\"_pkgLineage\";i:4;s:17:\"_sdcSchemaVersion\";i:5;s:8:\"_version\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"_baseURI\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:23:\"www.cap.org/eCC/SDC/IHE\";}s:14:\"_contentDomain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"test\";}s:17:\"_sdcSchemaVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"_pkgLineage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"PKG_Adrenal\";}s:8:\"_version\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"version\";s:7:\"wrapped\";b:1;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"_offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:-1;}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:14:\"SDCFormPackage\";}s:7:\"example\";O:8:\"stdClass\":6:{s:8:\"_baseURI\";s:23:\"www.cap.org/eCC/SDC/IHE\";s:7:\"_offset\";i:-1;s:14:\"_contentDomain\";s:4:\"test\";s:17:\"_sdcSchemaVersion\";s:17:\"_sdcSchemaVersion\";s:11:\"_pkgLineage\";s:11:\"PKG_Adrenal\";s:8:\"_version\";a:2:{i:0;s:8:\"_version\";i:1;s:8:\"_version\";}}}}"
+...

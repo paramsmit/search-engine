@@ -1,0 +1,431 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"DMaaP MR REST API\";s:7:\"version\";s:5:\"4.0.0\";s:5:\"title\";s:17:\"DMaaP
+  MR REST API\";}"
+host: message-router:30227
+basePath: /
+paths:
+  /topics/create:
+    post:
+      tags:
+      - Topic
+      summary: Create a Topic
+      description: 'AAF Permissions required to create authenticated topics: org.onap.dmaap.mr.topicFactory|:org.onap.dmaap.mr.topic:org.onap.dmaap.mr|create '
+      operationId: Create a Topic
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Topic details
+        required: true
+        schema:
+          $ref: '#/definitions/createTopic'
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        409:
+          description: topic already exist
+        500:
+          description: failed to create a topic
+      security:
+      - basicAuth: []
+  /topics:
+    get:
+      tags:
+      - Topic
+      summary: Get  all topics
+      description: ""
+      operationId: view all topics
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+        500:
+          description: failed to return the topics
+  /topics/{topicName}:
+    get:
+      tags:
+      - Topic
+      summary: Get individual topic details
+      description: ""
+      operationId: view the topic
+      produces:
+      - application/json
+      parameters:
+      - name: topicName
+        in: path
+        description: topicName
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        404:
+          description: topic not found
+        500:
+          description: failed to return the topics
+  /topics/listAll:
+    get:
+      tags:
+      - Topic
+      summary: Get all topics list with details
+      description: ""
+      operationId: view all topics details
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+        500:
+          description: failed to return the topics
+  /events/{topic}/{consumergroup}/{consumerid}:
+    get:
+      tags:
+      - Topic
+      summary: Get events from a topic
+      description: 'Subscribe to a topic. If already subscribed read the events from
+        the topic. Basic Auth header is required for subcribing to a topic.  AAF permissions
+        required for subscribing to a authenticated topic: org.onap.dmaap.mr.topic|:topic.<topic
+        name>|sub'
+      operationId: subscribe to a topic
+      produces:
+      - application/json
+      parameters:
+      - name: topic
+        in: path
+        description: topic name
+        required: true
+        type: string
+      - name: consumergroup
+        in: path
+        description: consumer group
+        required: true
+        type: string
+      - name: consumerid
+        in: path
+        description: consumer id
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: limit on the number of messages returned
+        type: string
+      - name: timeout
+        in: query
+        description: amount of time in ms server will open the connection with the
+          Kafka while reading the messages
+        type: string
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        409:
+          description: unable to read the messages from the topic
+        429:
+          description: Client is making too many requests. Decrease the number of
+            requests to avoid empty response
+        500:
+          description: internal server error
+      security:
+      - basicAuth: []
+  /events/{topic}/:
+    post:
+      tags:
+      - Topic
+      summary: Post events to a topic
+      description: 'post an event to  a topic. Basic Auth header is required for subcribing
+        to a topic.  AAF permissions required for subscribing to a authenticated topic:
+        org.onap.dmaap.mr.topic|:topic.<topic name>|pub'
+      operationId: post messages to a topic
+      consumes:
+      - application/json
+      - text/plain
+      produces:
+      - application/json
+      parameters:
+      - name: topic
+        in: path
+        description: topic name
+        required: true
+        type: string
+      - name: partitionKey
+        in: query
+        description: topic partitionkey
+        type: string
+      - in: body
+        name: body
+        description: mesage/s to publish to a topic
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: Invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        404:
+          description: error while publishing to the topic
+        500:
+          description: internal server error
+      security:
+      - basicAuth: []
+  /mirrormakers/create:
+    post:
+      tags:
+      - MirrorMaker
+      summary: Create a Mirror Maker process and returns the all mirror maker processes
+      description: 'AAF Permissions required: org.onap.dmaap.mr.mirrormaker|*|admin'
+      operationId: Create a Mirror Maker process
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Create Mirror Maker
+        required: true
+        schema:
+          $ref: '#/definitions/createMirrorMaker'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/update:
+    post:
+      tags:
+      - MirrorMaker
+      summary: Update a Mirror Maker process and returns the all mirror maker processes
+      description: 'AAF Permissions required: org.onap.dmaap.mr.mirrormaker|*|admin'
+      operationId: Update  a Mirror Maker process
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Update Mirror Maker
+        required: true
+        schema:
+          $ref: '#/definitions/updateMirrorMaker'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/listAll:
+    post:
+      tags:
+      - MirrorMaker
+      summary: List of mirror maker processes
+      description: 'AAF Permissions required: org.onap.dmaap.mr.mirrormaker|*|admin'
+      operationId: List all Mirror Maker processes
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List all Mirror Maker processes
+        required: true
+        schema:
+          $ref: '#/definitions/listAllMirrorMaker'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/delete:
+    post:
+      tags:
+      - MirrorMaker
+      summary: Delete a mirror maker process and return the all mirror maker processes
+      description: 'AAF Permissions required: org.onap.dmaap.mr.mirrormaker|*|admin'
+      operationId: Delete a Mirror Maker process
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Delete a Mirror Maker process
+        required: true
+        schema:
+          $ref: '#/definitions/deleteMirrorMaker'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/createwhitelist:
+    post:
+      tags:
+      - MirrorMaker Whitelist
+      summary: Add a new topic to a mirror maker whitelist and return all the mirror
+        maker processes
+      description: 'AAF Permissions required: rg.onap.dmaap.mr.mirrormaker|*|user
+        ,  org.onap.dmaap.mr.topicFactory|:org.onap.dmaap.mr.topic:org.onap.dmaap.mr|create'
+      operationId: Create a whitelist
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Add a topic to whitelist
+        required: true
+        schema:
+          $ref: '#/definitions/createWhitelist'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/listallwhitelist:
+    post:
+      tags:
+      - MirrorMaker Whitelist
+      summary: List all whitelist
+      description: 'AAF Permissions required: rg.onap.dmaap.mr.mirrormaker|*|user
+        ,  org.onap.dmaap.mr.topicFactory|:org.onap.dmaap.mr.topic:org.onap.dmaap.mr|create'
+      operationId: List all whitelist
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List all whitelist
+        required: true
+        schema:
+          $ref: '#/definitions/listallwhitelist'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+  /mirrormakers/deletewhitelist:
+    post:
+      tags:
+      - MirrorMaker Whitelist
+      summary: 'Delate a whitelist and returns the all lirror maker processes '
+      description: 'AAF Permissions required: rg.onap.dmaap.mr.mirrormaker|*|user
+        ,  org.onap.dmaap.mr.topicFactory|:org.onap.dmaap.mr.topic:org.onap.dmaap.mr|create'
+      operationId: Delete all whitelist
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List all whitelist
+        required: true
+        schema:
+          $ref: '#/definitions/listallwhitelist'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: invalid request
+        401:
+          description: unauthorized
+        403:
+          description: forbidden
+        503:
+          description: list mirror maker not available
+      security:
+      - basicAuth: []
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":12:{s:11:\"createTopic\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"topicName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:29:\"org.onap.dmaap.mr.mrtesttopic\";}s:16:\"topicDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"test
+  topic\";}s:14:\"partitionCount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:3;}s:16:\"replicationCount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:1;}s:18:\"transactionEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"false\";}}}s:17:\"createMirrorMaker\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"createMirrorMaker\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/createMirrorMaker.mirrorMaker\";}}}s:29:\"createMirrorMaker.mirrorMaker\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Unique
+  Name for the MirrorMaker. A-Z 1-0 only\";s:7:\"example\";s:13:\"centraltoedge\";}s:8:\"consumer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Consumer
+  hostname/IP Address\";s:7:\"example\";s:16:\"10.12.6.98:30491\";}s:8:\"producer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Producer
+  hostname/IP Address\";s:7:\"example\";s:17:\"10.12.5.108:30491\";}s:10:\"numStreams\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"Number
+  of consumer threads to start. (If not provided default is 1)\";s:7:\"example\";s:1:\"3\";}s:9:\"whitelist\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"Topic
+  names to be whitelisted. This can be provided later using createWhitelist API\";s:7:\"example\";s:29:\"org.onap.dmaap.mr.mrtesttopic\";}s:14:\"enablelogCheck\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:122:\"Enable
+  error log monitoring on the MirrorMaker thread. Default values is False.If not provided
+  error log is not monitored.\";s:7:\"example\";s:4:\"true\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:8:\"consumer\";i:2;s:8:\"producer\";}}s:17:\"updateMirrorMaker\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"updateMirrorMaker\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/updateMirrorMaker.mirrorMaker\";}}}s:29:\"updateMirrorMaker.mirrorMaker\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Existing
+  Mirror Maker name\";s:7:\"example\";s:13:\"centraltoedge\";}s:8:\"consumer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Consumer
+  hostname/IP Address\";s:7:\"example\";s:16:\"10.12.6.98:30491\";}s:8:\"producer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Producer
+  hostname/IP Address\";s:7:\"example\";s:17:\"10.12.5.108:30491\";}s:10:\"numStreams\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Update
+  number of consumer threads\";s:7:\"example\";s:1:\"3\";}s:14:\"enablelogCheck\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"Enable/Disable
+  error log monitoring on the MirrorMaker thread\";s:7:\"example\";s:5:\"false\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:18:\"listAllMirrorMaker\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:18:\"listAllMirrorMaker\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/listAllMirrorMaker.mirrorMaker\";}}}}s:30:\"listAllMirrorMaker.mirrorMaker\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:17:\"deleteMirrorMaker\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:17:\"deleteMirrorMaker\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/deleteMirrorMaker.mirrorMaker\";}}}s:29:\"deleteMirrorMaker.mirrorMaker\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Existing
+  Mirror Maker name\";s:7:\"example\";s:14:\"centraltoedge2\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:15:\"createWhitelist\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Existing
+  Mirror Maker name\";s:7:\"example\";s:13:\"centraltoedge\";}s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";s:7:\"example\";s:17:\"org.onap.dmaap.mr\";}s:18:\"whitelistTopicName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Topic
+  name to add to the whitelist\";s:7:\"example\";s:30:\"org.onap.dmaap.mr.mrtesttopic2\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:9:\"namespace\";i:2;s:18:\"whitelistTopicName\";}}s:16:\"listallwhitelist\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Existing
+  Mirror Maker name\";s:7:\"example\";s:13:\"centraltoedge\";}s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";s:7:\"example\";s:17:\"org.onap.dmaap.mr\";}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"namespace\";}}s:16:\"deleteeWhitelist\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Existing
+  Mirror Maker name\";s:7:\"example\";s:13:\"centraltoedge\";}s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";s:7:\"example\";s:17:\"org.onap.dmaap.mr\";}s:18:\"whitelistTopicName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Topic
+  name to delete from the whitelist\";s:7:\"example\";s:30:\"org.onap.dmaap.mr.mrtesttopic2\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:9:\"namespace\";i:2;s:18:\"whitelistTopicName\";}}}"
+...

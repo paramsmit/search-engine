@@ -1,0 +1,1073 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:23:\"Consumer Data Standards\";s:11:\"description\";s:104:\"API
+  sets created by the Australian  Consumer Data Standards to meet the needs of the
+  Consumer Data Right\";s:7:\"version\";s:1:\"1\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"MIT
+  Licence\";s:3:\"url\";s:35:\"https://opensource.org/licenses/MIT\";}}"
+host: data.provider.com.au
+basePath: /cds-au/v1
+paths:
+  /banking/accounts:
+    get:
+      summary: Get Accounts
+      description: Obtain a list of accounts
+      operationId: G-BA
+      tags:
+      - Accounts
+      parameters:
+      - name: open-status
+        in: query
+        description: Used to filter results according to open/closed status. Values
+          can be OPEN, CLOSED or ALL. If absent then ALL is assumed
+        required: false
+        type: string
+        default: ALL
+      - name: product-category
+        in: query
+        description: Used to filter results on the productCategory field applicable
+          to accounts. Any one of the valid values for this field can be supplied.
+          If absent then all accounts returned.
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      - name: start-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or after this date/time. If absent defaults to today.
+          Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: end-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or before this date/time. If absent defaults to start-time
+          plus 100 days. Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: min-amount
+        in: query
+        description: Filter transactions to only transactions with amounts higher
+          or equal to than this amount
+        required: false
+        type: number
+        default: ""
+      - name: max-amount
+        in: query
+        description: Filter transactions to only transactions with amounts less than
+          or equal to than this amount
+        required: false
+        type: number
+        default: ""
+      - name: text
+        in: query
+        description: Filter transactions to only transactions where this string value
+          is found as a substring of either the reference or description fields. Format
+          is arbitrary ASCII string
+        required: false
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Accounts'
+      x-version: "1"
+  /banking/accounts/{accountId}:
+    get:
+      summary: Get Account Detail
+      description: Obtain detailed information on a single account
+      operationId: G-BA-D
+      tags:
+      - Accounts
+      parameters:
+      - name: accountId
+        in: path
+        description: A tokenised identifier for the account which is unique but not
+          shareable
+        required: true
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Account'
+      x-version: "1"
+  /banking/accounts/balances:
+    get:
+      summary: Get Bulk Balances
+      description: Obtain balances for multiple, filtered accounts
+      operationId: G-BAB
+      tags:
+      - Accounts
+      parameters:
+      - name: product-category
+        in: query
+        description: Used to filter results on the productCategory field applicable
+          to accounts. Any one of the valid values for this field can be supplied.
+          If absent then all accounts returned
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: ""
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: ""
+      responses:
+        200:
+          description: resource listing the financial balances for the account
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Accounts_Balances'
+      x-version: "1"
+    post:
+      summary: Get Balances For Specific Accounts
+      description: Obtain balances for a specified list of accounts
+      operationId: P-BAB-Q
+      tags:
+      - Accounts
+      parameters:
+      - name: accountIds
+        in: body
+        description: The list of account IDs to obtain information for
+        required: true
+        schema:
+          $ref: '#/definitions/AccountIds_Request'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Accounts_Balances'
+        422:
+          description: The request was well formed but was unable to be processed
+            due to business logic specific to the request
+          schema:
+            $ref: '#/definitions/422_Errors'
+      x-version: "1"
+  /banking/accounts/{accountId}/transactions:
+    get:
+      summary: Get Transactions For Account
+      description: Obtain transactions for a specific account
+      operationId: G-BA-D-T
+      tags:
+      - Accounts
+      parameters:
+      - name: accountId
+        in: path
+        description: ID of the account to get transactions for.  Must have previously
+          been returned by one of the account list end points.
+        required: true
+        type: string
+        default: ""
+      - name: start-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or after this date/time. If absent defaults to today.
+          Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: end-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or before this date/time. If absent defaults to start-time
+          plus 100 days. Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: min-amount
+        in: query
+        description: Filter transactions to only transactions with amounts higher
+          or equal to this amount
+        required: false
+        type: number
+        default: ""
+      - name: max-amount
+        in: query
+        description: Filter transactions to only transactions with amounts less than
+          or equal to than this amount
+        required: false
+        type: number
+        default: ""
+      - name: text
+        in: query
+        description: Filter transactions to only transactions where this string value
+          is found as a substring of either the reference or description fields. Format
+          is arbitrary ASCII string
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Account_Transactions'
+      x-version: "1"
+  /banking/accounts/{accountId}/transactions/{transactionId}:
+    get:
+      summary: Get Transaction Detail
+      description: Obtain detailed information on a transaction for a specific account
+      operationId: G-BA-D-T-D
+      tags:
+      - Accounts
+      parameters:
+      - name: accountId
+        in: path
+        description: The account id token that is used to uniquely represent the account
+        required: true
+        type: string
+        default: "1234567890"
+      - name: transactionId
+        in: path
+        description: The unique identifier for the specific transaction for which
+          details are being requested
+        required: true
+        type: string
+        default: "987654321"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Transactions_Detail'
+      x-version: "1"
+  /banking/accounts/transactions:
+    get:
+      summary: Get Transactions For Account
+      description: Obtain transactions for multiple, filtered accounts
+      operationId: G-BAT
+      tags:
+      - Accounts
+      parameters:
+      - name: product-category
+        in: query
+        description: Used to filter results on the productCategory field applicable
+          to accounts. Any one of the valid values for this field can be supplied.
+          If absent then all accounts returned
+        required: false
+        type: string
+        default: ""
+      - name: start-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or after this date/time. If absent defaults to today.
+          Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: end-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or before this date/time. If absent defaults to start-time
+          plus 100 days. Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: min-amount
+        in: query
+        description: Filter transactions to only transactions with amounts higher
+          or equal to this amount
+        required: false
+        type: number
+        default: ""
+      - name: max-amount
+        in: query
+        description: Filter transactions to only transactions with amounts less than
+          or equal to this amount
+        required: false
+        type: string
+        default: ""
+      - name: text
+        in: query
+        description: Filter transactions to only transactions where this string value
+          is found as a substring of either the reference or description fields. Format
+          is arbitrary ASCII string
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Bulk_Transactions'
+      x-version: "1"
+    post:
+      summary: Get Transactions For Specific Accounts
+      description: Obtain transactions for a specified list of transactions.
+      operationId: P-BAT-Q
+      tags:
+      - Accounts
+      parameters:
+      - name: start-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or after this date/time. If absent defaults to today.
+          Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: end-time
+        in: query
+        description: Constrain the transaction history request to transactions with
+          effective time at or before this date/time. If absent defaults to start-time
+          plus 100 days. Format is aligned to DateTimeString common type
+        required: false
+        type: string
+        default: ""
+      - name: min-amount
+        in: query
+        description: Filter transactions to only transactions with amounts higher
+          or equal to this amount
+        required: false
+        type: number
+        default: ""
+      - name: max-amount
+        in: query
+        description: Filter transactions to only transactions with amounts less than
+          or equal to than this amount
+        required: false
+        type: number
+        default: ""
+      - name: text
+        in: query
+        description: Filter transactions to only transactions where this string value
+          is found as a substring of either the reference or description fields. Format
+          is arbitrary ASCII string
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      - name: accountIds
+        in: body
+        description: The list of account IDs to obtain information for
+        required: true
+        schema:
+          $ref: '#/definitions/AccountIds_Request'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Bulk_Transactions'
+        422:
+          description: The request was well formed but was unable to be processed
+            due to business logic specific to the request
+          schema:
+            $ref: '#/definitions/422_Errors'
+      x-version: "1"
+  /banking/accounts/{accountId}/direct-debits:
+    get:
+      summary: Get Direct Debits For Account
+      description: Obtain direct debit authorisations for a specific account
+      operationId: G-BAD-D
+      tags:
+      - Direct Debits
+      parameters:
+      - name: accountId
+        in: path
+        description: ID of the account to get direct debit authorisations for.  Must
+          have previously been returned by one of the account list end points.
+        required: true
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: string
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request.  Default is 25 (standard pagination)
+        required: false
+        type: string
+        default: "25"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Direct-Debits'
+      x-version: "1"
+  /banking/accounts/direct-debits:
+    get:
+      summary: Get Bulk Direct Debits
+      description: Obtain direct debit authorisations for multiple, filtered accounts
+      operationId: G-BAD
+      tags:
+      - Direct Debits
+      parameters:
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request.  Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      - name: product-category
+        in: query
+        description: Used to filter results on the productCategory field applicable
+          to accounts. Any one of the valid values for this field can be supplied.
+          If absent then all accounts returned
+        required: false
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Direct-Debits'
+      x-version: "1"
+    post:
+      summary: Get Direct Debits For Specific Accounts
+      description: Obtain direct debit authorisations for a specified list of accounts
+      operationId: P-BAD-Q
+      tags:
+      - Direct Debits
+      parameters:
+      - name: accountIds
+        in: body
+        description: The list of account IDs to obtain information for
+        required: true
+        schema:
+          $ref: '#/definitions/AccountIds_Request'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Direct-Debits'
+        422:
+          description: The request was well formed but was unable to be processed
+            due to business logic specific to the request
+          schema:
+            $ref: '#/definitions/422_Errors'
+      x-version: "1"
+  /banking/payees:
+    get:
+      summary: Get Payees
+      description: Obtain a list of pre-registered payees
+      operationId: G-BPY
+      tags:
+      - Payees
+      parameters:
+      - name: type
+        in: query
+        description: Filter on the payee type field.  In addition to normal type field
+          values, ALL can be specified to retrieve all payees.  If absent the assumed
+          value is ALL
+        required: false
+        type: string
+        default: ALL
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Payees'
+      x-version: "1"
+  /banking/payees/{payeeId}:
+    get:
+      summary: Get Payee Detail
+      description: Obtain detailed information on a single payee
+      operationId: G-BPY-D
+      tags:
+      - Payees
+      parameters:
+      - name: payeeId
+        in: path
+        description: The ID used to locate the details of a particular payee
+        required: true
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Payee_Details'
+      x-version: "1"
+  /banking/products:
+    get:
+      summary: Get Products
+      description: Obtain a list of products that are currently openly offered to
+        the market
+      operationId: G-BP
+      tags:
+      - Products
+      parameters:
+      - name: product-category
+        in: query
+        description: Used to filter results on the productCategory field. Any one
+          of the valid values for this field can be supplied. If absent then all products
+          returned
+        required: false
+        type: string
+        default: ""
+      - name: effective
+        in: query
+        description: If true then only include products that are effective right now
+          and exclude products that may be available at a future time. If false only
+          include products effective in the future. If absent defaults to include
+          all products
+        required: false
+        type: boolean
+        default: ""
+      - name: updated-since
+        in: query
+        description: Only include products that have been updated after the specified
+          date and time. If absent defaults to include all products
+        required: false
+        type: string
+        default: ""
+      - name: brand
+        in: query
+        description: Filter results based on a specific brand
+        required: false
+        type: string
+        default: ""
+      - name: page
+        in: query
+        description: Page of results to request (standard pagination)
+        required: false
+        type: integer
+        default: "1"
+      - name: page-size
+        in: query
+        description: Page size to request. Default is 25 (standard pagination)
+        required: false
+        type: integer
+        default: "25"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Products'
+      x-version: "1"
+  /banking/products/{productId}:
+    get:
+      summary: Get Product Detail
+      description: Obtain detailed information on a single product offered openly
+        to the market
+      operationId: G-BP-D
+      tags:
+      - Products
+      parameters:
+      - name: productId
+        in: path
+        description: ID of the specific product requested
+        required: true
+        type: string
+        default: ""
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Banking_Product'
+      x-version: "1"
+  /common/customer:
+    get:
+      summary: Get Customer
+      description: Obtain basic information on the customer that has authorised the
+        current session
+      operationId: G-CC
+      tags:
+      - Customer
+      parameters: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Common_Customer'
+      x-version: "1"
+  /common/customer/detail:
+    get:
+      summary: Get Customer Detail
+      description: Obtain detailed information on the authorised customer within the
+        current session.
+      operationId: G-CCD
+      tags:
+      - Customer
+      parameters: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/200_GET_Common_Customer_Detailed'
+      x-version: "1"
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":69:{s:18:\"AccountIds_Request\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"data\";i:1;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"accountIds\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"accountIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"A
+  valid account ID previously obtained from another end point\";}}}}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:24:\"200_GET_Banking_Products\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"products\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"products\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Product\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:7:\"Product\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:9:\"productId\";i:1;s:11:\"lastUpdated\";i:2;s:15:\"productCategory\";i:3;s:4:\"name\";i:4;s:11:\"description\";i:5;s:5:\"brand\";i:6;s:12:\"isNegotiable\";}s:10:\"properties\";O:8:\"stdClass\":12:{s:9:\"productId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:166:\"A
+  provider specific unique identifier for this product. This identifier must be unique
+  to a product but does not otherwise need to adhere to ID permanence guidelines.\";s:6:\"format\";s:11:\"ASCIIString\";}s:13:\"effectiveFrom\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"The
+  date and time from which this product is effective (ie. is available for origination)\";s:6:\"format\";s:14:\"DateTimeString\";}s:11:\"effectiveTo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"The
+  date and time at which this product will be retired and will no longer be offered\";s:6:\"format\";s:14:\"DateTimeString\";}s:11:\"lastUpdated\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:140:\"The
+  last date and time that the information for this product was changed (or the creation
+  date for the product if it has never been altered)\";s:6:\"format\";s:14:\"DateTimeString\";}s:15:\"productCategory\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ProductCategory\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  display name of the product\";s:7:\"default\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"A
+  description of the product\";s:7:\"default\";s:0:\"\";}s:5:\"brand\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:135:\"A
+  label of the brand for the product. Able to be used for filtering. For data providers
+  with single brands this value is still required\";s:7:\"default\";s:0:\"\";}s:9:\"brandName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"An
+  optional display name of the brand\";s:7:\"default\";s:0:\"\";}s:14:\"applicationUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"A
+  link to the an application web page where this product can be applied for.\";s:7:\"default\";s:0:\"\";}s:12:\"isNegotiable\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:292:\"Indicates
+  whether the product is specifically designed so that fees and prices are negotiated
+  depending on context. While all products are open to a degree of negotiation this
+  flag indicates that negotiation is expected and thus that the provision of specific
+  fees and rates is not applicable\";s:7:\"default\";s:0:\"\";}s:21:\"additionalInformation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"overviewUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"General
+  overview of the product\";s:6:\"format\";s:9:\"URIString\";}s:8:\"termsUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Terms
+  and conditions for the product\";s:6:\"format\";s:9:\"URIString\";}s:14:\"eligibilityUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Eligibility
+  rules and criteria for the product\";s:6:\"format\";s:9:\"URIString\";}s:17:\"feesAndPricingUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"Description
+  of fees, pricing, discounts, exemptions and bonuses for the product\";s:6:\"format\";s:9:\"URIString\";}s:9:\"bundleUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Description
+  of a bundle that this product can be part of\";s:6:\"format\";s:9:\"URIString\";}}}}}s:23:\"200_GET_Banking_Product\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ProductDetail\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:13:\"ProductDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:9:\"productId\";i:1;s:11:\"lastUpdated\";i:2;s:15:\"productCategory\";i:3;s:4:\"name\";i:4;s:11:\"description\";i:5;s:5:\"brand\";i:6;s:12:\"isNegotiable\";}s:10:\"properties\";O:8:\"stdClass\":19:{s:9:\"productId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:166:\"A
+  provider specific unique identifier for this product. This identifier must be unique
+  to a product but does not otherwise need to adhere to ID permanence guidelines.\";s:6:\"format\";s:11:\"ASCIIString\";}s:13:\"effectiveFrom\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"The
+  date and time from which this product is effective (ie. is available for origination)\";s:6:\"format\";s:14:\"DateTimeString\";}s:11:\"effectiveTo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"The
+  date and time at which this product will be retired and will no longer be offered\";s:6:\"format\";s:14:\"DateTimeString\";}s:11:\"lastUpdated\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:140:\"The
+  last date and time that the information for this product was changed (or the creation
+  date for the product if it has never been altered)\";s:6:\"format\";s:14:\"DateTimeString\";}s:15:\"productCategory\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ProductCategory\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  display name of the product\";s:7:\"default\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"A
+  description of the product\";s:7:\"default\";s:0:\"\";}s:5:\"brand\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:135:\"A
+  label of the brand for the product. Able to be used for filtering. For data providers
+  with single brands this value is still required\";s:7:\"default\";s:0:\"\";}s:9:\"brandName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"An
+  optional display name of the brand\";s:7:\"default\";s:0:\"\";}s:14:\"applicationUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"A
+  link to the an application web page where this product can be applied for.\";s:7:\"default\";s:0:\"\";}s:12:\"isNegotiable\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:292:\"Indicates
+  whether the product is specifically designed so that fees and prices are negotiated
+  depending on context. While all products are open to a degree of negotiation this
+  flag indicates that negotiation is expected and thus that the provision of specific
+  fees and rates is not applicable\";s:7:\"default\";s:0:\"\";}s:21:\"additionalInformation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"overviewUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"General
+  overview of the product\";s:6:\"format\";s:9:\"URIString\";}s:8:\"termsUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Terms
+  and conditions for the product\";s:6:\"format\";s:9:\"URIString\";}s:14:\"eligibilityUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Eligibility
+  rules and criteria for the product\";s:6:\"format\";s:9:\"URIString\";}s:17:\"feesAndPricingUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"Description
+  of fees, pricing, discounts, exemptions and bonuses for the product\";s:6:\"format\";s:9:\"URIString\";}s:9:\"bundleUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Description
+  of a bundle that this product can be part of\";s:6:\"format\";s:9:\"URIString\";}}}s:7:\"bundles\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ProductBundles\";}}s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ProductFeatures\";}}s:11:\"constraints\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ProductConstraints\";}}s:11:\"eligibility\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ProductEligibility\";}}s:4:\"fees\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ProductFees\";}}s:12:\"depositRates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ProductDepositRates\";}}s:12:\"lendingRates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ProductLendingRates\";}}}}s:14:\"ProductBundles\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:11:\"description\";i:2;s:10:\"productIds\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the bundle\";s:7:\"default\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Description
+  of the bundle\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Link
+  to a web page with more information on the bundle criteria and benefits\";s:6:\"format\";s:9:\"URIString\";}s:10:\"productIds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:56:\"Array
+  of product IDs for products included in the bundle\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:15:\"ProductFeatures\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"featureType\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"featureType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  type of feature described\";s:4:\"enum\";a:19:{i:0;s:11:\"CARD_ACCESS\";i:1;s:16:\"ADDITIONAL_CARDS\";i:2;s:14:\"UNLIMITED_TXNS\";i:3;s:9:\"FREE_TXNS\";i:4;s:19:\"FREE_TXNS_ALLOWANCE\";i:5;s:15:\"LOYALTY_PROGRAM\";i:6;s:6:\"OFFSET\";i:7;s:9:\"OVERDRAFT\";i:8;s:6:\"REDRAW\";i:9;s:9:\"INSURANCE\";i:10;s:17:\"BALANCE_TRANSFERS\";i:11;s:13:\"INTEREST_FREE\";i:12;s:23:\"INTEREST_FREE_TRANSFERS\";i:13;s:14:\"DIGITAL_WALLET\";i:14;s:15:\"DIGITAL_BANKING\";i:15;s:9:\"NPP_PAYID\";i:16;s:11:\"NPP_ENABLED\";i:17;s:15:\"DONATE_INTEREST\";i:18;s:12:\"BILL_PAYMENT\";}}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"Generic
+  field containing additional information relevant to the featureType specified. Whether
+  mandatory or not is dependent on the value of featureType\";s:7:\"default\";s:0:\"\";}}}s:18:\"ProductConstraints\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:14:\"constraintType\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"constraintType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:105:\"The
+  type of constraint described.  See the next section for an overview of valid values
+  and their meaning\";s:4:\"enum\";a:4:{i:0;s:11:\"MIN_BALANCE\";i:1;s:15:\"OPENING_BALANCE\";i:2;s:9:\"MAX_LIMIT\";i:3;s:9:\"MIN_LIMIT\";}}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:159:\"Generic
+  field containing additional information relevant to the constraintType specified.
+  \ Whether mandatory or not is dependent on the value of constraintType\";s:7:\"default\";s:0:\"\";}}}s:18:\"ProductEligibility\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:15:\"eligibilityType\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:15:\"eligibilityType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:115:\"The
+  type of eligibility criteria described.  See the next section for an overview of
+  valid values and their meaning\";s:4:\"enum\";a:11:{i:0;s:8:\"BUSINESS\";i:1;s:17:\"PENSION_RECIPIENT\";i:2;s:7:\"MIN_AGE\";i:3;s:7:\"MAX_AGE\";i:4;s:10:\"MIN_INCOME\";i:5;s:12:\"MIN_TURNOVER\";i:6;s:5:\"STAFF\";i:7;s:7:\"STUDENT\";i:8;s:17:\"EMPLOYMENT_STATUS\";i:9;s:16:\"RESIDENCY_STATUS\";i:10;s:5:\"OTHER\";}}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:161:\"Generic
+  field containing additional information relevant to the eligibilityType specified.
+  \ Whether mandatory or not is dependent on the value of eligibilityType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:123:\"Display
+  text providing more information on the eligibility criteria. Mandatory if the eligibilityType
+  field is set to OTHER\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Link
+  to a web page with more information on this eligibility criteria\";s:6:\"format\";s:9:\"URIString\";}}}s:11:\"ProductFees\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"feeType\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Name
+  of the fee\";s:7:\"default\";s:0:\"\";}s:7:\"feeType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"The
+  type of fee\";s:4:\"enum\";a:13:{i:0;s:8:\"PERIODIC\";i:1;s:11:\"TRANSACTION\";i:2;s:13:\"ESTABLISHMENT\";i:3;s:4:\"EXIT\";i:4;s:8:\"OVERDRAW\";i:5;s:11:\"MIN_BALANCE\";i:6;s:6:\"REDRAW\";i:7;s:11:\"CHEQUE_CASH\";i:8;s:11:\"CHEQUE_STOP\";i:9;s:11:\"CHEQUE_BOOK\";i:10;s:12:\"CARD_REPLACE\";i:11;s:15:\"PAPER_STATEMENT\";i:12;s:11:\"OTHER_EVENT\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:113:\"The
+  amount charged for the fee. Assumed to be in AUD. One of amount, balanceRate and
+  transactionRate is mandatory\";s:6:\"format\";s:12:\"AmountString\";}s:11:\"balanceRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:141:\"A
+  fee rate calculated based on a proportion of the balance. Assumed to be in AUD.
+  One of amount, balanceRate and transactionRate is mandatory\";s:6:\"format\";s:10:\"RateString\";}s:15:\"transactionRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:143:\"A
+  fee rate calculated based on a proportion of a transaction. Assumed to be in AUD.
+  One of amount, balanceRate and transactionRate is mandatory\";s:6:\"format\";s:10:\"RateString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  currency the fee will be charged in. Assumes AUD if absent\";s:6:\"format\";s:14:\"CurrencyString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:144:\"Generic
+  field containing additional information relevant to the feeType specified. Whether
+  mandatory or not is dependent on the value of feeType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Display
+  text providing more information on the fee\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Link
+  to a web page with more information on this fee\";s:6:\"format\";s:9:\"URIString\";}s:9:\"discounts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductDiscounts\";}}}}s:16:\"ProductDiscounts\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"description\";i:1;s:12:\"discountType\";i:2;s:6:\"amount\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Description
+  of the discount\";s:7:\"default\";s:0:\"\";}s:12:\"discountType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  type of discount. See the next section for an overview of valid values and their
+  meaning\";s:4:\"enum\";a:4:{i:0;s:7:\"BALANCE\";i:1;s:8:\"DEPOSITS\";i:2;s:8:\"PAYMENTS\";i:3;s:6:\"BUNDLE\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:126:\"Value
+  of the discount. Note that the currency of the fee discount is expected to be the
+  same as the currency of the fee itself\";s:6:\"format\";s:12:\"AmountString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:154:\"Generic
+  field containing additional information relevant to the discountType specified.
+  Whether mandatory or not is dependent on the value of discountType\";s:7:\"default\";s:0:\"\";}}}s:19:\"ProductDepositRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:15:\"depositRateType\";i:1;s:4:\"rate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"depositRateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:107:\"The
+  type of rate (base, bonus, etc). See the next section for an overview of valid values
+  and their meaning\";s:4:\"enum\";a:5:{i:0;s:5:\"FIXED\";i:1;s:5:\"BONUS\";i:2;s:12:\"BUNDLE_BONUS\";i:3;s:8:\"VARIABLE\";i:4;s:12:\"INTRODUCTORY\";}}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  rate to be applied\";s:6:\"format\";s:10:\"RateString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:160:\"Generic
+  field containing additional information relevant to the depositRateType specified.
+  Whether mandatory or not is dependent on the value of depositRateType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Display
+  text providing more information on the fee\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Link
+  to a web page with more information on this fee\";s:6:\"format\";s:9:\"URIString\";}}}s:19:\"ProductLendingRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:15:\"lendingRateType\";i:1;s:4:\"rate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"lendingRateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"The
+  type of rate (fixed, variable, etc). See the next section for an overview of valid
+  values and their meaning\";s:4:\"enum\";a:10:{i:0;s:5:\"FIXED\";i:1;s:12:\"INTRODUCTORY\";i:2;s:8:\"DISCOUNT\";i:3;s:7:\"PENALTY\";i:4;s:15:\"BUNDLE_DISCOUNT\";i:5;s:8:\"FLOATING\";i:6;s:13:\"MARKET_LINKED\";i:7;s:12:\"CASH_ADVANCE\";i:8;s:8:\"VARIABLE\";i:9;s:10:\"COMPARISON\";}}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  rate to be applied\";s:6:\"format\";s:10:\"RateString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:261:\"Information
+  relevant to the lendingRateType specified.  Whether mandatory or not is dependent
+  on the Generic field containing additional information relevant to the lendingRateType
+  specified. Whether mandatory or not is dependent on the value of lendingRateType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Display
+  text providing more information on the fee.\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Link
+  to a web page with more information  on this fee\";s:6:\"format\";s:9:\"URIString\";}}}s:24:\"200_GET_Banking_Accounts\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"accounts\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"accounts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Account\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:11:\"BalanceType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:246:\"The
+  type of balance object provided for the account. Must be one of: debit Debit Balance
+  Type (see above) Conditional credit Credit Balance Type (see above) Conditional
+  Multi Currency Purses Type (see above) Conditional purses debit credit purses\";s:4:\"enum\";a:3:{i:0;s:8:\"deposits\";i:1;s:7:\"lending\";i:2;s:6:\"purses\";}}s:15:\"ProductCategory\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  category of the product or account\";s:4:\"enum\";a:18:{i:0;s:21:\"PERS_AT_CALL_DEPOSITS\";i:1;s:20:\"BUS_AT_CALL_DEPOSITS\";i:2;s:13:\"TERM_DEPOSITS\";i:3;s:21:\"RESIDENTIAL_MORTGAGES\";i:4;s:24:\"PERS_CRED_AND_CHRG_CARDS\";i:5;s:23:\"BUS_CRED_AND_CHRG_CARDS\";i:6;s:10:\"PERS_LOANS\";i:7;s:12:\"PERS_LEASING\";i:8;s:11:\"BUS_LEASING\";i:9;s:13:\"TRADE_FINANCE\";i:10;s:14:\"PERS_OVERDRAFT\";i:11;s:13:\"BUS_OVERDRAFT\";i:12;s:9:\"BUS_LOANS\";i:13;s:29:\"FOREIGN_CURR_AT_CALL_DEPOSITS\";i:14;s:26:\"FOREIGN_CURR_TERM_DEPOSITS\";i:15;s:17:\"FOREIGN_CURR_LOAN\";i:16;s:27:\"FOREIGN_CURRRENCT_OVERDRAFT\";i:17;s:11:\"TRAVEL_CARD\";}}s:7:\"Account\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:9:\"accountId\";i:1;s:11:\"accountType\";i:2;s:11:\"displayName\";i:3;s:12:\"maskedNumber\";i:4;s:15:\"productCategory\";i:5;s:12:\"providerType\";i:6;s:12:\"balance$type\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"accountid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"A
+  unique ID of the account adhering to the standards for ID permanence\";s:6:\"format\";s:11:\"ASCIIString\";}s:11:\"displayName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:107:\"The
+  display name of the account. If a customer provided nickname is available that value
+  should be returned\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  customer supplied nick name for the account\";s:7:\"default\";s:0:\"\";}s:12:\"maskedNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:177:\"A
+  masked version of the account. Whether BSB/Account Number, Credit Card PAN or another
+  number this should be formatted with each digit masked and the last three digits
+  unmasked\";s:6:\"format\";s:19:\"MaskedAccountString\";}s:15:\"productCategory\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ProductCategory\";}s:12:\"providerType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  unique type as defined by the account provider\";s:7:\"default\";s:0:\"\";}s:12:\"balance$type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BalanceType\";}s:8:\"deposits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DepositsBalance\";}s:7:\"lending\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LendingBalance\";}s:6:\"purses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}}}}s:23:\"200_GET_Banking_Account\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AccountDetail\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:13:\"AccountDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:8:{i:0;s:9:\"accountId\";i:1;s:11:\"accountType\";i:2;s:11:\"displayName\";i:3;s:12:\"maskedNumber\";i:4;s:15:\"productCategory\";i:5;s:12:\"providerType\";i:6;s:12:\"balance$type\";i:7;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":20:{s:9:\"accountid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"A
+  unique ID of the account adhering to the standards for ID permanence\";s:6:\"format\";s:11:\"ASCIIString\";}s:11:\"displayName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:107:\"The
+  display name of the account. If a customer provided nickname is available that value
+  should be returned\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  customer supplied nick name for the account\";s:7:\"default\";s:0:\"\";}s:12:\"maskedNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:177:\"A
+  masked version of the account. Whether BSB/Account Number, Credit Card PAN or another
+  number this should be formatted with each digit masked and the last three digits
+  unmasked\";s:6:\"format\";s:19:\"MaskedAccountString\";}s:15:\"productCategory\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ProductCategory\";}s:12:\"providerType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  unique type as defined by the account provider\";s:7:\"default\";s:0:\"\";}s:12:\"balance$type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BalanceType\";}s:8:\"deposits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DepositsBalance\";}s:7:\"lending\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LendingBalance\";}s:6:\"purses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}}s:10:\"bundleName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:119:\"Optional
+  field to indicate if this account is part of a bundle that is providing additional
+  benefit for to the customer\";s:7:\"default\";s:0:\"\";}s:20:\"specificAccount$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"The
+  type of structure to present account specific fields.\";s:4:\"enum\";a:3:{i:0;s:11:\"termDeposit\";i:1;s:10:\"creditCard\";i:2;s:4:\"loan\";}}s:11:\"termDeposit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/TermDepositAccount\";}s:10:\"creditCard\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CreditCardAccount\";}s:4:\"loan\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/LoanAccount\";}s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AccountFeatures\";}}s:4:\"fees\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/AccountFees\";}}s:12:\"depositRates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AccountDepositRates\";}}s:12:\"lendingRates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AccountLendingRates\";}}s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:12:\"address$type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"address$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  type of address object present\";s:4:\"enum\";a:2:{i:0;s:6:\"simple\";i:1;s:3:\"paf\";}}s:6:\"simple\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/SimpleAddress\";}s:3:\"paf\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/PAFAddress\";}}}}}s:18:\"TermDepositAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:13:\"lodgementDate\";i:1;s:12:\"maturityDate\";i:2;s:20:\"maturityInstructions\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"lodgementDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  lodgement date of the original deposit\";s:6:\"format\";s:14:\"DateTimeString\";}s:12:\"maturityDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Maturity
+  date for the term deposit\";s:6:\"format\";s:14:\"DateTimeString\";}s:14:\"maturityAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:119:\"Amount
+  to be paid upon maturity. If absent it implies the amount to paid is variable and
+  cannot currently be calculated\";s:6:\"format\";s:12:\"AmountString\";}s:16:\"maturityCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:20:\"maturityInstructions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"Current
+  instructions on action to be taken at maturity\";s:4:\"enum\";a:2:{i:0;s:11:\"ROLLED_OVER\";i:1;s:20:\"PAID_OUT_AT_MATURITY\";}}}}s:17:\"CreditCardAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:16:\"minPaymentAmount\";i:1;s:16:\"paymentDueAmount\";i:2;s:14:\"paymentDueDate\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:16:\"minPaymentAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"The
+  minimum payment amount due for the next card payment\";s:6:\"format\";s:12:\"AmountString\";}s:16:\"paymentDueAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  amount due for the next card payment\";s:6:\"format\";s:12:\"AmountString\";}s:15:\"paymentCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:14:\"paymentDueDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Date
+  that the next payment for the card is due\";s:6:\"format\";s:14:\"DateTimeString\";}}}s:11:\"LoanAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:11:\"loanEndDate\";i:1;s:18:\"nextInstalmentDate\";i:2;s:19:\"minInstalmentAmount\";i:3;s:18:\"repaymentFrequency\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:17:\"originalStartDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Optional
+  original start date for the loan\";s:6:\"format\";s:14:\"DateTimeString\";}s:18:\"originalLoanAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Optional
+  original loan value\";s:6:\"format\";s:12:\"AmountString\";}s:20:\"originalLoanCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:11:\"loanEndDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Date
+  that the loan is due to be repaid in full\";s:6:\"format\";s:14:\"DateTimeString\";}s:18:\"nextInstalmentDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Next
+  date that an instalment is required\";s:6:\"format\";s:14:\"DateTimeString\";}s:19:\"minInstalmentAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Minimum
+  amount of next instalment\";s:6:\"format\";s:12:\"AmountString\";}s:21:\"minInstalmentCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:9:\"maxRedraw\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:126:\"Maximum
+  amount of funds that can be redrawn. If not present redraw is not available even
+  if the feature exists for the account\";s:6:\"format\";s:12:\"AmountString\";}s:17:\"maxRedrawCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:9:\"minRedraw\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Minimum
+  redraw amount\";s:7:\"default\";s:0:\"\";}s:17:\"minRedrawCurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"If
+  absent assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}s:20:\"offsetAccountEnabled\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:79:\"Set
+  to true if one or more offset accounts are configured for this loan account\";s:7:\"default\";s:0:\"\";}s:16:\"offsetAccountIds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:405:\"The
+  accountIDs of the configured offset accounts attached to this loan. Only offset
+  accounts that can be accesses under the current authorisation should be included.
+  It is expected behaviour that offsetAccountEnabled is set to true but the offsetAccountIds
+  field is absent or empty. This represents a situation where an offset account exists
+  but details can not be accessed under the current authorisation\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"repaymentType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"Options
+  in place for repayments. If absent defaults to PRINCIPAL_AND_INTEREST\";s:7:\"default\";s:0:\"\";}s:18:\"repaymentFrequency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:87:\"The
+  expected or required repayment frequency. Formatted according to ISO 8601 Durations\";s:4:\"enum\";a:2:{i:0;s:13:\"INTEREST_ONLY\";i:1;s:22:\"PRINCIPAL_AND_INTEREST\";}}}}s:15:\"AccountFeatures\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"featureType\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"featureType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  type of feature described\";s:4:\"enum\";a:19:{i:0;s:11:\"CARD_ACCESS\";i:1;s:16:\"ADDITIONAL_CARDS\";i:2;s:14:\"UNLIMITED_TXNS\";i:3;s:9:\"FREE_TXNS\";i:4;s:19:\"FREE_TXNS_ALLOWANCE\";i:5;s:15:\"LOYALTY_PROGRAM\";i:6;s:6:\"OFFSET\";i:7;s:9:\"OVERDRAFT\";i:8;s:6:\"REDRAW\";i:9;s:9:\"INSURANCE\";i:10;s:17:\"BALANCE_TRANSFERS\";i:11;s:13:\"INTEREST_FREE\";i:12;s:23:\"INTEREST_FREE_TRANSFERS\";i:13;s:14:\"DIGITAL_WALLET\";i:14;s:15:\"DIGITAL_BANKING\";i:15;s:9:\"NPP_PAYID\";i:16;s:11:\"NPP_ENABLED\";i:17;s:15:\"DONATE_INTEREST\";i:18;s:12:\"BILL_PAYMENT\";}}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"Generic
+  field containing additional information relevant to the featureType specified. Whether
+  mandatory or not is dependent on the value of featureType\";s:7:\"default\";s:0:\"\";}}}s:11:\"AccountFees\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"feeType\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Name
+  of the fee\";s:7:\"default\";s:0:\"\";}s:7:\"feeType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"The
+  type of fee\";s:4:\"enum\";a:12:{i:0;s:8:\"PERIODIC\";i:1;s:11:\"TRANSACTION\";i:2;s:4:\"EXIT\";i:3;s:8:\"OVERDRAW\";i:4;s:11:\"MIN_BALANCE\";i:5;s:6:\"REDRAW\";i:6;s:11:\"CHEQUE_CASH\";i:7;s:11:\"CHEQUE_STOP\";i:8;s:11:\"CHEQUE_BOOK\";i:9;s:12:\"CARD_REPLACE\";i:10;s:15:\"PAPER_STATEMENT\";i:11;s:11:\"OTHER_EVENT\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:113:\"The
+  amount charged for the fee. Assumed to be in AUD. One of amount, balanceRate and
+  transactionRate is mandatory\";s:6:\"format\";s:12:\"AmountString\";}s:11:\"balanceRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:141:\"A
+  fee rate calculated based on a proportion of the balance. Assumed to be in AUD.
+  One of amount, balanceRate and transactionRate is mandatory\";s:6:\"format\";s:10:\"RateString\";}s:15:\"transactionRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:143:\"A
+  fee rate calculated based on a proportion of a transaction. Assumed to be in AUD.
+  One of amount, balanceRate and transactionRate is mandatory\";s:6:\"format\";s:10:\"RateString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  currency the fee will be charged in. Assumes AUD if absent\";s:6:\"format\";s:14:\"CurrencyString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:144:\"Generic
+  field containing additional information relevant to the feeType specified. Whether
+  mandatory or not is dependent on the value of feeType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Display
+  text providing more information on the fee\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Link
+  to a web page with more information on this fee\";s:6:\"format\";s:9:\"URIString\";}s:9:\"discounts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AccountDiscounts\";}}}}s:16:\"AccountDiscounts\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"description\";i:1;s:12:\"discountType\";i:2;s:6:\"amount\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Description
+  of the discount\";s:7:\"default\";s:0:\"\";}s:12:\"discountType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  type of discount. See the next section for an overview of valid values and their
+  meaning\";s:4:\"enum\";a:4:{i:0;s:7:\"BALANCE\";i:1;s:8:\"DEPOSITS\";i:2;s:8:\"PAYMENTS\";i:3;s:6:\"BUNDLE\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:126:\"Value
+  of the discount. Note that the currency of the fee discount is expected to be the
+  same as the currency of the fee itself\";s:6:\"format\";s:12:\"AmountString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:154:\"Generic
+  field containing additional information relevant to the discountType specified.
+  Whether mandatory or not is dependent on the value of discountType\";s:7:\"default\";s:0:\"\";}}}s:19:\"AccountDepositRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:15:\"depositRateType\";i:1;s:4:\"rate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"depositRateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:107:\"The
+  type of rate (base, bonus, etc). See the next section for an overview of valid values
+  and their meaning\";s:4:\"enum\";a:5:{i:0;s:5:\"FIXED\";i:1;s:5:\"BONUS\";i:2;s:12:\"BUNDLE_BONUS\";i:3;s:8:\"VARIABLE\";i:4;s:12:\"INTRODUCTORY\";}}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  rate to be applied\";s:6:\"format\";s:10:\"RateString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:160:\"Generic
+  field containing additional information relevant to the depositRateType specified.
+  Whether mandatory or not is dependent on the value of depositRateType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Display
+  text providing more information on the fee\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Link
+  to a web page with more information on this fee\";s:6:\"format\";s:9:\"URIString\";}}}s:19:\"AccountLendingRates\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:15:\"lendingRateType\";i:1;s:4:\"rate\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"lendingRateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"The
+  type of rate (fixed, variable, etc). See the next section for an overview of valid
+  values and their meaning\";s:4:\"enum\";a:10:{i:0;s:5:\"FIXED\";i:1;s:12:\"INTRODUCTORY\";i:2;s:8:\"DISCOUNT\";i:3;s:7:\"PENALTY\";i:4;s:15:\"BUNDLE_DISCOUNT\";i:5;s:8:\"FLOATING\";i:6;s:13:\"MARKET_LINKED\";i:7;s:12:\"CASH_ADVANCE\";i:8;s:8:\"VARIABLE\";i:9;s:10:\"COMPARISON\";}}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  rate to be applied\";s:6:\"format\";s:10:\"RateString\";}s:15:\"additionalValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:261:\"Information
+  relevant to the lendingRateType specified.  Whether mandatory or not is dependent
+  on the Generic field containing additional information relevant to the lendingRateType
+  specified. Whether mandatory or not is dependent on the value of lendingRateType\";s:7:\"default\";s:0:\"\";}s:14:\"additionalInfo\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Display
+  text providing more information on the fee.\";s:7:\"default\";s:0:\"\";}s:17:\"additionalInfoUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Link
+  to a web page with more information  on this fee\";s:6:\"format\";s:9:\"URIString\";}}}s:36:\"200_GET_Banking_Account_Transactions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:9:\"accountId\";i:1;s:11:\"displayName\";i:2;s:12:\"transactions\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"accountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"ID
+  of the account for which transactions are provided\";s:6:\"format\";s:11:\"ASCIIString\";}s:11:\"displayName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:212:\"The
+  display name of the account as defined by the bank.  This should not incorporate
+  account numbers or PANs.  If it does the values should be masked according to the
+  rules of the MaskedAccountString common type.\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  customer supplied nick name for the account\";s:7:\"default\";s:0:\"\";}s:12:\"transactions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Transaction\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:17:\"TransactionStatus\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Status
+  of the transaction\";s:4:\"enum\";a:2:{i:0;s:7:\"PENDING\";i:1;s:6:\"POSTED\";}}s:11:\"Transaction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:17:\"isDetailAvailable\";i:1;s:6:\"status\";i:2;s:11:\"description\";i:3;s:9:\"reference\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:13:\"transactionid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:262:\"A
+  unique ID of the transaction adhering to the standards for ID permanence. This is
+  mandatory (through hashing if necessary) unless there are specific and justifiable
+  technical reasons why a transaction cannot be uniquely identified for a particular
+  account type\";s:6:\"format\";s:11:\"ASCIIString\";}s:17:\"isDetailAvailable\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:121:\"True
+  if extended information is available using the transaction detail end point. False
+  if extended data is not available\";s:7:\"default\";s:0:\"\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TransactionStatus\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  transaction description as applied by the financial institution\";s:7:\"default\";s:0:\"\";}s:12:\"postDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"The
+  time the transaction was posted. This field is mandatory if the transaction has
+  status POSTED. This is the time that appears on a standard statement\";s:6:\"format\";s:14:\"DateTimeString\";}s:17:\"executionDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"The
+  time the transaction was executed by the originating customer, if available\";s:6:\"format\";s:14:\"DateTimeString\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  value of the transaction. Negative values mean money was outgoing\";s:6:\"format\";s:12:\"AmountString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  currency for the transaction amount. AUD assumed if not present\";s:6:\"format\";s:14:\"CurrencyString\";}s:9:\"reference\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:73:\"The
+  reference for the transaction provided by the originating institution\";s:7:\"default\";s:0:\"\";}}}s:35:\"200_GET_Banking_Transactions_Detail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:9:\"accountId\";i:1;s:11:\"displayName\";i:2;s:11:\"transaction\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"accountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"ID
+  of the account for which transactions are provided\";s:6:\"format\";s:11:\"ASCIIString\";}s:11:\"displayName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:212:\"The
+  display name of the account as defined by the bank.  This should not incorporate
+  account numbers or PANs.  If it does the values should be masked according to the
+  rules of the MaskedAccountString common type.\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  customer supplied nick name for the account\";s:7:\"default\";s:0:\"\";}s:11:\"transaction\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TransactionDetail\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:17:\"TransactionDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"status\";i:1;s:11:\"description\";i:2;s:9:\"reference\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:13:\"transactionid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:262:\"A
+  unique ID of the transaction adhering to the standards for ID permanence. This is
+  mandatory (through hashing if necessary) unless there are specific and justifiable
+  technical reasons why a transaction cannot be uniquely identified for a particular
+  account type\";s:6:\"format\";s:11:\"ASCIIString\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TransactionStatus\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  transaction description as applied by the financial institution\";s:7:\"default\";s:0:\"\";}s:12:\"postDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"The
+  time the transaction was posted. This field is mandatory if the transaction has
+  status POSTED. This is the time that appears on a standard statement\";s:6:\"format\";s:14:\"DateTimeString\";}s:17:\"executionDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"The
+  time the transaction was executed by the originating customer, if available\";s:6:\"format\";s:14:\"DateTimeString\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  value of the transaction. Negative values mean money was outgoing\";s:6:\"format\";s:12:\"AmountString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  currency for the transaction amount. AUD assumed if not present\";s:6:\"format\";s:14:\"CurrencyString\";}s:9:\"reference\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:73:\"The
+  reference for the transaction provided by the originating institution\";s:7:\"default\";s:0:\"\";}s:12:\"extendedData\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/TransactionExtendedData\";}}}s:23:\"TransactionExtendedData\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"service\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"payer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"Label
+  of the originating payer.  Mandatory for inbound payment\";s:7:\"default\";s:0:\"\";}s:5:\"payee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Label
+  of the target PayID. Mandatory for an outbound payment\";s:7:\"default\";s:0:\"\";}s:14:\"extension$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"Optional
+  extended data provided specific to transaction originated via NPP\";s:4:\"enum\";a:1:{i:0;s:19:\"extendedDescription\";}}s:19:\"extendedDescription\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:84:\"An
+  extended string description. Only present if specified by the extensionType field\";s:7:\"default\";s:0:\"\";}s:7:\"service\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Identifier
+  of the applicable overlay service\";s:4:\"enum\";a:1:{i:0;s:7:\"X2P1.01\";}}}}s:33:\"200_GET_Banking_Bulk_Transactions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:12:\"transactions\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"transactions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/BulkTransaction\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:15:\"BulkTransaction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:9:\"accountId\";i:1;s:17:\"isDetailAvailable\";i:2;s:6:\"status\";i:3;s:11:\"description\";i:4;s:9:\"reference\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"accountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"A
+  unique ID of the account adhering to the standards for ID permanence\";s:6:\"format\";s:11:\"ASCIIString\";}s:13:\"transactionid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:262:\"A
+  unique ID of the transaction adhering to the standards for ID permanence. This is
+  mandatory (through hashing if necessary) unless there are specific and justifiable
+  technical reasons why a transaction cannot be uniquely identified for a particular
+  account type\";s:6:\"format\";s:11:\"ASCIIString\";}s:17:\"isDetailAvailable\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:121:\"True
+  if extended information is available using the transaction detail end point. False
+  if extended data is not available\";s:7:\"default\";s:0:\"\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Status
+  of the transaction\";s:4:\"enum\";a:2:{i:0;s:7:\"PENDING\";i:1;s:6:\"POSTED\";}}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  transaction description as applied by the financial institution\";s:7:\"default\";s:0:\"\";}s:12:\"postDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"The
+  time the transaction was posted. This field is mandatory if the transaction has
+  status POSTED. This is the time that appears on a standard statement\";s:6:\"format\";s:14:\"DateTimeString\";}s:17:\"executionDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"The
+  time the transaction was executed by the originating customer, if available\";s:6:\"format\";s:14:\"DateTimeString\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  value of the transaction. Negative values mean money was outgoing\";s:6:\"format\";s:12:\"AmountString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  currency for the transaction amount. AUD assumed if not present\";s:6:\"format\";s:14:\"CurrencyString\";}s:9:\"reference\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:73:\"The
+  reference for the transaction provided by the originating institution\";s:7:\"default\";s:0:\"\";}}}s:33:\"200_GET_Banking_Accounts_Balances\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"balances\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"balances\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Balance\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:7:\"Balance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"accountId\";i:1;s:12:\"balance$type\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"accountid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"A
+  unique ID of the account adhering to the standards for ID permanence\";s:7:\"default\";s:0:\"\";}s:12:\"balance$type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BalanceType\";}s:8:\"deposits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/DepositsBalance\";}s:7:\"lending\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LendingBalance\";}s:6:\"purses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}}}}s:15:\"DepositsBalance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:14:\"currentBalance\";i:1;s:16:\"availableBalance\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"currentBalance\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}s:16:\"availableBalance\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}}}s:14:\"LendingBalance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:14:\"accountBalance\";i:1;s:16:\"availableBalance\";i:2;s:11:\"creditLimit\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"accountBalance\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}s:16:\"availableBalance\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}s:11:\"creditLimit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}s:14:\"amortisedLimit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyAmount\";}}}s:14:\"CurrencyAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"amount\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:161:\"The
+  current balance of the account at this time. Should align to the current balance
+  available via other channels such as ATM balance enquiry or Internet Banking\";s:6:\"format\";s:12:\"AmountString\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"If
+  not present assumes AUD\";s:6:\"format\";s:14:\"CurrencyString\";}}}s:22:\"200_GET_Banking_Payees\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"payees\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"payees\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:27:\"The
+  list of payees returned\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Payee\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:29:\"200_GET_Banking_Payee_Details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PayeeDetail\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:5:\"Payee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:7:\"payeeId\";i:1;s:8:\"nickname\";i:2;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"payeeId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"ID
+  of the payee adhering to the rules of ID permanence\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"The
+  short display name of the payee as provided by the customer\";s:7:\"default\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"A
+  description of the payee provided by the customer\";s:7:\"default\";s:0:\"\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:197:\"The
+  type of payee. DOMESTIC means a registered payee for domestic payments including
+  NPP. INTERNATIONAL means a registered payee for international payments. BILLER means
+  a registered payee for BPAY\";s:4:\"enum\";a:3:{i:0;s:8:\"DOMESTIC\";i:1;s:13:\"INTERNATIONAL\";i:2;s:6:\"BILLER\";}}}}s:11:\"PayeeDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:7:\"payeeId\";i:1;s:8:\"nickname\";i:2;s:4:\"type\";i:3;s:10:\"payee$type\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"payeeId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"ID
+  of the payee adhering to the rules of ID permanence\";s:7:\"default\";s:0:\"\";}s:8:\"nickname\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"The
+  short display name of the payee as provided by the customer\";s:7:\"default\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"A
+  description of the payee provided by the customer\";s:7:\"default\";s:0:\"\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:197:\"The
+  type of payee. DOMESTIC means a registered payee for domestic payments including
+  NPP. INTERNATIONAL means a registered payee for international payments. BILLER means
+  a registered payee for BPAY\";s:4:\"enum\";a:3:{i:0;s:8:\"DOMESTIC\";i:1;s:13:\"INTERNATIONAL\";i:2;s:6:\"BILLER\";}}s:10:\"payee$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Type
+  of object included that describes the payee in detail\";s:4:\"enum\";a:3:{i:0;s:8:\"domestic\";i:1;s:6:\"biller\";i:2;s:13:\"international\";}}s:8:\"domestic\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/DomesticPayee\";}s:6:\"biller\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BillerPayee\";}s:13:\"international\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/InternationalPayee\";}}}s:13:\"DomesticPayee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:17:\"payeeAccount$type\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:17:\"payeeAccount$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:174:\"Type
+  of account object included. Valid values are: { payeeAccount$type - - account A
+  standard Australian account defined by BSB/Account Number payId A PayID recognised
+  by NPP\";s:4:\"enum\";a:3:{i:0;s:7:\"account\";i:1;s:4:\"card\";i:2;s:5:\"payid\";}}s:7:\"account\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DomesticPayeeAccount\";}s:4:\"card\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/DomesticPayeeCard\";}s:5:\"payId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/DomesticPayeePayId\";}}}s:20:\"DomesticPayeeAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"accountName\";i:1;s:3:\"bsb\";i:2;s:13:\"accountNumber\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"accountName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Name
+  of the account to pay to\";s:7:\"default\";s:0:\"\";}s:3:\"bsb\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"BSB
+  of the account to pay to\";s:7:\"default\";s:0:\"\";}s:13:\"accountNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Number
+  of the account to pay to\";s:7:\"default\";s:0:\"\";}}}s:17:\"DomesticPayeeCard\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"cardNumber\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"cardNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Name
+  of the account to pay to\";s:6:\"format\";s:15:\"MaskedPANString\";}}}s:18:\"DomesticPayeePayId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:10:\"identifier\";i:2;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"The
+  name assigned to the PayID by the owner of the PayID\";s:7:\"default\";s:0:\"\";}s:10:\"identifier\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  identifier of the PayID (dependent on type)\";s:7:\"default\";s:0:\"\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"The
+  type of the PayID\";s:4:\"enum\";a:4:{i:0;s:5:\"EMAIL\";i:1;s:6:\"MOBILE\";i:2;s:10:\"ORG_NUMBER\";i:3;s:8:\"ORG_NAME\";}}}}s:11:\"BillerPayee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:10:\"billerCode\";i:1;s:10:\"billerName\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"billerCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"BPay
+  Biller Code of the Biller\";s:7:\"default\";s:0:\"\";}s:3:\"crn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:176:\"BPay
+  CRN of the Biller. If the contents of the CRN match the format of a Credit Card
+  PAN then it should be masked using the rules applicable for the MaskedPANString
+  common type\";s:7:\"default\";s:0:\"\";}s:10:\"billerName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the Biller\";s:7:\"default\";s:0:\"\";}}}s:18:\"InternationalPayee\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:18:\"beneficiaryDetails\";i:1;s:11:\"bankDetails\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:18:\"beneficiaryDetails\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Name
+  of the beneficiary\";s:7:\"default\";s:0:\"\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Country
+  where the beneficiary resides\";s:7:\"default\";s:0:\"\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Response
+  message for the payment\";s:7:\"default\";s:0:\"\";}}}s:11:\"bankDetails\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"country\";i:1;s:13:\"accountNumber\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Country
+  of the recipient institution\";s:7:\"default\";s:0:\"\";}s:13:\"accountNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Account
+  Targeted for payment\";s:7:\"default\";s:0:\"\";}s:11:\"bankAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Name
+  of the recipient Bank\";s:7:\"default\";s:0:\"\";}s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Address
+  of the recipient Bank\";s:7:\"default\";s:0:\"\";}}}s:18:\"beneficiaryBankBIC\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Swift
+  bank code\";s:7:\"default\";s:0:\"\";}s:13:\"fedWireNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Number
+  for Fedwire payment (Federal Reserve Wire Network)\";s:7:\"default\";s:0:\"\";}s:8:\"sortCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Sort
+  code used for account identification in some jurisdictions\";s:7:\"default\";s:0:\"\";}s:10:\"chipNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Number
+  for the Clearing House Interbank Payments System\";s:7:\"default\";s:0:\"\";}s:13:\"routingNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"International
+  bank routing number\";s:7:\"default\";s:0:\"\";}}}}}s:29:\"200_GET_Banking_Direct-Debits\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:25:\"directDebitAuthorisations\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:25:\"directDebitAuthorisations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"The
+  list of authorisations returned\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/DirectDebits\";}}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LinksPaginated\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/MetaPaginated\";}}}s:12:\"DirectDebits\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"accountId\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"accountId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:71:\"A
+  unique ID of the account adhering to the standards for ID permanence.\";s:6:\"format\";s:11:\"ASCIIString\";}s:16:\"authorisedEntity\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AuthorisedEntity\";}s:17:\"lastDebitDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  date and time of the last debit executed under this authorisation\";s:6:\"format\";s:14:\"DateTimeString\";}s:15:\"lastDebitAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  amount of the last debit executed under this authorisation\";s:6:\"format\";s:12:\"AmountString\";}}}s:16:\"AuthorisedEntity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:20:\"financialInstitution\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Name
+  of the authorised entity\";s:7:\"default\";s:0:\"\";}s:20:\"financialInstitution\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"Name
+  of the financial institution through which the direct debit will be executed\";s:7:\"default\";s:0:\"\";}s:3:\"abn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Australian
+  Business Number for the authorised entity\";s:7:\"default\";s:0:\"\";}s:3:\"acn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Australian
+  Business Number for the authorised entity\";s:7:\"default\";s:0:\"\";}}}s:23:\"200_GET_Common_Customer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"customer$type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"customer$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"The
+  type of customer object that is present\";s:4:\"enum\";a:2:{i:0;s:6:\"person\";i:1;s:12:\"organisation\";}}s:6:\"person\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Person\";}s:12:\"organisation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organisation\";}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:32:\"200_GET_Common_Customer_Detailed\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"data\";i:1;s:5:\"links\";i:2;s:4:\"meta\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"customer$type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"customer$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"The
+  type of customer object that is present\";s:4:\"enum\";a:2:{i:0;s:6:\"person\";i:1;s:12:\"organisation\";}}s:6:\"person\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/PersonDetail\";}s:12:\"organisation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrganisationDetail\";}}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:6:\"Person\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:14:\"lastUpdateTime\";i:1;s:8:\"lastName\";i:2;s:11:\"middleNames\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"lastUpdateTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:164:\"The
+  date and time that this record was last updated by the customer.  If no update has
+  occurred then this date should reflect the initial creation date for the data\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}s:9:\"firstName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"For
+  people with single names this field need not be present.  The single name should
+  be in the lastName field\";s:7:\"default\";s:0:\"\";}s:8:\"lastName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"For
+  people with single names the single name should be in this field\";s:7:\"default\";s:0:\"\";}s:11:\"middleNames\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:41:\"Field
+  is mandatory but array may be empty\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"prefix\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:93:\"Also
+  known as title or salutation.  The prefix to the name (e.g. Mr, Mrs, Ms, Miss, Sir,
+  etc)\";s:7:\"default\";s:0:\"\";}s:6:\"suffix\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Used
+  for a trailing suffix to the name (e.g. Jr)\";s:7:\"default\";s:0:\"\";}s:14:\"occupationCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"Occupation
+  code as defined by the ANZSCO  v1.2 Standard Classification of Occupations\";s:7:\"default\";s:0:\"\";}}}s:12:\"PersonDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:14:\"lastUpdateTime\";i:1;s:8:\"lastName\";i:2;s:11:\"middleNames\";i:3;s:12:\"phoneNumbers\";i:4;s:14:\"emailAddresses\";i:5;s:17:\"physicalAddresses\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:14:\"lastUpdateTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:164:\"The
+  date and time that this record was last updated by the customer.  If no update has
+  occurred then this date should reflect the initial creation date for the data\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}s:9:\"firstName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"For
+  people with single names this field need not be present.  The single name should
+  be in the lastName field\";s:7:\"default\";s:0:\"\";}s:8:\"lastName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"For
+  people with single names the single name should be in this field\";s:7:\"default\";s:0:\"\";}s:11:\"middleNames\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:41:\"Field
+  is mandatory but array may be empty\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"prefix\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:93:\"Also
+  known as title or salutation.  The prefix to the name (e.g. Mr, Mrs, Ms, Miss, Sir,
+  etc)\";s:7:\"default\";s:0:\"\";}s:6:\"suffix\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Used
+  for a trailing suffix to the name (e.g. Jr)\";s:7:\"default\";s:0:\"\";}s:14:\"occupationCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"Occupation
+  code as defined by the ANZSCO  v1.2 Standard Classification of Occupations\";s:7:\"default\";s:0:\"\";}s:12:\"phoneNumbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:31:\"At
+  least one record is required\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PhoneNumber\";}}s:14:\"emailAddresses\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:12:\"May
+  be empty\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EmailAddress\";}}s:17:\"physicalAddresses\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:226:\"Must
+  contain at least one address. One and only one address may have the purpose of REGISTERED.
+  Zero or one, and no more than one, record may have the purpose of MAIL. If zero
+  then the REGISTERED address is to be used for mail\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PhysicalAddress\";}}}}s:12:\"Organisation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:14:\"lastUpdateTime\";i:1;s:13:\"agentLastName\";i:2;s:9:\"agentRole\";i:3;s:12:\"businessName\";i:4;s:16:\"organisationType\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:14:\"lastUpdateTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:163:\"The
+  date and time that this record was last updated by the customer. If no update has
+  occurred then this date should reflect the initial creation date for the data\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}s:14:\"agentFirstName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:190:\"The
+  first name of the individual providing access on behalf of the organisation. For
+  people with single names this field need not be present.  The single name should
+  be in the lastName field\";s:7:\"default\";s:0:\"\";}s:13:\"agentLastName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:148:\"The
+  last name of the individual providing access on behalf of the organisation. For
+  people with single names the single name should be in this field\";s:7:\"default\";s:0:\"\";}s:9:\"agentRole\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:171:\"The
+  role of the individual identified as the agent who is providing authorisation.  Expected
+  to be used for display.  Default to \u201CUnspecified\u201D if the role is not known\";s:7:\"default\";s:0:\"\";}s:12:\"businessName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Name
+  of the organisation\";s:7:\"default\";s:0:\"\";}s:9:\"legalName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Legal
+  name, if different to the business name\";s:7:\"default\";s:0:\"\";}s:9:\"shortName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Short
+  name used for communication, if  different to the business name\";s:7:\"default\";s:0:\"\";}s:3:\"abn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Australian
+  Business Number for the organisation\";s:7:\"default\";s:0:\"\";}s:3:\"acn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"Australian
+  Company Number for the organisation. Required only if an ACN is applicable for the
+  organisation type\";s:7:\"default\";s:0:\"\";}s:16:\"isACNCRegistered\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:81:\"True
+  if registered with the ACNC.  False if not. Absent or null if not confirmed.\";s:7:\"default\";s:0:\"\";}s:12:\"industryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"ANZSIC
+  (2006) code for the organisation.\";s:7:\"default\";s:0:\"\";}s:16:\"organisationType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Legal
+  organisation type\";s:4:\"enum\";a:6:{i:0;s:11:\"SOLE_TRADER\";i:1;s:7:\"COMPANY\";i:2;s:11:\"PARTNERSHIP\";i:3;s:5:\"TRUST\";i:4;s:17:\"GOVERNMENT_ENTITY\";i:5;s:5:\"OTHER\";}}s:17:\"registeredCountry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Enumeration
+  with values from ISO 3166 Alpha-3 country codes.  Assumed to be AUS if absent\";s:7:\"default\";s:0:\"\";}s:17:\"establishmentDate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  date the organisation described was established\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}}}s:18:\"OrganisationDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:14:\"lastUpdateTime\";i:1;s:13:\"agentLastName\";i:2;s:9:\"agentRole\";i:3;s:12:\"businessName\";i:4;s:16:\"organisationType\";i:5;s:15:\"physicalAddress\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:14:\"lastUpdateTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:163:\"The
+  date and time that this record was last updated by the customer. If no update has
+  occurred then this date should reflect the initial creation date for the data\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}s:14:\"agentFirstName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:190:\"The
+  first name of the individual providing access on behalf of the organisation. For
+  people with single names this field need not be present.  The single name should
+  be in the lastName field\";s:7:\"default\";s:0:\"\";}s:13:\"agentLastName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:148:\"The
+  last name of the individual providing access on behalf of the organisation. For
+  people with single names the single name should be in this field\";s:7:\"default\";s:0:\"\";}s:9:\"agentRole\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:171:\"The
+  role of the individual identified as the agent who is providing authorisation.  Expected
+  to be used for display.  Default to \u201CUnspecified\u201D if the role is not known\";s:7:\"default\";s:0:\"\";}s:12:\"businessName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Name
+  of the organisation\";s:7:\"default\";s:0:\"\";}s:9:\"legalName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Legal
+  name, if different to the business name\";s:7:\"default\";s:0:\"\";}s:9:\"shortName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Short
+  name used for communication, if  different to the business name\";s:7:\"default\";s:0:\"\";}s:3:\"abn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Australian
+  Business Number for the organisation\";s:7:\"default\";s:0:\"\";}s:3:\"acn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"Australian
+  Company Number for the organisation. Required only if an ACN is applicable for the
+  organisation type\";s:7:\"default\";s:0:\"\";}s:16:\"isACNCRegistered\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:81:\"True
+  if registered with the ACNC.  False if not. Absent or null if not confirmed.\";s:7:\"default\";s:0:\"\";}s:12:\"industryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"ANZSIC
+  (2006) code for the organisation.\";s:7:\"default\";s:0:\"\";}s:16:\"organisationType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Legal
+  organisation type\";s:4:\"enum\";a:6:{i:0;s:11:\"SOLE_TRADER\";i:1;s:7:\"COMPANY\";i:2;s:11:\"PARTNERSHIP\";i:3;s:5:\"TRUST\";i:4;s:17:\"GOVERNMENT_ENTITY\";i:5;s:5:\"OTHER\";}}s:17:\"registeredCountry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Enumeration
+  with values from ISO 3166 Alpha-3 country codes.  Assumed to be AUS if absent\";s:7:\"default\";s:0:\"\";}s:17:\"establishmentDate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  date the organisation described was established\";s:6:\"format\";s:14:\"DateTimeString\";s:7:\"default\";s:0:\"\";}s:15:\"physicalAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:226:\"Must
+  contain at least one address. One and only one address may have the purpose of REGISTERED.
+  Zero or one, and no more than one, record may have the purpose of MAIL. If zero
+  then the REGISTERED address is to be used for mail\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PhysicalAddress\";}}}}s:11:\"PhoneNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:11:\"isPreferred\";i:1;s:7:\"purpose\";i:2;s:6:\"number\";i:3;s:10:\"fullNumber\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"isPreferred\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:85:\"Required
+  to be true for one and only one entry to indicate the preferred phone number\";s:7:\"default\";s:0:\"\";}s:7:\"purpose\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"The
+  purpose of the number as specified by the customer\";s:4:\"enum\";a:6:{i:0;s:6:\"MOBILE\";i:1;s:4:\"HOME\";i:2;s:4:\"WORK\";i:3;s:5:\"OTHER\";i:4;s:13:\"INTERNATIONAL\";i:5;s:11:\"UNSPECIFIED\";}}s:11:\"countryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:66:\"If
+  absent, assumed to be Australia (+61). The + should be included\";s:7:\"default\";s:0:\"\";}s:8:\"areaCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:116:\"Required
+  for non Mobile Phones, if field is present and refers to Australian code - the leading
+  0 should be omitted.\";s:7:\"default\";s:0:\"\";}s:6:\"number\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"The
+  actual phone number, with leading zeros as appropriate\";s:7:\"default\";s:0:\"\";}s:9:\"extension\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"An
+  extension number (if applicable)\";s:7:\"default\";s:0:\"\";}s:10:\"fullNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:143:\"Fully
+  formatted phone number with country code, area code, number and extension incorporated.
+  Formatted according to section 5.1.4. of RFC 3966\";s:7:\"default\";s:0:\"\";}}}s:12:\"EmailAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"isPreferred\";i:1;s:7:\"purpose\";i:2;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"isPreferred\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:95:\"Required
+  for one and only one email record in the collection. Denotes the default email address\";s:7:\"default\";s:0:\"\";}s:7:\"purpose\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  purpose for the email, as specified by the customer (Enumeration)\";s:4:\"enum\";a:4:{i:0;s:4:\"WORK\";i:1;s:4:\"HOME\";i:2;s:5:\"OTHER\";i:3;s:11:\"UNSPECIFIED\";}}s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"A
+  correctly formatted email address, as defined by the addr_spec format in RFC_5322\";s:7:\"default\";s:0:\"\";}}}s:15:\"PhysicalAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"purpose\";i:1;s:12:\"address$type\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"purpose\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Enumeration
+  of values indicating the purpose of the physical address\";s:4:\"enum\";a:5:{i:0;s:10:\"REGISTERED\";i:1;s:4:\"MAIL\";i:2;s:8:\"PHYSICAL\";i:3;s:4:\"WORK\";i:4;s:5:\"OTHER\";}}s:12:\"address$type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  type of address object present\";s:4:\"enum\";a:2:{i:0;s:6:\"simple\";i:1;s:3:\"paf\";}}s:6:\"simple\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/SimpleAddress\";}s:3:\"paf\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/PAFAddress\";}}}s:13:\"SimpleAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:12:\"addressLine1\";i:1;s:4:\"city\";i:2;s:5:\"state\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"mailingName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:95:\"Name
+  of the individual or business formatted for inclusion in an address used for physical
+  mail\";s:7:\"default\";s:0:\"\";}s:12:\"addressLine1\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"First
+  line of the standard address object\";s:7:\"default\";s:0:\"\";}s:12:\"addressLine2\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Second
+  line of the standard address object\";s:7:\"default\";s:0:\"\";}s:12:\"addressLine3\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Third
+  line of the standard address object\";s:7:\"default\";s:0:\"\";}s:8:\"postcode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Mandatory
+  for Australian addresses\";s:7:\"default\";s:0:\"\";}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Name
+  of the city or locality\";s:7:\"default\";s:0:\"\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:133:\"Free
+  text if the country is not Australia. If country is Australia then must be one of
+  the values defined by the ISO 3166:AU standard\";s:7:\"default\";s:0:\"\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"A
+  valid ISO 3166 Alpha-3 country code\";s:7:\"default\";s:0:\"\";}}}s:10:\"PAFAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"Links\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Fully
+  qualified link to this API call\";s:6:\"format\";s:9:\"URIString\";}}}s:4:\"Meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:14:\"LinksPaginated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Fully
+  qualified link to this API call\";s:6:\"format\";s:9:\"URIString\";}s:5:\"first\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"URI
+  to the first page of this set. Mandatory if this response is not the first page\";s:6:\"format\";s:9:\"URIString\";}s:4:\"prev\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"URI
+  to the first previous page of this set. Mandatory if this response is not the first
+  page\";s:6:\"format\";s:9:\"URIString\";}s:4:\"next\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:87:\"URI
+  to the first next page of this set. Mandatory if this response is not the last page\";s:6:\"format\";s:9:\"URIString\";}s:4:\"last\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:87:\"URI
+  to the first last page of this set. Mandatory if this response is not the last page\";s:6:\"format\";s:9:\"URIString\";}}}s:13:\"MetaPaginated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"totalRecords\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"The
+  total number of records in the full set\";s:6:\"format\";s:13:\"NaturalNumber\";}s:10:\"totalPages\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"The
+  total number of pages in the full set\";s:6:\"format\";s:13:\"NaturalNumber\";}}}s:10:\"422_Errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"errors\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"code\";i:1;s:5:\"title\";i:2;s:6:\"detail\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"The
+  code of the error\";s:7:\"default\";s:0:\"\";}s:5:\"title\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"A
+  displayable title of the error type\";s:7:\"default\";s:0:\"\";}s:6:\"detail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Detail
+  of the error\";s:7:\"default\";s:0:\"\";}s:4:\"meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:49:\"Optional
+  additional data for specific error types\";s:7:\"default\";s:0:\"\";}}}}}}}"
+...

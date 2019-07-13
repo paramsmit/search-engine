@@ -1,0 +1,295 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:306:\"# A.L.E Double-Entry
+  Accounting REST API\n\nALE divides itself into \"books\", each of which store *journal
+  entries* and their child *transactions*.\nThe cardinal rule of double-entry accounting
+  is that \"everything must balance out to zero\", and that rule is applied\nto every
+  journal entry written to the book.\n\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:6:\"A.L.E.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:13:\"/ale/logo.png\";}}"
+host: localhost:8813
+basePath: /
+paths:
+  /books/:
+    get:
+      summary: List all current books
+      description: Produces an array of all the books currently registered on the
+        database.n
+      operationId: getBooks
+      responses:
+        200:
+          description: The array of books
+          schema:
+            $ref: '#/definitions/Books'
+          examples:
+            application/json:
+            - id: General Ledger
+              currency: USD
+            - id: London office ledger
+              currency: GBP
+    post:
+      parameters:
+      - in: body
+        name: body
+        description: New Book definition
+        required: true
+        schema:
+          $ref: '#/definitions/Book'
+      operationId: postBooks
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/BookResponse'
+          examples:
+            application/json:
+              success: false
+              message: Book 'General' already exists
+        400:
+          description: Bad input
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          examples:
+            application/json:
+              success: false
+              message: Book 'Foobar' does not exist
+  /books/{bookId}/ledger:
+    parameters:
+    - name: bookId
+      description: The book to extract entries from
+      in: path
+      type: integer
+      required: true
+    post:
+      summary: Post a new Journal entry
+      description: Add a new (balanced) Journal entry to the book
+      operationId: postBookEntry
+      parameters:
+      - name: body
+        in: body
+        description: The new Journal Entry definition
+        schema:
+          $ref: '#/definitions/NewJournalEntry'
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/PostEntryResponse'
+    get:
+      summary: Fetch the ledger
+      description: Fetches all transactions for the given book for the dates providedn
+      operationId: getBookEntries
+      parameters:
+      - name: bookId
+        description: The book to extract entries from
+        in: path
+        type: integer
+        required: true
+      - name: startDate
+        in: query
+        description: The start date for entries
+        required: false
+        type: string
+      - name: endDate
+        in: query
+        description: The end date for entries
+        required: false
+        type: string
+      - name: perPage
+        in: query
+        description: The number of results per page
+        required: false
+        type: integer
+      - name: page
+        in: query
+        description: The page number
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Entries'
+          examples:
+            application/json:
+              book:
+                id: General Ledger
+                currency: USD
+              startDate: 1520228313023
+              endDate: 1520428313023
+              entries:
+              - date: 1520228313023
+                memo: Payroll
+                transactions:
+                - account: Bank:Local
+                  debit: 1000
+                  currency: USD
+                  exchangeRate: 1
+                - account: Employees:Alice
+                  value: 500
+                  currency: USD
+                  exchangeRate: 1
+                - account: Employees:Bob
+                  value: 500
+                  currency: USD
+                  exchangeRate: 1
+        400:
+          description: Invalid input, such as unknown book
+          schema:
+            $ref: '#/definitions/Response'
+  /books/{bookId}/accounts:
+    parameters:
+    - name: bookId
+      description: The book to extract entries from
+      in: path
+      type: integer
+      required: true
+    get:
+      summary: List all accounts
+      operationId: getAccounts
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              type: string
+  /books/{bookId}/transactions:
+    parameters:
+    - name: bookId
+      description: The book to extract entries from
+      in: path
+      type: integer
+      required: true
+    get:
+      summary: List all transactions for given accounts
+      operationId: getTransactions
+      parameters:
+      - name: accounts
+        description: A comma-separated search term for accounts
+        in: query
+        type: string
+        required: true
+      - name: perPage
+        in: query
+        description: The number of results per page
+        required: false
+        type: integer
+      - name: page
+        in: query
+        description: The page number
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Transaction'
+  /books/{bookId}/balance:
+    parameters:
+    - name: bookId
+      description: The book to extract entries from
+      in: path
+      type: integer
+      required: true
+    get:
+      summary: Return an account balance
+      operationId: getBalance
+      parameters:
+      - name: account
+        description: The account to get the balance for
+        in: query
+        type: string
+        required: true
+      - name: inQuoteCurrency
+        description: If true (default), converts all values to the quote currency
+          first
+        in: query
+        type: boolean
+        required: false
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Balance'
+  /books/{bookId}/marktomarket:
+    parameters:
+    - name: bookId
+      description: The book to extract entries from
+      in: path
+      type: integer
+      required: true
+    post:
+      summary: Mark the account(s) to market
+      description: Calculates the unlrealised profit of the given accounts at the
+        exchange rate vector provided
+      operationId: postMarkToMarket
+      parameters:
+      - name: body
+        in: body
+        schema:
+          type: object
+          required:
+          - accounts
+          - exchangeRates
+          properties:
+            accounts:
+              type: array
+              items:
+                type: string
+            exchangeRates:
+              type: object
+              additionalProperties:
+                type: number
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/UnrealisedProfit'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":12:{s:5:\"Books\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Book\";}}s:4:\"Book\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:8:\"currency\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  id for the book the book\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"The
+  name of the book\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"General Ledger\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:115:\"The
+  currency the book is referenced in.\nAll other currencies and calculations are quoted
+  in terms of this currency\n\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  timestamp of when the book was created\";s:4:\"type\";s:6:\"number\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  timestamp of the last time this entry was modified\";s:4:\"type\";s:6:\"number\";}}}s:7:\"Entries\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"book\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Book\";}s:9:\"startDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"endDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"entries\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Entry\";}}}}s:5:\"Entry\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"date\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  timestamp for the entry\";s:4:\"type\";s:6:\"number\";}s:4:\"memo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  description for the entry\";s:4:\"type\";s:6:\"string\";}s:6:\"voided\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Indicates
+  whether the entry is still valid\";s:4:\"type\";s:7:\"boolean\";}s:10:\"voidReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  reason for the entry reversal\";s:4:\"type\";s:6:\"string\";}s:12:\"transactions\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"An
+  array of transactions for the entry\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Transaction\";}}}}s:11:\"Transaction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"account\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  account this transaction is reflected on\";s:4:\"type\";s:6:\"string\";}s:6:\"credit\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  credit value of the transaction\";s:4:\"type\";s:6:\"number\";}s:5:\"debit\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  debit value of the transaction\";s:4:\"type\";s:6:\"number\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  currency for this transaction\";s:4:\"type\";s:6:\"string\";}s:12:\"exchangeRate\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  exchange rate to convert to the basis currency\";s:4:\"type\";s:6:\"number\";}}}s:8:\"Response\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"success\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Indicates
+  whether request was succesful\";s:4:\"type\";s:7:\"boolean\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Response\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"errorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}s:12:\"BookResponse\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Response\";}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Book\";}}}s:17:\"PostEntryResponse\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Response\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  id of the new Journal Entry\";s:4:\"type\";s:7:\"integer\";}}}}}s:15:\"NewJournalEntry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"memo\";i:1;s:12:\"transactions\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"memo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  Journal Entry description\";s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  time stamp for the journal entry\";s:4:\"type\";s:6:\"string\";}s:12:\"transactions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Transaction\";}}}}s:7:\"Balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"creditTotal\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  total value of credits into the account\";s:4:\"type\";s:6:\"number\";}s:10:\"debitTotal\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  total value of debits into the account\";s:4:\"type\";s:6:\"number\";}s:7:\"balance\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  current account balabce (credits - debits)\";s:4:\"type\";s:6:\"number\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  nominal currency of the account\";s:4:\"type\";s:6:\"number\";}s:15:\"numTransactions\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  number of transactions into the account\";s:4:\"type\";s:6:\"number\";}}}s:16:\"UnrealisedProfit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"unrealizedProfit\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"The
+  total current unrealised profit for the given accounts\";s:4:\"type\";s:6:\"number\";}s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}"
+...

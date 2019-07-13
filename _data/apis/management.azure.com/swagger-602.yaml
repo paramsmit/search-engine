@@ -1,0 +1,408 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:23:\"StorageManagementClient\";s:11:\"description\";s:30:\"The
+  Storage Management Client.\";s:7:\"version\";s:10:\"2016-01-01\";}"
+host: management.azure.com
+paths:
+  /subscriptions/{subscriptionId}/providers/Microsoft.Storage/checkNameAvailability:
+    post:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_CheckNameAvailability
+      description: Checks that the storage account name is valid and is not already
+        in use.
+      parameters:
+      - name: accountName
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageAccountCheckNameAvailabilityParameters'
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- Operation to check the storage account name availability
+            was successful.
+          schema:
+            $ref: '#/definitions/CheckNameAvailabilityResult'
+  /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}:
+    put:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_Create
+      description: Asynchronously creates a new storage account with the specified
+        parameters. If an account is already created and a subsequent create request
+        is issued with different properties, the account properties will be updated.
+        If an account is already created and a subsequent create or update request
+        is issued with the exact same set of properties, the request will succeed.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+        maxLength: 24
+        minLength: 3
+      - name: parameters
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageAccountCreateParameters'
+        description: The parameters to provide for the created account.
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- returned when the storage account was already created
+            from a previous request with the same properties specified in the request
+            body.
+          schema:
+            $ref: '#/definitions/StorageAccount'
+        202:
+          description: Accepted -- Create or update request accepted; operation will
+            complete asynchronously.
+      x-ms-long-running-operation: true
+    delete:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_Delete
+      description: Deletes a storage account in Microsoft Azure.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+        maxLength: 24
+        minLength: 3
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- storage account deleted successfully.
+        204:
+          description: NoContent -- account does not exist in the subscription.
+    get:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_GetProperties
+      description: Returns the properties for the specified storage account including
+        but not limited to name, SKU name, location, and account status. The ListKeys
+        operation should be used to retrieve storage keys.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: 'The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.  '
+        maxLength: 24
+        minLength: 3
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- properties retrieved successfully for the storage account.
+          schema:
+            $ref: '#/definitions/StorageAccount'
+    patch:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_Update
+      description: The update operation can be used to update the SKU, encryption,
+        access tier, or tags for a storage account. It can also be used to map the
+        account to a custom domain. Only one custom domain is supported per storage
+        account; the replacement/change of custom domain is not supported. In order
+        to replace an old custom domain, the old value must be cleared/unregistered
+        before a new value can be set. The update of multiple properties is supported.
+        This call does not change the storage keys for the account. If you want to
+        change the storage account keys, use the regenerate keys operation. The location
+        and name of the storage account cannot be changed after creation.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+        maxLength: 24
+        minLength: 3
+      - name: parameters
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageAccountUpdateParameters'
+        description: The parameters to provide for the updated account.
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- storage account properties updated successfully.
+          schema:
+            $ref: '#/definitions/StorageAccount'
+  /subscriptions/{subscriptionId}/providers/Microsoft.Storage/storageAccounts:
+    get:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_List
+      description: Lists all the storage accounts available under the subscription.
+        Note that storage keys are not returned; use the ListKeys operation for this.
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- List of storage accounts was retrieved and returned successfully.
+          schema:
+            $ref: '#/definitions/StorageAccountListResult'
+      x-ms-pageable:
+        nextLinkName: ~
+  /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts:
+    get:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_ListByResourceGroup
+      description: Lists all the storage accounts available under the given resource
+        group. Note that storage keys are not returned; use the ListKeys operation
+        for this.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- List of storage accounts in the given resource group
+            retrieved and returned successfully.
+          schema:
+            $ref: '#/definitions/StorageAccountListResult'
+      x-ms-pageable:
+        nextLinkName: ~
+  ? /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}/listKeys
+  : post:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_ListKeys
+      description: Lists the access keys for the specified storage account.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+        maxLength: 24
+        minLength: 3
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- list of keys retrieved and returned successfully.
+          schema:
+            $ref: '#/definitions/StorageAccountListKeysResult'
+  ? /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}/regenerateKey
+  : post:
+      tags:
+      - StorageAccounts
+      operationId: StorageAccounts_RegenerateKey
+      description: Regenerates one of the access keys for the specified storage account.
+      parameters:
+      - name: resourceGroupName
+        in: path
+        required: true
+        type: string
+        description: The name of the resource group within the user's subscription.
+      - name: accountName
+        in: path
+        required: true
+        type: string
+        description: The name of the storage account within the specified resource
+          group. Storage account names must be between 3 and 24 characters in length
+          and use numbers and lower-case letters only.
+        maxLength: 24
+        minLength: 3
+      - name: regenerateKey
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageAccountRegenerateKeyParameters'
+        description: Specifies name of the key which should be regenerated -- key1
+          or key2.
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- specified key regenerated successfully.
+          schema:
+            $ref: '#/definitions/StorageAccountListKeysResult'
+  /subscriptions/{subscriptionId}/providers/Microsoft.Storage/usages:
+    get:
+      tags:
+      - Usage
+      operationId: Usage_List
+      description: Gets the current usage count and the limit for the resources under
+        the subscription.
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      responses:
+        200:
+          description: OK -- current usage acount and limit retrieved and returned
+            successfully.
+          schema:
+            $ref: '#/definitions/UsageListResult'
+      x-ms-pageable:
+        nextLinkName: ~
+produces:
+- application/json
+- text/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":22:{s:45:\"StorageAccountCheckNameAvailabilityParameters\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:33:\"Microsoft.Storage/storageAccounts\";}}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:4:\"type\";}}s:27:\"CheckNameAvailabilityResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"nameAvailable\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:189:\"Gets
+  a boolean value that indicates whether the name is available for you to use. If
+  true, the name is available. If false, the name has already been taken or is invalid
+  and cannot be used.\";}s:6:\"reason\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:125:\"Gets
+  the reason that a storage account name could not be used. The Reason element is
+  only returned if NameAvailable is false.\";s:4:\"enum\";a:2:{i:0;s:18:\"AccountNameInvalid\";i:1;s:13:\"AlreadyExists\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:6:\"Reason\";s:13:\"modelAsString\";b:0;}}s:7:\"message\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:65:\"Gets
+  an error message explaining the Reason value in more detail.\";}}s:11:\"description\";s:45:\"The
+  CheckNameAvailability operation response.\";}s:3:\"Sku\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:140:\"Gets
+  or sets the sku name. Required for account creation; optional for update. Note that
+  in older versions, sku name was called accountType.\";s:4:\"enum\";a:5:{i:0;s:12:\"Standard_LRS\";i:1;s:12:\"Standard_GRS\";i:2;s:14:\"Standard_RAGRS\";i:3;s:12:\"Standard_ZRS\";i:4;s:11:\"Premium_LRS\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"SkuName\";s:13:\"modelAsString\";b:0;}}s:4:\"tier\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Gets
+  the sku tier. This is based on the SKU name.\";s:4:\"enum\";a:2:{i:0;s:8:\"Standard\";i:1;s:7:\"Premium\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"SkuTier\";s:13:\"modelAsString\";b:0;}}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:11:\"description\";s:31:\"The
+  SKU of the storage account.\";}s:12:\"CustomDomain\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"Gets
+  or sets the custom domain name assigned to the storage account. Name is the CNAME
+  source.\";}s:12:\"useSubDomain\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:115:\"Indicates
+  whether indirect CName validation is enabled. Default value is false. This should
+  only be set on updates.\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:11:\"description\";s:79:\"The
+  custom domain assigned to this storage account. This can be set via Update.\";}s:17:\"EncryptionService\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:82:\"A
+  boolean indicating whether or not the service encrypts the data as it is stored.\";}s:15:\"lastEnabledTime\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:236:\"Gets
+  a rough estimate of the date/time when the encryption was last enabled by the user.
+  Only returned when encryption is enabled. There might be some unencrypted blobs
+  which were written after this time, as it is just a rough estimate.\";}}s:11:\"description\";s:56:\"A
+  service that allows server-side encryption to be used.\";}s:18:\"EncryptionServices\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"blob\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:31:\"#/definitions/EncryptionService\";s:11:\"description\";s:52:\"The
+  encryption function of the blob storage service.\";}}s:11:\"description\";s:43:\"A
+  list of services that support encryption.\";}s:10:\"Encryption\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"services\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/EncryptionServices\";s:11:\"description\";s:42:\"List
+  of services which support encryption.\";}s:9:\"keySource\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:91:\"The
+  encryption keySource (provider). Possible values (case-insensitive):  Microsoft.Storage\";s:4:\"enum\";a:1:{i:0;s:17:\"Microsoft.Storage\";}}}s:8:\"required\";a:1:{i:0;s:9:\"keySource\";}s:11:\"description\";s:47:\"The
+  encryption settings on the storage account.\";}s:40:\"StorageAccountPropertiesCreateParameters\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"customDomain\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/CustomDomain\";s:11:\"description\";s:234:\"User
+  domain assigned to the storage account. Name is the CNAME source. Only one custom
+  domain is supported per storage account at this time. To clear the existing custom
+  domain, use an empty string for the custom domain name property.\";}s:10:\"encryption\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/Encryption\";s:11:\"description\";s:158:\"Provides
+  the encryption settings on the account. If left unspecified the account encryption
+  settings will remain the same. The default setting is unencrypted.\";}s:10:\"accessTier\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Required
+  for storage accounts where kind = BlobStorage. The access tier used for billing.\";s:4:\"enum\";a:2:{i:0;s:3:\"Hot\";i:1;s:4:\"Cool\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"AccessTier\";s:13:\"modelAsString\";b:0;}}}}s:30:\"StorageAccountCreateParameters\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:17:\"#/definitions/Sku\";s:11:\"description\";s:36:\"Required.
+  Gets or sets the sku name.\";}s:4:\"kind\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Required.
+  Indicates the type of storage account.\";s:4:\"enum\";a:2:{i:0;s:7:\"Storage\";i:1;s:11:\"BlobStorage\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"Kind\";s:13:\"modelAsString\";b:0;}}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:314:\"Required.
+  Gets or sets the location of the resource. This will be one of the supported and
+  registered Azure Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The
+  geo region of a resource cannot be changed once it is created, but if an identical
+  geo region is specified on update, the request will succeed.\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:335:\"Gets
+  or sets a list of key value pairs that describe the resource. These tags can be
+  used for viewing and grouping this resource (across resource groups). A maximum
+  of 15 tags can be provided for a resource. Each tag must have a key with a length
+  no greater than 128 characters and a value with a length no greater than 256 characters.\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:54:\"#/definitions/StorageAccountPropertiesCreateParameters\";}}s:8:\"required\";a:3:{i:0;s:3:\"sku\";i:1;s:4:\"kind\";i:2;s:8:\"location\";}s:11:\"description\";s:52:\"The
+  parameters used when creating a storage account.\";}s:9:\"Endpoints\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"blob\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Gets
+  the blob endpoint.\";}s:5:\"queue\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Gets
+  the queue endpoint.\";}s:5:\"table\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Gets
+  the table endpoint.\";}s:4:\"file\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Gets
+  the file endpoint.\";}}s:11:\"description\";s:87:\"The URIs that are used to perform
+  a retrieval of a public blob, queue, or table object.\";}s:24:\"StorageAccountProperties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:17:\"provisioningState\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Gets
+  the status of the storage account at the time the operation was called.\";s:4:\"enum\";a:3:{i:0;s:8:\"Creating\";i:1;s:12:\"ResolvingDNS\";i:2;s:9:\"Succeeded\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:17:\"ProvisioningState\";s:13:\"modelAsString\";b:0;}}s:16:\"primaryEndpoints\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:23:\"#/definitions/Endpoints\";s:8:\"readOnly\";b:1;s:11:\"description\";s:171:\"Gets
+  the URLs that are used to perform a retrieval of a public blob, queue, or table
+  object. Note that Standard_ZRS and Premium_LRS accounts only return the blob endpoint.\";}s:15:\"primaryLocation\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Gets
+  the location of the primary data center for the storage account.\";}s:15:\"statusOfPrimary\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:107:\"Gets
+  the status indicating whether the primary location of the storage account is available
+  or unavailable.\";s:4:\"enum\";a:2:{i:0;s:9:\"Available\";i:1;s:11:\"Unavailable\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"AccountStatus\";s:13:\"modelAsString\";b:0;}}s:19:\"lastGeoFailoverTime\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:274:\"Gets
+  the timestamp of the most recent instance of a failover to the secondary location.
+  Only the most recent timestamp is retained. This element is not returned if there
+  has never been a failover instance. Only available if the accountType is Standard_GRS
+  or Standard_RAGRS.\";}s:17:\"secondaryLocation\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:143:\"Gets
+  the location of the geo-replicated secondary for the storage account. Only available
+  if the accountType is Standard_GRS or Standard_RAGRS.\";}s:17:\"statusOfSecondary\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:175:\"Gets
+  the status indicating whether the secondary location of the storage account is available
+  or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS.\";s:4:\"enum\";a:2:{i:0;s:9:\"Available\";i:1;s:11:\"Unavailable\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"AccountStatus\";s:13:\"modelAsString\";b:0;}}s:12:\"creationTime\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:62:\"Gets
+  the creation date and time of the storage account in UTC.\";}s:12:\"customDomain\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:26:\"#/definitions/CustomDomain\";s:8:\"readOnly\";b:1;s:11:\"description\";s:65:\"Gets
+  the custom domain the user assigned to this storage account.\";}s:18:\"secondaryEndpoints\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:23:\"#/definitions/Endpoints\";s:8:\"readOnly\";b:1;s:11:\"description\";s:193:\"Gets
+  the URLs that are used to perform a retrieval of a public blob, queue, or table
+  object from the secondary location of the storage account. Only available if the
+  SKU name is Standard_RAGRS.\";}s:10:\"encryption\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:24:\"#/definitions/Encryption\";s:8:\"readOnly\";b:1;s:11:\"description\";s:88:\"Gets
+  the encryption settings on the account. If unspecified, the account is unencrypted.\";}s:10:\"accessTier\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Required
+  for storage accounts where kind = BlobStorage. The access tier used for billing.\";s:4:\"enum\";a:2:{i:0;s:3:\"Hot\";i:1;s:4:\"Cool\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"AccessTier\";s:13:\"modelAsString\";b:0;}}}}s:14:\"StorageAccount\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"sku\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:17:\"#/definitions/Sku\";s:8:\"readOnly\";b:1;s:11:\"description\";s:13:\"Gets
+  the SKU.\";}s:4:\"kind\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Gets
+  the Kind.\";s:4:\"enum\";a:2:{i:0;s:7:\"Storage\";i:1;s:11:\"BlobStorage\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"Kind\";s:13:\"modelAsString\";b:0;}}s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:38:\"#/definitions/StorageAccountProperties\";}}s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Resource\";}}s:11:\"description\";s:20:\"The
+  storage account.\";}s:17:\"StorageAccountKey\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"keyName\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the key.\";}s:5:\"value\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Base
+  64-encoded value of the key.\";}s:11:\"permissions\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Permissions
+  for the key -- read-only or full permissions.\";s:4:\"enum\";a:2:{i:0;s:4:\"READ\";i:1;s:4:\"FULL\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"KeyPermission\";s:13:\"modelAsString\";b:0;}}}s:11:\"description\";s:38:\"An
+  access key for the storage account.\";}s:24:\"StorageAccountListResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/StorageAccount\";}s:11:\"description\";s:55:\"Gets
+  the list of storage accounts and their properties.\";}}s:11:\"description\";s:54:\"The
+  response from the List Storage Accounts operation.\";}s:28:\"StorageAccountListKeysResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"keys\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/StorageAccountKey\";}s:11:\"description\";s:93:\"Gets
+  the list of storage account keys and their properties for the specified storage
+  account.\";}}s:11:\"description\";s:41:\"The response from the ListKeys operation.\";}s:37:\"StorageAccountRegenerateKeyParameters\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"keyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"keyName\";}}s:40:\"StorageAccountPropertiesUpdateParameters\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"customDomain\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/CustomDomain\";s:11:\"description\";s:248:\"Custom
+  domain assigned to the storage account by the user. Name is the CNAME source. Only
+  one custom domain is supported per storage account at this time. To clear the existing
+  custom domain, use an empty string for the custom domain name property.\";}s:10:\"encryption\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/Encryption\";s:11:\"description\";s:84:\"Provides
+  the encryption settings on the account. The default setting is unencrypted.\";}s:10:\"accessTier\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Required
+  for storage accounts where kind = BlobStorage. The access tier used for billing.\";s:4:\"enum\";a:2:{i:0;s:3:\"Hot\";i:1;s:4:\"Cool\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"AccessTier\";s:13:\"modelAsString\";b:0;}}}}s:30:\"StorageAccountUpdateParameters\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:17:\"#/definitions/Sku\";s:11:\"description\";s:166:\"Gets
+  or sets the SKU name. Note that the SKU name cannot be updated to Standard_ZRS or
+  Premium_LRS, nor can accounts of those sku names be updated to any other value.\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:326:\"Gets
+  or sets a list of key value pairs that describe the resource. These tags can be
+  used in viewing and grouping this resource (across resource groups). A maximum of
+  15 tags can be provided for a resource. Each tag must have a key no greater in length
+  than 128 characters and a value no greater in length than 256 characters.\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:54:\"#/definitions/StorageAccountPropertiesUpdateParameters\";}}s:11:\"description\";s:81:\"The
+  parameters that can be provided when updating the storage account properties.\";}s:9:\"UsageName\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Gets
+  a string describing the resource name.\";}s:14:\"localizedValue\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Gets
+  a localized string describing the resource name.\";}}s:11:\"description\";s:70:\"The
+  usage names that can be used; currently limited to StorageAccount.\";}s:5:\"Usage\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"unit\";O:8:\"stdClass\":5:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Gets
+  the unit of measurement.\";s:4:\"enum\";a:6:{i:0;s:5:\"Count\";i:1;s:5:\"Bytes\";i:2;s:7:\"Seconds\";i:3;s:7:\"Percent\";i:4;s:15:\"CountsPerSecond\";i:5;s:14:\"BytesPerSecond\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"UsageUnit\";s:13:\"modelAsString\";b:0;}}s:12:\"currentValue\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:70:\"Gets
+  the current count of the allocated resources in the subscription.\";}s:5:\"limit\";O:8:\"stdClass\":4:{s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:82:\"Gets
+  the maximum count of the resources that can be allocated in the subscription.\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:23:\"#/definitions/UsageName\";s:8:\"readOnly\";b:1;s:11:\"description\";s:35:\"Gets
+  the name of the type of usage.\";}}s:11:\"description\";s:33:\"Describes Storage
+  Resource Usage.\";}s:15:\"UsageListResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Usage\";}s:11:\"description\";s:49:\"Gets
+  or sets the list of Storage Resource Usages.\";}}s:11:\"description\";s:44:\"The
+  response from the List Usages operation.\";}s:8:\"Resource\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Resource
+  Id\";}s:4:\"name\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Resource
+  name\";}s:4:\"type\";O:8:\"stdClass\":3:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Resource
+  type\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Resource
+  location\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:102:\"Tags
+  assigned to a resource; can be used for viewing and grouping a resource (across
+  resource groups).\";}}s:19:\"x-ms-azure-resource\";b:1;}}"
+...

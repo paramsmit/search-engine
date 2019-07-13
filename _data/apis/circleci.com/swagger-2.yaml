@@ -1,0 +1,365 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:11:\"description\";s:268:\"The CircleCI
+  API is a RESTful, fully-featured API that allows you to do almost anything in CircleCI.\nYou
+  can access all information and trigger all actions.\nThe only thing we don\u2019t
+  provide access to is billing functions, which must be done from the CircleCI web
+  UI.\n\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:54:\"Attribution-NonCommercial-ShareAlike
+  4.0 International\";s:3:\"url\";s:49:\"http://creativecommons.org/licenses/by-nc-sa/4.0/\";}s:5:\"title\";s:8:\"CircleCI\";s:7:\"version\";s:2:\"v1\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:15:\"developer_tools\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:86:\"https://api.apis.guru/v2/cache/logo/https_avatars0.githubusercontent.com_u_1231870.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:76:\"https://raw.githubusercontent.com/blockenio/spec-circleci/master/swagger.yml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:12:\"circleci.com\";s:16:\"x-unofficialSpec\";b:1;s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"circleci\";s:4:\"type\";s:7:\"openapi\";}}"
+host: circleci.com
+basePath: /api/v1
+paths:
+  /me:
+    get:
+      description: Provides information about the signed in user.n
+      responses:
+        200:
+          description: signed in user
+          schema:
+            $ref: '#/definitions/User'
+      operationId: me.get
+  /project/{username}/{project}:
+    get:
+      description: Build summary for each of the last 30 builds for a single git repo.n
+      parameters:
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/filter'
+      responses:
+        200:
+          description: Build summary for each of the last 30 builds
+          schema:
+            $ref: '#/definitions/Builds'
+      operationId: project.username.project.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    post:
+      consumes:
+      - application/json
+      description: Triggers a new build, returns a summary of the build.n
+      parameters:
+      - in: body
+        name: body
+        schema:
+          properties:
+            build_parameters:
+              $ref: '#/definitions/BuildParameters'
+            parallel:
+              $ref: '#/definitions/Parallel'
+            revision:
+              $ref: '#/definitions/Revision'
+            tag:
+              $ref: '#/definitions/Tag'
+          type: object
+      responses:
+        201:
+          description: returns a summary of the build
+          schema:
+            $ref: '#/definitions/BuildSummary'
+      operationId: project.username.project.post
+  /project/{username}/{project}/build-cache:
+    delete:
+      description: Clears the cache for a project.n
+      responses:
+        200:
+          description: status message
+          schema:
+            properties:
+              status:
+                type: string
+            type: object
+      operationId: project.username.project.build_cache.delete
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+  /project/{username}/{project}/checkout-key:
+    get:
+      description: Lists checkout keys.n
+      responses:
+        200:
+          description: checkout keys
+          schema:
+            $ref: '#/definitions/Keys'
+      operationId: project.username.project.checkout_key.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    post:
+      description: Creates a new checkout key.nOnly usable with a user API token.n
+      parameters:
+      - description: The type of key to create. Can be 'deploy-key' or 'github-user-key'.n
+        in: body
+        name: type
+        schema:
+          enum:
+          - deploy-key
+          - github-user-key
+          type: string
+      responses:
+        200:
+          $ref: '#/responses/key'
+      operationId: project.username.project.checkout_key.post
+  /project/{username}/{project}/checkout-key/{fingerprint}:
+    delete:
+      description: Delete a checkout key.n
+      responses:
+        200:
+          description: status message
+          schema:
+            properties:
+              message:
+                enum:
+                - OK
+                type: string
+            type: object
+      operationId: project.username.project.checkout_key.fingerprint.delete
+    get:
+      description: Get a checkout key.n
+      responses:
+        200:
+          $ref: '#/responses/key'
+      operationId: project.username.project.checkout_key.fingerprint.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/fingerprint'
+  /project/{username}/{project}/envvar:
+    get:
+      description: Lists the environment variables for :projectn
+      responses:
+        200:
+          $ref: '#/responses/envvars'
+      operationId: project.username.project.envvar.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    post:
+      description: Creates a new environment variablen
+      responses:
+        200:
+          $ref: '#/responses/envvar'
+      operationId: project.username.project.envvar.post
+  /project/{username}/{project}/envvar/{name}:
+    delete:
+      description: Deletes the environment variable named ':name'n
+      responses:
+        200:
+          description: Deletes the environment variable named ':name'n
+          schema:
+            properties:
+              message:
+                enum:
+                - OK
+                type: string
+            type: object
+      operationId: project.username.project.envvar.name.delete
+    get:
+      description: Gets the hidden value of environment variable :namen
+      responses:
+        200:
+          $ref: '#/responses/envvar'
+      operationId: project.username.project.envvar.name.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/envvar_name'
+  /project/{username}/{project}/ssh-key:
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    post:
+      consumes:
+      - application/json
+      description: Create an ssh key used to access external systems that require
+        SSH key-based authenticationn
+      parameters:
+      - enum:
+        - application/json
+        in: header
+        name: Content-Type
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            hostname:
+              type: string
+            private_key:
+              type: string
+          type: object
+      responses:
+        default:
+          description: no response expected
+          examples:
+            application/json:
+              message: a private key is required
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      operationId: project.username.project.ssh_key.post
+  /project/{username}/{project}/tree/{branch}:
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/branch'
+    post:
+      consumes:
+      - application/json
+      description: 'Triggers a new build, returns a summary of the build.nOptional
+        build parameters can be set using an experimental API.nnNote: For more about
+        build parameters, read about [using parameterized builds](https://circleci.com/docs/parameterized-builds/)n'
+      parameters:
+      - in: body
+        name: body
+        schema:
+          properties:
+            build_parameters:
+              $ref: '#/definitions/BuildParameters'
+            parallel:
+              $ref: '#/definitions/Parallel'
+            revision:
+              $ref: '#/definitions/Revision'
+          type: object
+      responses:
+        201:
+          description: returns a summary of the build
+          headers:
+            Location:
+              format: uri
+              type: string
+          schema:
+            $ref: '#/definitions/Build'
+      operationId: project.username.project.tree.branch.post
+  /project/{username}/{project}/{build_num}:
+    get:
+      description: Full details for a single build. The response includes all of the
+        fields from the build summary.nThis is also the payload for the [notification
+        webhooks](/docs/configuration/#notify), in which case this object is the value
+        to a key named 'payload'.n
+      responses:
+        200:
+          description: Full details for a single build
+          schema:
+            $ref: '#/definitions/BuildDetail'
+      operationId: project.username.project.build_num.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/build_num'
+  /project/{username}/{project}/{build_num}/artifacts:
+    get:
+      description: List the artifacts produced by a given build.n
+      responses:
+        200:
+          description: List the artifacts produced by a given build
+          schema:
+            $ref: '#/definitions/Artifacts'
+      operationId: project.username.project.build_num.artifacts.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/build_num'
+  /project/{username}/{project}/{build_num}/cancel:
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/build_num'
+    post:
+      description: Cancels the build, returns a summary of the build.n
+      responses:
+        200:
+          description: returns a summary of the build
+          schema:
+            $ref: '#/definitions/Build'
+      operationId: project.username.project.build_num.cancel.post
+  /project/{username}/{project}/{build_num}/retry:
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/build_num'
+    post:
+      description: Retries the build, returns a summary of the new build.n
+      responses:
+        200:
+          description: returns a summary of the new build
+          schema:
+            $ref: '#/definitions/Build'
+      operationId: project.username.project.build_num.retry.post
+  /project/{username}/{project}/{build_num}/tests:
+    get:
+      description: 'Provides test metadata for a buildnNote: [Learn how to set up
+        your builds to collect test metadata](https://circleci.com/docs/test-metadata/)n'
+      responses:
+        200:
+          description: test metadata for a buildn
+          schema:
+            $ref: '#/definitions/Tests'
+      operationId: project.username.project.build_num.tests.get
+    parameters:
+    - $ref: '#/parameters/username'
+    - $ref: '#/parameters/project'
+    - $ref: '#/parameters/build_num'
+  /projects:
+    get:
+      description: List of all the projects you're following on CircleCI, with build
+        information organized by branch.n
+      responses:
+        200:
+          description: List of all the projects you're following on CircleCIn
+          schema:
+            $ref: '#/definitions/Projects'
+      operationId: projects.get
+  /recent-builds:
+    get:
+      description: Build summary for each of the last 30 recent builds, ordered by
+        build_num.n
+      parameters:
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
+      responses:
+        200:
+          description: Build summary for each of the last 30 recent builds
+          schema:
+            $ref: '#/definitions/Builds'
+      operationId: recent_builds.get
+  /user/heroku-key:
+    post:
+      description: Adds your Heroku API key to CircleCI, takes apikey as form param
+        name.n
+      responses:
+        403:
+          description: Your Heroku API key is invalid.n
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      operationId: user.heroku_key.post
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":28:{s:8:\"Artifact\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"node_index\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"pretty_path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:9:\"Artifacts\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Artifact\";}s:4:\"type\";s:5:\"array\";}s:3:\"Aws\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"keypair\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:5:\"Build\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":18:{s:4:\"body\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"commit
+  message body\";s:4:\"type\";s:6:\"string\";}s:6:\"branch\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"build_time_millis\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"build_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}s:15:\"committer_email\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"email\";s:4:\"type\";s:6:\"string\";}s:14:\"committer_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"dont_build\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"reason
+  why we didn't build, if we didn't build\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"lifecycle\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Lifecycle\";}s:8:\"previous\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PreviousBuild\";}s:9:\"queued_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"time
+  build was queued\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"reponame\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"retry_of\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"build_num
+  of the build this is a retry of\";s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:10:\"start_time\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"time
+  build started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"stop_time\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"time
+  build finished\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"vcs_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}s:3:\"why\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"short
+  string explaining the reason we built\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:11:\"BuildDetail\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"previous
+  build\";s:10:\"properties\";O:8:\"stdClass\":10:{s:18:\"all_commit_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CommitDetails\";}s:7:\"compare\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"job_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"node\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}s:25:\"previous_successful_build\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PreviousBuild\";}s:7:\"retries\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:11:\"ssh_enabled\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:8:\"timedout\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:15:\"usage_queued_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:4:\"type\";s:6:\"object\";}s:15:\"BuildParameters\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"Additional
+  environment variables to inject into the build environment. A map of names to values.\n\";s:4:\"type\";s:6:\"object\";}s:12:\"BuildSummary\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"added_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"build_num\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"outcome\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Outcome\";}s:9:\"pushed_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Status\";}s:12:\"vcs_revision\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Sha1\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Builds\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Build\";}s:4:\"type\";s:5:\"array\";}s:12:\"CommitDetail\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:11:\"author_date\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:12:\"author_email\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"email\";s:4:\"type\";s:6:\"string\";}s:12:\"author_login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"author_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"commit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Sha1\";}s:10:\"commit_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}s:14:\"committer_date\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:15:\"committer_email\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"email\";s:4:\"type\";s:6:\"string\";}s:15:\"committer_login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"committer_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:13:\"CommitDetails\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CommitDetail\";}s:4:\"type\";s:5:\"array\";}s:6:\"Envvar\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Envvars\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Envvar\";}s:4:\"type\";s:5:\"array\";}s:3:\"Key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"fingerprint\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"preferred\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"public_key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"time\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"when
+  the key was issued\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"can
+  be \"deploy-key\" or \"github-user-key\"\n\";s:4:\"enum\";a:2:{i:0;s:10:\"deploy-key\";i:1;s:15:\"github-user-key\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"Keys\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Key\";}s:4:\"type\";s:5:\"array\";}s:9:\"Lifecycle\";O:8:\"stdClass\":2:{s:4:\"enum\";a:6:{i:0;s:6:\"queued\";i:1;s:9:\"scheduled\";i:2;s:7:\"not_run\";i:3;s:11:\"not_running\";i:4;s:7:\"running\";i:5;s:8:\"finished\";}s:4:\"type\";s:6:\"string\";}s:7:\"Outcome\";O:8:\"stdClass\":2:{s:4:\"enum\";a:6:{i:0;s:8:\"canceled\";i:1;s:19:\"infrastructure_fail\";i:2;s:8:\"timedout\";i:3;s:6:\"failed\";i:4;s:8:\"no_tests\";i:5;s:7:\"success\";}s:4:\"type\";s:6:\"string\";}s:8:\"Parallel\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"The
+  number of containers to use to run the build. Default is null and the project default
+  is used.\n\";s:4:\"type\";s:6:\"string\";}s:13:\"PreviousBuild\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"previous
+  build\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"build_num\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:17:\"build_time_millis\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Status\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Project\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":42:{s:3:\"aws\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Aws\";}s:8:\"branches\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:21:\"campfire_notify_prefs\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:13:\"campfire_room\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:18:\"campfire_subdomain\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:14:\"campfire_token\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:7:\"compile\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"default_branch\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"dependencies\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"extra\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"feature_flags\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:14:\"build-fork-prs\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"fleet\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:5:\"junit\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"oss\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"osx\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:17:\"set-github-status\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"trusty-beta\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:18:\"flowdock_api_token\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:8:\"followed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"has_usable_key\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"heroku_deploy_user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:17:\"hipchat_api_token\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:14:\"hipchat_notify\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:20:\"hipchat_notify_prefs\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"hipchat_room\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:11:\"irc_channel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:11:\"irc_keyword\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:16:\"irc_notify_prefs\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:12:\"irc_password\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:10:\"irc_server\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:12:\"irc_username\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:8:\"language\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"oss\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"parallel\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"reponame\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Scope\";}s:4:\"type\";s:5:\"array\";}s:5:\"setup\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"slack_api_token\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:13:\"slack_channel\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:22:\"slack_channel_override\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:18:\"slack_notify_prefs\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:15:\"slack_subdomain\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/StringOrNull\";}s:17:\"slack_webhook_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}s:8:\"ssh_keys\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"test\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"vcs_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"vcs_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Projects\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Project\";}s:4:\"type\";s:5:\"array\";}s:8:\"Revision\";O:8:\"stdClass\":2:{s:11:\"description\";s:119:\"The
+  specific revision to build.\nDefault is null and the head of the branch is used.
+  Cannot be used with tag parameter.\n\";s:4:\"type\";s:6:\"string\";}s:5:\"Scope\";O:8:\"stdClass\":2:{s:4:\"enum\";a:7:{i:0;s:14:\"write-settings\";i:1;s:11:\"view-builds\";i:2;s:13:\"read-settings\";i:3;s:14:\"trigger-builds\";i:4;s:3:\"all\";i:5;s:6:\"status\";i:6;s:4:\"none\";}s:4:\"type\";s:6:\"string\";}s:4:\"Sha1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"Status\";O:8:\"stdClass\":2:{s:4:\"enum\";a:13:{i:0;s:7:\"retried\";i:1;s:8:\"canceled\";i:2;s:19:\"infrastructure_fail\";i:3;s:8:\"timedout\";i:4;s:7:\"not_run\";i:5;s:7:\"running\";i:6;s:6:\"failed\";i:7;s:6:\"queued\";i:8;s:9:\"scheduled\";i:9;s:11:\"not_running\";i:10;s:8:\"no_tests\";i:11;s:5:\"fixed\";i:12;s:7:\"success\";}s:4:\"type\";s:6:\"string\";}s:12:\"StringOrNull\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:3:\"Tag\";O:8:\"stdClass\":2:{s:11:\"description\";s:75:\"The
+  tag to build. Default is null. Cannot be used with revision parameter.\n\";s:4:\"type\";s:6:\"string\";}s:5:\"Tests\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"tests\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"classname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"file\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"result\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Status\";}s:8:\"run_time\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:4:\"User\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":27:{s:5:\"admin\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"all_emails\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"email\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:12:\"analytics_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"uri\";s:4:\"type\";s:6:\"string\";}s:17:\"basic_email_prefs\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bitbucket\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:20:\"bitbucket_authorized\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"containers\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:18:\"days_left_in_trial\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"dev_admin\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"enrolled_betas\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"github_id\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:19:\"github_oauth_scopes\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:11:\"gravatar_id\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:14:\"heroku_api_key\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"in_beta_program\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"login\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"organization_prefs\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:11:\"parallelism\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"plan\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"projects\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:9:\"pusher_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"selected_email\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"email\";s:4:\"type\";s:6:\"string\";}s:13:\"sign_in_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"trial_end\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

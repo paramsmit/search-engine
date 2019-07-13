@@ -1,0 +1,238 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:2:\"v1\";s:5:\"title\";s:15:\"Snowball
+  Marker\";}"
+basePath: /api
+paths:
+  /health:
+    get:
+      tags:
+      - Health Check
+      summary: Return the health status of the service
+      description: ""
+      operationId: healthStatus
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returns the list successfully.
+          schema:
+            $ref: '#/definitions/HealthStatus'
+        503:
+          description: The service is unhealthy
+          schema:
+            $ref: '#/definitions/HealthStatus'
+  /marker/add-annotations:
+    post:
+      tags:
+      - Marker
+      summary: Retrieve annotations for a given message
+      description: ""
+      operationId: analyze
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: the Message to analyze
+        required: false
+        schema:
+          $ref: '#/definitions/Message'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Message'
+        400:
+          description: The request is not valid.
+          schema:
+            $ref: '#/definitions/MarkerError'
+        500:
+          description: An internal error occurred.
+          schema:
+            $ref: '#/definitions/MarkerError'
+  /marker/add-annotations/{modules}:
+    post:
+      tags:
+      - Marker
+      summary: Retrieve annotations for a given message using the specified modules.
+      description: ""
+      operationId: analyze
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: modules
+        in: path
+        description: The modules to use
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      - in: body
+        name: body
+        description: the Message to analyze
+        required: false
+        schema:
+          $ref: '#/definitions/Message'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Message'
+        400:
+          description: The request is not valid.
+          schema:
+            $ref: '#/definitions/MarkerError'
+        500:
+          description: An internal error occurred.
+          schema:
+            $ref: '#/definitions/MarkerError'
+  /marker/analyze-file/{lang}:
+    post:
+      tags:
+      - Marker
+      summary: Import a file and analyze it
+      description: ""
+      operationId: importFile
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/csv
+      parameters:
+      - name: lang
+        in: path
+        description: language of the content
+        required: true
+        type: string
+      - name: file
+        in: formData
+        description: CSV file to analyze.
+        required: true
+        type: file
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+        400:
+          description: The request is not valid.
+          schema:
+            $ref: '#/definitions/MarkerError'
+        500:
+          description: An internal error occurred.
+          schema:
+            $ref: '#/definitions/MarkerError'
+  /marker/analyze-file/{lang}/{modules}:
+    post:
+      tags:
+      - Marker
+      summary: Import a file and analyze it
+      description: ""
+      operationId: importFile
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/csv
+      parameters:
+      - name: modules
+        in: path
+        description: The modules to use
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: csv
+      - name: lang
+        in: path
+        description: language of the content
+        required: true
+        type: string
+      - name: file
+        in: formData
+        description: CSV file to analyze.
+        required: true
+        type: file
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+        400:
+          description: The request is not valid.
+          schema:
+            $ref: '#/definitions/MarkerError'
+        500:
+          description: An internal error occurred.
+          schema:
+            $ref: '#/definitions/MarkerError'
+  /marker/specs:
+    get:
+      tags:
+      - Api Specifications
+      summary: Retrieves the specifications for this API
+      description: Specification format is OpenAPI Specification, see https://github.com/OAI/OpenAPI-Specification
+      operationId: getSpecifications
+      produces:
+      - application/json
+      responses:
+        default:
+          description: successful operation
+  /properties:
+    get:
+      tags:
+      - Configuration reader
+      summary: Get list of configuration keys
+      description: ""
+      operationId: getConfigurationProperties
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PropertiesModel'
+  /readiness:
+    get:
+      tags:
+      - Readiness check
+      summary: Checks that the service is up and running
+      description: ""
+      operationId: readinessCheck
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":9:{s:10:\"Annotation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  content of the annotation\";}}}s:13:\"AnnotationSet\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"main\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Annotation\";}}s:5:\"extra\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Annotation\";}}s:10:\"intentions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Annotation\";}}}}s:6:\"Choice\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:5:\"label\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Displayed
+  label.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:6:\"Value.\";}}s:11:\"description\";s:34:\"A
+  choice associated with a message\";}s:12:\"HealthStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"healthy\";i:1;s:9:\"unhealthy\";i:2;s:4:\"dead\";}}s:7:\"details\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"statusByComponents\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:9:\"connected\";i:1;s:12:\"disconnected\";i:2;s:6:\"failed\";}}}}}s:11:\"MarkerError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"the
+  detailed message describing the error\";}s:7:\"errorId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"the
+  unique identifier of the error\";s:4:\"enum\";a:7:{i:0;s:10:\"NO_MESSAGE\";i:1;s:19:\"NO_MESSAGE_LANGUAGE\";i:2;s:25:\"INVALID_LINGUISTIC_MODULE\";i:3;s:22:\"INVALID_UPLOAD_REQUEST\";i:4;s:11:\"NO_LANGUAGE\";i:5;s:20:\"LANGUAGE_NOT_ENABLED\";i:6;s:16:\"NO_UPLOADED_FILE\";}}s:15:\"snowballMessage\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Message\";}}s:11:\"description\";s:37:\"Details
+  provided when an error occurs\";}s:7:\"Message\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"lang\";i:2;s:4:\"text\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"ID.\";s:8:\"readOnly\";b:1;}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:9:\"Metadata.\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"lang\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  lang of the message.\";}s:4:\"text\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  text of the message.\";}s:11:\"annotations\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  list of annotations.\";s:4:\"$ref\";s:27:\"#/definitions/AnnotationSet\";}s:15:\"answerReference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"A
+  unique reference that identify the answer (when message is an answer).\";}s:7:\"choices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"A
+  list of associated choices.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Choice\";}}}s:11:\"description\";s:128:\"One
+  or more sentences submitted atomically. This is a timestamped verbatim associated
+  to a source (customer, bot, agent, etc...)\";}s:15:\"PropertiesModel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"propertySet\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  name of the property list\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"The
+  property list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/PropertyDescription\";}}}s:11:\"description\";s:20:\"A
+  list of properties\";}s:19:\"PropertyDescription\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:3:\"key\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"defaultValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  default value\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  description of the configuration key\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  name of the configuration key\";}}s:11:\"description\";s:24:\"A configuration property\";}s:15:\"StreamingOutput\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}"
+...

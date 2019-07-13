@@ -1,0 +1,231 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:7:\"Symfony\";s:7:\"version\";s:5:\"0.0.1\";}"
+paths:
+  /api/auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Authenticate user.
+      parameters:
+      - name: credentials
+        in: body
+        description: User credentials
+        schema:
+          $ref: '#/definitions/AuthRequest'
+      responses:
+        200:
+          description: Successful authentication
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /api/auth/refresh-token:
+    post:
+      tags:
+      - Auth
+      summary: Get new JWT token if valid refresh token is provided.
+      parameters:
+      - name: refreshToken
+        in: body
+        description: Refresh token
+        schema:
+          properties:
+            refreshToken:
+              description: Get new JWT token if valid refresh token is provided.
+              type: string
+              xml:
+                name: refreshToken
+          xml:
+            name: request
+      responses:
+        200:
+          description: Successful authentication
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /api/auth/refresh-token/{token}:
+    delete:
+      tags:
+      - Auth
+      summary: Delete refresh token.
+      parameters:
+      - name: token
+        in: query
+        description: Refresh token
+        type: string
+      responses:
+        204:
+          description: Successfully deleted token
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - AccessToken: []
+  /api/users:
+    get:
+      tags:
+      - Users
+      summary: Get users list.
+      parameters:
+      - name: page
+        in: query
+        description: Page number for paged responses
+        required: false
+        type: integer
+        allowEmptyValue: true
+        default: "1"
+      - name: pageSize
+        in: query
+        description: number of entries in single page
+        required: false
+        type: integer
+        allowEmptyValue: true
+        default: "30"
+        minimum: "1"
+      responses:
+        200:
+          description: Successful authentication
+          schema:
+            type: array
+            items:
+              minItems: 0
+              xml:
+                name: entry
+              $ref: '#/definitions/User'
+            xml:
+              name: entry
+              wrapped: true
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - AccessToken: []
+    post:
+      tags:
+      - Users
+      summary: Create new User resource.
+      responses:
+        204:
+          description: User created successfully
+          headers:
+            Link:
+              description: Link to new resource
+              type: string
+              format: url
+        400:
+          description: Data validation failed
+          schema:
+            $ref: '#/definitions/FormErrors'
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - AccessToken: []
+  /api/users/{username}:
+    get:
+      tags:
+      - Users
+      summary: Get single User resource.
+      parameters:
+      - name: username
+        in: path
+        description: Username
+        type: string
+      responses:
+        200:
+          description: User found
+          schema:
+            xml:
+              name: result
+            $ref: '#/definitions/User'
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - AccessToken: []
+  /api/users/{username}/refresh-tokens:
+    get:
+      tags:
+      - Users
+      summary: Get user's refresh tokens.
+      parameters:
+      - name: username
+        in: path
+        description: Username
+        type: string
+      responses:
+        200:
+          description: List of refresh tokens
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RefreshToken'
+            xml:
+              name: entry
+              wrapped: true
+        401:
+          description: Authentication failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - AccessToken: []
+produces:
+- application/json
+- application/xml
+definitions: !php/object "O:8:\"stdClass\":8:{s:13:\"ErrorResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Class
+  AuthController\";s:4:\"type\";s:7:\"integer\";}s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Class
+  AuthController\";s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"result\";}}s:12:\"RefreshToken\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"Unique
+  identifier for token\";s:4:\"type\";s:7:\"integer\";}s:7:\"created\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Token
+  creation datetime\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"ipAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"IP
+  address from which refresh token was requested\";s:4:\"type\";s:6:\"string\";}s:7:\"browser\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Browser
+  data (and OS) extracted from user agent\";s:4:\"type\";s:6:\"string\";}}}s:4:\"Role\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"Role
+  code\";s:4:\"type\";s:6:\"string\";}}}s:4:\"User\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"username\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Unique
+  identifier for user\";s:4:\"type\";s:6:\"string\";s:11:\"uniqueItems\";b:1;}s:5:\"email\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"User
+  contact email\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";}s:8:\"isActive\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Is
+  user active\";s:4:\"type\";s:7:\"boolean\";}s:7:\"created\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"User
+  resource creation datetime\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:7:\"updated\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"Datetime
+  of last modification\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:16:\"failedLoginCount\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Number
+  of failed login attempts in a row\";s:4:\"type\";s:7:\"integer\";}s:14:\"suspendedUntil\";O:8:\"stdClass\":0:{}s:5:\"roles\";O:8:\"stdClass\":1:{s:11:\"description\";s:17:\"Groups
+  user is in\";}}}s:8:\"UserType\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"User
+  creation form\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"username\";O:8:\"stdClass\":3:{s:11:\"description\";s:64:\"Username
+  by which user will be identified in the future requests\";s:4:\"type\";s:6:\"string\";s:11:\"uniqueItems\";b:1;}s:8:\"password\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Should
+  be strong password\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"Email
+  by which user will be contacted in the future\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:4:\"user\";}}s:10:\"FormErrors\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Response
+  status code, almost always `400`\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:400;}s:7:\"message\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Validation
+  error message\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Validation Failed\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Form
+  validation errors\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"errors\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"Global
+  form errors\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Single
+  error entry\";s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"entry\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}s:8:\"children\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Form
+  field validation errors\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"fieldName\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Single
+  field errors\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":4:{s:11:\"description\";s:20:\"All
+  errors for field\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Single
+  error entry\";s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"entry\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}}}}}}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"result\";}}s:11:\"AuthRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:7:\"request\";}}s:12:\"AuthResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Access
+  token\";s:4:\"type\";s:6:\"string\";}s:12:\"refreshToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Refresh
+  token to issue new access tokens\";s:4:\"type\";s:6:\"string\";}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"result\";}}}"
+...

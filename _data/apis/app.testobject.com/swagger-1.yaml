@@ -1,0 +1,1010 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:718:\"TestObject provides
+  access to devices, Appium, storage and your session history via REST API.</br></br>API
+  endpoints requiring authentication use basic authentication. For endpoints requiring
+  \"API Key\" authentication, the basic authentication should contain your username
+  and have your project's API key as the password. For endpoints requiring \"Password\"
+  authentication, the basic authentication should contain your username and password.
+  All endpoints in Appium Suites API require basic authentication with the API Key
+  as the username and the password left blank. Please note that the Appium Watcher
+  API does not require basic authentication.</br></br>The base URL for the API is
+  https://app.testobject.com/api/rest/\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:13:\"API
+  Reference\";}"
+host: app.testobject.com
+basePath: /api/rest
+paths:
+  /storage/upload:
+    post:
+      tags:
+      - Storage API
+      summary: Upload App (APK or IPA)
+      description: Returns new application id after the upload.
+      operationId: uploadApp
+      produces:
+      - text/plain
+      parameters:
+      - name: App-Type
+        in: header
+        description: Application type
+        required: false
+        type: string
+      - name: App-Identifier
+        in: header
+        description: Your custom unique identifier for your app
+        required: false
+        type: string
+      - name: App-DisplayName
+        in: header
+        description: Your custom display name
+        required: false
+        type: string
+      - name: App-Active
+        in: header
+        description: If true makes uploaded application active one
+        required: false
+        type: boolean
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/InputStream'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: string
+  /v1/appium/session/{sessionId}/skiptest:
+    put:
+      tags:
+      - Appium Watcher API V1 (Deprecated)
+      deprecated: true
+      summary: Skip Test Report
+      description: Report the result of a test as skipped.
+      operationId: markTestAsSkipped
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sessionId
+        in: path
+        description: The Appium session id of your test
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /v1/appium/session/{sessionId}/test:
+    put:
+      tags:
+      - Appium Watcher API V1 (Deprecated)
+      deprecated: true
+      summary: Report Test Result
+      description: Report the result of a test.
+      operationId: updateTest
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sessionId
+        in: path
+        description: The Appium session id of your test
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiTestStatus'
+      responses:
+        default:
+          description: successful operation
+  /v1/appium/suites/{batchId}:
+    put:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Update Suite
+      description: Updates the properties of a suite.
+      operationId: updateSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiSuiteV1'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuite'
+  /v1/appium/suites/{batchId}/deviceIds:
+    get:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Read Device IDs
+      description: Returns the IDs of the devices which you had selected for the specified
+        suite.
+      operationId: readDeviceIds
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/Id'
+  /v1/appium/suites/{batchId}/reports/start:
+    post:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Start Suite Execution
+      description: Start a new suite execution including its test executions.
+      operationId: startSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: appId
+        in: query
+        description: The ID of the app version you wish to test
+        required: false
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ApiTestV1'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuiteReport'
+  /v1/appium/suites/{batchId}/reports/{batchReportId}/finish:
+    put:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Finish Suite Execution
+      description: Marks all test executions contained in the specified suite execution
+        as finished.
+      operationId: finishSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: batchReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuiteReport'
+  /v1/appium/suites/{batchId}/reports/{batchReportId}/results/{testReportId}/finish:
+    put:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Finish Test Execution
+      description: Sets the status of the specific test execution and marks it as
+        finished.
+      operationId: finishTestReport
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: suiteReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      - name: testReportId
+        in: path
+        description: The ID of this test execution
+        required: true
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiTestStatus'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiTestReport'
+  /v1/appium/suites/{batchId}/reports/{batchReportId}/results/{testReportId}/skip:
+    put:
+      tags:
+      - Appium Suites API V1 (Deprecated)
+      deprecated: true
+      summary: Skip Test Execution
+      description: Mark test execution as skipped
+      operationId: skipTestReport
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: suiteReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      - name: testReportId
+        in: path
+        description: The ID of this test execution
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiTestReport'
+  /v1/devices:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get All Devices
+      description: Returns a list containing all devices, including those not currently
+        available for testing
+      operationId: getDescriptors
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/DeviceDescriptor'
+  /v1/devices/all:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get All Devices
+      description: Returns a list containing all devices, including those not currently
+        unavailable for testing.nThis endpoint requires API Key authentication and
+        will also return your private devices.
+      operationId: getDescriptorsApi
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/DeviceDescriptor'
+  /v1/devices/all/available:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get Available Devices
+      description: Returns a list containing the IDs of all devices currently available
+        for testing.nThis endpoint requires API Key authentication and will also return
+        your private devices.
+      operationId: getAvailableDescriptorIdsApi
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/Id'
+  /v1/devices/available:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get Available Devices
+      description: Returns a list containing the IDs of all devices currently available
+        for testing
+      operationId: getAvailableDescriptorIds
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/Id'
+  /v1/devices/reports:
+    get:
+      tags:
+      - Session Reports API
+      summary: Get Session History Reports
+      description: The session history reports provide information about user sessions.
+        This includes device usage and test reports. By default reports of the last
+        30 days will be retrieved - limited to a maximum of 50 reports.nIf the authenticated
+        user is the owner of the account, session reports of the entire team will
+        be retrieved. Team members can only retrieve their own session history. This
+        endpoint requires Password authentication.
+      operationId: getSessionReports
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: query
+        description: Your username.
+        required: false
+        type: string
+      - name: lastDays
+        in: query
+        description: Number of days to report
+        required: false
+        type: integer
+        default: 30
+        format: int32
+      - name: offset
+        in: query
+        description: Offset for pagination
+        required: false
+        type: integer
+        default: 1
+        format: int32
+      - name: limit
+        in: query
+        description: Max number of results per page
+        required: false
+        type: integer
+        default: 50
+        format: int32
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PaginationResultSessionReport'
+  /v1/devices/{deviceDescriptorId}:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get Device
+      description: Returns information for a particular device.nThis endpoint requires
+        API Key authentication.
+      operationId: getDescriptor
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: The ID of the device
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DeviceDescriptor'
+  /v1/devices/{deviceDescriptorId}/status:
+    get:
+      tags:
+      - Devices API V1 (Deprecated)
+      deprecated: true
+      summary: Get Device Status
+      description: Returns a list containing device status infos for all device instances
+        with the specified device ID on all pools.nThis endpoint requires API Key
+        authentication and will also return your private devices.
+      operationId: getDeviceStatusInfos
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: The ID of the device
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DeviceStatusInfo'
+  /v2/appium/session/{sessionId}/skiptest:
+    put:
+      tags:
+      - Appium Watcher API
+      summary: Skip Test Report
+      description: Report the result of a test as skipped.
+      operationId: markTestAsSkipped
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sessionId
+        in: path
+        description: The Appium session ID of your test
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /v2/appium/session/{sessionId}/test:
+    put:
+      tags:
+      - Appium Watcher API
+      summary: Report Test Result
+      description: Report the result of a test.
+      operationId: updateTest
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sessionId
+        in: path
+        description: The Appium session ID of your test
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiTestStatus'
+      responses:
+        default:
+          description: successful operation
+  /v2/appium/suites/{batchId}:
+    put:
+      tags:
+      - Appium Suites API
+      summary: Update Suite
+      description: Updates the properties of a suite.
+      operationId: updateSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiSuiteV2'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuite'
+  /v2/appium/suites/{batchId}/deviceIds:
+    get:
+      tags:
+      - Appium Suites API
+      summary: Read Device IDs
+      description: Returns the IDs of the devices which you had selected for the specified
+        suite.
+      operationId: readDeviceIds
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/Id'
+  /v2/appium/suites/{batchId}/reports/start:
+    post:
+      tags:
+      - Appium Suites API
+      summary: Start Suite Execution
+      description: Start a new suite execution including its test executions.
+      operationId: startSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: appId
+        in: query
+        description: The ID of the app version you wish to test
+        required: false
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ApiTestV2'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuiteReport'
+  /v2/appium/suites/{batchId}/reports/{batchReportId}/finish:
+    put:
+      tags:
+      - Appium Suites API
+      summary: Finish Suite Execution
+      description: Marks all test executions contained in the specified suite execution
+        as finished.
+      operationId: finishSuite
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: batchReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiSuiteReport'
+  /v2/appium/suites/{batchId}/reports/{batchReportId}/results/{testReportId}/finish:
+    put:
+      tags:
+      - Appium Suites API
+      summary: Finish Test Execution
+      description: Sets the status of the specific test execution and marks it as
+        finished.
+      operationId: finishTestReport
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: suiteReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      - name: testReportId
+        in: path
+        description: The ID of this test execution
+        required: true
+        type: integer
+        format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/ApiTestStatus'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiTestReport'
+  /v2/appium/suites/{batchId}/reports/{batchReportId}/results/{testReportId}/skip:
+    put:
+      tags:
+      - Appium Suites API
+      summary: Skip Test Execution
+      description: Mark test execution as skipped
+      operationId: skipTestReport
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: suiteId
+        in: path
+        description: The ID of the suite
+        required: true
+        type: integer
+        format: int64
+      - name: suiteReportId
+        in: path
+        description: The ID of this suite execution
+        required: true
+        type: integer
+        format: int64
+      - name: testReportId
+        in: path
+        description: The ID of this test execution
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiTestReport'
+  /v2/batchReports/{batchReportId}:
+    get:
+      tags:
+      - Suite Reports API
+      summary: Get Suite Test Report
+      description: Returns the test report of a suite
+      operationId: readBatchReport
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/BatchReport'
+  /v2/batchReports/{batchReportId}/xml:
+    get:
+      tags:
+      - Suite Reports API
+      summary: Get Suite Test Report
+      description: Returns the test report of a suite as XML
+      operationId: junitStyleXmlReport
+      produces:
+      - application/xml
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/JunitXMLReport'
+  /v2/devices:
+    get:
+      tags:
+      - Devices API
+      summary: Get All Devices
+      description: Returns a list per data center containing all devices, including
+        private devices and those not currently available for testing. This endpoint
+        requires API Key authentication.
+      operationId: getDescriptors
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: '#/definitions/DeviceDescriptor'
+  /v2/devices/available:
+    get:
+      tags:
+      - Devices API
+      summary: Get Available Devices
+      description: Returns a list per data center containing the IDs of all devices
+        currently available for testing, including private devices. This endpoint
+        requires API Key authentication.
+      operationId: getAvailableDescriptorIds
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: '#/definitions/Id'
+  /v2/devices/{deviceDescriptorId}:
+    get:
+      tags:
+      - Devices API
+      summary: Get Device
+      description: Returns information for a particular device per data center. This
+        endpoint requires API Key authentication.
+      operationId: getDescriptor
+      produces:
+      - application/json
+      parameters:
+      - name: deviceId
+        in: path
+        description: The ID of the device
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/DeviceDescriptor'
+  /v2/logs/{testReportId}/appium:
+    get:
+      tags:
+      - Logs API
+      summary: Download Appium Log
+      description: Returns Appium log for the specified test report
+      operationId: readAppiumLog
+      produces:
+      - application/json
+      parameters:
+      - name: testReportId
+        in: path
+        description: The ID of the test report
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+  /v2/logs/{testReportId}/device:
+    get:
+      tags:
+      - Logs API
+      summary: Download Device Log
+      description: Returns device log for the specified test report
+      operationId: readDeviceLog
+      produces:
+      - application/json
+      parameters:
+      - name: testReportId
+        in: path
+        description: The ID of the test report
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+  /v2/logs/{testReportId}/vitals:
+    get:
+      tags:
+      - Logs API
+      summary: Download Vitals Log
+      description: Returns device vitals of a test session after completion
+      operationId: readVitalsLog
+      produces:
+      - text/csv
+      parameters:
+      - name: testReportId
+        in: path
+        description: The ID of the test report
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+  /v2/logs/{testReportId}/xcuitest:
+    get:
+      tags:
+      - Logs API
+      summary: Download XCUITest Log
+      description: Returns XCUITest log for the specified test report
+      operationId: readXcuiTestLog
+      produces:
+      - application/json
+      parameters:
+      - name: testReportId
+        in: path
+        description: The ID of the test report
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+  /v2/reports/{testReportId}:
+    get:
+      tags:
+      - Test Reports API
+      summary: Get Test Report
+      description: Returns test report and artifacts for a test session after completion
+      operationId: readReport
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: testReportId
+        in: path
+        description: The test report ID from the test session
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TestReportWithArtifacts'
+  /v2/screenshots/{testReportId}/{screenshotId}.png:
+    get:
+      tags:
+      - Screenshots API
+      summary: Download Screenshot
+      description: Returns a PNG screenshot from a test
+      operationId: getScreenshot
+      produces:
+      - image/png
+      parameters:
+      - name: testReportId
+        in: path
+        required: true
+        type: integer
+        format: int64
+      - name: screenshotId
+        in: path
+        required: true
+        type: integer
+        format: int64
+      responses:
+        default:
+          description: successful operation
+  /v2/video/{videoId}.mp4:
+    get:
+      tags:
+      - Session Video API
+      summary: Get Screen Recording
+      description: Returns screen recording of a test session after completion
+      operationId: getScreenRecording
+      produces:
+      - video/mp4
+      parameters:
+      - name: videoId
+        in: path
+        description: The video ID of the recording from the test report
+        required: true
+        type: string
+      - name: Range
+        in: header
+        required: false
+        type: string
+      responses:
+        default:
+          description: successful operation
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":52:{s:18:\"PaginationSettings\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"offset\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"searchTerm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"sortDirection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:9:\"ASCENDING\";i:1;s:10:\"DESCENDING\";}}}}s:10:\"ApiSuiteV2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:12:\"appVersionId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"frameworkVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:9:\"deviceIds\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"readOnly\";b:1;s:20:\"additionalProperties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}}}s:6:\"Entity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";}}}s:10:\"ApiSuiteV1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:12:\"appVersionId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"frameworkVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:9:\"deviceIds\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}}s:16:\"AppiumTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"sessionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:25:\"vitalsLogRecordingEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:16:\"optionalSharedId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/SharedLiveViewId\";}s:10:\"hasWdaLogs\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}}}s:9:\"ReportKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"testId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:8:\"deviceId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:15:\"StreamingOutput\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:13:\"ApiTestReport\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"test\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:21:\"#/definitions/ApiTest\";}}}s:29:\"PaginationResultSessionReport\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"entities\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/SessionReport\";}}s:8:\"metaData\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PaginationSettings\";}}}s:18:\"RobotiumTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"screenshots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:10:\"stackTrace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:23:\"TestReportWithArtifacts\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"report\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}s:15:\"deviceContextId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"testResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";}s:11:\"screenshots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}}s:5:\"video\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}s:9:\"deviceLog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";}s:12:\"frameworkLog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";}s:9:\"vitalsLog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";}}}s:20:\"WebdriverBatchReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BatchReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"automationFramework\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"APPIUM\";i:1;s:6:\"TENKOD\";i:2;s:7:\"PIRANHA\";}}s:14:\"appUnderTestId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}}}s:9:\"TestSuite\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"testsuiteStartedAt\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Instant\";}s:19:\"testsuiteFinishedAt\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Instant\";}s:8:\"runCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:12:\"withFailures\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"unexpected\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:12:\"testDuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Duration\";}s:13:\"totalDuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Duration\";}}}s:14:\"TestReportView\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"reportId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"UNKNOWN\";i:1;s:7:\"SUCCESS\";i:2;s:7:\"WARNING\";i:3;s:7:\"FAILURE\";i:4;s:7:\"SKIPPED\";i:5;s:7:\"ABORTED\";i:6;s:8:\"CANCELED\";}}}}s:16:\"DeviceStatusInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"poolId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:9:\"AVAILABLE\";i:1;s:6:\"IN_USE\";i:2;s:9:\"REBOOTING\";i:3;s:6:\"BROKEN\";i:4;s:7:\"OFFLINE\";i:5;s:9:\"UNPLUGGED\";}}}}s:14:\"ApiSuiteReport\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:11:\"testReports\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ApiTestReport\";}}}}s:9:\"ApiTestV2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"className\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:10:\"methodName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:8:\"deviceId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:12:\"dataCenterId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:7:\"Instant\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"epochSecond\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"nano\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:9:\"ApiTestV1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"className\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:10:\"methodName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:8:\"deviceId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:8:\"Duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"seconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"zero\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"negative\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"units\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TemporalUnit\";}}s:4:\"nano\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:13:\"TestCaseGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"testCases\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/TestCase\";}}}}s:17:\"PiranhaTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"optionalSharedId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/SharedLiveViewId\";}}}}}s:7:\"ApiTest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:12:\"dataCenterId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"methodName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ApiTestStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"passed\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}}}s:11:\"ReportEntry\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:23:\"#/definitions/ReportKey\";}s:4:\"view\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:28:\"#/definitions/TestReportView\";}}}s:2:\"Id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:10:\"TestReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:13:\"discriminator\";s:4:\"type\";s:10:\"properties\";O:8:\"stdClass\":28:{s:11:\"projectPath\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Path\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Uuid\";}s:7:\"batchId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:9:\"batchName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"testId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:8:\"testName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"appVersionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:14:\"appVersionName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:12:\"networkSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:4:\"FULL\";i:1;s:3:\"GSM\";i:2;s:5:\"HDCSD\";i:3;s:4:\"GPRS\";i:4;s:4:\"EDGE\";i:5;s:4:\"UMTS\";i:6;s:5:\"HSDPA\";}}s:16:\"deviceDescriptor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/DeviceDescriptor\";}s:7:\"videoId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:7:\"running\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:11:\"systemError\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"testResultStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:8:{i:0;s:9:\"UNDEFINED\";i:1;s:7:\"WARNING\";i:2;s:2:\"OK\";i:3;s:5:\"ERROR\";i:4;s:7:\"FAILURE\";i:5;s:7:\"SKIPPED\";i:6;s:7:\"ABORTED\";i:7;s:8:\"CANCELED\";}}s:12:\"dataCenterId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"tunnelIdentifier\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"tunnelId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"remoteAppFileUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"phoneNumber\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PhoneNumber\";}s:14:\"sharedLinkCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"systemErrorType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"automationBackend\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"UNKNOWN\";i:1;s:7:\"SUCCESS\";i:2;s:7:\"WARNING\";i:3;s:7:\"FAILURE\";i:4;s:7:\"SKIPPED\";i:5;s:7:\"ABORTED\";i:6;s:8:\"CANCELED\";}}s:15:\"withSystemError\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"ApiSuite\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:16:\"frameworkVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"deviceIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:12:\"appVersionId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:4:\"Step\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"line\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"method\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"hasReplayImage\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:13:\"recordedImage\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"resolvedPosition\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Point\";}s:11:\"orientation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"PORTRAIT\";i:1;s:9:\"LANDSCAPE\";}}s:7:\"warning\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ScriptWarning\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ScriptError\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"UNKNOWN\";i:1;s:7:\"SUCCESS\";i:2;s:7:\"WARNING\";i:3;s:7:\"FAILURE\";i:4;s:7:\"SKIPPED\";i:5;s:7:\"ABORTED\";i:6;s:8:\"CANCELED\";}}}}s:23:\"QualityReportTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"steps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Step\";}}}}}}s:14:\"JunitXMLReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}}s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:9:\"testsuite\";}}s:11:\"ScriptError\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:13:\"SessionReport\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:9:\"projectId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:18:\"deviceDescriptorId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:5:\"usage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:6:\"MANUAL\";i:1;s:5:\"BATCH\";i:2;s:6:\"APPIUM\";i:3;s:7:\"PIRANHA\";i:4;s:8:\"XCUITEST\";i:5;s:23:\"ANDROID_INSTRUMENTATION\";}}s:5:\"appId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:14:\"frameworkAppId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:17:\"testFrameworkType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"testFrameworkVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"testReportIds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}s:7:\"testIds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}}s:7:\"batchId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:13:\"startDateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"endDateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:17:\"durationInSeconds\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:10:\"DeviceView\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"dataCenterId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"deviceDescriptor\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:30:\"#/definitions/DeviceDescriptor\";}}}s:9:\"TestError\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:10:\"lineNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}}}s:18:\"EspressoTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"screenshots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:10:\"stackTrace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:4:\"Path\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"first\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"second\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}}}s:16:\"SharedLiveViewId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:12:\"TemporalUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"dateBased\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:17:\"durationEstimated\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"duration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Duration\";}s:9:\"timeBased\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:11:\"InputStream\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:16:\"DeviceDescriptor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":39:{s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:11:\"modelNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:12:\"manufacturer\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"isArm\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:18:\"hasOnScreenButtons\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:7:\"abiType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:2:\"os\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"enum\";a:2:{i:0;s:7:\"ANDROID\";i:1;s:3:\"IOS\";}}s:9:\"osVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:8:\"apiLevel\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:10:\"screenSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:8:\"readOnly\";b:1;}s:15:\"resolutionWidth\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:16:\"resolutionHeight\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:3:\"dpi\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:14:\"pixelsPerPoint\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:8:\"isTablet\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:19:\"internalOrientation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"enum\";a:2:{i:0;s:8:\"PORTRAIT\";i:1;s:9:\"LANDSCAPE\";}}s:18:\"defaultOrientation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"enum\";a:2:{i:0;s:8:\"PORTRAIT\";i:1;s:9:\"LANDSCAPE\";}}s:7:\"ramSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:19:\"internalStorageSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:10:\"sdCardSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:8:\"cpuCores\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:12:\"cpuFrequency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:21:\"supportsMockLocations\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:27:\"supportsAppiumWebAppTesting\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:18:\"isKeyGuardDisabled\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:8:\"isRooted\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:9:\"isPrivate\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:19:\"supportsGlobalProxy\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:31:\"supportsMinicapSocketConnection\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:10:\"disableMtp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:12:\"deviceFamily\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"ANY\";i:1;s:6:\"IPHONE\";i:2;s:4:\"IPAD\";}}s:7:\"cpuType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"ARM\";i:1;s:3:\"X86\";}}s:7:\"dpiName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:24:\"supportsManualWebTesting\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:16:\"supportsXcuiTest\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:18:\"supportsMultiTouch\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:22:\"isAlternativeIoEnabled\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}s:21:\"supportsQualityReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"default\";b:0;}}}s:5:\"Point\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:1:\"x\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}s:1:\"y\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}}}s:26:\"InstrumentationBatchReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BatchReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"testSpecAppId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:19:\"automationFramework\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"ROBOTIUM\";i:1;s:8:\"ESPRESSO\";i:2;s:8:\"XCUITEST\";}}s:14:\"appUnderTestId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:16:\"tunnelIdentifier\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:13:\"ScriptWarning\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:24:\"QualityReportBatchReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BatchReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}}}s:4:\"Uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:8:\"TestCase\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"methodName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"UNKNOWN\";i:1;s:7:\"SUCCESS\";i:2;s:7:\"WARNING\";i:3;s:7:\"FAILURE\";i:4;s:7:\"SKIPPED\";i:5;s:7:\"ABORTED\";i:6;s:8:\"CANCELED\";}}s:9:\"testError\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/TestError\";}}}s:11:\"BatchReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:13:\"discriminator\";s:4:\"type\";s:10:\"properties\";O:8:\"stdClass\":15:{s:11:\"projectPath\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Path\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:7:\"batchId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"tests\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/TestView\";}}s:7:\"devices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/DeviceView\";}}s:7:\"reports\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ReportEntry\";}}s:19:\"notificationEnabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:18:\"notificationEmails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"checkupType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:11:\"STRESS_TEST\";i:1;s:14:\"INSTALL_LAUNCH\";i:2;s:11:\"SCREENSHOTS\";i:3;s:4:\"NONE\";}}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"startTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"UNKNOWN\";i:1;s:7:\"SUCCESS\";i:2;s:7:\"WARNING\";i:3;s:7:\"FAILURE\";i:4;s:7:\"SKIPPED\";i:5;s:7:\"ABORTED\";i:6;s:8:\"CANCELED\";}}s:7:\"running\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:14:\"secretLinkCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"TestView\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"testId\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:9:\"className\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}}}s:11:\"PhoneNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:14:\"XCUITestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"screenshots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:10:\"stackTrace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"testCaseGroups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TestCaseGroup\";}}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:32:\"AndroidInstrumentationTestReport\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/TestReport\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"screenshots\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:10:\"stackTrace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"className\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"testSuites\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/TestSuite\";}}s:9:\"sessionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"testCaseGroups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TestCaseGroup\";}}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}"
+...

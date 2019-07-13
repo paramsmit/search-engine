@@ -1,0 +1,325 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:23:\"SHARE
+  API Documentation\";s:11:\"description\";s:432:\"The SHARE API allows you to access
+  all Research Release Events in the SHARE database and publish your organization's
+  publications, data, repository holdings, or other research directly to SHARE.  The
+  API has three endpoints.  \u201Csearch,\u201D \u201Cdata,\u201D and \u201Cstats.\u201D
+  \ \u201Csearch\u201D allows you to access information in SHARE, \u201Cdata\u201D
+  allows you to post to SHARE, and \u201Cstats\u201D gives metrics on the different
+  providers in SHARE.\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:27:\"the
+  Center for Open Science\";s:5:\"email\";s:20:\"share-support@osf.io\";s:3:\"url\";s:19:\"http://osf.io/share\";}}"
+host: osf.io
+basePath: /api/v1
+paths:
+  /share/search:
+    get:
+      description: Normalized SHARE Data from all content providers
+      produces:
+      - application/json
+      tags:
+      - SHARE
+      parameters:
+      - name: q
+        in: query
+        description: Any valid Lucene query string matching the SHARE schema
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: The starting index of the search. Indexing begins at 0.nIf you
+          set the size to 100, to page through the results,nyou would increase your
+          from by increments of 100. Defaults to 0.n
+        required: false
+        type: integer
+        format: int32
+      - name: size
+        in: query
+        description: Determines the number of results returned at a time. Defaults
+          to 10.
+        required: false
+        type: integer
+        format: int32
+      - name: sort
+        in: query
+        description: Determines what value the results are sorted on.nIf not provided,
+          it defaults to sorting based on the relevancenscore computed by Elasticsearch.n
+        required: false
+        type: string
+        enum:
+        - providerUpdatedDateTime
+        - Relevance
+      - name: v
+        in: query
+        description: Version of the metadata to retrieve. v=1 will retrieve an older
+          version of the metadata, which currently powers the SHARE Search page.
+        required: false
+        type: integer
+        enum:
+        - "2"
+        - "1"
+      responses:
+        200:
+          description: search response
+          schema:
+            $ref: '#/definitions/searchResults'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /share/data:
+    post:
+      description: 'POST endpoint for sending pre-formatted data to SHARE. Requires
+        an API key - contact us at share-support@osf.io for more information. Note:
+        Data will appear here after being pushed, but will not appear in the SHARE
+        search endpoint immediately. Once you''ve been established as a provider,
+        the data will be pulled into the SHARE search API on a nightly basis.'
+      produces:
+      - application/json
+      tags:
+      - SHARE
+      parameters:
+      - name: contributors
+        in: body
+        description: The people or organizations responsible for making contributions
+          to an object. Each contributor is either a person or an organization.
+        required: true
+        type: array
+        items:
+          $ref: organization
+      - name: description
+        in: body
+        description: A textual description of the resource.
+        required: false
+        type: string
+      - name: providerUpdatedDateTime
+        required: true
+        in: body
+        description: The date and time the provider describing the object has been
+          updated about either the creation or update of an object by its contributors.
+          E.g., this may be the date a manuscript is published, but not necessarily
+          the date the manuscript was written.
+        type: string
+        format: date
+      - name: uris
+        description: persistent HTTP URIs
+        required: true
+        in: body
+        type: object
+        schema:
+          $ref: uri
+      - name: freeToRead
+        in: body
+        description: An object consisting of a date range specifying when this research
+          object will be free to read.
+        type: object
+        schema:
+          $ref: freeToRead
+      - name: languages
+        in: body
+        type: array
+        description: The language of the resouce, in a 3 letter pattern
+        items:
+          $ref: language
+      - name: licenses
+        in: body
+        description: The licenses under which the object has been released. Can be
+          an array of multiple licenses.
+        type: array
+        items:
+          $ref: license
+      - name: publisher
+        in: body
+        type: object
+        description: This element contains the name of the entity, typically a 'publisher',
+          responsible for making the version of record of the resource available.
+          This could be a person, organisation or service
+        schema:
+          $ref: publisher
+      - name: sponsorships
+        type: array
+        in: body
+        description: Sponsorships associated with the array. Can consist of an award,
+          or a sponsoring organization.
+        items:
+          $ref: sponsorship
+      - name: title
+        in: body
+        description: The title and any sub-titles of the resource.
+        type: string
+        required: true
+      - name: version
+        in: body
+        description: This element indicates which 'version' of the resource is being
+          described. While intended primarily for journal articles, it might be applicable
+          to other types of resources as well.
+        type: object
+        schema:
+          $ref: version
+      - name: otherProperties
+        type: object
+        in: body
+        description: Structured or unstructured properties that don't fall into the
+          general schema
+        schema:
+          $ref: otherProperties
+      responses:
+        201:
+          description: post response
+          schema:
+            $ref: '#/definitions/result'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /share/stats:
+    get:
+      description: Elasticsearch aggregations of SHARE data, using the pre-beta metadata
+        schema. Includes the results of thenpre-defined aggregations used to generate
+        the dynaimic graphs on thenSHARE Search page located on the OSF.n This API
+        endpoint returns metadata in an older version of the schema, so may not prove
+        immedtiately useful for anyone looking for more than basic aggregations of
+        the data, including source information.
+      produces:
+      - application/json
+      tags:
+      - SHARE
+      parameters:
+      - name: q
+        in: query
+        description: Any valid Lucene query string matching the SHARE schema
+        required: false
+        type: string
+      responses:
+        200:
+          description: stats response
+          schema:
+            $ref: '#/definitions/stats'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":28:{s:13:\"searchResults\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:56:\"The
+  total number of results found for the current query.\";}s:7:\"results\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/result\";}s:4:\"time\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:58:\"The
+  amount of time the search took to complete in seconds.\";}}}s:6:\"result\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:238:\"This
+  refers to the title, and any sub-titles,\nof the resource. The title should be represented
+  using the original\nspelling and wording. If the resource really has no title, then
+  this\nelement must still be supplied, though it may be empty\n\";}s:12:\"contributors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"person\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/person\";}s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/organization\";}}}}s:4:\"uris\";O:8:\"stdClass\":3:{s:8:\"required\";b:1;s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"canonicalUri\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:141:\"The
+  preferred persistent HTTP URI that represents the research object. This should be
+  repeated in exactly one other field in the uris object.\";s:6:\"format\";s:3:\"uri\";s:8:\"required\";b:1;}s:12:\"providerUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:8:\"required\";b:1;}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:102:\"The
+  persistent HTTP URI that points to the object's record at the SHARE provider regardless
+  of format.\";}s:14:\"descriptorUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:74:\"A
+  persistent HTTP URI that points to a description of the research object.\";}s:10:\"objectUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:66:\"A
+  persistent HTTP URI that points directly to the research object.\";}}}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"An
+  abstract or general description of the resource.\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:86:\"Non-hierarchical
+  terms or keywords assigned to an object to aid browsing or searching.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:23:\"providerUpdatedDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:250:\"The
+  date and time the provider describing the object has been updated about either the
+  creation or update of an object by its contributors. E.g., this may be the date
+  a manuscript is published, but not necessarily the date the manuscript was written.\";s:6:\"format\";s:9:\"date-time\";}s:10:\"freeToRead\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:71:\"A
+  date range specifying when this research object will be free to read.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"startDate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:8:\"required\";b:1;s:11:\"description\";s:156:\"The
+  start date of the free to read period.\nIf the resource was always free to read,
+  then this date can\nbe the same as creationDate or the date '0000-00-00'\n\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:62:\"The
+  date on which this resource will no longer be free to read\";}}}s:9:\"languages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:239:\"The
+  primary languages in which the content of the resource is presented. Values used
+  for this element MUST conform to ISO 639\u20133. This offers two and three letter
+  tags e.g. \"en\" or \"eng\" for English and \"en-GB\" for English used in the UK.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:8:\"language\";}}s:8:\"licenses\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:57:\"The
+  licenses under which the research object is available\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:142:\"The
+  date and time at which the license will apply to this object. If the resource was
+  always licensed this way, then this date can be omitted.\";s:6:\"format\";s:9:\"date-time\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:80:\"The
+  date and time at which this resource will no longer be licensed in this way.\";s:6:\"format\";s:9:\"date-time\";}s:3:\"uri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"The
+  HTTP URI of the license of the object or--if startDate and endDate are included--in
+  effect during the period listed.\";s:6:\"format\";s:3:\"uri\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Text
+  describing to what aspect of the object the license is applied.\";}}}}s:9:\"publisher\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:190:\"This
+  element contains the name of the entity, typically a 'publisher', responsible for
+  making the version of record of the resource available. This could be a person,
+  organisation or service\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"person\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/person\";}s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/organization\";}}}s:12:\"sponsorships\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:38:\"Sponsorships
+  associated with the array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/sponsorship\";}}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:44:\"Infomation
+  about this version of the object.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"versionId\";O:8:\"stdClass\":1:{s:11:\"description\";s:59:\"The
+  name or number representing this version of the object.\";}s:15:\"versionDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:266:\"The
+  date and time the object was created or updated by its contributors. If the data
+  for the object describes the first version of that object, it will be the date and
+  time of object creation, otherwise it will be considered the date and time the object
+  was updated.\";s:6:\"format\";s:9:\"date-time\";}s:9:\"versionOf\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:185:\"If
+  the object is an update, the HTTP URI of the object the content is updating. Depending
+  upon what the upate is relative to, that could be the object at creation or a previous
+  version.\";s:6:\"format\";s:3:\"uri\";}}}s:15:\"otherProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:15:\"shareProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"string\";}s:5:\"docID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"string\";}}}}}s:11:\"sponsorship\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:43:\"A
+  sponsorship associated with the resource.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"award\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/award\";}s:7:\"sponsor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/sponsor\";}}}s:5:\"award\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  award made to support the creation of the resource.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"awardName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"The
+  textual representation of the award identifier, issued by the sponsor, that relates
+  to the resource.\";}s:15:\"awardIdentifier\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:79:\"An
+  HTTP URI for the award, issued by the sponsor, that relates to the resource.\";}}}s:7:\"sponsor\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:43:\"This
+  describes the sponsor of the resource.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"sponsorName\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"The
+  name of the entity responsible for sponsoring the resource, recorded here as text.\";s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:17:\"sponsorIdentifier\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:85:\"A
+  globally unique identifier for the sponsor of the resource should be recorded here.\";}}}s:15:\"otherProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"property1\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"A
+  property provided that does not fit into the main schema\";s:4:\"type\";s:6:\"string\";}s:9:\"property2\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"Another
+  property provided that does not fit the main schema\";s:4:\"type\";s:6:\"string\";}}}s:15:\"shareProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"docID\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"A
+  unique identifier for the document.\";s:4:\"type\";s:6:\"string\";}}}s:7:\"license\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:57:\"The
+  licenses under which the research object is available\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"uri\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:8:\"required\";b:1;s:11:\"description\";s:84:\"The
+  HTTP URI of the license in effect during the period describe by this lincenseRef\";}s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"string
+  \";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:155:\"The start date of the
+  license period. If the resource was always licensed this way, then this date can
+  be the same as creationDate or the date \\0000-00-00\\\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:71:\"The
+  date on which this resource will no longer be licensed in this way.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Text
+  describing to what aspect of the object the license is applied.\";}}}s:8:\"language\";O:8:\"stdClass\":2:{s:11:\"description\";s:239:\"The
+  primary languages in which the content of the resource is presented. Values used
+  for this element MUST conform to ISO 639\u20133. This offers two and three letter
+  tags e.g. \"en\" or \"eng\" for English and \"en-GB\" for English used in the UK.\";s:4:\"type\";s:6:\"string\";}s:10:\"freeToRead\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:189:\"A
+  date range specifying when this research object will be accessible, without restrictsions
+  such as fee or registration). If the object is free to read, then only the startDate
+  is required.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"startDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:151:\"The
+  date and time at which the object will be accessible. If the resource was always
+  free to read, then the date the object was created should be used.\";s:6:\"format\";s:4:\"date\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:110:\"The
+  date and time at which restrictions such as fees or registrations will be in place
+  limiting accessibility.\";s:6:\"format\";s:4:\"date\";}}}s:9:\"publisher\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:190:\"This
+  element contains the name of the entity, typically a 'publisher', responsible for
+  making the version of record of the resource available. This could be a person,
+  organisation or service\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"person\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:6:\"person\";}s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:12:\"organization\";}}}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"versionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:59:\"The
+  name or number representing this version of the object.\";}s:15:\"versionDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:266:\"The
+  date and time the object was created or updated by its contributors. If the data
+  for the object describes the first version of that object, it will be the date and
+  time of object creation, otherwise it will be considered the date and time the object
+  was updated.\";s:6:\"format\";s:9:\"date-time\";}s:9:\"versionOf\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:185:\"If
+  the object is an update, the HTTP URI of the object the content is updating. Depending
+  upon what the upate is relative to, that could be the object at creation or a previous
+  version.\";s:6:\"format\";s:3:\"uri\";}}}s:3:\"uri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:20:\"Persistent
+  HTTP URIs\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"canonicalUri\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:141:\"The
+  preferred persistent HTTP URI that represents the research object. This should be
+  repeated in exactly one other field in the uris object.\";s:6:\"format\";s:3:\"uri\";}s:12:\"providerUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:102:\"The
+  persistent HTTP URI that points to the object's record at the SHARE provider regardless
+  of format.\";}s:14:\"descriptorUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:74:\"A
+  persistent HTTP URI that points to a description of the research object.\";}s:10:\"objectUris\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"type\";s:5:\"array\";s:11:\"description\";s:66:\"A
+  persistent HTTP URI that points directly to the research object.\";}}}s:6:\"person\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:53:\"A
+  person that is a contributor to the research object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Name
+  of the person. May be blank.\";s:8:\"required\";b:1;}s:9:\"givenName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  first name of the contributor.\";}s:10:\"familyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"Also
+  called the 'last name,' this element will be derived\nfrom the creator.name by SHARE
+  if not supplied by the source.\n\";}s:14:\"additionalName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:122:\"Also
+  called the \"middle name,\" this element will be\nderived from the creator.name
+  by SHARE if not supplied by the source.\n\";}s:6:\"prefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  prefix of the contributor.\";}s:11:\"affiliation\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:90:\"The
+  organization(s) that this person is affiliated with. For example, a school/university.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:12:\"organization\";}}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"An
+  email address for this person\";}s:6:\"sameAs\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Identifiers
+  that describe this person\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:44:\"A
+  single HTTP URI that describes this person\";}}}}s:12:\"organization\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:60:\"An
+  organization that is a contributor to the research object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"Name
+  of the organization. May be blank\";s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:6:\"sameAs\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:43:\"Identifiers
+  that describe this organization\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:50:\"A
+  single HTTP URI that describes this organization\";}}s:5:\"email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:38:\"an
+  email address for this organization\";}}}s:5:\"stats\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"raw_aggregations\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/raw_aggregation\";}s:6:\"charts\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/chart\";}}}s:15:\"raw_aggregation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"sources\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/sourceComponents\";}s:17:\"earlier_documents\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/aggregatedSourceComponents\";}s:11:\"doisMissing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/aggregatedSourceComponents\";}s:11:\"date_chunks\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/date_chunk\";}s:4:\"dois\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/aggregatedSourceComponents\";}}}s:5:\"chart\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"shareTimeGraph\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/shareTimeGraphComponent\";}s:15:\"shareDonutGraph\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/shareDonutGraphComponent\";}}}s:16:\"sourceComponents\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"buckets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/bucket\";}}s:19:\"sum_other_doc_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:27:\"doc_count_error_upper_bound\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:6:\"bucket\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  official short name of each data source.\";}s:9:\"doc_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:46:\"The
+  total number of documents for that source.\";}}}s:26:\"aggregatedSourceComponents\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"sources\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/sourceComponents\";}s:9:\"doc_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:50:\"The
+  total number of documents in this aggregation.\";}}}s:10:\"date_chunk\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"buckets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/timeBuckets\";}}}}s:11:\"timeBuckets\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:18:\"articles_over_time\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/timeBucket\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  official short name of each data source.\";}s:9:\"doc_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:46:\"The
+  total number of documents for that source.\";}}}s:10:\"timeBucket\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"key_as_string\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  date for the time period represented as a string.\";}s:3:\"key\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:53:\"The
+  date for the time period represented as a string.\";}s:9:\"doc_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:55:\"The
+  date for the time period represented as an integer.\";}}}s:23:\"shareTimeGraphComponent\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:1:\"x\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  label for the x axis.\";}s:6:\"colors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/color\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"T
+  type of graph that C3 should render.\";}s:6:\"groups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"columns\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:5:\"color\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"source\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"A
+  hex color matched to each source in the graph.\";}}}s:24:\"shareDonutGraphComponent\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"colors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/color\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"T
+  type of graph that C3 should render.\";}s:7:\"columns\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:10:\"errorModel\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:4:\"code\";i:1;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

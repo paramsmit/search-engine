@@ -1,0 +1,342 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:21:\"Azure Reservation API\";s:11:\"description\";s:35:\"This
+  API describe Azure Reservation\";s:7:\"version\";s:10:\"2018-06-01\";}"
+host: management.azure.com
+paths:
+  /subscriptions/{subscriptionId}/providers/Microsoft.Capacity/catalogs:
+    get:
+      summary: Get the regions and skus that are available for RI purchase for the
+        specified Azure subscription.
+      operationId: GetCatalog
+      x-ms-examples:
+        Catalog:
+          $ref: ./examples/GetCatalog.json
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      - $ref: '#/parameters/ReservedResourceTypeIdParameter'
+      - $ref: '#/parameters/LocationIdParameter'
+      tags:
+      - Catalog
+      responses:
+        200:
+          description: List of available resources
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Catalog'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /subscriptions/{subscriptionId}/providers/Microsoft.Capacity/appliedReservations:
+    get:
+      summary: Get list of applicable `Reservation`s.
+      description: Get applicable `Reservation`s that are applied to this subscription.
+      operationId: GetAppliedReservationList
+      x-ms-examples:
+        AppliedReservationList:
+          $ref: ./examples/GetAppliedReservations.json
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SubscriptionIdParameter'
+      tags:
+      - AppliedReservation
+      responses:
+        200:
+          description: Applicable `Reservation`s.
+          schema:
+            $ref: '#/definitions/AppliedReservations'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders:
+    get:
+      summary: Get all `ReservationOrder`s.
+      description: List of all the `ReservationOrder`s that the user has access to
+        in the current tenant.
+      operationId: ReservationOrder_List
+      x-ms-examples:
+        ReservationOrderList:
+          $ref: ./examples/GetReservationOrders.json
+      x-ms-pageable:
+        nextLinkName: nextLink
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Reservation
+      responses:
+        200:
+          description: List of `ReservationOrder`s
+          schema:
+            $ref: '#/definitions/ReservationOrderList'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}:
+    get:
+      summary: Get a specific `ReservationOrder`.
+      description: Get the details of the `ReservationOrder`.
+      operationId: ReservationOrder_Get
+      x-ms-examples:
+        GetReservation:
+          $ref: ./examples/GetReservationOrderDetails.json
+      parameters:
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Reservation
+      responses:
+        200:
+          description: Get the details of the `ReservationOrder`.
+          schema:
+            $ref: '#/definitions/ReservationOrderResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/split:
+    post:
+      summary: Split the `Reservation`.
+      description: Split a `Reservation` into two `Reservation`s with specified quantity
+        distribution.n
+      operationId: Reservation_Split
+      x-ms-examples:
+        Split:
+          $ref: ./examples/SplitReservation.json
+      x-ms-long-running-operation: true
+      parameters:
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/SplitParameter'
+      tags:
+      - Reservation, Split
+      responses:
+        200:
+          description: List of `Reservation`s created after the split operation.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReservationResponse'
+        202:
+          description: The request is accepted and is being processed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/merge:
+    post:
+      summary: Merges two `Reservation`s.
+      description: Merge the specified `Reservation`s into a new `Reservation`. The
+        two `Reservation`s being merged must have same properties.
+      operationId: Reservation_Merge
+      x-ms-examples:
+        Merge:
+          $ref: ./examples/MergeReservations.json
+      x-ms-long-running-operation: true
+      parameters:
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/MergeParameter'
+      tags:
+      - Reservation, Merge
+      responses:
+        200:
+          description: Returns the `Reservation` created after the merge.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReservationResponse'
+        202:
+          description: The request is accepted and is being processed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations:
+    get:
+      summary: Get `Reservation`s in a given reservation Order
+      description: List `Reservation`s within a single `ReservationOrder`.
+      operationId: Reservation_List
+      x-ms-examples:
+        ReservationList:
+          $ref: ./examples/GetReservations.json
+      x-ms-pageable:
+        nextLinkName: nextLink
+      parameters:
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Reservation
+      responses:
+        200:
+          description: List `Reservation`s within a single `ReservationOrder`.
+          schema:
+            $ref: '#/definitions/ReservationList'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}:
+    get:
+      summary: Get `Reservation` details.
+      description: Get specific `Reservation` details.
+      operationId: Reservation_Get
+      x-ms-examples:
+        GetReservation:
+          $ref: ./examples/GetReservationDetails.json
+      parameters:
+      - $ref: '#/parameters/ReservationIdParameter'
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Reservation
+      responses:
+        200:
+          description: Get `Reservation` details.
+          schema:
+            $ref: '#/definitions/ReservationResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      summary: Updates a `Reservation`.
+      description: Updates the applied scopes of the `Reservation`.
+      operationId: Reservation_Update
+      x-ms-examples:
+        PatchReservation:
+          $ref: ./examples/UpdateReservation.json
+      x-ms-long-running-operation: true
+      parameters:
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ReservationIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      - $ref: '#/parameters/PatchParameter'
+      tags:
+      - Reservation
+      - ApplyScope
+      responses:
+        200:
+          description: Returns the updated `Reservation`.
+          schema:
+            $ref: '#/definitions/ReservationResponse'
+        202:
+          description: The request is accepted and is being processed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}/revisions:
+    get:
+      summary: Get `Reservation` revisions.
+      description: List of all the revisions for the `Reservation`.n
+      operationId: Reservation_ListRevisions
+      x-ms-examples:
+        ReservationRevisions:
+          $ref: ./examples/GetReservationRevisions.json
+      x-ms-pageable:
+        nextLinkName: nextLink
+      parameters:
+      - $ref: '#/parameters/ReservationIdParameter'
+      - $ref: '#/parameters/ReservationOrderIdParameter'
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Reservation
+      responses:
+        200:
+          description: List of all the revisions for the `Reservation`.
+          schema:
+            $ref: '#/definitions/ReservationList'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /providers/Microsoft.Capacity/operations:
+    get:
+      summary: Get operations.
+      description: List all the operations.
+      operationId: Operation_List
+      x-ms-examples:
+        GetOperations:
+          $ref: ./examples/GetOperations.json
+      x-ms-pageable:
+        nextLinkName: nextLink
+      parameters:
+      - $ref: '#/parameters/ApiVersionParameter'
+      tags:
+      - Operation
+      responses:
+        200:
+          description: List all the operations.
+          schema:
+            $ref: '#/definitions/OperationList'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":36:{s:21:\"ReservationStatusCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:9:{i:0;s:4:\"None\";i:1;s:7:\"Pending\";i:2;s:6:\"Active\";i:3;s:13:\"PurchaseError\";i:4;s:22:\"PaymentInstrumentError\";i:5;s:5:\"Split\";i:6;s:6:\"Merged\";i:7;s:7:\"Expired\";i:8;s:9:\"Succeeded\";}}s:17:\"ErrorResponseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:55:{i:0;s:12:\"NotSpecified\";i:1;s:19:\"InternalServerError\";i:2;s:13:\"ServerTimeout\";i:3;s:19:\"AuthorizationFailed\";i:4;s:10:\"BadRequest\";i:5;s:33:\"ClientCertificateThumbprintNotSet\";i:6;s:21:\"InvalidRequestContent\";i:7;s:15:\"OperationFailed\";i:8;s:22:\"HttpMethodNotSupported\";i:9;s:17:\"InvalidRequestUri\";i:10;s:15:\"MissingTenantId\";i:11;s:15:\"InvalidTenantId\";i:12;s:25:\"InvalidReservationOrderId\";i:13;s:20:\"InvalidReservationId\";i:14;s:34:\"ReservationIdNotInReservationOrder\";i:15;s:24:\"ReservationOrderNotFound\";i:16;s:21:\"InvalidSubscriptionId\";i:17;s:18:\"InvalidAccessToken\";i:18;s:17:\"InvalidLocationId\";i:19;s:32:\"UnauthenticatedRequestsThrottled\";i:20;s:22:\"InvalidHealthCheckType\";i:21;s:9:\"Forbidden\";i:22;s:29:\"BillingScopeIdCannotBeChanged\";i:23;s:45:\"AppliedScopesNotAssociatedWithCommerceAccount\";i:24;s:25:\"PatchValuesSameAsExisting\";i:25;s:28:\"RoleAssignmentCreationFailed\";i:26;s:30:\"ReservationOrderCreationFailed\";i:27;s:26:\"ReservationOrderNotEnabled\";i:28;s:26:\"CapacityUpdateScopesFailed\";i:29;s:26:\"UnsupportedReservationTerm\";i:30;s:31:\"ReservationOrderIdAlreadyExists\";i:31;s:15:\"RiskCheckFailed\";i:32;s:17:\"CreateQuoteFailed\";i:33;s:19:\"ActivateQuoteFailed\";i:34;s:21:\"NonsupportedAccountId\";i:35;s:25:\"PaymentInstrumentNotFound\";i:36;s:29:\"MissingAppliedScopesForSingle\";i:37;s:27:\"NoValidReservationsToReRate\";i:38;s:22:\"ReRateOnlyAllowedForEA\";i:39;s:40:\"OperationCannotBePerformedInCurrentState\";i:40;s:31:\"InvalidSingleAppliedScopesCount\";i:41;s:35:\"InvalidFulfillmentRequestParameters\";i:42;s:19:\"NotSupportedCountry\";i:43;s:21:\"InvalidRefundQuantity\";i:44;s:13:\"PurchaseError\";i:45;s:25:\"BillingCustomerInputError\";i:46;s:33:\"BillingPaymentInstrumentSoftError\";i:47;s:33:\"BillingPaymentInstrumentHardError\";i:48;s:21:\"BillingTransientError\";i:49;s:12:\"BillingError\";i:50;s:29:\"FulfillmentConfigurationError\";i:51;s:26:\"FulfillmentOutOfStockError\";i:52;s:25:\"FulfillmentTransientError\";i:53;s:16:\"FulfillmentError\";i:54;s:20:\"CalculatePriceFailed\";}}s:17:\"ProvisioningState\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Represent
+  the current state of the Reservation.\";s:4:\"enum\";a:13:{i:0;s:8:\"Creating\";i:1;s:19:\"PendingResourceHold\";i:2;s:21:\"ConfirmedResourceHold\";i:3;s:14:\"PendingBilling\";i:4;s:16:\"ConfirmedBilling\";i:5;s:7:\"Created\";i:6;s:9:\"Succeeded\";i:7;s:9:\"Cancelled\";i:8;s:7:\"Expired\";i:9;s:13:\"BillingFailed\";i:10;s:6:\"Failed\";i:11;s:5:\"Split\";i:12;s:6:\"Merged\";}}s:8:\"Location\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"Location
+  in which the Resources needs to be reserved. It cannot be changed after the resource
+  has been created.\";s:4:\"enum\";a:28:{i:0;s:6:\"westus\";i:1;s:6:\"eastus\";i:2;s:7:\"eastus2\";i:3;s:14:\"northcentralus\";i:4;s:7:\"westus2\";i:5;s:14:\"southcentralus\";i:6;s:9:\"centralus\";i:7;s:10:\"westeurope\";i:8;s:11:\"northeurope\";i:9;s:8:\"eastasia\";i:10;s:13:\"southeastasia\";i:11;s:9:\"japaneast\";i:12;s:9:\"japanwest\";i:13;s:11:\"brazilsouth\";i:14;s:13:\"australiaeast\";i:15;s:18:\"australiasoutheast\";i:16;s:10:\"southindia\";i:17;s:9:\"westindia\";i:18;s:12:\"centralindia\";i:19;s:13:\"canadacentral\";i:20;s:10:\"canadaeast\";i:21;s:7:\"uksouth\";i:22;s:13:\"westcentralus\";i:23;s:6:\"ukwest\";i:24;s:13:\"francecentral\";i:25;s:11:\"francesouth\";i:26;s:10:\"australiac\";i:27;s:11:\"australiac2\";}}s:7:\"SkuName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Catalog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"resourceType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  type of resource the SKU applies to.\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"The
+  name of SKU\";s:8:\"readOnly\";b:1;}s:5:\"terms\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:11:\"description\";s:45:\"Available
+  reservation terms for this resource\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ReservationTerm\";}}s:9:\"locations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"The
+  set of locations that the SKU is available. If not specified, the SKU is available
+  in all locations.\";}}s:13:\"skuProperties\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SkuProperty\";}}s:12:\"restrictions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/SkuRestriction\";}}}}s:11:\"SkuProperty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"An
+  invariant to describe the feature.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"An
+  invariant if the feature is measured by quantity.\";}}}s:14:\"SkuRestriction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  type of restrictions.\";}s:6:\"values\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:133:\"The
+  value of restrictions. If the restriction type is set to location. This would be
+  different locations where the SKU is restricted.\";}s:10:\"reasonCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  reason for restriction.\";}}}s:24:\"ReservationOrderResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:19:\"x-ms-azure-resource\";b:1;s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"etag\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:29:\"Identifier
+  of the reservation\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:23:\"Name
+  of the reservation\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:40:\"#/definitions/ReservationOrderProperties\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:51:\"Type
+  of resource. \"Microsoft.Capacity/reservations\"\";}}}s:15:\"ReservationTerm\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Represent
+  the term of Reservation.\";s:4:\"enum\";a:2:{i:0;s:3:\"P1Y\";i:1;s:3:\"P3Y\";}}s:26:\"ReservationOrderProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Friendly
+  name for user to easily identified the reservation.\";}s:15:\"requestDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:79:\"This
+  is the DateTime when the reservation was initially requested for purchase.\";}s:15:\"createdDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:54:\"This
+  is the DateTime when the reservation was created.\";}s:10:\"expiryDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:50:\"This
+  is the date when the Reservation will expire.\";}s:16:\"originalQuantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:56:\"Total
+  Quantity of the SKUs purchased in the Reservation.\";}s:4:\"term\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ReservationTerm\";}s:17:\"provisioningState\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ProvisioningState\";}s:12:\"reservations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ReservationResponse\";}}}}s:19:\"ReservationResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:19:\"x-ms-azure-resource\";b:1;s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}s:4:\"etag\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:29:\"Identifier
+  of the reservation\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:23:\"Name
+  of the reservation\";}s:3:\"sku\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/SkuName\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ReservationProperties\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"description\";s:69:\"Type
+  of resource. \"Microsoft.Capacity/reservationOrders/reservations\"\";}}}s:21:\"ReservationProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":14:{s:20:\"reservedResourceType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ReservedResourceType\";}s:19:\"instanceFlexibility\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/InstanceFlexibility\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"Friendly
+  name for user to easily identify the reservation\";}s:13:\"appliedScopes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AppliedScopes\";}s:16:\"appliedScopeType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AppliedScopeType\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"Quantity
+  of the SKUs that are part of the Reservation.\";}s:17:\"provisioningState\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ProvisioningState\";}s:17:\"effectiveDateTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:73:\"DateTime
+  of the Reservation starting when this version is effective from.\";}s:19:\"lastUpdatedDateTime\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:54:\"DateTime
+  of the last time the Reservation was updated.\";s:8:\"readOnly\";b:1;}s:10:\"expiryDate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:50:\"This
+  is the date when the Reservation will expire.\";}s:14:\"skuDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Description
+  of the SKU in english.\";}s:18:\"extendedStatusInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ExtendedStatusInfo\";}s:15:\"splitProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ReservationSplitProperties\";}s:15:\"mergeProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ReservationMergeProperties\";}}}s:26:\"ReservationSplitProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:17:\"splitDestinations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:189:\"List
+  of destination Resource Id that are created due to split. Format of the resource
+  Id is /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";}s:11:\"splitSource\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:183:\"Resource
+  Id of the Reservation from which this is split. Format of the resource Id is /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";}}}s:26:\"ReservationMergeProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"mergeDestination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:176:\"Reservation
+  Resource Id Created due to the merge. Format of the resource Id is /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";}s:12:\"mergeSources\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:200:\"Resource
+  Ids of the Source Reservation's merged to form this Reservation. Format of the resource
+  Id is /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";}}}s:15:\"PatchProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:16:\"appliedScopeType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AppliedScopeType\";}s:13:\"appliedScopes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AppliedScopes\";}s:19:\"instanceFlexibility\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/InstanceFlexibility\";}}}s:15:\"SplitProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"quantities\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:57:\"List
+  of the quantities in the new reservations to create.\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:8:\"minItems\";i:2;s:8:\"maxItems\";i:2;}}s:13:\"reservationId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:177:\"Resource
+  id of the reservation to be split. Format of the resource id should be /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";}}}s:15:\"MergeProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"sources\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:133:\"Format
+  of the resource id should be /providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:12:\"MergeRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:29:\"#/definitions/MergeProperties\";}}}s:5:\"Patch\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:29:\"#/definitions/PatchProperties\";}}}s:12:\"SplitRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:29:\"#/definitions/SplitProperties\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ExtendedErrorInfo\";}}}s:17:\"ExtendedErrorInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ErrorResponseCode\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ExtendedStatusInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"statusCode\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ReservationStatusCode\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  message giving detailed information about the status code.\";}}}s:20:\"ReservationOrderList\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/ReservationOrderResponse\";}}s:8:\"nextLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Url
+  to get the next page of reservationOrders.\";}}}s:15:\"ReservationList\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ReservationResponse\";}}s:8:\"nextLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Url
+  to get the next page of reservations.\";}}}s:19:\"AppliedReservations\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Identifier
+  of the applied reservations\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of resource\";s:8:\"readOnly\";b:1;}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Type
+  of resource. \"Microsoft.Capacity/AppliedReservations\"\";s:8:\"readOnly\";b:1;}s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"x-ms-client-flatten\";b:1;s:4:\"$ref\";s:43:\"#/definitions/AppliedReservationsProperties\";}}}s:29:\"AppliedReservationsProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:19:\"reservationOrderIds\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/AppliedReservationList\";}}}s:22:\"AppliedReservationList\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:95:\"Reservation
+  resource Id. \"/providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}\"\";}}s:8:\"nextLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Url
+  to get the next page of reservations\";}}}s:13:\"OperationList\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/OperationResponse\";}}s:8:\"nextLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Url
+  to get the next page of items.\";}}}s:17:\"OperationResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"display\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/OperationDisplay\";}s:6:\"origin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"OperationDisplay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"provider\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"resource\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"operation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"InstanceFlexibility\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:131:\"Allows
+  reservation discount to be applied across skus within the same AutofitGroup. Not
+  all skus support instance size flexibility.\";s:4:\"enum\";a:3:{i:0;s:2:\"On\";i:1;s:3:\"Off\";i:2;s:12:\"NotSupported\";}}s:16:\"AppliedScopeType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Type
+  of the Applied Scope.\";s:4:\"enum\";a:2:{i:0;s:6:\"Single\";i:1;s:6:\"Shared\";}}s:13:\"AppliedScopes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:105:\"List
+  of the subscriptions that the benefit will be applied. Do not specify if AppliedScopeType
+  is Shared.\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"minItems\";i:1;s:8:\"maxItems\";i:1;}}s:20:\"ReservedResourceType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  type of the resource that is being reserved.\";s:4:\"enum\";a:3:{i:0;s:15:\"VirtualMachines\";i:1;s:12:\"SqlDatabases\";i:2;s:9:\"SuseLinux\";}}}"
+...

@@ -1,0 +1,87 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:19:\"Compute
+  Service API\";}"
+paths:
+  /:
+    get:
+      summary: Check if the server is working at all, returns some status info.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+  /jobs:
+    post:
+      summary: submit a new job
+      description: Submit a new job from a workflow definition.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Input binding for cwl workflow.
+        schema:
+          $ref: '#/definitions/job-description'
+      responses:
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/job'
+          headers:
+            Location:
+              description: uri of the created job
+              type: string
+              format: uri
+    get:
+      summary: list of jobs
+      description: get a list of all jobs, running, cancelled, or otherwise.
+      responses:
+        200:
+          description: list of jobs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/job'
+  /jobs/{jobId}:
+    get:
+      parameters:
+      - name: jobId
+        in: path
+        type: string
+        description: Job ID
+        required: true
+      responses:
+        200:
+          description: Status of job
+          schema:
+            $ref: '#/definitions/job'
+    delete:
+      parameters:
+      - name: jobId
+        in: path
+        type: string
+        description: Job ID
+        required: true
+      responses:
+        200:
+          description: Job deleted (will cancel if still running)
+  /jobs/{jobId}/cancel:
+    post:
+      parameters:
+      - name: jobId
+        in: path
+        type: string
+        description: Job ID
+        required: true
+      responses:
+        200:
+          description: Job cancelled if still running
+definitions: !php/object "O:8:\"stdClass\":3:{s:11:\"cwl-binding\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:1;}s:15:\"job-description\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"workflow\";}s:20:\"additionalProperties\";b:0;s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"user
+  supplied (non unique) name for this job\";}s:8:\"workflow\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:24:\"location
+  of the workflow\";}s:5:\"input\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/cwl-binding\";}}}s:3:\"job\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:8:\"workflow\";i:3;s:5:\"input\";i:4;s:5:\"state\";i:5;s:6:\"output\";i:6;s:3:\"log\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"user
+  supplied (non unique) name for this job\";}s:8:\"workflow\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:11:\"description\";s:24:\"location
+  of the workflow\";}s:5:\"input\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/cwl-binding\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:7:\"Waiting\";i:1;s:7:\"Running\";i:2;s:7:\"Success\";i:3;s:9:\"Cancelled\";i:4;s:11:\"SystemError\";i:5;s:16:\"TemporaryFailure\";i:6;s:16:\"PermanentFailure\";}}s:6:\"output\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/cwl-binding\";}s:3:\"log\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}}}}"
+...

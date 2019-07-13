@@ -1,0 +1,423 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:11:\"description\";s:27:\"REST APIs for
+  Azure Advisor\";s:5:\"title\";s:23:\"AdvisorManagementClient\";s:7:\"version\";s:18:\"2016-07-12-preview\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:5:\"cloud\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:131:\"https://api.apis.guru/v2/cache/logo/https_assets.onestore.ms_cdnfiles_onestorerolling-1606-01000_shell_v3_images_logo_microsoft.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:119:\"https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/arm-advisor/2016-07-12-preview/swagger/advisor.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:9:\"azure.com\";s:13:\"x-serviceName\";s:11:\"arm-advisor\";s:6:\"x-tags\";a:2:{i:0;s:5:\"Azure\";i:1;s:9:\"Microsoft\";}s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:17:\"azure_arm_advisor\";s:4:\"type\";s:7:\"openapi\";}}"
+host: management.azure.com
+paths:
+  /providers/Microsoft.Advisor/operations:
+    get:
+      deprecated: false
+      description: Lists all the available Advisor REST API operations.
+      operationId: Operations_List
+      parameters:
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/OperationEntityListResult'
+      tags:
+      - Operations
+      x-ms-pageable:
+        nextLinkName: nextLink
+  /subscriptions/{subscriptionId}/providers/Microsoft.Advisor/generateRecommendations:
+    post:
+      deprecated: false
+      description: Initiates the recommendation generation or computation process
+        for a subscription. This operation is asynchronous. The generated recommendations
+        are stored in a cache in the Advisor service.
+      operationId: Recommendations_Generate
+      parameters:
+      - $ref: '#/parameters/subscriptionIdParameter'
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        202:
+          description: Accepted.
+          headers:
+            Location:
+              description: The URL where the status of the asynchronous operation
+                can be checked.
+              type: string
+            Retry-After:
+              description: The amount of delay to use while the status of the operation
+                is checked. The value is expressed in seconds.
+              type: string
+      tags:
+      - GenerateRecommendations
+      x-ms-examples:
+        GenerateRecommendations:
+          parameters:
+            api-version: 2016-07-12-preview
+            subscriptionId: subscriptionId
+          responses:
+            202:
+              headers:
+                Location: https://management.azure.com/subscriptions/subscriptionId/providers/Microsoft.Microsoft.Advisor/generateRecommendations/recGUID?api-version=2016-07-12-preview
+                Retry-After: "60"
+  /subscriptions/{subscriptionId}/providers/Microsoft.Advisor/generateRecommendations/{operationId}:
+    get:
+      deprecated: false
+      description: Retrieves the status of the recommendation computation or generation
+        process. Invoke this API after calling the generation recommendation. The
+        URI of this API is returned in the Location field of the response header.
+      operationId: Recommendations_GetGenerateRecommendationsStatus
+      parameters:
+      - $ref: '#/parameters/subscriptionIdParameter'
+      - description: The operation ID, which can be found from the Location field
+          in the generate recommendation response header.
+        format: uuid
+        in: path
+        name: operationId
+        required: true
+        type: string
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        202:
+          description: Recommendation generation is in progress.
+        204:
+          description: Recommendation generation has been completed.
+      tags:
+      - GenerateRecommendations
+      x-ms-examples:
+        PollGenerateRecommendationsStatus:
+          parameters:
+            api-version: 2016-07-12-preview
+            operationId: operationGUID
+            subscriptionId: subscriptionId
+          responses:
+            202: []
+            204: []
+  /subscriptions/{subscriptionId}/providers/Microsoft.Advisor/recommendations:
+    get:
+      deprecated: false
+      description: Obtains cached recommendations for a subscription. The recommendations
+        are generated or computed by invoking generateRecommendations.
+      operationId: Recommendations_List
+      parameters:
+      - $ref: '#/parameters/subscriptionIdParameter'
+      - $ref: '#/parameters/apiVersionParameter'
+      - description: The filter to apply to the recommendations.
+        in: query
+        name: $filter
+        required: false
+        type: string
+      - description: The number of recommendations per page if a paged version of
+          this API is being used.
+        in: query
+        name: $top
+        required: false
+        type: integer
+      - description: The page-continuation token to use with a paged version of this
+          API.
+        in: query
+        name: $skipToken
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/ResourceRecommendationBaseListResult'
+      tags:
+      - GetRecommendations
+      x-ms-examples:
+        ListRecommendations:
+          parameters:
+            $top: 10
+            api-version: 2016-07-12-preview
+            subscriptionId: subscriptionId
+          responses:
+            200:
+              body:
+                nextLink: https://management.azure.com/subscriptions/subscriptionId/providers/Microsoft.Advisor/recommendations?api-version=2016-07-12-preview&$top=10&$skiptoken=skiptoken
+                value:
+                - id: /resourceUri/providers/Microsoft.Advisor/recommendations/recGUID
+                  name: recGUID
+                  properties:
+                    category: HighAvailability
+                    impact: Medium
+                    impactedField: Microsoft.Compute/availabilitySets
+                    impactedValue: armavset
+                    lastUpdated: "2017-02-24T22:24:43.3216408Z"
+                    risk: Warning
+                    shortDescription:
+                      problem: This availability set is not configured for fault tolerance
+                      solution: To ensure high availability add one or more virtual
+                        machines to this availability set
+                  type: Microsoft.Advisor/recommendations
+      x-ms-pageable:
+        nextLinkName: nextLink
+  /subscriptions/{subscriptionId}/providers/Microsoft.Advisor/suppressions:
+    get:
+      deprecated: false
+      description: Retrieves the list of snoozed or dismissed suppressions for a subscription.
+        The snoozed or dismissed attribute of a recommendation is referred to as a
+        suppression.
+      operationId: Suppressions_List
+      parameters:
+      - $ref: '#/parameters/subscriptionIdParameter'
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        200:
+          description: OK.
+          schema:
+            items:
+              $ref: '#/definitions/SuppressionContract'
+            type: array
+      tags:
+      - Suppressions
+      x-ms-examples:
+        ListSuppressions:
+          parameters:
+            api-version: 2016-07-12-preview
+            subscriptionId: subscriptionId1
+          responses:
+            200:
+              body:
+              - id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId/suppressions/suppressionName1
+                name: suppressionName1
+                suppressionId: suppressionId1
+                ttl: 7.00:00:00
+                type: Microsoft.Advisor/suppressions
+              - id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId/suppressions/suppressionName2
+                name: suppressionName2
+                suppressionId: suppressionId2
+                ttl: 7.00:00:00
+                type: Microsoft.Advisor/suppressions
+  /{resourceUri}/providers/Microsoft.Advisor/recommendations/{recommendationId}:
+    get:
+      deprecated: false
+      description: Obtains details of a cached recommendation.
+      operationId: Recommendations_Get
+      parameters:
+      - description: The fully qualified Azure Resource Manager identifier of the
+          resource to which the recommendation applies.
+        in: path
+        name: resourceUri
+        required: true
+        type: string
+      - description: The recommendation ID.
+        in: path
+        name: recommendationId
+        required: true
+        type: string
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResourceRecommendationBase'
+      tags:
+      - GetRecommendations
+      x-ms-examples:
+        GetRecommendationDetail:
+          parameters:
+            api-version: 2016-07-12-preview
+            recommendationId: recommendationId
+            resourceUri: resourceUri
+          responses:
+            200:
+              body:
+                id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId
+                name: recommendationId
+                properties:
+                  category: HighAvailability
+                  impact: Medium
+                  impactedField: Microsoft.Compute/availabilitySets
+                  impactedValue: armavset
+                  lastUpdated: "2017-02-24T22:24:43.3216408Z"
+                  risk: Warning
+                  shortDescription:
+                    problem: This availability set is not configured for fault tolerance
+                    solution: To ensure high availability add one or more virtual
+                      machines to this availability set
+                type: Microsoft.Advisor/recommendations
+  /{resourceUri}/providers/Microsoft.Advisor/recommendations/{recommendationId}/suppressions/{name}:
+    delete:
+      deprecated: false
+      description: Enables the activation of a snoozed or dismissed recommendation.
+        The snoozed or dismissed attribute of a recommendation is referred to as a
+        suppression.
+      operationId: Suppressions_Delete
+      parameters:
+      - description: The fully qualified Azure Resource Manager identifier of the
+          resource to which the recommendation applies.
+        in: path
+        name: resourceUri
+        required: true
+        type: string
+      - description: The recommendation ID.
+        in: path
+        name: recommendationId
+        required: true
+        type: string
+      - description: The name of the suppression.
+        in: path
+        name: name
+        required: true
+        type: string
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        204:
+          description: The recommendation has been activated.
+      tags:
+      - Suppressions
+      x-ms-examples:
+        DeleteSuppression:
+          parameters:
+            api-version: 2016-07-12-preview
+            name: suppressionName1
+            recommendationId: recommendationId
+            resourceUri: resourceUri
+          responses:
+            204: []
+    get:
+      deprecated: false
+      description: Obtains the details of a suppression.
+      operationId: Suppressions_Get
+      parameters:
+      - description: The fully qualified Azure Resource Manager identifier of the
+          resource to which the recommendation applies.
+        in: path
+        name: resourceUri
+        required: true
+        type: string
+      - description: The recommendation ID.
+        in: path
+        name: recommendationId
+        required: true
+        type: string
+      - description: The name of the suppression.
+        in: path
+        name: name
+        required: true
+        type: string
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/SuppressionContract'
+      tags:
+      - Suppressions
+      x-ms-examples:
+        GetSuppressionDetail:
+          parameters:
+            api-version: 2016-07-12-preview
+            name: suppressionName1
+            recommendationId: recommendationId
+            resourceUri: resourceUri
+          responses:
+            200:
+              body:
+                id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId/suppressions/suppressionName1
+                name: suppressionName1
+                suppressionId: suppressionId1
+                ttl: 7.00:00:00
+                type: Microsoft.Advisor/suppressions
+    put:
+      deprecated: false
+      description: Enables the snoozed or dismissed attribute of a recommendation.
+        The snoozed or dismissed attribute is referred to as a suppression. Use this
+        API to create or update the snoozed or dismissed status of a recommendation.
+      operationId: Suppressions_Create
+      parameters:
+      - description: The fully qualified Azure Resource Manager identifier of the
+          resource to which the recommendation applies.
+        in: path
+        name: resourceUri
+        required: true
+        type: string
+      - description: The recommendation ID.
+        in: path
+        name: recommendationId
+        required: true
+        type: string
+      - description: The name of the suppression.
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: The snoozed or dismissed attribute; for example, the snooze duration.
+        in: body
+        name: suppressionContract
+        required: true
+        schema:
+          $ref: '#/definitions/SuppressionContract'
+      - $ref: '#/parameters/apiVersionParameter'
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/SuppressionContract'
+      tags:
+      - Suppressions
+      x-ms-examples:
+        CreateSuppression:
+          parameters:
+            api-version: 2016-07-12-preview
+            name: suppressionName1
+            recommendationId: recommendationId
+            resourceUri: resourceUri
+            suppressionContract:
+              id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId/suppressions/suppressionName1
+              name: suppressionName1
+              ttl: 07:00:00:00
+              type: Microsoft.Advisor/suppressions
+          responses:
+            200:
+              body:
+                id: /resourceUri/providers/Microsoft.Advisor/recommendations/recommendationId/suppressions/suppressionName1
+                name: suppressionName1
+                suppressionId: suppresionId
+                ttl: 07:00:00:00
+                type: Microsoft.Advisor/suppressions
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":9:{s:20:\"OperationDisplayInfo\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  operation supported by Advisor.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  description of the operation.\";s:4:\"type\";s:6:\"string\";}s:9:\"operation\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  action that users can perform, based on their permission level.\";s:4:\"type\";s:6:\"string\";}s:8:\"provider\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Service
+  provider: Microsoft Advisor.\";s:4:\"type\";s:6:\"string\";}s:8:\"resource\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Resource
+  on which the operation is performed.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"OperationEntity\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  operation supported by Advisor.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"display\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/OperationDisplayInfo\";s:11:\"description\";s:35:\"The
+  operation supported by Advisor.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Operation
+  name: {provider}/{resource}/{operation}.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"OperationEntityListResult\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"The
+  list of Advisor operations.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"nextLink\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"The
+  link used to get the next page of operations.\";s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"The
+  list of operations.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/OperationEntity\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:24:\"RecommendationProperties\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  properties of the recommendation.\";s:10:\"properties\";O:8:\"stdClass\":9:{s:8:\"category\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"The
+  category of the recommendation.\";s:4:\"enum\";a:4:{i:0;s:16:\"HighAvailability\";i:1;s:8:\"Security\";i:2;s:11:\"Performance\";i:3;s:4:\"Cost\";}s:4:\"type\";s:6:\"string\";s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:13:\"modelAsString\";b:1;s:4:\"name\";s:8:\"category\";}}s:6:\"impact\";O:8:\"stdClass\":4:{s:11:\"description\";s:42:\"The
+  business impact of the recommendation.\";s:4:\"enum\";a:3:{i:0;s:4:\"High\";i:1;s:6:\"Medium\";i:2;s:3:\"Low\";}s:4:\"type\";s:6:\"string\";s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:13:\"modelAsString\";b:1;s:4:\"name\";s:6:\"impact\";}}s:13:\"impactedField\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  resource type identified by Advisor.\";s:4:\"type\";s:6:\"string\";}s:13:\"impactedValue\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  resource identified by Advisor.\";s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":3:{s:11:\"description\";s:77:\"The
+  most recent time that Advisor checked the validity of the recommendation.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:11:\"description\";s:28:\"The
+  recommendation metadata.\";s:4:\"type\";s:6:\"object\";}s:20:\"recommendationTypeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  recommendation-type GUID.\";s:4:\"type\";s:6:\"string\";}s:4:\"risk\";O:8:\"stdClass\":4:{s:11:\"description\";s:58:\"The
+  potential risk of not implementing the recommendation.\";s:4:\"enum\";a:3:{i:0;s:5:\"Error\";i:1;s:7:\"Warning\";i:2;s:4:\"None\";}s:4:\"type\";s:6:\"string\";s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:13:\"modelAsString\";b:1;s:4:\"name\";s:4:\"risk\";}}s:16:\"shortDescription\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/ShortDescription\";s:11:\"description\";s:32:\"A
+  summary of the recommendation.\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Resource\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"An
+  Azure resource.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"The
+  resource ID.\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:8:\"location\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"The
+  location of the resource. This cannot be changed after the resource is created.\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  name of the resource.\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:25:\"The
+  tags of the resource.\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  type of the resource.\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:19:\"x-ms-azure-resource\";b:1;}s:26:\"ResourceRecommendationBase\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Advisor
+  Recommendation.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:229:\"The
+  fully qualified recommendation ID, for example /subscriptions/subscriptionId/resourceGroups/resourceGroup1/providers/Microsoft.ClassicCompute/virtualMachines/vm1/providers/Microsoft.Advisor/recommendations/recommendationGUID.\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  name of recommendation.\";s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:38:\"#/definitions/RecommendationProperties\";s:11:\"description\";s:37:\"The
+  properties of the recommendation.\";s:19:\"x-ms-client-flatten\";b:1;}s:14:\"suppressionIds\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  list of snoozed and dismissed rules for the recommendation.\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"The
+  recommendation type: Microsoft.Advisor/recommendations.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:36:\"ResourceRecommendationBaseListResult\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"The
+  list of Advisor recommendations.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"nextLink\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  link used to get the next page of recommendations.\";s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"The
+  list of recommendations.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ResourceRecommendationBase\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:16:\"ShortDescription\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"A
+  summary of the recommendation.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"problem\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"The
+  issue or opportunity identified by the recommendation.\";s:4:\"type\";s:6:\"string\";}s:8:\"solution\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  remediation action suggested by the recommendation.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"SuppressionContract\";O:8:\"stdClass\":4:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Resource\";}}s:11:\"description\";s:113:\"The
+  details of the snoozed or dismissed rule; for example, the duration, name, and GUID
+  associated with the rule.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"suppressionId\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  GUID of the suppression.\";s:4:\"type\";s:6:\"string\";}s:3:\"ttl\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  duration for which the suppression is valid.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

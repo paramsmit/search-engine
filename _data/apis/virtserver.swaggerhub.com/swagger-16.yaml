@@ -1,0 +1,1178 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:19:\"Ica MinButik -
+  Todo\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:8:\"ToDo API\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:23:\"goran.roseen@acando.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: virtserver.swaggerhub.com
+basePath: /ica-egenkontroll/todo/1.0.0
+paths:
+  /todos:
+    get:
+      tags:
+      - clients
+      summary: searches for todos
+      description: By passing in the appropriate options, you can search fornavailable
+        todos in the systemn
+      operationId: searchTodo
+      produces:
+      - application/json
+      parameters:
+      - name: $top
+        in: query
+        description: Show only the first n items, see [OData Paging - Top](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374630)
+        required: false
+        type: integer
+      - name: $skip
+        in: query
+        description: Skip the first n items, see [OData Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374631)
+        required: false
+        type: integer
+      - name: $filter
+        in: query
+        description: Filter items by property values, see [OData Filtering](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374625),
+          note that expand is not supported
+        required: false
+        type: string
+      - name: $select
+        in: query
+        description: Select properties to be returned, see [OData Select](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374620),
+          note that expand is not supported
+        required: false
+        type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoItem'
+        400:
+          description: bad input parameter
+  /todos/{id}:
+    get:
+      tags:
+      - clients
+      summary: Find Todo by Id
+      description: Find a Todo by Id
+      operationId: getTodoById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the Todo that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TodoItem'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    delete:
+      tags:
+      - admins
+      summary: Delete ToDo by Id
+      description: Deletes a Todo item in the system
+      operationId: deleteTodo
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the Todo that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /todos/{id}/cards:
+    get:
+      tags:
+      - clients
+      summary: shows cards belonging to the todo
+      description: returns all cards belonging to a specific todon
+      operationId: getTodoCards
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoCard'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - clients
+      summary: adds a TodoCard
+      description: Adds a card to the todo
+      operationId: addTodoCard
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      - in: body
+        name: TodoCard
+        description: TodoCard to add
+        required: false
+        schema:
+          $ref: '#/definitions/TodoCard'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /todos/{id}/cards/{cardId}:
+    get:
+      tags:
+      - clients
+      summary: Find todoCard by Id
+      description: Find an todoCard by Id
+      operationId: getTodoCardById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the todoCard that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/TodoCard'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - admins
+      summary: updates a todoCard
+      description: Updates a todoCard in the system
+      operationId: updateTodoCard
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the Todo
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: id of the TodoCard to be updated
+        required: true
+        type: string
+      - in: body
+        name: TodoCard
+        description: TodoCard to update
+        required: false
+        schema:
+          $ref: '#/definitions/TodoCard'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete TodoCard by Id
+      description: Deletes a todoCard item in the system
+      operationId: deleteTodoCard
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the todoCard that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /todos/{id}/cards/{cardId}/attachment/{fileName}:
+    get:
+      tags:
+      - clients
+      summary: returns the attachment to a card
+      description: returns an attachment on a cardn
+      operationId: getCardsAttachment
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the todoCard
+        required: true
+        type: string
+      - name: fileName
+        in: path
+        description: name of the attachment file
+        required: true
+        type: string
+      responses:
+        200:
+          description: the attachement file
+        400:
+          description: bad input parameter
+  /todos/{id}/cards/{cardId}/attachment:
+    post:
+      tags:
+      - clients
+      summary: adds an attachment to a TodoCard
+      description: Adds an attachment to the card belonging to the todo
+      operationId: addTodoCardAttachment
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the todo
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the todoCard
+        required: true
+        type: string
+      - name: attachmentData
+        in: formData
+        required: true
+        type: string
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /categories:
+    get:
+      tags:
+      - clients
+      summary: Fetch all categories
+      description: Fetch all categories
+      operationId: getCategories
+      produces:
+      - application/json
+      parameters:
+      - name: $top
+        in: query
+        description: Show only the first n items, see [OData Paging - Top](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374630)
+        required: false
+        type: integer
+      - name: $skip
+        in: query
+        description: Skip the first n items, see [OData Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374631)
+        required: false
+        type: integer
+      - name: $filter
+        in: query
+        description: Filter items by property values, see [OData Filtering](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374625),
+          note that expand is not supported
+        required: false
+        type: string
+      - name: $select
+        in: query
+        description: Select properties to be returned, see [OData Select](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374620),
+          note that expand is not supported
+        required: false
+        type: string
+      responses:
+        200:
+          description: all categories
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Category'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - admins
+      summary: adds a Category
+      description: Adds a Category to the system
+      operationId: addCategory
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: Category
+        description: Category to add
+        required: false
+        schema:
+          $ref: '#/definitions/Category'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /categories/{id}:
+    get:
+      tags:
+      - clients
+      summary: Find Category by Id
+      description: Find a Category by Id
+      operationId: getCategoryById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the Category that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Category'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - admins
+      summary: updates a Category
+      description: Updates a Category in the system
+      operationId: updateCategory
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the Category to be updated
+        required: true
+        type: string
+      - in: body
+        name: Category
+        description: Category to update
+        required: false
+        schema:
+          $ref: '#/definitions/Category'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete Category by Id
+      description: Deletes a Category in the system
+      operationId: deleteCategory
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the Category that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /tags:
+    get:
+      tags:
+      - clients
+      summary: Fetch all tags
+      description: Fetch all tags
+      operationId: getTags
+      produces:
+      - application/json
+      parameters:
+      - name: $top
+        in: query
+        description: Show only the first n items, see [OData Paging - Top](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374630)
+        required: false
+        type: integer
+      - name: $skip
+        in: query
+        description: Skip the first n items, see [OData Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374631)
+        required: false
+        type: integer
+      - name: $filter
+        in: query
+        description: Filter items by property values, see [OData Filtering](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374625),
+          note that expand is not supported
+        required: false
+        type: string
+      - name: $select
+        in: query
+        description: Select properties to be returned, see [OData Select](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374620),
+          note that expand is not supported
+        required: false
+        type: string
+      responses:
+        200:
+          description: all tags
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - admins
+      summary: adds a Tag
+      description: Adds a Tag to the system
+      operationId: addTag
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: Tag
+        description: Tag to add
+        required: false
+        schema:
+          $ref: '#/definitions/Tag'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exist
+  /tags/{id}:
+    get:
+      tags:
+      - clients
+      summary: Find Tag by Id
+      description: Find a Tag by Id
+      operationId: getTagById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the Tag that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Tag'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - admins
+      summary: updates a Tag
+      description: Updates a Tag in the system
+      operationId: updateTag
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the Tag to be updated
+        required: true
+        type: string
+      - in: body
+        name: Tag
+        description: Tag to update
+        required: false
+        schema:
+          $ref: '#/definitions/Tag'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete Tag by Id
+      description: Deletes a Tag in the system
+      operationId: deleteTag
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the Tag that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /activities:
+    get:
+      tags:
+      - clients
+      summary: searches for activities
+      description: By passing in the appropriate options, you can search fornavailable
+        activity in the systemn
+      operationId: searchActivity
+      produces:
+      - application/json
+      parameters:
+      - name: $top
+        in: query
+        description: Show only the first n items, see [OData Paging - Top](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374630)
+        required: false
+        type: integer
+      - name: $skip
+        in: query
+        description: Skip the first n items, see [OData Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374631)
+        required: false
+        type: integer
+      - name: $filter
+        in: query
+        description: Filter items by property values, see [OData Filtering](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374625),
+          note that expand is not supported
+        required: false
+        type: string
+      - name: $select
+        in: query
+        description: Select properties to be returned, see [OData Select](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374620),
+          note that expand is not supported
+        required: false
+        type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Activity'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - clients
+      summary: adds an Activity
+      description: Adds an activity to the system
+      operationId: addActivity
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: Activity
+        description: Activity to add
+        required: false
+        schema:
+          $ref: '#/definitions/Activity'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /activities/{id}:
+    get:
+      tags:
+      - clients
+      summary: Find activity by Id
+      description: Find an activity by Id
+      operationId: getActivityById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Activity'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - clients
+      summary: updates an activity item
+      description: Updates an activity item in the system
+      operationId: updateActivity
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the Activity item to be updated
+        required: true
+        type: string
+      - in: body
+        name: ActivityItem
+        description: Activity item to update
+        required: false
+        schema:
+          $ref: '#/definitions/Activity'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete Activity by Id
+      description: Deletes an activity item in the system
+      operationId: deleteActivity
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the activity that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /activities/{id}/tags:
+    get:
+      tags:
+      - clients
+      summary: shows tags belonging to the activity
+      description: returns all tags belonging to a specific activityn
+      operationId: getActivityTags
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity that the tag belongs to
+        required: true
+        type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - clients
+      summary: adds an ActivityTag
+      description: Adds an activityTag to the system
+      operationId: addActivityTag
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity that the tag belongs to
+        required: true
+        type: string
+      - in: body
+        name: ActivityTag
+        description: ActivityTag to add
+        required: false
+        schema:
+          $ref: '#/definitions/Tag'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /activities/{id}/tags/{tagId}:
+    get:
+      tags:
+      - clients
+      summary: Find activityTag by tag Id
+      description: Find an activityTag by Tag Id
+      operationId: getActivityTagById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity that the tag belongs to
+        required: true
+        type: string
+      - name: tagId
+        in: path
+        description: Id of the tag that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Tag'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    delete:
+      tags:
+      - admins
+      summary: Delete ActivityTag by TagId
+      description: Deletes an activityTag item in the system
+      operationId: deleteActivityTag
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity that the tag belongs to
+        required: true
+        type: string
+      - name: tagId
+        in: path
+        description: Id of the tag that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /activities/{id}/instantiateTodo:
+    post:
+      tags:
+      - clients
+      summary: Creates a todo
+      description: Creates a Todo based on the Activity
+      operationId: createTodoFromActivity
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the activity that the todo will be created from
+        required: true
+        type: string
+      - in: body
+        name: todo
+        description: fields needed for instantiation of Todo
+        required: false
+        schema:
+          $ref: '#/definitions/TodoInstantiate'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+  /activities/{id}/cards:
+    get:
+      tags:
+      - clients
+      summary: shows cards belonging to the activity
+      description: returns all cards belonging to a specific activityn
+      operationId: getActivityCards
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity
+        required: true
+        type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ActivityCard'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - clients
+      summary: adds an ActivityCard
+      description: Adds a card to the activity
+      operationId: addActivityCard
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity
+        required: true
+        type: string
+      - in: body
+        name: ActivityCard
+        description: ActivityCard to add
+        required: false
+        schema:
+          $ref: '#/definitions/ActivityCard'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /activities/{id}/cards/{cardId}:
+    get:
+      tags:
+      - clients
+      summary: Find activityCard by Id
+      description: Find an activityCard by Id
+      operationId: getActivityCardById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the activityCard that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ActivityCard'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - admins
+      summary: updates an activityCard
+      description: Updates an activityCard in the system
+      operationId: updateActivityCard
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the Activity
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: id of the ActivityCard to be updated
+        required: true
+        type: string
+      - in: body
+        name: ActivityCard
+        description: ActivityCard to update
+        required: false
+        schema:
+          $ref: '#/definitions/ActivityCard'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete ActivityCard by Id
+      description: Deletes an activityCard item in the system
+      operationId: deleteActivityCard
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the activity
+        required: true
+        type: string
+      - name: cardId
+        in: path
+        description: Id of the activityCard that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+  /cardTypes:
+    get:
+      tags:
+      - clients
+      summary: Fetch all cardTypes
+      description: Fetch all cardTypes
+      operationId: getCardTypes
+      produces:
+      - application/json
+      parameters:
+      - name: $top
+        in: query
+        description: Show only the first n items, see [OData Paging - Top](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374630)
+        required: false
+        type: integer
+      - name: $skip
+        in: query
+        description: Skip the first n items, see [OData Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374631)
+        required: false
+        type: integer
+      - name: $filter
+        in: query
+        description: Filter items by property values, see [OData Filtering](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374625),
+          note that expand is not supported
+        required: false
+        type: string
+      - name: $select
+        in: query
+        description: Select properties to be returned, see [OData Select](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Toc445374620),
+          note that expand is not supported
+        required: false
+        type: string
+      responses:
+        200:
+          description: all cardTypes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CardType'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - admins
+      summary: adds a CardType
+      description: Adds a CardType to the system
+      operationId: addCardType
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: CardType
+        description: CardType to add
+        required: false
+        schema:
+          $ref: '#/definitions/CardType'
+      responses:
+        201:
+          description: item created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /cardTypes/{id}:
+    get:
+      tags:
+      - clients
+      summary: Find CardType by Id
+      description: Find a CardType by Id
+      operationId: getCardTypeById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: Id of the CardType that needs to be fetched
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CardType'
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+    put:
+      tags:
+      - admins
+      summary: updates a CardType
+      description: Updates a CardType in the system
+      operationId: updateCardType
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: id of the CardType to be updated
+        required: true
+        type: string
+      - in: body
+        name: CardType
+        description: CardType to update
+        required: false
+        schema:
+          $ref: '#/definitions/CardType'
+      responses:
+        200:
+          description: item updated
+        400:
+          description: invalid input, object invalid
+    delete:
+      tags:
+      - admins
+      summary: Delete CardType by Id
+      description: Deletes a CardType in the system
+      operationId: deleteCardType
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: ID of the CardType that needs to be deleted
+        required: true
+        type: string
+      responses:
+        204:
+          description: Delete successful
+        400:
+          description: error
+        404:
+          description: Could not find an entry with the given id.
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":10:{s:8:\"TodoItem\";O:8:\"stdClass\":3:{s:8:\"required\";a:6:{i:0;s:10:\"categoryId\";i:1;s:10:\"contentUrl\";i:2;s:4:\"note\";i:3;s:8:\"priority\";i:4;s:5:\"title\";i:5;s:8:\"todoType\";}s:10:\"properties\";O:8:\"stdClass\":18:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"St\xE4da
+  charken\";}s:8:\"todoType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"basic\";s:11:\"description\";s:42:\"Must
+  be one of \"basic\", \"measure\", \"yesno\"\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"G\xF6r
+  s\xE5 h\xE4r\";}s:10:\"contentUrl\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:43:\"https://episerver.ica.se/getContent?id=4711\";}s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}s:5:\"dueAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-04-12
+  12:00\";}s:12:\"assignedToId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";}s:14:\"assignedToName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Frukt
+  & Gr\xF6nt\";}s:20:\"assignedToObjectType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Group\";}s:11:\"isCompleted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:11:\"completedBy\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}s:11:\"completedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-04-12
+  12:00\";}s:8:\"priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1;}s:10:\"categoryId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"123\";}s:13:\"categoryTitle\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"HACCP\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tag\";}}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":18:{s:4:\"note\";s:13:\"G\xF6r s\xE5
+  h\xE4r\";s:11:\"completedAt\";s:16:\"2018-04-12 12:00\";s:8:\"todoType\";s:5:\"basic\";s:5:\"title\";s:14:\"St\xE4da
+  charken\";s:8:\"priority\";i:1;s:12:\"assignedToId\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:14:\"assignedToName\";s:14:\"Frukt
+  & Gr\xF6nt\";s:20:\"assignedToObjectType\";s:5:\"Group\";s:4:\"tags\";a:2:{i:0;O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:10:\"Reng\xF6ring\";}i:1;O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:10:\"Reng\xF6ring\";}}s:5:\"dueAt\";s:16:\"2018-04-12
+  12:00\";s:9:\"createdAt\";s:16:\"2018-03-14 15:22\";s:10:\"contentUrl\";s:43:\"https://episerver.ica.se/getContent?id=4711\";s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:2:\"id\";s:6:\"123456\";s:10:\"categoryId\";s:3:\"123\";s:13:\"categoryTitle\";s:5:\"HACCP\";s:11:\"completedBy\";O:8:\"stdClass\":2:{s:2:\"id\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:8:\"fullname\";s:13:\"G\xF6ran
+  Roseen\";}s:11:\"isCompleted\";b:1;}}s:3:\"Tag\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"title\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"Reng\xF6ring\";}s:6:\"sortId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1;}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:10:\"Reng\xF6ring\";}}s:8:\"Category\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:5:\"title\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"HACCP\";}s:6:\"sortId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1;}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:5:\"HACCP\";}}s:4:\"User\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:8:\"fullname\";i:1;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:11:\"description\";s:32:\"id
+  is the user identity from SIA\";}s:8:\"fullname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"G\xF6ran
+  Roseen\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:2:\"id\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:8:\"fullname\";s:13:\"G\xF6ran
+  Roseen\";}}s:8:\"Assignee\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:10:\"objectType\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"objectType\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Group\";s:11:\"description\";s:28:\"Must
+  be one of User or Group\";s:4:\"enum\";a:2:{i:0;s:4:\"User\";i:1;s:5:\"Group\";}}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Frukt
+  & Gr\xF6nt\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:4:\"name\";s:14:\"Frukt & Gr\xF6nt\";s:2:\"id\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:10:\"objectType\";s:5:\"Group\";}}s:8:\"Activity\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:6:{i:0;s:12:\"activityType\";i:1;s:10:\"categoryId\";i:2;s:10:\"contentUrl\";i:3;s:4:\"note\";i:4;s:8:\"priority\";i:5;s:5:\"title\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"St\xE4da
+  charken\";}s:12:\"activityType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"basic\";s:11:\"description\";s:42:\"Must
+  be one of \"basic\", \"measure\", \"yesno\"\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"G\xF6r
+  s\xE5 h\xE4r\";}s:10:\"contentUrl\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"url\";s:7:\"example\";s:43:\"https://episerver.ica.se/getContent?id=4711\";}s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}s:8:\"priority\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1;}s:10:\"categoryId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"123\";}s:13:\"categoryTitle\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"HACCP\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tag\";}}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":11:{s:4:\"note\";s:13:\"G\xF6r s\xE5
+  h\xE4r\";s:9:\"createdAt\";s:16:\"2018-03-14 15:22\";s:10:\"contentUrl\";s:43:\"https://episerver.ica.se/getContent?id=4711\";s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:14:\"St\xE4da charken\";s:12:\"activityType\";s:5:\"basic\";s:8:\"priority\";i:1;s:10:\"categoryId\";s:3:\"123\";s:13:\"categoryTitle\";s:5:\"HACCP\";s:4:\"tags\";a:2:{i:0;O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:10:\"Reng\xF6ring\";}i:1;O:8:\"stdClass\":4:{s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:6:\"sortId\";i:1;s:2:\"id\";s:6:\"123456\";s:5:\"title\";s:10:\"Reng\xF6ring\";}}}}s:15:\"TodoInstantiate\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:12:\"assignedToId\";i:1;s:14:\"assignedToName\";i:2;s:20:\"assignedToObjectType\";i:3;s:5:\"dueAt\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"assignedToId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";}s:14:\"assignedToName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Frukt
+  & Gr\xF6nt\";}s:20:\"assignedToObjectType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Group\";}s:5:\"dueAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-04-24
+  14:41\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:5:\"dueAt\";s:16:\"2018-04-24 14:41\";s:12:\"assignedToId\";s:36:\"d290f1ee-6c54-4b01-90e6-d701748f0851\";s:14:\"assignedToName\";s:14:\"Frukt
+  & Gr\xF6nt\";s:20:\"assignedToObjectType\";s:5:\"Group\";}}s:8:\"TodoCard\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:14:\"activityCardId\";i:1;s:8:\"cardType\";i:2;s:6:\"todoId\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:6:\"todoId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:14:\"activityCardId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"notes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"this
+  is how you measure things\";}s:8:\"cardType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"TEMP\";s:11:\"description\";s:74:\"the
+  value is a key from the CardTypes entity. note that the key is string.\";}s:5:\"input\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"tempreture
+  must be between -5 and 8\";}s:10:\"outputText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"8\";}s:11:\"outputMedia\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:54:\"{
+  72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 }\";}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":9:{s:5:\"input\";s:35:\"tempreture must
+  be between -5 and 8\";s:14:\"activityCardId\";s:6:\"123456\";s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";s:5:\"notes\";s:30:\"this is how you measure things\";s:11:\"outputMedia\";s:54:\"{
+  72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 }\";s:8:\"cardType\";s:4:\"TEMP\";s:2:\"id\";s:6:\"123456\";s:6:\"todoId\";s:6:\"123456\";s:10:\"outputText\";s:1:\"8\";}}s:12:\"ActivityCard\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:8:\"cardType\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:10:\"activityId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"123456\";}s:5:\"notes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"this
+  is how you measure things\";}s:8:\"cardType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"TEMP\";s:11:\"description\";s:74:\"the
+  value is a key from the CardTypes entity. note that the key is string.\";}s:5:\"input\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"tempreture
+  must be between -5 and 8\";}s:10:\"outputText\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"8\";}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":7:{s:10:\"activityId\";s:6:\"123456\";s:5:\"input\";s:35:\"tempreture
+  must be between -5 and 8\";s:10:\"modifiedOn\";s:16:\"2018-03-14 15:22\";s:5:\"notes\";s:30:\"this
+  is how you measure things\";s:8:\"cardType\";s:4:\"TEMP\";s:2:\"id\";s:6:\"123456\";s:10:\"outputText\";s:1:\"8\";}}s:8:\"CardType\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"title\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"TEMP\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Tempratur\";}s:10:\"modifiedOn\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:16:\"2018-03-14
+  15:22\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:2:\"id\";s:4:\"TEMP\";s:5:\"title\";s:9:\"Tempratur\";s:10:\"modifiedOn\";s:16:\"2018-03-14
+  15:22\";}}}"
+...

@@ -1,0 +1,245 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":13:{s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:12:\"Hossain
+  Khan\";s:3:\"url\";s:54:\"https://github.com/amardeshbd/medium-api-specification\";}s:11:\"description\";s:355:\"Medium\u2019s
+  unofficial API documentation using OpenAPI specification.\n\n# Official API\nOfficial
+  API document can also be viewed for most up to date API spec at [https://github.com/Medium/medium-api-docs](https://github.com/Medium/medium-api-docs).\n\nDeveloper
+  Blog - [Welcome to the Medium API](https://medium.com/blog/welcome-to-the-medium-api-3418f956552)\n\";s:14:\"termsOfService\";s:39:\"https://medium.com/@feerst/2b405a832a2f\";s:5:\"title\";s:10:\"Medium.com\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:2:{i:0;s:5:\"media\";i:1;s:6:\"social\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:116:\"https://api.apis.guru/v2/cache/logo/https_raw.githubusercontent.com_Medium_medium-logos_master_monogram_Monogram.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:106:\"https://raw.githubusercontent.com/amardeshbd/medium-api-specification/master/medium-api-specification.yaml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:10:\"medium.com\";s:6:\"x-tags\";a:3:{i:0;s:4:\"blog\";i:1;s:17:\"social
+  journalism\";i:2;s:19:\"publishing platform\";}s:16:\"x-unofficialSpec\";b:1;s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:6:\"medium\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.medium.com
+basePath: /v1
+paths:
+  /me:
+    get:
+      description: Returns details of the user who has granted permission to the application.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserResponse'
+        401:
+          description: The `accessToken` is invalid or has been revoked.
+      security:
+      - BearerToken: []
+      - OauthSecurity:
+        - basicProfile
+      summary: User details
+      tags:
+      - Users
+      operationId: me.get
+  /publications/{publicationId}/contributors:
+    get:
+      description: This endpoint returns a list of contributors for a given publication.
+        In other words, a list of Medium users who are allowed to publish under a
+        publication, as well as a description of their exact role in the publication
+        (for now, either an editor or a writer).
+      parameters:
+      - description: A unique identifier for the publication.
+        in: path
+        name: publicationId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContibutorResponse'
+        401:
+          description: The `accessToken` is invalid or has been revoked.
+      security:
+      - BearerToken: []
+      - OauthSecurity:
+        - listPublications
+      summary: Contributors of Publication
+      tags:
+      - Publications
+      - Users
+      operationId: publications.publicationId.contributors.get
+  /publications/{publicationId}/posts:
+    post:
+      consumes:
+      - application/json
+      description: creating a post and associating it with a publication on Medium.
+        The request also shows this association, considering posts a collection of
+        resources under a publicationnnThere are additional rules around publishing
+        that each request to this API must respect:n  - If the authenticated user
+        is an 'editor' for the publication, they can create posts with any publish
+        status. Posts published as 'public' or 'unlisted' will appear in collection
+        immediately, while posts created as 'draft' will remain in pending state under
+        publication.n  - If the authenticated user is a 'writer' for the chosen publication,
+        they can only create a post as a 'draft'. That post will remain in pending
+        state under publication until an editor for the publication approves it.n  -
+        If the authenticated user is neither a 'writer' nor an 'editor', they are
+        not allowed to create any posts in a publication.n
+      parameters:
+      - description: Here publicationId is the id of the publication the post is being
+          created under. The publicationId can be acquired from the API for listing
+          useru2019s publications.
+        in: path
+        name: publicationId
+        required: true
+        type: string
+      - description: Creates a post for publication.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Post'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PostDetails'
+        400:
+          description: Required fields were invalid, not specified.
+        401:
+          description: The `accessToken` is invalid or has been revoked.
+        403:
+          description: The `publicationId` in request path doesnu2019t point to a
+            publication that the user can publish into.
+      security:
+      - BearerToken: []
+      - OauthSecurity:
+        - publishPost
+      summary: Create Publication Post
+      tags:
+      - Posts
+      - Publications
+      operationId: publications.publicationId.posts.post
+  /users/{authorId}/posts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a post on the authenticated useru2019s profile.
+      parameters:
+      - description: authorId is the user id of the authenticated user.
+        in: path
+        name: authorId
+        required: true
+        type: string
+      - description: Creates a post for user.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Post'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PostDetails'
+        400:
+          description: Required fields were invalid, not specified.
+        401:
+          description: The `accessToken` is invalid or has been revoked.
+        403:
+          description: The user does not have permission to publish, or the authorId
+            in the request path points to wrong/non-existent user.
+      security:
+      - BearerToken: []
+      - OauthSecurity:
+        - publishPost
+      summary: Create User Post
+      tags:
+      - Users
+      - Posts
+      operationId: users.authorId.posts.post
+  /users/{userId}/publications:
+    get:
+      description: Returns a full list of publications that the user is related to
+        in some way. This includes all publications the user is subscribed to, writes
+        to, or edits.
+      parameters:
+      - description: A unique identifier for the user.
+        in: path
+        name: userId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PublicationResponse'
+        401:
+          description: The `accessToken` is invalid, lacks the `listPublications`
+            scope or has been revoked.
+        403:
+          description: The request attempts to list publications for another user.
+      security:
+      - BearerToken: []
+      - OauthSecurity:
+        - listPublications
+      summary: User's publications
+      tags:
+      - Publications
+      operationId: users.userId.publications.get
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":8:{s:10:\"Contibutor\";O:8:\"stdClass\":4:{s:11:\"description\";s:10:\"Contibutor\";s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"publicationId\";O:8:\"stdClass\":2:{s:11:\"description\";s:81:\"An
+  ID for the publication. This can be lifted from response of publications above\";s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:108:\"Role
+  of the user identified by userId in the publication identified by `publicationId`.
+  *editor* or *writer*\";s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"A
+  user ID of the contributor.\";s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:11:\"Contributor\";s:4:\"type\";s:6:\"object\";}s:18:\"ContibutorResponse\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"list
+  of contributors for a given publication\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"data\";a:5:{i:0;O:8:\"stdClass\":3:{s:13:\"publicationId\";s:12:\"b45573563f5a\";s:4:\"role\";s:6:\"editor\";s:6:\"userId\";s:65:\"13a06af8f81849c64dafbce822cbafbfab7ed7cecf82135bca946807ea351290d\";}i:1;O:8:\"stdClass\":3:{s:13:\"publicationId\";s:12:\"b45573563f5a\";s:4:\"role\";s:6:\"editor\";s:6:\"userId\";s:65:\"1c9c63b15b874d3e354340b7d7458d55e1dda0f6470074df1cc99608a372866ac\";}i:2;O:8:\"stdClass\":3:{s:13:\"publicationId\";s:12:\"b45573563f5a\";s:4:\"role\";s:6:\"editor\";s:6:\"userId\";s:65:\"1cc07499453463518b77d31650c0b53609dc973ad8ebd33690c7be9236e9384ad\";}i:3;O:8:\"stdClass\":3:{s:13:\"publicationId\";s:12:\"b45573563f5a\";s:4:\"role\";s:6:\"writer\";s:6:\"userId\";s:65:\"196f70942410555f4b3030debc4f199a0d5a0309a7b9df96c57b8ec6e4b5f11d7\";}i:4;O:8:\"stdClass\":3:{s:13:\"publicationId\";s:12:\"b45573563f5a\";s:4:\"role\";s:6:\"writer\";s:6:\"userId\";s:65:\"14d4a581f21ff537d245461b8ff2ae9b271b57d9554e25d863e3df6ef03ddd480\";}}}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Contibutor\";}s:4:\"type\";s:5:\"array\";}}s:5:\"title\";s:35:\"Contributors
+  list for a publication\";}s:4:\"Post\";O:8:\"stdClass\":5:{s:7:\"example\";O:8:\"stdClass\":6:{s:12:\"canonicalUrl\";s:41:\"http://jamietalbot.com/posts/liverpool-fc\";s:7:\"content\";s:54:\"<h1>Liverpool
+  FC</h1><p>You\u2019ll never walk alone.</p>\";s:13:\"contentFormat\";s:4:\"html\";s:13:\"publishStatus\";s:6:\"public\";s:4:\"tags\";a:3:{i:0;s:8:\"football\";i:1;s:5:\"sport\";i:2;s:9:\"Liverpool\";}s:5:\"title\";s:12:\"Liverpool
+  FC\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:12:\"canonicalUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  original home of this content, if it was originally published elsewhere.\";s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":2:{s:11:\"description\";s:273:\"The
+  body of the post, in a valid, semantic, HTML fragment, or Markdown. Further markups
+  may be supported in the future. For a full list of accepted HTML tags, see here.
+  If you want your title to appear on the post page, you must also include it as part
+  of the post content.\";s:4:\"type\";s:6:\"string\";}s:13:\"contentFormat\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"The
+  format of the \"content\" field. There are two valid values, \"html\", and \"markdown\"\";s:4:\"type\";s:6:\"string\";}s:7:\"license\";O:8:\"stdClass\":4:{s:7:\"default\";s:19:\"all-rights-reserved\";s:11:\"description\";s:226:\"The
+  license of the post. Valid values are `all-rights-reserved`, `cc-40-by`, `cc-40-by-sa`,
+  `cc-40-by-nd`, `cc-40-by-nc`, `cc-40-by-nc-nd`, `cc-40-by-nc-sa`, `cc-40-zero`,
+  `public-domain`. The default is `all-rights-reserved`.\";s:4:\"enum\";a:9:{i:0;s:19:\"all-rights-reserved\";i:1;s:8:\"cc-40-by\";i:2;s:11:\"cc-40-by-sa\";i:3;s:11:\"cc-40-by-nd\";i:4;s:11:\"cc-40-by-nc\";i:5;s:14:\"cc-40-by-nc-nd\";i:6;s:14:\"cc-40-by-nc-sa\";i:7;s:10:\"cc-40-zero\";i:8;s:13:\"public-domain\";}s:4:\"type\";s:6:\"string\";}s:13:\"publishStatus\";O:8:\"stdClass\":4:{s:7:\"default\";s:6:\"public\";s:11:\"description\";s:99:\"The
+  status of the post. Valid values are `public`, `draft`, or `unlisted`. The default
+  is `public`.\";s:4:\"enum\";a:3:{i:0;s:6:\"public\";i:1;s:5:\"draft\";i:2;s:8:\"unlisted\";}s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"Tags
+  to classify the post. Only the first three will be used. Tags longer than 25 characters
+  will be ignored.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:360:\"The
+  title of the post. Note that this title is used for SEO and when rendering the post
+  as a listing, but will not appear in the actual post\u2014for that, the title must
+  be specified in the content field as well. Titles longer than 100 characters will
+  be ignored. In that case, a title will be synthesized from the first content in
+  the post when it is published.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:5:\"title\";i:1;s:13:\"contentFormat\";i:2;s:7:\"content\";}s:5:\"title\";s:4:\"Post\";s:4:\"type\";s:6:\"object\";}s:11:\"PostDetails\";O:8:\"stdClass\":4:{s:11:\"description\";s:15:\"Details
+  of Post\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":10:{s:8:\"authorId\";s:35:\"5303d74c64f66366f00cb9b2a94f3251bf5\";s:12:\"canonicalUrl\";s:41:\"http://jamietalbot.com/posts/liverpool-fc\";s:2:\"id\";s:6:\"e6f36a\";s:7:\"license\";s:19:\"all-rights-reserved\";s:10:\"licenseUrl\";s:38:\"https://medium.com/policy/9db0094a1e0f\";s:13:\"publishStatus\";s:6:\"public\";s:11:\"publishedAt\";i:1442286338435;s:4:\"tags\";a:3:{i:0;s:8:\"football\";i:1;s:5:\"sport\";i:2;s:9:\"Liverpool\";}s:5:\"title\";s:12:\"Liverpool
+  FC\";s:3:\"url\";s:51:\"https://medium.com/@majelbstoat/liverpool-fc-e6f36a\";}}s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"authorId\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  userId of the post\u2019s author\";s:4:\"type\";s:6:\"string\";}s:12:\"canonicalUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"The
+  canonical URL of the post. If canonicalUrl was not specified in the creation of
+  the post, this field will not be present.\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"A
+  unique identifier for the post.\";s:4:\"type\";s:6:\"string\";}s:7:\"license\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  license of the post.\";s:4:\"enum\";a:9:{i:0;s:19:\"all-rights-reserved\";i:1;s:8:\"cc-40-by\";i:2;s:11:\"cc-40-by-sa\";i:3;s:11:\"cc-40-by-nd\";i:4;s:11:\"cc-40-by-nc\";i:5;s:14:\"cc-40-by-nc-nd\";i:6;s:14:\"cc-40-by-nc-sa\";i:7;s:10:\"cc-40-zero\";i:8;s:13:\"public-domain\";}s:4:\"type\";s:6:\"string\";}s:10:\"licenseUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  URL to the license of the post.\";s:4:\"type\";s:6:\"string\";}s:13:\"publishStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  publish status of the post.\";s:4:\"type\";s:6:\"string\";}s:11:\"publishedAt\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  post\u2019s published date. If created as a draft, this field will not be present.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"The
+  post\u2019s tags\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  post\u2019s title\";s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  URL of the post on Medium\";s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:12:\"Post
+  Details\";}s:11:\"Publication\";O:8:\"stdClass\":5:{s:11:\"description\";s:123:\"Publications
+  provide a way for authors to work collaboratively within a common narrative framework,
+  brand or point of view.\";s:7:\"example\";O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"What
+  is this thing and how does it work?\";s:2:\"id\";s:12:\"b969ac62a46b\";s:8:\"imageUrl\";s:69:\"https://cdn-images-1.medium.com/fit/c/200/200/0*ae1jbP_od0W6EulE.jpeg\";s:4:\"name\";s:12:\"About
+  Medium\";s:3:\"url\";s:24:\"https://medium.com/about\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Short
+  description of the publication\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"A
+  unique identifier for the publication.\";s:4:\"type\";s:6:\"string\";}s:8:\"imageUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  URL to the publication\u2019s image/logo\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  publication\u2019s name on Medium.\";s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"The
+  URL to the publication\u2019s homepage\";s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:16:\"Publication
+  Info\";s:4:\"type\";s:6:\"object\";}s:19:\"PublicationResponse\";O:8:\"stdClass\":4:{s:11:\"description\";s:38:\"Container
+  object for publication list.\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"data\";a:2:{i:0;O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"What
+  is this thing and how does it work?\";s:2:\"id\";s:12:\"b969ac62a46b\";s:8:\"imageUrl\";s:69:\"https://cdn-images-1.medium.com/fit/c/200/200/0*ae1jbP_od0W6EulE.jpeg\";s:4:\"name\";s:12:\"About
+  Medium\";s:3:\"url\";s:24:\"https://medium.com/about\";}i:1;O:8:\"stdClass\":5:{s:11:\"description\";s:30:\"Medium\u2019s
+  Developer resources\";s:2:\"id\";s:12:\"b45573563f5a\";s:8:\"imageUrl\";s:77:\"https://cdn-images-1.medium.com/fit/c/200/200/1*ccokMT4VXmDDO1EoQQHkzg@2x.png\";s:4:\"name\";s:10:\"Developers\";s:3:\"url\";s:29:\"https://medium.com/developers\";}}}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Publication\";}s:4:\"type\";s:5:\"array\";}}s:5:\"title\";s:26:\"Publication
+  List Container\";}s:4:\"User\";O:8:\"stdClass\":3:{s:7:\"example\";O:8:\"stdClass\":5:{s:2:\"id\";s:35:\"5303d74c64f66366f00cb9b2a94f3251bf5\";s:8:\"imageUrl\";s:48:\"https://images.medium.com/0*fkfQiTzT7TlUGGyI.png\";s:4:\"name\";s:12:\"Jamie
+  Talbot\";s:3:\"url\";s:31:\"https://medium.com/@majelbstoat\";s:8:\"username\";s:11:\"majelbstoat\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"A
+  unique identifier for the user.\";s:4:\"type\";s:6:\"string\";}s:8:\"imageUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  URL to the user\u2019s avatar on Medium\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  user\u2019s name on Medium.\";s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  URL to the user\u2019s profile on Medium\";s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  user\u2019s username on Medium.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"UserResponse\";O:8:\"stdClass\":5:{s:11:\"description\";s:30:\"Container
+  object for user info\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":5:{s:2:\"id\";s:35:\"5303d74c64f66366f00cb9b2a94f3251bf5\";s:8:\"imageUrl\";s:48:\"https://images.medium.com/0*fkfQiTzT7TlUGGyI.png\";s:4:\"name\";s:12:\"Jamie
+  Talbot\";s:3:\"url\";s:31:\"https://medium.com/@majelbstoat\";s:8:\"username\";s:11:\"majelbstoat\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:5:\"title\";s:14:\"User
+  Container\";s:4:\"type\";s:6:\"object\";}}"
+...

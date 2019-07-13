@@ -1,0 +1,746 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":3:{s:5:\"email\";s:22:\"office@visagecloud.com\";s:4:\"name\";s:11:\"VisageCloud\";s:3:\"url\";s:23:\"https://visagecloud.com\";}s:11:\"description\";s:164:\"Face
+  search, recognition & classification API. Just make a call to our REST API each
+  time your app needs to access face recognition and classification capabilities.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:29:\"As
+  per Developer Terms of Use\";s:3:\"url\";s:46:\"https://visagecloud.com/developer-terms-of-use\";}s:14:\"termsOfService\";s:36:\"https://visagecloud.com/terms-of-use\";s:5:\"title\";s:11:\"VisageCloud\";s:7:\"version\";s:3:\"1.1\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:6:\"search\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:79:\"https://api.apis.guru/v2/cache/logo/https_visagecloud.com_visage-cloud-logo.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:35:\"https://visagecloud.com/v2/api-docs\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:15:\"visagecloud.com\";}"
+host: visagecloud.com
+basePath: /
+paths:
+  /rest/v1.1/analysis/detection:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: performAnalysisUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - default: true
+        description: Boolean value indicating whether you want the original picture
+          to be stored for later retrieval
+        in: query
+        name: storePicture
+        required: false
+        type: boolean
+      - description: The URL of the picture, assuming it is served by a third party
+          server. Server should be accesible from the Internet or through another
+          netwoek by VisageCloud infrastructure
+        in: query
+        name: pictureURL
+        required: false
+        type: string
+      - description: The multipart/form-data version of the image, in case a direct
+          upload is used. At least one of picture or pictureURL must be present
+        in: formData
+        name: picture
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Perform detection on a given picture or picture URL
+      tags:
+      - Analysis
+  /rest/v1.1/analysis/listLatest:
+    get:
+      consumes:
+      - application/json
+      operationId: retriveLatestUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - default: 100
+        description: How many records to retrieve at a time
+        format: int32
+        in: query
+        name: count
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Retrieve the last *count* operations per current account
+      tags:
+      - Analysis
+  /rest/v1.1/analysis/recognition:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: performRecognitionUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - default: true
+        description: Boolean value indicating whether you want the original picture
+          to be stored for later retrieval
+        in: query
+        name: storePicture
+        required: false
+        type: boolean
+      - description: Uniquely identified collection that can store multiple profiles
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      - collectionFormat: multi
+        description: Labels associated with the given picture or picture URL
+        in: query
+        items:
+          type: string
+        name: labels
+        required: false
+        type: array
+      - collectionFormat: multi
+        description: Filters that will be applied on the recognition operation
+        enum:
+        - GENDER_FILTER
+        - AGE_GROUP_FILTER
+        in: query
+        items:
+          enum:
+          - GENDER_FILTER
+          - AGE_GROUP_FILTER
+          type: string
+        name: attributeFilters
+        required: false
+        type: array
+      - description: The URL of the picture
+        in: query
+        name: pictureURL
+        required: false
+        type: string
+      - description: The picture itself
+        in: formData
+        name: picture
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Perform labeled recognition on a given picture or picture URL
+      tags:
+      - Analysis
+  /rest/v1.1/analysis/retrieve:
+    get:
+      consumes:
+      - application/json
+      operationId: retrieveAnalysisUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The ID of the analysis for which the data will be retrieved
+        in: query
+        name: analysisId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Retrieve a complete analysis object including both detection and recognition
+        information
+      tags:
+      - Analysis
+  /rest/v1.1/collection/all:
+    get:
+      consumes:
+      - application/json
+      operationId: getAllCollectionsUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Retrieve all collections
+      tags:
+      - Collection
+  /rest/v1.1/collection/collection:
+    delete:
+      consumes:
+      - application/json
+      operationId: removeFaceFromProfileUsingDELETE
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the collection that will be removed
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      summary: Delete existing collection
+      tags:
+      - Collection
+    get:
+      consumes:
+      - application/json
+      operationId: getProfilesFromCollectionUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the collection for which the data will be retrieved
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Retrieve existing collection content
+      tags:
+      - Collection
+    post:
+      consumes:
+      - application/json
+      operationId: addCollectionUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The name of the collection that will be created
+        in: query
+        name: collectionName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Create new empty collection with given name
+      tags:
+      - Collection
+  /rest/v1.1/profile/enrollmentStatus:
+    get:
+      consumes:
+      - application/json
+      operationId: getProfileEnrollmentStatusUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The profile that contains the faces
+        in: query
+        name: profileId
+        required: true
+        type: string
+      - description: The collection that contains the profile
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: 'Gets the enrollment status of a profile: information on whether it
+        is suitable for authentication.'
+      tags:
+      - Profile
+  /rest/v1.1/profile/map:
+    delete:
+      consumes:
+      - application/json
+      operationId: removeFaceFromProfileUsingDELETE_1
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The face that will be removed from a profile
+        in: query
+        name: faceHash
+        required: true
+        type: string
+      - description: The profile that contains the face
+        in: query
+        name: profileId
+        required: true
+        type: string
+      - description: The collection that contains the profile
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      summary: Removes (unmaps) a face, identified by faceHash, from a profile, identified
+        by profileId
+      tags:
+      - Profile
+    get:
+      consumes:
+      - application/json
+      operationId: getFacesFromProfileUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The profile that contains the faces
+        in: query
+        name: profileId
+        required: true
+        type: string
+      - description: The collection that contains the profile
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Gets all the faceHashes associated to a profile
+      tags:
+      - Profile
+    post:
+      consumes:
+      - application/json
+      operationId: mapFaceToProfileUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The face that will be added to a profile
+        in: query
+        name: faceHash
+        required: true
+        type: string
+      - description: The profile that will store the face
+        in: query
+        name: profileId
+        required: true
+        type: string
+      - description: The collection that contains the profile
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Adds (maps) a face, identified by faceHash, to a profile, identified
+        by profileId
+      tags:
+      - Profile
+  /rest/v1.1/profile/profile:
+    post:
+      consumes:
+      - application/json
+      operationId: addProfileUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: Uniquely identified collection that can store multiple profiles
+        in: query
+        name: collectionId
+        required: true
+        type: string
+      - description: External reference to additional information you donu2019t want
+          to share with VisageCloud
+        in: query
+        name: externalId
+        required: false
+        type: string
+      - description: Human-readable label for the profile
+        in: query
+        name: screenName
+        required: false
+        type: string
+      - collectionFormat: multi
+        description: Allows you to do finer filtering in face recognition
+        in: query
+        items:
+          type: string
+        name: labels
+        required: false
+        type: array
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Creates a new profile with no faces associated to it (empty profile)
+      tags:
+      - Profile
+  /rest/v1.1/stream/frames:
+    get:
+      consumes:
+      - application/json
+      operationId: getLastNFramesUsingGET
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the stream for which the frames will be retrieved
+        in: query
+        name: streamId
+        required: true
+        type: string
+      - default: 10
+        description: How many frames to retrieve at a time
+        format: int32
+        in: query
+        name: count
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get last processed N frames from stream
+      tags:
+      - Stream
+  /rest/v1.1/stream/start:
+    patch:
+      consumes:
+      - application/json
+      operationId: startStreamUsingPATCH
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the stream that will be started
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      summary: Start existing stream
+      tags:
+      - Stream
+  /rest/v1.1/stream/stop:
+    patch:
+      consumes:
+      - application/json
+      operationId: stopStreamUsingPATCH
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the stream that will be stopped
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      summary: Stop existing stream
+      tags:
+      - Stream
+  /rest/v1.1/stream/stream:
+    delete:
+      consumes:
+      - application/json
+      operationId: removeStreamUsingDELETE
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The id of the stream that will be removed
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      summary: Delete existing stream
+      tags:
+      - Stream
+    post:
+      consumes:
+      - application/json
+      operationId: addStreamUsingPOST
+      parameters:
+      - description: The secretKey or readOnlyKey provided by VisageCloud
+        in: query
+        name: secretKey
+        required: true
+        type: string
+      - description: The name of the stream that will be created
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: The url of the stream
+        in: query
+        name: url
+        required: true
+        type: string
+      - default: WEBRTC_PULL
+        description: Streaming method
+        enum:
+        - WEBRTC_PULL
+        - WEBRTC_PUSH
+        - SNAPSHOT_PULL
+        in: query
+        name: method
+        required: false
+        type: string
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: query
+        name: password
+        required: true
+        type: string
+      - default: false
+        description: Boolean value indicating whether you want the original picture
+          to be stored for later retrieval
+        in: query
+        name: storeOriginalFrames
+        required: false
+        type: boolean
+      - default: false
+        description: Boolean value indicating whether the stream is currently active
+          or not
+        in: query
+        name: isActive
+        required: false
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RestResponse'
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Create new stream with given name
+      tags:
+      - Stream
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":1:{s:12:\"RestResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

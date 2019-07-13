@@ -1,0 +1,543 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:16:\"Optimalprint
+  API\";s:11:\"description\";s:129:\"This is an API for usage with OP frontend application.
+  Currenly cart-related and user login / regisration actions are supported.\n\";}"
+host: eu.optimalprint.dev
+basePath: /app-api
+paths:
+  /cart:
+    get:
+      summary: Returns cart content & total sums
+      responses:
+        200:
+          description: Returns cart content
+          schema:
+            $ref: '#/definitions/cartResponse'
+  /cart/remove-item/{itemId}:
+    get:
+      summary: Removes the specific order item (including children items)
+      responses:
+        200:
+          description: Returns modified cart content (modified item list and recalculated
+            sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: itemId
+        in: path
+        description: item ID to remove
+        type: integer
+        required: true
+  /cart/add-child-item/{parentItemId}:
+    get:
+      summary: Adds the specific child of the requested parent order item
+      responses:
+        200:
+          description: Returns modified cart content (modified item list and recalculated
+            sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        400:
+          description: Specified child order item cannot be added (e.g. not relevant)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested parent order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: parentItemId
+        in: path
+        description: parent item ID to modify
+        type: integer
+        required: true
+      - name: coating
+        in: query
+        description: flag defining whether to add coating (glossy paper) or not
+        type: boolean
+        required: false
+        default: false
+      - name: premium
+        in: query
+        description: flag defining whether to add premium (matte) paper or not
+        type: boolean
+        required: false
+        default: false
+      - name: blankEnvelopes
+        in: query
+        description: flag defining whether to add non-mandatory blank envelopes or
+          not
+        type: boolean
+        required: false
+        default: false
+  /cart/remove-child-item/{parentItemId}:
+    get:
+      summary: Removes the specific child of the requested parent order item
+      responses:
+        200:
+          description: Returns modified cart content (modified item list and recalculated
+            sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        400:
+          description: Specified child order item cannot be removed
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested parent order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: parentItemId
+        in: path
+        description: parent item ID to modify
+        type: integer
+        required: true
+      - name: coating
+        in: query
+        description: flag defining whether to remove coating (glossy paper) or not
+        type: boolean
+        required: false
+        default: false
+      - name: premium
+        in: query
+        description: flag defining whether to remove premium (matte) paper or not
+        type: boolean
+        required: false
+        default: false
+      - name: blankEnvelopes
+        in: query
+        description: flag defining whether to remove non-mandatory blank envelopes
+          or not
+        type: boolean
+        required: false
+        default: false
+  /cart/add-voucher/{voucherCode}:
+    get:
+      summary: Adds the specific voucher corresponding to the entered code
+      responses:
+        200:
+          description: Returns modified cart content (with recalculated sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested voucher code is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: voucherCode
+        in: path
+        description: voucher code corresponding the voucher to add
+        type: string
+        required: true
+  /cart/remove-voucher/{voucherId}:
+    get:
+      summary: Removes the specific voucher
+      responses:
+        200:
+          description: Returns modified cart content (with recalculated sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested voucher is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: voucherId
+        in: path
+        description: voucher ID to remove
+        type: integer
+        required: true
+  /cart/add-premium:
+    get:
+      summary: Adds Optimalprint Premium product to the cart
+      responses:
+        200:
+          description: Returns modified cart content (with modified item list and
+            recalculated sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        400:
+          description: Optimalprint Premium product cannot be added to the cart (either
+            already added or not relevant).
+          schema:
+            $ref: '#/definitions/cartResponse'
+  /cart/remove-premium:
+    get:
+      summary: Removes Optimalprint Premium product from the cart
+      responses:
+        200:
+          description: Returns modified cart content (with modified item list and
+            recalculated sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        400:
+          description: Optimalprint Premium product cannot be removed from the cart
+            (e.g. non-existent cart item).
+          schema:
+            $ref: '#/definitions/cartResponse'
+  /cart/change-quantity/{itemId}:
+    get:
+      summary: Changes the specific order item quantity
+      responses:
+        200:
+          description: Returns modified cart content (with modified item list and
+            recalculated sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        400:
+          description: Requested quantity cannot be applied to the requested order
+            item.
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: itemId
+        in: path
+        description: item ID for quantity modification
+        type: integer
+        required: true
+      - name: quantity
+        in: query
+        description: New quantity to apply
+        type: integer
+        required: true
+  /cart/save-to-drafts/{itemId}:
+    get:
+      summary: Saves the specific order item (design) to drafts.
+      responses:
+        200:
+          description: Returns modified cart content (modified item list and recalculated
+            sums)
+          schema:
+            $ref: '#/definitions/cartResponse'
+        404:
+          description: Requested order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: itemId
+        in: path
+        description: item ID to save to drafts
+        type: integer
+        required: true
+      - name: removeFromCart
+        in: query
+        description: Defines whether to remove the order cart after it's saved to
+          drafts
+        type: boolean
+        default: false
+        required: false
+  /cart/duplicate/{itemId}:
+    get:
+      summary: Creates a copy of the specific order item (design), puts it to the
+        cart and provides the link for editing the copy.
+      responses:
+        200:
+          description: Returns modified cart content (modified item list and recalculated
+            sums) and  the link for editing the copy
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              order:
+                $ref: '#/definitions/order'
+              duplicatedItem:
+                type: object
+                properties:
+                  itemId:
+                    type: integer
+                  editDesignUrl:
+                    type: string
+        404:
+          description: Requested order item is NOT found.
+          schema:
+            $ref: '#/definitions/cartResponse'
+      parameters:
+      - name: itemId
+        in: path
+        description: item ID to duplicate
+        type: integer
+        required: true
+  /auth/login:
+    post:
+      summary: Logs in a customer with the specified email and password
+      responses:
+        200:
+          description: Returns modified cart content (with modified item list and
+            recalculated sums)
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              customer:
+                $ref: '#/definitions/customer'
+        400:
+          description: Requested quantity cannot be applied to the requested order
+            item.
+        404:
+          description: Requested order item is NOT found.
+      parameters:
+      - name: email
+        in: query
+        description: User name (email)
+        type: string
+        required: true
+      - name: password
+        in: query
+        description: User Password
+        type: string
+        required: true
+  /auth/registration:
+    post:
+      summary: Register a customer with the specified email and password
+      responses:
+        200:
+          description: Returns modified cart content (with modified item list and
+            recalculated sums)
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              customer:
+                $ref: '#/definitions/customer'
+        400:
+          description: Requested quantity cannot be applied to the requested order
+            item.
+        404:
+          description: Requested order item is NOT found.
+      parameters:
+      - name: email
+        in: query
+        description: User name (email)
+        type: string
+        required: true
+      - name: password
+        in: query
+        description: User Password
+        type: string
+        required: true
+      - name: firstName
+        in: query
+        description: Customer's first name
+        type: string
+        required: true
+      - name: lastName
+        in: query
+        description: Customer's last name
+        type: string
+        required: true
+      - name: company
+        in: query
+        description: Customer's company name
+        type: string
+        required: false
+        default: ""
+      - name: countryId
+        in: query
+        description: Customer's country ID
+        type: string
+        required: false
+        default: ""
+  /auth/password-recovery/request-token/{email}:
+    get:
+      summary: Sends password recovery token to the specified customer's email (if
+        it's assigned to an account)
+      responses:
+        200:
+          description: Returns info regarding created shipment address and customer
+            account (in case it's created as well)
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+        404:
+          description: Could not find a customer account with the requested email.
+      parameters:
+      - name: email
+        in: path
+        description: customer account email address to retrieve password recovery
+          mail with token (URL)
+        type: string
+        required: true
+  /auth/password-recovery/set-password:
+    post:
+      summary: Sets new password using token recevied in a password recovery mail
+      responses:
+        200:
+          description: Returns info regarding created shipment address and customer
+            account (in case it's created as well)
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              customer:
+                $ref: '#/definitions/customer'
+      parameters:
+      - name: token
+        in: query
+        description: token received with password recovery email
+        type: string
+        required: true
+      - name: password
+        in: query
+        description: New password
+        type: string
+        required: true
+  /shipment-address/add:
+    post:
+      summary: Adds a new shipment address and connect it to the current order (cart).
+        In case if the customer is not logged in and email / password are provided
+        then a new account is registered along with shipment address creation.
+      responses:
+        200:
+          description: Returns info regarding created shipment address and customer
+            account (in case it's created as well)
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              shipmentAddress:
+                $ref: '#/definitions/shipmentAddress'
+              customer:
+                $ref: '#/definitions/customer'
+        400:
+          description: Requested quantity cannot be applied to the requested order
+            item.
+        404:
+          description: Requested order item is NOT found.
+      parameters:
+      - name: shipmentAddressId
+        in: query
+        description: Shipment address ID (to avoid redundant duplication of shipment
+          addresses)
+        type: string
+        required: false
+        default: ""
+      - name: email
+        in: query
+        description: User name (email)
+        type: string
+        required: false
+        default: ""
+      - name: password
+        in: query
+        description: User Password
+        type: string
+        required: false
+        default: ""
+      - name: firstName
+        in: query
+        description: Customer's first name
+        type: string
+        required: true
+      - name: lastName
+        in: query
+        description: Customer's last name
+        type: string
+        required: true
+      - name: company
+        in: query
+        description: Customer's company name
+        type: string
+        required: false
+        default: ""
+      - name: countryId
+        in: query
+        description: Customer's country ID
+        type: string
+        required: true
+        default: ""
+      - name: county
+        in: query
+        description: Customer's county (relevant for UK only)
+        type: string
+        required: false
+        default: ""
+      - name: usStateId
+        in: query
+        description: US state ID (relevant for US only)
+        type: string
+        required: false
+        default: ""
+      - name: canadianProvinceId
+        in: query
+        description: Canadian province ID (relevant for Canada only)
+        type: string
+        required: false
+        default: ""
+      - name: addressLine1
+        in: query
+        description: Customer's address (line 1)
+        type: string
+        required: true
+      - name: addressLine2
+        in: query
+        description: Customer's address (line 2)
+        type: string
+        required: false
+        default: ""
+      - name: addressLine3
+        in: query
+        description: Customer's address (line 3)
+        type: string
+        required: false
+        default: ""
+      - name: phonePrefix
+        in: query
+        description: Customer's phone prefix (country code)
+        type: string
+        required: false
+        default: ""
+      - name: phoneNumber
+        in: query
+        description: Customer's phone number (w/o country code)
+        type: string
+        required: false
+        default: ""
+  /shipment-address/get-latest:
+    post:
+      summary: Gets latest used shipment address (or prefilled set of address fields
+        if no address has been created yet).
+      responses:
+        200:
+          description: Returns info regarding the latest uses shipment address
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+              errorMessage:
+                type: string
+              shipmentAddress:
+                $ref: '#/definitions/shipmentAddress'
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":13:{s:8:\"customer\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"customerId\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"roleId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"company\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"opLoyalFrom\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:12:\"opLoyalUntil\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:19:\"opLoyalIsSubscribed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:15:\"shipmentAddress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:17:\"shipmentAddressId\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:17:\"shipmentAddressId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"company\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"countryId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"county\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"usStateId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"canadianProvinceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"addressLine1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"addressLine2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"addressLine3\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"phonePrefix\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"phoneNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:22:\"orderItemPricesNumeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"initial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:10:\"vatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:3:\"vat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:11:\"vatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:24:\"orderItemPricesFormatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"initial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"vatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"vat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"vatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"orderItemPrices\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"currencyId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"numeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:36:\"#/definitions/orderItemPricesNumeric\";}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/orderItemPricesFormatted\";}}}s:22:\"orderItemQuantityPrice\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"quantity\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"currencyId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"numeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"perItemInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:17:\"perItemDiscounted\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"subtotalInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:18:\"subtotalDiscounted\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"perItemInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"perItemDiscounted\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"subtotalInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"subtotalDiscounted\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:18:\"orderPricesNumeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:12:\"itemsInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"itemsDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:10:\"itemsTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"itemsVatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:16:\"itemsVatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"itemsVatTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"shippingInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:16:\"shippingDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"shippingTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:18:\"shippingVatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:19:\"shippingVatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:16:\"shippingVatTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"totalInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"totalDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:5:\"total\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"totalVat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:20:\"orderPricesFormatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":16:{s:12:\"itemsInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"itemsDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"itemsTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"itemsVatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"itemsVatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"itemsVatTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"shippingInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"shippingDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"shippingTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"shippingVatInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"shippingVatDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"shippingVatTotal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"totalInitial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"totalDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"total\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"totalVat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"orderPrices\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"currencyId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"numeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:32:\"#/definitions/orderPricesNumeric\";}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:34:\"#/definitions/orderPricesFormatted\";}}}s:9:\"orderItem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:6:\"itemId\";i:1;s:18:\"productBatchsizeId\";}s:10:\"properties\";O:8:\"stdClass\":22:{s:6:\"itemId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"productType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"paperFormatName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"paperFormatType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"designId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"previewUrls\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"thumbnails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"modal\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:18:\"productBatchsizeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"vat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"orderItemTypeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"prices\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:29:\"#/definitions/orderItemPrices\";}s:14:\"quantityPrices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/orderItemQuantityPrice\";}}s:20:\"childorderItemPrices\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"coating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:36:\"#/definitions/orderItemQuantityPrice\";}s:12:\"premiumPaper\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:36:\"#/definitions/orderItemQuantityPrice\";}s:22:\"optionalBlankEnvelopes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/orderItemQuantityPrice\";}}}}s:15:\"percentDiscount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"quantity\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:26:\"hasMandatoryBlankEnvelopes\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:25:\"hasOptionalBlankEnvelopes\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"hasCoating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"hasPremiumPaper\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:19:\"hasMatchingProducts\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"externalPageUrls\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"editDesign\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"matchingProducts\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:7:\"voucher\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"voucherId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"typeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"discountPercentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"numeric\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"shipment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:9:\"formatted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"shipment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:18:\"showExpirationDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"expirationDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:5:\"order\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:15:\"customerOrderId\";}s:10:\"properties\";O:8:\"stdClass\":19:{s:15:\"customerOrderId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"orderStatusId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"customerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:17:\"shipmentAddressId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:16:\"billingAddressId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:16:\"shipmentMethodId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:21:\"shipmentMethodGroupId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:7:\"integer\";i:1;s:4:\"null\";}}s:18:\"shipmentMethodName\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"shipmentProviderId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"printHouseCountryId\";O:8:\"stdClass\":1:{s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"isTracked\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"minDeliveryDay\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"maxDeliveryDay\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"prices\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:25:\"#/definitions/orderPrices\";}s:10:\"showIncVat\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/orderItem\";}}s:8:\"vouchers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/voucher\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:12:\"cartResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"errorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"order\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/order\";}}}}"
+...

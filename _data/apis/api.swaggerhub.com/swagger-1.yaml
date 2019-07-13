@@ -1,0 +1,977 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:7:\"contact\";O:8:\"stdClass\":3:{s:5:\"email\";s:19:\"info@swaggerhub.com\";s:4:\"name\";s:10:\"SwaggerHub\";s:3:\"url\";s:21:\"http://swaggerhub.com\";}s:11:\"description\";s:306:\"#
+  Introduction\nThis is the registry API for SwaggerHub. It allows you to access,
+  manage, and update your APIs and Domains in SwaggerHub bypassing the Web application.\n\n#
+  Authentication\nUse your personal API Key: you may find it by visiting the   [API
+  Key page](https://app.swaggerhub.com/settings/apiKey).\n\";s:5:\"title\";s:19:\"SwaggerHub
+  Registry\";s:7:\"version\";s:6:\"1.0.45\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:15:\"developer_tools\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:110:\"https://api.apis.guru/v2/cache/logo/https_pbs.twimg.com_profile_images_725794797592690688_r20oBBuu_400x400.jpg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:63:\"https://api.swaggerhub.com/apis/swagger-hub/registry-api/1.0.45\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:14:\"swaggerhub.com\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"swaggerhub\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.swaggerhub.com
+paths:
+  /apis:
+    get:
+      description: ""
+      operationId: searchApis
+      parameters:
+      - description: free text query to match
+        in: query
+        name: query
+        required: false
+        type: string
+      - default: ALL
+        description: matches against published state of the specn* UNPUBLISHED - spec
+          is a draft, a work in progressn* PUBLISHED - spec is a stable version ready
+          for consuming from client applicationsn* ANY - either PUBLISHED or UNPUBLISHEDn
+        enum:
+        - ALL
+        - PUBLISHED
+        - UNPUBLISHED
+        in: query
+        name: state
+        required: false
+        type: string
+      - collectionFormat: multi
+        description: matches against tags associated with an API
+        in: query
+        items:
+          type: string
+        name: tag
+        required: false
+        type: array
+      - default: 0
+        description: page to return
+        format: int32
+        in: query
+        name: page
+        required: false
+        type: integer
+      - default: 10
+        description: number of results per page
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: NAME
+        description: sort criteria or result setn* NAME -n* UPATEDn* CREATEDn* OWNERn
+        enum:
+        - NAME
+        - UPDATED
+        - CREATED
+        - OWNER
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: ASC
+        description: sort order
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: order
+        required: false
+        type: string
+      responses:
+        303:
+          description: 303 response
+          headers:
+            Location:
+              type: string
+      security:
+      - TokenSecured: []
+      summary: Retrieves a list of currently defined APIs in APIs.json format.
+      tags:
+      - APIs
+  /apis/{owner}:
+    get:
+      description: ""
+      operationId: getOwnerApis
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - default: 0
+        description: page to return
+        format: int32
+        in: query
+        name: page
+        required: false
+        type: integer
+      - default: 10
+        description: number of results per page
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: NAME
+        description: sort criteria or result setn* NAME -n* UPATEDn* CREATEDn* OWNERn
+        enum:
+        - NAME
+        - UPDATED
+        - CREATED
+        - OWNER
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: ASC
+        description: sort order
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: order
+        required: false
+        type: string
+      responses:
+        200:
+          description: a list of APIs in APIs.json format
+          schema:
+            $ref: '#/definitions/ApisJson'
+      security:
+      - TokenSecured: []
+      summary: Retrieves an APIs.json listing of all APIs defined for this owner
+      tags:
+      - APIs
+  /apis/{owner}/{api}:
+    delete:
+      description: ""
+      operationId: deleteApi
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      responses:
+        200:
+          description: the API was successfully deleted
+        403:
+          description: access denied
+        404:
+          description: specified API not found
+        409:
+          description: the API has published versions and can not be deleted
+      security:
+      - TokenSecured: []
+      summary: Deletes the specified API
+      tags:
+      - APIs
+    get:
+      operationId: getApiVersions
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      responses:
+        200:
+          description: a list of API versions in APIs.json format
+          schema:
+            $ref: '#/definitions/ApisJson'
+      security:
+      - TokenSecured: []
+      summary: Retrieves an APIs.json listing for all API versions for this owner
+        and API
+      tags:
+      - APIs
+    post:
+      consumes:
+      - application/json
+      - application/yaml
+      description: Saves the provided Swagger definition; the owner must match the
+        token owner. The version will be extracted from the Swagger definitions itself.
+      operationId: saveDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - default: false
+        description: Defines whether the API has to be private
+        in: query
+        name: isPrivate
+        required: false
+        type: boolean
+      - description: api version
+        in: query
+        name: version
+        required: false
+        type: string
+      - description: the Swagger definition of this API
+        in: body
+        name: definition
+        required: true
+        schema:
+          type: string
+      - description: force update
+        in: query
+        name: force
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: the API was successfully saved
+        201:
+          description: new API was successfully saved
+        205:
+          description: the API was successfully saved and should be reloaded
+        400:
+          description: the Swagger definition was invalid
+        403:
+          description: maximum number of APIs reached
+        409:
+          description: can not overwrite a published API version
+        415:
+          description: invalid content type
+      security:
+      - TokenSecured: []
+      summary: Saves the provided Swagger definition
+      tags:
+      - APIs
+  /apis/{owner}/{api}/.collaboration:
+    delete:
+      operationId: deleteCollaboration
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      responses:
+        default:
+          description: successfully deleted a collaboration
+      security:
+      - TokenSecured: []
+      summary: Deletes API's collaboration
+      tags:
+      - APIs
+    get:
+      operationId: getCollaboration
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - default: false
+        in: query
+        name: expandTeams
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: the existing collaboration on an API
+          schema:
+            $ref: '#/definitions/Collaboration'
+      security:
+      - TokenSecured: []
+      summary: Gets API's collaboration
+      tags:
+      - APIs
+    put:
+      operationId: updateCollaboration
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/Collaboration'
+      responses:
+        default:
+          description: successfully updated API collaboration
+      security:
+      - TokenSecured: []
+      summary: Updates API's collaboration
+      tags:
+      - APIs
+  /apis/{owner}/{api}/{version}:
+    delete:
+      description: ""
+      operationId: deleteApiVersion
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      responses:
+        200:
+          description: the API version was successfully deleted
+        403:
+          description: access denied
+        404:
+          description: specified API not found
+        409:
+          description: the API version is published and can not be deleted or it is
+            the only version of this API
+      security:
+      - TokenSecured: []
+      summary: Deletes a particular version of the specified API
+      tags:
+      - APIs
+    get:
+      description: ""
+      operationId: getDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        200:
+          description: the Swagger API in requested format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified API not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the Swagger definition for the specified API and version
+      tags:
+      - APIs
+  /apis/{owner}/{api}/{version}/swagger.json:
+    get:
+      description: ""
+      operationId: getJsonDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      responses:
+        200:
+          description: the Swagger API in JSON format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified API not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the Swagger definition for the specified API and version
+        in JSON format
+      tags:
+      - APIs
+  /apis/{owner}/{api}/{version}/swagger.yaml:
+    get:
+      description: ""
+      operationId: getYamlDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: API identifier
+        in: path
+        name: api
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/yaml
+      responses:
+        200:
+          description: the Swagger API in YAML format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified API not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the Swagger definition for the specified API and version
+        in YAML format
+      tags:
+      - APIs
+  /domains:
+    get:
+      operationId: searchDomains
+      parameters:
+      - description: free text query to match
+        in: query
+        name: query
+        required: false
+        type: string
+      - default: ALL
+        description: matches against published state of the specn* UNPUBLISHED - spec
+          is a draft, a work in progressn* PUBLISHED - spec is a stable version ready
+          for consuming from client applicationsn* ANY - either PUBLISHED or UNPUBLISHEDn
+        enum:
+        - ALL
+        - PUBLISHED
+        - UNPUBLISHED
+        in: query
+        name: state
+        required: false
+        type: string
+      - collectionFormat: multi
+        description: matches against tags associated with a domain
+        in: query
+        items:
+          type: string
+        name: tag
+        required: false
+        type: array
+      - default: 0
+        description: page to return
+        format: int32
+        in: query
+        name: page
+        required: false
+        type: integer
+      - default: 10
+        description: number of results per page
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: NAME
+        description: sort criteria or result setn* NAME -n* UPATEDn* CREATEDn* OWNERn
+        enum:
+        - NAME
+        - UPDATED
+        - CREATED
+        - OWNER
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: ASC
+        description: sort order
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: order
+        required: false
+        type: string
+      responses:
+        303:
+          description: 303 response
+          headers:
+            Location:
+              type: string
+      security:
+      - TokenSecured: []
+      summary: Retrieves a list of currently defined domains in APIs.json format
+      tags:
+      - Domains
+  /domains/{owner}:
+    get:
+      operationId: getOwnerDomains
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - default: 0
+        description: page to return
+        format: int32
+        in: query
+        name: page
+        required: false
+        type: integer
+      - default: 10
+        description: number of results per page
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: NAME
+        description: sort criteria or result setn* NAME -n* UPATEDn* CREATEDn* OWNERn
+        enum:
+        - NAME
+        - UPDATED
+        - CREATED
+        - OWNER
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: ASC
+        description: sort order
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: order
+        required: false
+        type: string
+      responses:
+        200:
+          description: a list of domains in APIs.json format
+          schema:
+            $ref: '#/definitions/ApisJson'
+      security:
+      - TokenSecured: []
+      summary: Retrieves an APIs.json listing of all domains defined for this owner
+      tags:
+      - Domains
+  /domains/{owner}/{domain}:
+    delete:
+      operationId: deleteDomain
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: force update
+        in: query
+        name: force
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: the domain was successfully deleted
+        403:
+          description: access denied
+        404:
+          description: specified domain not found
+        409:
+          description: the domain has published versions and can not be deleted
+        424:
+          description: can't delete because there are some dependencies for domain
+          schema:
+            $ref: '#/definitions/Page'
+      security:
+      - TokenSecured: []
+      summary: Deletes the specified domain
+      tags:
+      - Domains
+    get:
+      operationId: getDomainVersions
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      responses:
+        200:
+          description: a list of domain versions in APIs.json format
+          schema:
+            $ref: '#/definitions/ApisJson'
+      security:
+      - TokenSecured: []
+      summary: Retrieves an APIs.json listing for all domain versions for this owner
+        and domain
+      tags:
+      - Domains
+    post:
+      consumes:
+      - application/json
+      - application/yaml
+      operationId: saveDomainDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - default: false
+        description: Defines whether the API has to be private
+        in: query
+        name: isPrivate
+        required: false
+        type: boolean
+      - description: domain version
+        in: query
+        name: version
+        required: true
+        type: string
+      - description: the Swagger definition of this Domain
+        in: body
+        name: definition
+        required: false
+        schema:
+          type: string
+      - description: force update
+        in: query
+        name: force
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: the domain was successfully saved
+        201:
+          description: new domain was successfully saved
+        205:
+          description: the domain was successfully saved and should be reloaded
+        403:
+          description: maximum number of domains reached
+        409:
+          description: can not overwrite a published domain version
+        415:
+          description: invalid content type
+      security:
+      - TokenSecured: []
+      summary: Saves the provided Swagger definition of a domain
+      tags:
+      - Domains
+  /domains/{owner}/{domain}/{version}:
+    delete:
+      operationId: deleteDomainVersion
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      - description: force update
+        in: query
+        name: force
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: the domain version was successfully deleted
+        403:
+          description: access denied
+        404:
+          description: specified domain not found
+        409:
+          description: the domain version is published and can not be deleted or it
+            is the only version of this API
+        424:
+          description: can't delete because there are some dependencies for domain
+          schema:
+            $ref: '#/definitions/Page'
+      security:
+      - TokenSecured: []
+      summary: Deletes a particular version of the specified domain
+      tags:
+      - Domains
+    get:
+      operationId: getDomainDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        200:
+          description: the Swagger domain in requested format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified domain not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the Swagger definition for the specified domain and version
+      tags:
+      - Domains
+  /domains/{owner}/{domain}/{version}/domain.json:
+    get:
+      operationId: getDomainJsonDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      responses:
+        200:
+          description: definition in JSON format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified domain not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the definition for the specified domain and version in JSON
+        format
+      tags:
+      - Domains
+  /domains/{owner}/{domain}/{version}/domain.yaml:
+    get:
+      operationId: getDomainYamlDefinition
+      parameters:
+      - description: API or Domaion owner identifier
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: domain identifier
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: version identifier
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/yaml
+      responses:
+        200:
+          description: definition in YAML format
+          schema:
+            properties: []
+            type: object
+        404:
+          description: specified domain not found
+      security:
+      - TokenSecured: []
+      summary: Retrieves the definition for the specified domain and version in YAML
+        format
+      tags:
+      - Domains
+  /specs:
+    get:
+      description: ""
+      operationId: searchApisAndDomains
+      parameters:
+      - default: ANY
+        description: Type of Swagger specs to searchn* API - APIs onlyn* DOMAIN -
+          Domains onlyn* ANY - Both APIs and Domainsn
+        enum:
+        - API
+        - DOMAIN
+        - ANY
+        in: query
+        name: specType
+        required: false
+        type: string
+      - default: ANY
+        description: The visibility of a spec in SwaggerHubn* PUBLIC - can be viewed
+          by anyonen* PRIVATE - can only be viewed by you or your Org and those that
+          you are collaborating with or have shared it withn* ANY - either PUBLIC
+          or PRIVATEn
+        enum:
+        - PUBLIC
+        - PRIVATE
+        - ANY
+        in: query
+        name: visibility
+        required: false
+        type: string
+      - default: ALL
+        description: matches against published state of the specn* UNPUBLISHED - spec
+          is a draft, a work in progressn* PUBLISHED - spec is a stable version ready
+          for consuming from client applicationsn* ANY - either PUBLISHED or UNPUBLISHEDn
+        enum:
+        - ALL
+        - PUBLISHED
+        - UNPUBLISHED
+        in: query
+        name: state
+        required: false
+        type: string
+      - description: API or Domaion owner identifier. Can be username or Organization
+          name
+        in: query
+        name: owner
+        required: false
+        type: string
+      - description: free text query to match
+        in: query
+        name: query
+        required: false
+        type: string
+      - default: 0
+        description: page to return
+        format: int32
+        in: query
+        name: page
+        required: false
+        type: integer
+      - default: 10
+        description: number of results per page
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: NAME
+        description: sort criteria or result setn* NAME -n* UPATEDn* CREATEDn* OWNERn
+        enum:
+        - NAME
+        - UPDATED
+        - CREATED
+        - OWNER
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: ASC
+        description: sort order
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: order
+        required: false
+        type: string
+      responses:
+        200:
+          description: a list of APIs and Domains in APIs.json format
+          schema:
+            $ref: '#/definitions/ApisJson'
+      security:
+      - TokenSecured: []
+      summary: Retrieves a list of currently defined APIs and Domains in APIs.json
+        format
+      tags:
+      - APIs
+      - Domains
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":49:{s:11:\"AccessToken\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:11:\"ApiMetadata\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"categories\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:14:\"defaultVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ApiMetadataLink\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:4:\"tags\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}}s:8:\"required\";a:2:{i:0;s:10:\"categories\";i:1;s:4:\"tags\";}s:4:\"type\";s:6:\"object\";}s:15:\"ApiMetadataLink\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:8:\"ApisJson\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"apis\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ApisJsonApi\";}s:4:\"type\";s:5:\"array\";}s:7:\"created\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:20:\"specificationVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:11:\"ApisJsonApi\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ApisJsonProperty\";}s:4:\"type\";s:5:\"array\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}}s:4:\"type\";s:6:\"object\";}s:16:\"ApisJsonProperty\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"an
+  API property\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"ApisJsonUrlProperty\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ApisJsonProperty\";}i:1;O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"an
+  API property where the value is a URL\";s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}}s:21:\"ApisJsonValueProperty\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ApisJsonProperty\";}i:1;O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"an
+  API property with a string value\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}}s:15:\"ClosableComment\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}i:1;O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"position\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"replies\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Comment\";}s:4:\"type\";s:5:\"array\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:4:\"OPEN\";i:1;s:8:\"RESOLVED\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}}s:20:\"ClosableCommentPatch\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CommentPatch\";}i:1;O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"position\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}}}s:15:\"CodegenLanguage\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"customValues\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}s:7:\"visible\";O:8:\"stdClass\":2:{s:7:\"default\";b:1;s:4:\"type\";s:7:\"boolean\";}}s:8:\"required\";a:1:{i:0;s:7:\"visible\";}s:4:\"type\";s:6:\"object\";}s:15:\"CodegenSettings\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"client\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CodegenLanguage\";}s:4:\"type\";s:6:\"object\";}s:6:\"server\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CodegenLanguage\";}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:13:\"Collaboration\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"hint\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CollaborationHint\";}s:7:\"members\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/CollaborationMembership\";}s:4:\"type\";s:5:\"array\";}s:5:\"owner\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"owners\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"pendingMembers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/CollaborationMembership\";}s:4:\"type\";s:5:\"array\";}s:5:\"teams\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/CollaborationTeamMembership\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:4:\"hint\";}s:4:\"type\";s:6:\"object\";}s:17:\"CollaborationHint\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"type
+  identifier of the managed entity\";s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:4:\"type\";s:6:\"object\";}s:19:\"CollaborationMember\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:4:\"type\";s:6:\"object\";}s:23:\"CollaborationMembership\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CollaborationMember\";}i:1;O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"blocked\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"boolean\";}s:12:\"donotdisturb\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"boolean\";}s:5:\"roles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"enum\";a:3:{i:0;s:4:\"EDIT\";i:1;s:7:\"COMMENT\";i:2;s:4:\"VIEW\";}s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:5:\"roles\";}s:4:\"type\";s:6:\"object\";}}}s:27:\"CollaborationMembershipList\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"hint\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CollaborationHint\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/CollaborationMembership\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:4:\"hint\";}s:4:\"type\";s:6:\"object\";}s:18:\"CollaborationRoles\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"api\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"roles\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"enum\";a:3:{i:0;s:4:\"EDIT\";i:1;s:7:\"COMMENT\";i:2;s:4:\"VIEW\";}s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}}s:4:\"type\";s:6:\"object\";}s:27:\"CollaborationTeamMembership\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/CollaborationMembership\";}i:1;O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"members\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CollaborationMember\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}}}s:7:\"Comment\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:8:\"required\";a:4:{i:0;s:4:\"body\";i:1;s:7:\"created\";i:2;s:2:\"id\";i:3;s:4:\"user\";}s:4:\"type\";s:6:\"object\";}s:12:\"CommentPatch\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:13:\"CommentsBatch\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"addComment\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/NewComment\";}s:4:\"type\";s:5:\"array\";}s:8:\"addReply\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/NewReply\";}s:4:\"type\";s:5:\"array\";}s:4:\"type\";s:6:\"object\";}s:13:\"deleteComment\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:11:\"deleteReply\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:4:\"type\";s:6:\"object\";}s:13:\"updateComment\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ClosableCommentPatch\";}s:4:\"type\";s:6:\"object\";}s:11:\"updateReply\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CommentPatch\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:6:\"object\";}s:12:\"updateStatus\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:4:\"OPEN\";i:1;s:8:\"RESOLVED\";}s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:10:\"Comparison\";O:8:\"stdClass\":4:{s:11:\"description\";s:38:\"a
+  list of differences between two APIs\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ComparisonPart\";}s:10:\"properties\";O:8:\"stdClass\":0:{}s:4:\"type\";s:5:\"array\";}s:16:\"ComparisonDetail\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"details
+  for one side of a ComparisonPart\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"content\";O:8:\"stdClass\":2:{s:11:\"description\";s:75:\"the
+  content of the API definition between `startPosition` and `endPosition`\";s:4:\"type\";s:6:\"string\";}s:11:\"endPosition\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Position\";}s:4:\"path\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"the
+  path to the object (notation similar to JSONPath)\";s:4:\"type\";s:6:\"string\";}s:13:\"startPosition\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Position\";}}s:8:\"required\";a:3:{i:0;s:7:\"content\";i:1;s:11:\"endPosition\";i:2;s:13:\"startPosition\";}s:4:\"type\";s:6:\"object\";}s:14:\"ComparisonPart\";O:8:\"stdClass\":4:{s:11:\"description\";s:46:\"a
+  part of the API that was (or wasn't) changed\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"base\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ComparisonDetail\";}s:5:\"other\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ComparisonDetail\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:405:\"the
+  type of change that this part describes\n* UNMODIFIED - this part is the same in
+  both APIs. Only available for FULL compare.\n* INSERTED - this is present in `other`
+  but missing in `base`. `base` will not be present.\n* DELETED - this is present
+  in `base` but missing in `other`. `other` will not be present.\n* CHANGED - this
+  has been changed between `base` and `other`. Both `base` and `other` present.\n\";s:4:\"enum\";a:4:{i:0;s:10:\"UNMODIFIED\";i:1;s:8:\"INSERTED\";i:2;s:7:\"DELETED\";i:3;s:7:\"CHANGED\";}s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:4:\"type\";s:6:\"object\";}s:7:\"EntryId\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"GitHubExportSettings\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"branch\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"notificationEmail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"repository\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"yamlPath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:5:{i:0;s:6:\"branch\";i:1;s:17:\"notificationEmail\";i:2;s:5:\"owner\";i:3;s:10:\"repository\";i:4;s:5:\"token\";}s:4:\"type\";s:6:\"object\";}s:17:\"LifecycleSettings\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"published\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:18:\"MissingSpecMembers\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"names\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"spec\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/SimpleSpec\";}}s:4:\"type\";s:6:\"object\";}s:10:\"NewComment\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"position\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"replies\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/NewReply\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:2:{i:0;s:4:\"body\";i:1;s:8:\"position\";}s:4:\"type\";s:6:\"object\";}s:8:\"NewReply\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"body\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"body\";}s:4:\"type\";s:6:\"object\";}s:29:\"NotCollaboratorProjectMembers\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:18:\"missingApisMembers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/MissingSpecMembers\";}s:4:\"type\";s:5:\"array\";}s:16:\"missingApisTeams\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/MissingSpecMembers\";}s:4:\"type\";s:5:\"array\";}s:21:\"missingDomainsMembers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/MissingSpecMembers\";}s:4:\"type\";s:5:\"array\";}s:19:\"missingDomainsTeams\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/MissingSpecMembers\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:4:\"Page\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"total\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:19:\"PluginConfiguration\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":9:{s:13:\"configuration\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}s:12:\"definitionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"draft\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"UUID\";s:4:\"type\";s:6:\"string\";}s:10:\"lifecycles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"objectId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"ownerName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:6:{i:0;s:12:\"definitionId\";i:1;s:10:\"lifecycles\";i:2;s:4:\"name\";i:3;s:8:\"objectId\";i:4;s:9:\"ownerName\";i:5;s:4:\"path\";}s:4:\"type\";s:6:\"object\";}s:16:\"PluginDefinition\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":9:{s:19:\"configurationSchema\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdOn\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"implementingClass\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"limit\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"count
+  of allowed configurations\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:19:\"configurationSchema\";i:1;s:9:\"createdBy\";i:2;s:9:\"createdOn\";i:3;s:7:\"enabled\";i:4;s:17:\"implementingClass\";i:5;s:4:\"name\";i:6;s:7:\"version\";}s:4:\"type\";s:6:\"object\";}s:8:\"Position\";O:8:\"stdClass\":4:{s:11:\"description\";s:29:\"a
+  position in a text document\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"column\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"line\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:2:{i:0;s:6:\"column\";i:1;s:4:\"line\";}s:4:\"type\";s:6:\"object\";}s:7:\"Private\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"private\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:8:\"required\";a:1:{i:0;s:7:\"private\";}s:4:\"type\";s:6:\"object\";}s:12:\"ProjectEntry\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"apis\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/EntryId\";}s:4:\"type\";s:5:\"array\";}s:7:\"domains\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/EntryId\";}s:4:\"type\";s:5:\"array\";}s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"projectId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:7:\"groupId\";i:1;s:4:\"name\";i:2;s:9:\"projectId\";}s:4:\"type\";s:6:\"object\";}s:13:\"ProjectMember\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"roles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"type\";O:8:\"stdClass\":3:{s:7:\"default\";s:4:\"USER\";s:4:\"enum\";a:2:{i:0;s:4:\"USER\";i:1;s:4:\"TEAM\";}s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:5:\"roles\";i:2;s:4:\"type\";}s:4:\"type\";s:6:\"object\";}s:17:\"ProjectMemberList\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"members\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ProjectMember\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:12:\"ProjectsJson\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"offset\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:8:\"projects\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProjectEntry\";}s:4:\"type\";s:5:\"array\";}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:10:\"SimpleSpec\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"SpecId\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"owner\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:5:\"owner\";i:2;s:7:\"version\";}s:4:\"type\";s:6:\"object\";}s:25:\"SystemPluginConfiguration\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"configuration\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"UUID\";s:4:\"type\";s:6:\"string\";}s:17:\"implementingClass\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lifecycles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:17:\"implementingClass\";i:1;s:10:\"lifecycles\";i:2;s:7:\"version\";}s:4:\"type\";s:6:\"object\";}s:8:\"Template\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"title\";}s:4:\"type\";s:6:\"object\";}s:15:\"TemplateCatalog\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Template\";}s:9:\"templates\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Template\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:4:\"User\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"UserCredentials\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"VersionMetadata\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"codegenSettings\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/CodegenSettings\";}}s:4:\"type\";s:6:\"object\";}}"
+...

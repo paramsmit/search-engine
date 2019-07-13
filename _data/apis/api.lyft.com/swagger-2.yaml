@@ -1,0 +1,697 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:8:\"Lyft API\";s:11:\"description\";s:41:\"Drive
+  your app to success with Lyft's API\";s:7:\"version\";s:5:\"1.0.0\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:4:\"Lyft\";s:5:\"email\";s:20:\"api-support@lyft.com\";s:3:\"url\";s:25:\"http://developer.lyft.com\";}}"
+host: api.lyft.com
+basePath: /v1
+paths:
+  /ridetypes:
+    get:
+      summary: Types of rides
+      description: The ride types endpoint returns information about what kinds of
+        Lyft rides you can request at a given location.n
+      parameters:
+      - $ref: '#/parameters/LatParam'
+      - $ref: '#/parameters/LngParam'
+      - $ref: '#/parameters/OptionalRideType'
+      tags:
+      - Public
+      responses:
+        200:
+          description: An object with an array of available Ride Types for the given
+            location
+          schema:
+            type: object
+            title: RideTypesResponse
+            properties:
+              ride_types:
+                type: array
+                items:
+                  $ref: '#/definitions/RideType'
+        400:
+          description: A validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+  /eta:
+    get:
+      summary: Pickup ETAs
+      description: The ETA endpoint lets you know how quickly a Lyft driver can come
+        get youn
+      parameters:
+      - $ref: '#/parameters/LatParam'
+      - $ref: '#/parameters/LngParam'
+      - $ref: '#/parameters/OptionalRideType'
+      tags:
+      - Public
+      responses:
+        200:
+          description: An object with an array of ETAs by ride type for the given
+            location
+          schema:
+            type: object
+            title: EtaEstimateResponse
+            properties:
+              eta_estimates:
+                type: array
+                items:
+                  $ref: '#/definitions/Eta'
+        400:
+          description: 'The ''error'' field will be one of the following: * `bad_parameter`:
+            A validation error occurredn * `no_service_in_area`: location is not within
+            a Lyft service arean * `ridetype_unavailable_in_region`: ridetype not
+            supported at this locationn'
+          schema:
+            $ref: '#/definitions/Error'
+  /cost:
+    get:
+      summary: Cost estimates
+      description: Estimate the cost of taking a Lyft between two points.n
+      tags:
+      - Public
+      parameters:
+      - $ref: '#/parameters/OptionalRideType'
+      - name: start_lat
+        in: query
+        description: Latitude of the starting location
+        required: true
+        type: number
+        format: double
+      - name: start_lng
+        in: query
+        description: Longitude of the starting location
+        required: true
+        type: number
+        format: double
+      - name: end_lat
+        in: query
+        description: Latitude of the ending location
+        required: false
+        type: number
+        format: double
+      - name: end_lng
+        in: query
+        description: Longitude of the ending location
+        required: false
+        type: number
+        format: double
+      responses:
+        200:
+          description: An object with an array of cost estimates by ride type
+          schema:
+            type: object
+            title: CostEstimateResponse
+            properties:
+              cost_estimates:
+                type: array
+                items:
+                  $ref: '#/definitions/CostEstimate'
+        400:
+          description: 'The ''error'' field will be one of the following: * `bad_parameter`:
+            A validation error occurredn * `no_service_in_area`: start location is
+            not within a Lyft service arean * `ridetype_unavailable_in_region`: ridetype
+            not supported at this start locationn'
+          schema:
+            $ref: '#/definitions/Error'
+  /drivers:
+    get:
+      summary: Available drivers nearby
+      description: The drivers endpoint returns a list of nearby drivers' lat and
+        lng at a given location.n
+      parameters:
+      - $ref: '#/parameters/LatParam'
+      - $ref: '#/parameters/LngParam'
+      tags:
+      - Public
+      responses:
+        200:
+          description: An object with an array of available drivers sorted by eta
+            for the given location
+          schema:
+            type: object
+            title: NearbyDriversResponse
+            properties:
+              nearby_drivers:
+                type: array
+                items:
+                  $ref: '#/definitions/NearbyDriversByRideType'
+        400:
+          description: A validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+  /profile:
+    get:
+      summary: The user's general info
+      description: The v1 of this endpoint returns the user's ID, v2 will return more
+        general info about the user. We require authentication for this endpoint,
+        so we extract the user ID from the access token.n
+      tags:
+      - User
+      security:
+      - User Authentication:
+        - profile
+      responses:
+        200:
+          description: User ID was found and returned
+          schema:
+            $ref: '#/definitions/Profile'
+  /rides:
+    get:
+      summary: List rides
+      description: Get a list of past & current rides for this passenger.n
+      security:
+      - User Authentication:
+        - rides.read
+      parameters:
+      - $ref: '#/parameters/StartTime'
+      - $ref: '#/parameters/OptionalEndTime'
+      - $ref: '#/parameters/OptionalLimit'
+      tags:
+      - User
+      responses:
+        200:
+          description: An object with an array of up to `limit` rides taken by the
+            user between `start_time` and `end_time`.n
+          schema:
+            type: object
+            properties:
+              ride_history:
+                type: array
+                items:
+                  $ref: '#/definitions/RideDetail'
+        400:
+          description: A validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Request a Lyft
+      description: Request a Lyft come pick you up at the given location.n
+      security:
+      - User Authentication:
+        - rides.request
+      parameters:
+      - name: request
+        in: body
+        description: Ride request information
+        schema:
+          $ref: '#/definitions/Ride'
+      tags:
+      - User
+      responses:
+        201:
+          description: An object with high level ride information. Use `GET /v1/rides/{id}`
+            for more details.
+          schema:
+            $ref: '#/definitions/RideRequest'
+        400:
+          description: 'The ''error'' field can be one of the following: * `bad_parameter`:
+            A validation error occurredn * `no_service_in_area`: origin is not within
+            a Lyft service arean * `ridetype_unavailable_in_region`: ridetype not
+            supported at originn * `primetime_confirmation_required`: user must accept
+            primetime. A primetime confirmation token andndetails will be included
+            in the response * `invalid_primetime_confirmation`: supplied token is
+            invalid or expiredn * `destination_prohibited`: Lyft is not allowed to
+            drop off at that destination (e.g. some airports).n User-displayable details
+            in the ''error_description'' fieldn * `client_error`: an uncategorized
+            error. Details in the ''error_description'' fieldn'
+          schema:
+            $ref: '#/definitions/RideRequestError'
+        403:
+          description: 'User or client does not have permission to complete this request.
+            Specific errors include: * `user_payment_required`: The user does not
+            have a valid payment method on file.n They must use the Lyft app to add
+            or update one.n * `account_disabled`: The user''s account has been suspended,
+            and they must contact Lyft support.n * `user_in_driver_mode`: The user
+            is logged in as a driver and can''t request rides until they log outn
+            * `verified_phone_required`: The user has not provided or verified their
+            phone number.n They can add one in the Lyft appn'
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: 'The ''error'' field will be one of the following: * `no_drivers_available`:
+            No drivers are available right nown * `user_already_in_ride`: User cannot
+            request a ride while in a riden'
+          schema:
+            $ref: '#/definitions/Error'
+  /rides/{id}:
+    get:
+      summary: Get the ride detail of a given ride ID
+      description: Get the status of a ride along with information about the driver,
+        vehicle and price of a given ride IDn
+      security:
+      - User Authentication:
+        - rides.read
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      tags:
+      - User
+      responses:
+        200:
+          description: Detailed ride information including ride status, driver information,
+            passenger information, vehicle information, location information and pricen
+          schema:
+            $ref: '#/definitions/RideDetail'
+        403:
+          description: User or client does not have permission to complete this request
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No ride found with provided ride ID
+          schema:
+            $ref: '#/definitions/Error'
+  /rides/{id}/cancel:
+    post:
+      summary: Cancel a ongoing requested ride
+      description: Cancel a ongoing ride which was requested earlier by providing
+        the ride id.n
+      security:
+      - User Authentication:
+        - rides.request
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      - name: request
+        in: body
+        schema:
+          $ref: '#/definitions/CancellationRequest'
+      tags:
+      - User
+      responses:
+        204:
+          description: Successfully canceled the ride
+        400:
+          description: 'Cancellation token required * `cancel_confirmation_required`:
+            a cancelation fee applies which the user must acceptn * `invalid_cancel_confirmation`:
+            provided token was invalid or expiredn'
+          schema:
+            $ref: '#/definitions/CancellationCostError'
+        403:
+          description: User or client does not have permission to complete this request
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No ride found with provided ride ID
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: You cannot cancel this ride
+          schema:
+            $ref: '#/definitions/Error'
+  /rides/{id}/receipt:
+    get:
+      summary: Get the receipt of the rides.
+      description: Get the receipt information of a processed ride by providing the
+        ride id. Receipts will only be available to view once the payment has been
+        processed. In the case of canceled ride, cancellation penalty is included
+        if applicable.n
+      security:
+      - User Authentication:
+        - rides.read
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      tags:
+      - User
+      responses:
+        200:
+          description: Detailed ride receipt information including cancel penalty
+            if applicable.
+          schema:
+            $ref: '#/definitions/RideReceipt'
+        403:
+          description: User or client does not have permission to complete this request
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No ride receipt found with provided ride ID
+          schema:
+            $ref: '#/definitions/Error'
+  /rides/{id}/rating:
+    put:
+      summary: Add the passenger's rating, feedback, and tip
+      description: Add the passenger's 1 to 5 star rating of the ride, optional written
+        feedback, and optional tip amount in minor units and currency. The ride must
+        already be dropped off, and ratings must be given within 24 hours of drop
+        off. For purposes of display, 5 is considered the default rating. When this
+        endpoint is successfully called, payment processing will begin.n
+      security:
+      - User Authentication:
+        - rides.request
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      - name: request
+        in: body
+        description: The rating and optional feedback
+        required: true
+        schema:
+          $ref: '#/definitions/RatingRequest'
+      tags:
+      - User
+      responses:
+        204:
+          description: Successfully added the rating
+        400:
+          description: 'The ''error'' field will be one of the following: * `bad_parameter`:
+            A validation error occurredn * `user_cannot_rate_this_ride`: Rides can
+            only be rated once, within 24 hours of drop-off, and beforen the user
+            starts another riden * `tip_too_large`: tip amount is too large for this
+            riden * `tip_currency_not_accepted`: That tip currency is not acceptedn'
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: 'The ''error'' field will be: * `ride_not_finished`: Ride is
+            still in progress (not yet in the droppedOff state)n'
+          schema:
+            $ref: '#/definitions/Error'
+  /rides/{id}/destination:
+    put:
+      summary: Update the destination of the ride
+      description: Add or update the ride's destination. Note that the ride must still
+        be active (not droppedOff or canceled), and that destinations on Lyft Line
+        rides can not be changed.n
+      security:
+      - User Authentication:
+        - rides.request
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      - name: request
+        in: body
+        description: The coordinates and optional address of the destination
+        required: true
+        schema:
+          $ref: '#/definitions/Location'
+      tags:
+      - User
+      responses:
+        200:
+          description: Successfully updated the destination. Returns the new destination.
+          schema:
+            $ref: '#/definitions/Location'
+        400:
+          description: 'The ''error'' field will be one of the following: * `bad_parameter`:
+            A validation error occurredn * `invalid_destination`: Destination is generally
+            invalid (eg. not in a Lyft service area)n * `destination_prohibited`:
+            Lyft drop-offs are not permitted at this location (eg. some airports).n
+            The ''error_description'' field will contain an explaination suitable
+            to display to the user.n * `ride_is_lyft_line`: Cannot change the destination
+            on Line ridesn * `ride_is_finished`: Ride has already been completedn'
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: User or client does not have permission to complete this request
+            (`ride_does_not_belong_to_user`)n
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: No ride found with provided ride ID
+          schema:
+            $ref: '#/definitions/Error'
+  /sandbox/ridetypes:
+    put:
+      summary: Preset types of rides for sandbox
+      description: The sandbox-ridetypes endpoint allows you to preset the ridetypes
+        in the region surrounding the specified latitude and longitude to allow testing
+        different scenariosn
+      parameters:
+      - name: request
+        in: body
+        description: Ridetypes to be preset in the region surrounding the lat, lng
+        schema:
+          $ref: '#/definitions/SandboxRideType'
+      tags:
+      - Sandbox
+      responses:
+        200:
+          description: An object listing the ridetypes at a given location
+          schema:
+            $ref: '#/definitions/SandboxRideType'
+        400:
+          description: Validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+  /sandbox/rides/{id}:
+    put:
+      summary: Propagate ride through states
+      description: Propagate a sandbox-ride through various statesn
+      security:
+      - User Authentication:
+        - rides.request
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the ride
+        required: true
+        type: string
+      - name: status
+        in: body
+        schema:
+          $ref: '#/definitions/RideStatusEnum'
+        description: state to propagate the ride into
+      tags:
+      - Sandbox
+      responses:
+        200:
+          description: An object with the Ride ID and the new state
+          schema:
+            $ref: '#/definitions/SandboxRideUpdate'
+        400:
+          description: Validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: User or client does not have permission to complete this request
+          schema:
+            $ref: '#/definitions/Error'
+  /sandbox/primetime:
+    put:
+      summary: Preset Prime Time percentage
+      description: Preset a Prime Time percentage in the region surrounding the specified
+        location. This Prime Time percentage will be applied when requesting cost,
+        or when requesting a ride in sandbox mode.n
+      parameters:
+      - name: request
+        in: body
+        description: Prime Time to be preset in the region surrounding the lat, lng
+        schema:
+          $ref: '#/definitions/SandboxPrimetime'
+      tags:
+      - Sandbox
+      responses:
+        204:
+          description: Successfully applied Prime Time in sandbox
+        400:
+          description: Validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+  /sandbox/ridetypes/{ride_type}:
+    put:
+      summary: Driver availability for processing ride request
+      description: Set driver availability for the provided ride_type in the city/region
+        surrounding the specified locationn
+      parameters:
+      - $ref: '#/parameters/RideStatusParam'
+      - name: request
+        in: body
+        description: Driver availability to be preset in the region surrounding the
+          lat, lng
+        schema:
+          $ref: '#/definitions/SandboxDriverAvailability'
+      tags:
+      - Sandbox
+      responses:
+        204:
+          description: Successfully set driver availability in sandbox
+        400:
+          description: Validation error occurred
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: ride_type provided in the path is not supported in the current
+            area
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":38:{s:12:\"RideTypeEnum\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  ID of the ride type\";s:4:\"enum\";a:4:{i:0;s:4:\"lyft\";i:1;s:9:\"lyft_line\";i:2;s:9:\"lyft_plus\";i:3;s:8:\"lyft_suv\";}}s:21:\"RideTypeEnumWithOther\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  ID of the ride type\";s:4:\"enum\";a:5:{i:0;s:4:\"lyft\";i:1;s:9:\"lyft_line\";i:2;s:9:\"lyft_plus\";i:3;s:8:\"lyft_suv\";i:4;s:5:\"other\";}}s:14:\"RideStatusEnum\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  current status of the ride\";s:4:\"enum\";a:7:{i:0;s:7:\"pending\";i:1;s:8:\"accepted\";i:2;s:7:\"arrived\";i:3;s:8:\"pickedUp\";i:4;s:10:\"droppedOff\";i:5;s:8:\"canceled\";i:6;s:7:\"unknown\";}}s:14:\"PricingDetails\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"base_charge\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:27:\"The
+  base charge of the trip\";}s:21:\"cancel_penalty_amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:47:\"The
+  charge amount if cancel penalty is involved\";}s:12:\"cost_minimum\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:31:\"The
+  minimum charge for the trip\";}s:13:\"cost_per_mile\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:17:\"The
+  cost per mile\";}s:15:\"cost_per_minute\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:19:\"The
+  cost per minute\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"The
+  ISO 4217 currency code for the amount (e.g. USD)\";}s:17:\"trust_and_service\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:21:\"Trust
+  and service fee\";}}s:7:\"example\";O:8:\"stdClass\":7:{s:11:\"base_charge\";i:175;s:21:\"cancel_penalty_amount\";i:500;s:12:\"cost_minumum\";i:500;s:13:\"cost_per_mile\";i:116;s:15:\"cost_per_minute\";i:23;s:8:\"currency\";s:3:\"USD\";s:17:\"trust_and_service\";i:155;}}s:8:\"RideType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:9:\"ride_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RideTypeEnum\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  human readable description of the ride type\";}s:5:\"seats\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:77:\"The
+  maximum number of seats available for rides requested with this ride type\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  URL of an image representing this ride type\";}s:15:\"pricing_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PricingDetails\";}s:25:\"scheduled_pricing_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PricingDetails\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:10:\"ride_types\";a:3:{i:0;O:8:\"stdClass\":5:{s:12:\"display_name\";s:9:\"Lyft
+  Line\";s:9:\"ride_type\";s:9:\"lyft_line\";s:9:\"image_url\";s:61:\"https://s3.amazonaws.com/api.lyft.com/assets/car_standard.png\";s:15:\"pricing_details\";O:8:\"stdClass\":7:{s:11:\"base_charge\";i:200;s:13:\"cost_per_mile\";i:115;s:15:\"cost_per_minute\";i:23;s:12:\"cost_minimum\";i:475;s:17:\"trust_and_service\";i:155;s:8:\"currency\";s:3:\"USD\";s:21:\"cancel_penalty_amount\";i:500;}s:5:\"seats\";i:2;}i:1;O:8:\"stdClass\":5:{s:12:\"display_name\";s:4:\"Lyft\";s:9:\"ride_type\";s:4:\"lyft\";s:9:\"image_url\";s:61:\"https://s3.amazonaws.com/api.lyft.com/assets/car_standard.png\";s:15:\"pricing_details\";O:8:\"stdClass\":7:{s:11:\"base_charge\";i:200;s:13:\"cost_per_mile\";i:115;s:15:\"cost_per_minute\";i:23;s:12:\"cost_minimum\";i:500;s:17:\"trust_and_service\";i:155;s:8:\"currency\";s:3:\"USD\";s:21:\"cancel_penalty_amount\";i:500;}s:5:\"seats\";i:4;}i:2;O:8:\"stdClass\":5:{s:12:\"display_name\";s:9:\"Lyft
+  Plus\";s:9:\"ride_type\";s:9:\"lyft_plus\";s:9:\"image_url\";s:57:\"https://s3.amazonaws.com/api.lyft.com/assets/car_plus.png\";s:15:\"pricing_details\";O:8:\"stdClass\":7:{s:11:\"base_charge\";i:300;s:13:\"cost_per_mile\";i:200;s:15:\"cost_per_minute\";i:30;s:12:\"cost_minimum\";i:700;s:17:\"trust_and_service\";i:155;s:8:\"currency\";s:3:\"USD\";s:21:\"cancel_penalty_amount\";i:500;}s:5:\"seats\";i:6;}}}}s:15:\"SandboxRideType\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:36:\"The
+  latitude component of a location\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  longitude component of a location\";}s:10:\"ride_types\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RideTypeEnum\";}}}s:7:\"example\";O:8:\"stdClass\":3:{s:3:\"lat\";d:37.783299999999997;s:3:\"lng\";d:-122.41670000000001;s:10:\"ride_types\";a:4:{i:0;s:4:\"lyft\";i:1;s:9:\"lyft_line\";i:2;s:9:\"lyft_plus\";i:3;s:8:\"lyft_suv\";}}}s:16:\"SandboxPrimetime\";O:8:\"stdClass\":3:{s:8:\"required\";a:3:{i:0;s:3:\"lat\";i:1;s:3:\"lng\";i:2;s:20:\"primetime_percentage\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:36:\"The
+  latitude component of a location\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  longitude component of a location\";}s:20:\"primetime_percentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  Prime Time to be applied as a string, e.g., '25%'\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:3:\"lat\";d:37.783299999999997;s:3:\"lng\";d:-122.41670000000001;s:20:\"primetime_percentage\";s:3:\"25%\";}}s:25:\"SandboxDriverAvailability\";O:8:\"stdClass\":3:{s:8:\"required\";a:3:{i:0;s:3:\"lat\";i:1;s:3:\"lng\";i:2;s:19:\"driver_availability\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:36:\"The
+  latitude component of a location\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  longitude component of a location\";}s:19:\"driver_availability\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:38:\"The
+  availability of driver in a region\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:3:\"lat\";d:37.783299999999997;s:3:\"lng\";d:-122.41670000000001;s:19:\"driver_availability\";b:1;}}s:6:\"LatLng\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:3:\"lat\";i:1;s:3:\"lng\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:36:\"The
+  latitude component of a location\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  longitude component of a location\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;}}s:3:\"Tip\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:11:\"description\";s:82:\"A
+  tip for the driver in cents. To be charged to the user's default charge account.\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  currency in which you want to tip. e.g. USD\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:6:\"amount\";i:300;s:8:\"currency\";s:3:\"USD\";}}s:9:\"TipParams\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tip\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:8:\"Location\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/LatLng\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"A
+  human readable address at/near the given location\";}}}}s:7:\"example\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";}}s:12:\"RideLocation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"eta_seconds\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:81:\"Estimated
+  seconds for a driver to pickup or reach destination based on ride state\";}}}}s:7:\"example\";O:8:\"stdClass\":4:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";s:11:\"eta_seconds\";i:200;}}s:21:\"PickupDropoffLocation\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Location\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"time\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:47:\"Server
+  time when the location object is created\";}}}}s:7:\"example\";O:8:\"stdClass\":4:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";s:4:\"time\";s:25:\"2015-09-24T23:26:25+00:00\";}}s:10:\"UserDetail\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:10:\"first_name\";i:1;s:9:\"image_url\";i:2;s:6:\"rating\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  passenger's first name\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  passenger's profile image\";}s:6:\"rating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  passenger's rating\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:10:\"first_name\";s:4:\"Jane\";s:9:\"image_url\";s:50:\"https://public-api.lyft.com/static/images/user.png\";s:6:\"rating\";d:4.9000000000000004;}}s:15:\"PassengerDetail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserDetail\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  passenger's last name\";}}}}s:7:\"example\";O:8:\"stdClass\":4:{s:10:\"first_name\";s:4:\"Jane\";s:9:\"last_name\";s:3:\"Doe\";s:9:\"image_url\";s:50:\"https://public-api.lyft.com/static/images/user.png\";s:6:\"rating\";d:4.9000000000000004;}}s:12:\"DriverDetail\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:10:\"first_name\";i:1;s:12:\"phone_number\";i:2;s:6:\"rating\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  driver's first name\";}s:12:\"phone_number\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"phone\";s:11:\"description\";s:60:\"The
+  driver's contact phone number. Must be E.164 formatted.\n\";}s:6:\"rating\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  driver's rating based in 0-5 scale\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  driver's image url\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:10:\"first_name\";s:3:\"Joe\";s:12:\"phone_number\";s:12:\"+15554445000\";s:6:\"rating\";s:3:\"4.9\";s:9:\"image_url\";s:27:\"http://example.com/lyft.png\";}}s:13:\"VehicleDetail\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:5:\"model\";i:1;s:4:\"year\";i:2;s:13:\"license_plate\";i:3;s:5:\"color\";i:4;s:9:\"image_url\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"make\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  vehicle's maker\";}s:5:\"model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  vehicle's model\";}s:4:\"year\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:24:\"The
+  vehicle's model year\";}s:13:\"license_plate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  vehicle's license plate\";}s:19:\"license_plate_state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  vehicle's license plate state\";}s:5:\"color\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  vehicle's color\";}s:9:\"image_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  vehicle's image url\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:4:\"make\";s:4:\"Audi\";s:5:\"model\";s:2:\"A4\";s:13:\"license_plate\";s:7:\"AAAAAAA\";s:5:\"color\";s:5:\"black\";s:9:\"image_url\";s:27:\"http://example.com/lyft.png\";}}s:4:\"Cost\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"amount\";i:1;s:8:\"currency\";i:2;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:23:\"Total
+  price of the ride\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"The
+  ISO 4217 currency code for the amount (e.g. USD)\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"The
+  description for the cost\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"amount\";i:500;s:8:\"currency\";s:3:\"USD\";s:11:\"description\";s:10:\"Total
+  cost\";}}s:16:\"CancellationCost\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Cost\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Token
+  used to confirm the fee when cancelling a request\";}s:14:\"token_duration\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:11:\"description\";s:46:\"How
+  long, in seconds, before the token expires\";}}}}}s:21:\"CancellationCostError\";O:8:\"stdClass\":2:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/CancellationCost\";}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}s:7:\"example\";O:8:\"stdClass\":6:{s:5:\"error\";s:28:\"cancel_confirmation_required\";s:12:\"error_detail\";a:1:{i:0;O:8:\"stdClass\":1:{s:19:\"cancel_confirmation\";s:62:\"a
+  valid cancel_confirmation_token is required to cancel a ride\";}}s:6:\"amount\";i:500;s:8:\"currency\";s:3:\"USD\";s:5:\"token\";s:7:\"656a91d\";s:14:\"token_duration\";i:60;}}s:19:\"CancellationRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:25:\"cancel_confirmation_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:99:\"Token
+  affirming the user accepts the cancellation fee. Required if a cancellation fee
+  is in effect.\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:25:\"cancel_confirmation_token\";s:7:\"656a91d\";}}s:8:\"LineItem\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"type\";i:1;s:6:\"amount\";i:2;s:8:\"currency\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  line item display name for a charge item\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:20:\"The
+  line item amount\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  currency for the amount\";}}}s:6:\"Charge\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:6:\"amount\";i:1;s:8:\"currency\";i:2;s:14:\"payment_method\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:20:\"The
+  line item amount\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  currency for the amount\";}s:14:\"payment_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"The
+  payment method display name.\";}}}s:3:\"Eta\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:25:\"Estimated
+  Time of Arrival\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"ride_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RideTypeEnum\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  human readable description of the ride type\";}s:11:\"eta_seconds\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:40:\"Estimated
+  seconds for a driver to arrive\";}s:17:\"is_valid_estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:41:\"The
+  validity of the ETA estimate returned\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:9:\"ride_type\";s:9:\"lyft_line\";s:12:\"display_name\";s:9:\"Lyft
+  Line\";s:11:\"eta_seconds\";i:120;s:17:\"is_valid_estimate\";b:1;}}s:12:\"CostEstimate\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"A
+  non-guaranteed estimate of price\";s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"ride_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RideTypeEnum\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"A
+  human readable description of the ride type\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"The
+  ISO 4217 currency code for the amount (e.g. 'USD')\";}s:24:\"estimated_cost_cents_min\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:156:\"Estimated
+  lower bound for trip cost, in minor units (cents). Estimates are not guaranteed,
+  and only provide a reasonable range based on current conditions.\n\";}s:24:\"estimated_cost_cents_max\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:156:\"Estimated
+  upper bound for trip cost, in minor units (cents). Estimates are not guaranteed,
+  and only provide a reasonable range based on current conditions.\n\";}s:24:\"estimated_distance_miles\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:33:\"Estimated
+  distance for this trip\n\";}s:26:\"estimated_duration_seconds\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"Estimated
+  time to get from the start location to the end.\n\";}s:17:\"is_valid_estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:42:\"The
+  validity of the cost estimate returned\";}s:20:\"primetime_percentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:454:\"Current
+  Prime Time Percentage. Prime Time adds a percentage to ride costs, prior to other
+  applicable fees. When ride requests greatly outnumber available drivers, our system
+  will automatically turn on Prime Time.\nIf Prime Time is inactive, the value returned
+  will be '0%'.\nNote: The returned estimate already has Prime Time factored in. The
+  value is returned here for reference and to allow users to confirm/accept Prime
+  Time prior to initiating a ride.\n\";}s:28:\"primetime_confirmation_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"This
+  token is needed when requesting rides. See 'Request a Lyft' for more details\";}}s:7:\"example\";O:8:\"stdClass\":9:{s:9:\"ride_type\";s:9:\"lyft_line\";s:12:\"display_name\";s:9:\"Lyft
+  Line\";s:20:\"primetime_percentage\";s:3:\"25%\";s:24:\"estimated_cost_cents_max\";i:1080;s:24:\"estimated_cost_cents_min\";i:1390;s:24:\"estimated_distance_miles\";d:12.4;s:26:\"estimated_duration_seconds\";i:540;s:28:\"primetime_confirmation_token\";s:19:\"EupdCgIzy17lJoRmiO5\";s:17:\"is_valid_estimate\";b:1;}}s:17:\"SandboxRideUpdate\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"Response
+  when a sandbox ride is propagated between states\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"ride_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"The
+  ID of the ride\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/RideStatusEnum\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:7:\"ride_id\";i:123456789;s:6:\"status\";s:8:\"accepted\";}}s:11:\"RideRequest\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Minimal
+  set of ride details\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"ride_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"The
+  ID of the requested ride\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/RideStatusEnum\";}s:6:\"origin\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Location\";s:11:\"description\";s:45:\"The
+  *requested* location for passenger pickup\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Location\";s:11:\"description\";s:47:\"The
+  *requested* location for passenger drop off\";}s:9:\"passenger\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PassengerDetail\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:7:\"ride_id\";i:123456789;s:6:\"status\";s:7:\"pending\";s:6:\"origin\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";}s:11:\"destination\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";}s:9:\"passenger\";O:8:\"stdClass\":3:{s:10:\"first_name\";s:4:\"Jane\";s:9:\"image_url\";s:50:\"https://public-api.lyft.com/static/images/user.png\";s:6:\"rating\";d:4.9000000000000004;}}}s:7:\"Profile\";O:8:\"stdClass\":4:{s:11:\"description\";s:48:\"Represents
+  the general information about a user.\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  unique ID of this user\";}}}s:4:\"Ride\";O:8:\"stdClass\":4:{s:11:\"description\";s:54:\"Represents
+  a requested, ongoing, or finished Lyft ride\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"ride_type\";i:1;s:6:\"origin\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"ride_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  unique ID of this ride\";s:8:\"readOnly\";b:1;}s:9:\"ride_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RideTypeEnum\";}s:6:\"origin\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Location\";s:11:\"description\";s:45:\"The
+  *requested* location for passenger pickup\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/Location\";s:11:\"description\";s:47:\"The
+  *requested* location for passenger drop off\";}s:28:\"primetime_confirmation_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"A
+  token that confirms the user has accepted current primetime charges\";}}}s:10:\"RideDetail\";O:8:\"stdClass\":4:{s:11:\"description\";s:31:\"Detail
+  information about a ride\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":21:{s:7:\"ride_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  unique ID of this ride\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/RideStatusEnum\";}s:9:\"ride_type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/RideTypeEnumWithOther\";}s:9:\"passenger\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:29:\"#/definitions/PassengerDetail\";s:11:\"description\";s:21:\"The
+  passenger details\";}s:6:\"driver\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/DriverDetail\";s:11:\"description\";s:18:\"The
+  driver details\";}s:7:\"vehicle\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/VehicleDetail\";s:11:\"description\";s:19:\"The
+  vehicle details\";}s:6:\"origin\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/RideLocation\";s:11:\"description\";s:45:\"The
+  *requested* location for passenger pickup\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/RideLocation\";s:11:\"description\";s:47:\"The
+  *requested* location for passenger drop off\";}s:6:\"pickup\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:35:\"#/definitions/PickupDropoffLocation\";s:11:\"description\";s:41:\"The
+  *actual* location of passenger pickup\";}s:7:\"dropoff\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:35:\"#/definitions/PickupDropoffLocation\";s:11:\"description\";s:43:\"The
+  *actual* location of passenger drop off\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/RideLocation\";s:11:\"description\";s:39:\"The
+  *current* location info of the ride\";}s:20:\"primetime_percentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  Prime Time percentage applied to the base price\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/Cost\";s:11:\"description\";s:36:\"The
+  total price for the current ride\";}s:10:\"line_items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/LineItem\";}s:11:\"description\";s:22:\"The
+  break down of cost\";}s:10:\"can_cancel\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:6:\"driver\";i:1;s:9:\"passenger\";i:2;s:10:\"dispatcher\";}s:11:\"description\";s:57:\"The
+  array of actors who may cancel the ride at this point\";}}s:11:\"canceled_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"The
+  role of user who canceled the ride (if applicable)\";}s:18:\"cancellation_price\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/CancellationCost\";s:11:\"description\";s:52:\"The
+  cost of cancellation if there would be a penalty\";}s:6:\"rating\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:51:\"The
+  rating the user left for this ride, from 1 to 5\";}s:8:\"feedback\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  written feedback the user left for this ride\";}s:9:\"route_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:199:\"The
+  web view showing the passenger, driver, and route for this ride. This field will
+  only be present for rides created through this API, or that have been shared through
+  the \"Share my Route\" feature\n\";}s:12:\"requested_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"The
+  ride requested timestamp in date and time\";}}s:7:\"example\";O:8:\"stdClass\":15:{s:7:\"ride_id\";i:123456789;s:6:\"status\";s:10:\"droppedOff\";s:9:\"ride_type\";s:4:\"lyft\";s:9:\"passenger\";O:8:\"stdClass\":2:{s:10:\"first_name\";s:4:\"Jane\";s:12:\"phone_number\";s:12:\"+15554445000\";}s:6:\"driver\";O:8:\"stdClass\":4:{s:10:\"first_name\";s:3:\"Joe\";s:12:\"phone_number\";s:12:\"+15554445111\";s:6:\"rating\";s:3:\"4.9\";s:9:\"image_url\";s:27:\"http://example.com/lyft.png\";}s:7:\"vehicle\";O:8:\"stdClass\":5:{s:4:\"make\";s:4:\"Audi\";s:5:\"model\";s:2:\"A4\";s:13:\"license_plate\";s:7:\"AAAAAAA\";s:5:\"color\";s:5:\"black\";s:9:\"image_url\";s:27:\"http://example.com/lyft.png\";}s:6:\"origin\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";}s:11:\"destination\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.945345199999998;s:3:\"lng\";d:-123.8642521;s:7:\"address\";s:26:\"987
+  Second St, Anytown, CA\";}s:6:\"pickup\";O:8:\"stdClass\":4:{s:3:\"lat\";d:36.944217500000001;s:3:\"lng\";d:-123.8679133;s:7:\"address\";s:24:\"123
+  Main St, Anytown, CA\";s:4:\"time\";s:25:\"2015-09-24T23:27:25+00:00\";}s:7:\"dropoff\";O:8:\"stdClass\":4:{s:3:\"lat\";d:36.945345199999998;s:3:\"lng\";d:-123.8642521;s:7:\"address\";s:26:\"987
+  Second St, Anytown, CA\";s:4:\"time\";s:25:\"2015-09-24T23:28:25+00:00\";}s:8:\"location\";O:8:\"stdClass\":3:{s:3:\"lat\";d:36.945345199999998;s:3:\"lng\";d:-123.8642521;s:7:\"address\";s:26:\"987
+  Second St, Anytown, CA\";}s:20:\"primetime_percentage\";s:3:\"50%\";s:5:\"price\";O:8:\"stdClass\":3:{s:6:\"amount\";i:905;s:8:\"currency\";s:3:\"USD\";s:11:\"description\";s:16:\"Total
+  ride price\";}s:10:\"line_items\";a:3:{i:0;O:8:\"stdClass\":3:{s:6:\"amount\";i:500;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:4:\"Ride\";}i:1;O:8:\"stdClass\":3:{s:6:\"amount\";i:250;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:10:\"Prime
+  Time\";}i:2;O:8:\"stdClass\":3:{s:6:\"amount\";i:155;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:19:\"Trust
+  & Service Fee\";}}s:12:\"requested_at\";s:25:\"2015-09-24T23:26:25+00:00\";}}s:11:\"RideReceipt\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"Receipt
+  information of a processed ride.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"ride_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  unique ID of this ride\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/Cost\";s:11:\"description\";s:36:\"The
+  total price for the current ride\";}s:10:\"line_items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/LineItem\";}s:11:\"description\";s:28:\"The
+  break down of line items\";}s:7:\"charges\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Charge\";}s:11:\"description\";s:31:\"The
+  break down of charge method\";}s:12:\"requested_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:45:\"The
+  ride requested timestamp in date and time\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:7:\"ride_id\";i:123456789;s:5:\"price\";O:8:\"stdClass\":3:{s:6:\"amount\";i:905;s:8:\"currency\";s:3:\"USD\";s:11:\"description\";s:16:\"Total
+  ride price\";}s:10:\"line_items\";a:3:{i:0;O:8:\"stdClass\":3:{s:6:\"amount\";i:500;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:4:\"Ride\";}i:1;O:8:\"stdClass\":3:{s:6:\"amount\";i:250;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:10:\"Prime
+  Time\";}i:2;O:8:\"stdClass\":3:{s:6:\"amount\";i:155;s:8:\"currency\";s:3:\"USD\";s:4:\"type\";s:19:\"Trust
+  & Service Fee\";}}s:7:\"charges\";a:2:{i:0;O:8:\"stdClass\":3:{s:6:\"amount\";i:500;s:8:\"currency\";s:3:\"USD\";s:14:\"payment_method\";s:4:\"Card\";}i:1;O:8:\"stdClass\":3:{s:6:\"amount\";i:405;s:8:\"currency\";s:3:\"USD\";s:14:\"payment_method\";s:11:\"Lyft
+  Credit\";}}s:12:\"requested_at\";s:25:\"2015-09-24T23:26:25+00:00\";}}s:12:\"NearbyDriver\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"locations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/LatLng\";}s:11:\"description\";s:76:\"the
+  lastest recorded driver locations up to 5 sorted in chronological order.\";}}}s:23:\"NearbyDriversByRideType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"ride_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:88:\"driver's
+  ride type. if driver is eligable for several ride types, he will be duplicated.\";}s:7:\"drivers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/NearbyDriver\";}s:11:\"description\";s:55:\"list
+  of nearby drivers group by ride type sorted by eta\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"Details
+  about why a request failed, such as missing or invalid parameters\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"A
+  \"slug\" that serves as the error code (eg. \"bad_parameter\")\";}s:12:\"error_detail\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ErrorDetail\";}}s:17:\"error_description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"A
+  user-friendly description of the error (appropriate to show to an end-user)\";}}}s:11:\"ErrorDetail\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:137:\"An
+  object with a single key-value pair, where the key is the name of the invalid parameter,
+  and the value is a description of the error.\n\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"field_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"description
+  of the error\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:3:\"lat\";s:57:\"(latitude)
+  Missing required parameter in the query string\";}}s:16:\"RideRequestError\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:73:\"Details
+  about why a request failed, such as missing or invalid parameters\";s:8:\"required\";a:1:{i:0;s:5:\"error\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"A
+  \"slug\" that serves as the error code (eg. \"bad_parameter\")\";}s:12:\"error_detail\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ErrorDetail\";}}s:17:\"error_description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"A
+  user-friendly description of the error (appropriate to show to an end-user)\";}s:20:\"primetime_percentage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Current
+  Prime Time percentage\";}s:28:\"primetime_confirmation_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"A
+  token that confirms the user has accepted current Prime Time charges\";}s:14:\"token_duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Validity
+  of the token in seconds\";}}}s:13:\"RatingRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:36:\"Rating
+  and optional feedback and tip\";s:8:\"required\";a:1:{i:0;s:6:\"rating\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"rating\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:5;s:11:\"description\";s:47:\"The
+  passenger's rating of this ride from 1 to 5\";}s:8:\"feedback\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  passenger's written feedback about this ride\";}s:3:\"tip\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Tip
+  amount in minor units and tip currency\";s:4:\"$ref\";s:23:\"#/definitions/TipParams\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"rating\";i:5;s:8:\"feedback\";s:11:\"Great
+  ride!\";s:3:\"tip\";O:8:\"stdClass\":2:{s:6:\"amount\";i:100;s:8:\"currency\";s:3:\"USD\";}}}}"
+...

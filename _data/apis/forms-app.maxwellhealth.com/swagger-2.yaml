@@ -1,0 +1,573 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:13:\"Maxwell-Forms\";s:11:\"description\";s:302:\"A
+  web based, multi-tenant system to manage processing a large volume of forms for
+  the purpose of insurance enrollment. The system includes views for various personas
+  and an API that allows an external system (Maxwell Health\u2019s main platform -
+  TITAN) to kick off and report upon various form processes.\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: forms-app.maxwellhealth.com
+basePath: /api/v1
+paths:
+  /form:
+    post:
+      summary: Create a form
+      description: creates a form given a set of productIds, vendor, form name, description
+        and datesn
+      parameters:
+      - name: body
+        in: body
+        description: the form object that you are editing
+        schema:
+          $ref: '#/definitions/Form'
+      tags:
+      - Forms
+      responses:
+        201:
+          description: A new form
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Form'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: Forms
+      description: The forms endpoint is a detailed search of the forms database.
+        it can be queried bynvendor name, product name, form name, form description,
+        form category, form start date and form end date.n
+      parameters:
+      - name: vendor
+        in: query
+        description: Vendor name
+        type: string
+      - name: product
+        in: query
+        description: Product name
+        type: string
+      - name: formName
+        in: query
+        description: Form name
+        type: string
+      - name: formDescription
+        in: query
+        description: Form description
+        type: string
+      - name: formCategory
+        in: query
+        description: Form category
+        type: string
+      - name: startDate
+        in: query
+        description: unix timestamp of the start date of the form
+        type: integer
+      - name: endDate
+        in: query
+        description: unix timestamp of the end date of the form
+        type: integer
+      tags:
+      - Forms
+      responses:
+        200:
+          description: An array of forms
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Form'
+              pagination:
+                $ref: '#/definitions/Pagination'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/{titanUserId}/request-signature:
+    post:
+      summary: This will tell MH-FORMS to create an envelope for a user. By passing
+        in the titanUserId, a list of TITAN product IDs, a scenario and the raw user
+        information (such as all the demographic and product elections)
+      parameters:
+      - name: titanUserId
+        in: path
+        description: titan user id
+        required: true
+        type: string
+      - name: Signature Request
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SignatureRequest'
+      tags:
+      - Users
+      responses:
+        201:
+          description: A new envelope
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Envelope'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/{titanUserId}/status:
+    get:
+      parameters:
+      - name: titanUserId
+        in: path
+        description: titan user id
+        required: true
+        type: string
+      summary: Status
+      description: Returns a list of envelopes and their status (to notify the employee
+        upon login that they have forms to sign)n
+      tags:
+      - Users
+      responses:
+        200:
+          description: An array of envelopes
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Envelope'
+              pagination:
+                $ref: '#/definitions/Pagination'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /envelope/{id}:
+    get:
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: Get an envelope
+      description: Returns the envelope and all the documents in that envelope and
+        their statusn
+      tags:
+      - Envelopes
+      responses:
+        201:
+          description: An envelope
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Envelope'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /envelope/download:
+    post:
+      summary: download an envelope
+      description: Downloads all documents that meet a certain criteria, such as formId,
+        productId or vendorId, which would link to a formId. When such criteria is
+        passed in, the system should lookup (via the envelopes and envelopeForms tables)
+        to find the envelopes that contain documents of the formId(s).n
+      tags:
+      - Envelopes
+      responses:
+        200:
+          description: An envelope
+          schema:
+            type: file
+          headers:
+            Content-type:
+              type: string
+              description: application/zip, application/octet-stream
+            Content-Disposition:
+              type: string
+              description: attachment; filename=pdfs.zip
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /envelope/{envelopeId}/form/{id}:
+    delete:
+      parameters:
+      - name: envelopeId
+        in: path
+        description: envelope id
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: delete a form from an envelope
+      description: Removes a form from an envelope if the timestampFinalized is nulln
+      tags:
+      - Envelopes
+      responses:
+        204:
+          description: An envelope form is removed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /employer/{employerId}/envelope:
+    get:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      summary: get envelopes from an employer
+      description: Returns a list of all the envelopes in an employer. Can pass in
+        GET params to filter results by formId, productId, vendorId, timestampCreated
+        (date range),n
+      tags:
+      - Employers
+      responses:
+        200:
+          description: A list of employer envelopes
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Envelope'
+              pagination:
+                $ref: '#/definitions/Pagination'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: the envelope object that you are creating
+        schema:
+          $ref: '#/definitions/Envelope'
+      summary: create an envelope from an employer
+      description: Creates an envelope given userId(s) and formId(s). This should
+        create the appropriate entries in the envelopes and envelopeForms tables.n
+      tags:
+      - Employers
+      responses:
+        201:
+          description: An envelope was created
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Envelope'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /scenario:
+    get:
+      summary: Returns all the scenarios.
+      description: Returns all the scenarios.n
+      tags:
+      - Scenarios
+      responses:
+        200:
+          description: A list of scenarios
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Scenario'
+              pagination:
+                $ref: '#/definitions/Pagination'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      parameters:
+      - name: body
+        in: body
+        description: the form object that you are creating
+        schema:
+          $ref: '#/definitions/Scenario'
+      summary: Creates a new scenario.
+      description: Creates a new scenario.n
+      tags:
+      - Scenarios
+      responses:
+        201:
+          description: A new scenario
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Scenario'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /scenario/{id}:
+    put:
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: the scenario object that you are editing
+        schema:
+          $ref: '#/definitions/Scenario'
+      summary: Updates a scenario
+      description: Updates a scenarion
+      tags:
+      - Scenarios
+      responses:
+        204:
+          description: An scenario is updated
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Scenario'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: get a scenario by Id
+      description: Returns a Scenarion
+      tags:
+      - Scenarios
+      responses:
+        200:
+          description: An scenario is returned
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/Scenario'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: delete a scenario
+      description: Removes a scenarion
+      tags:
+      - Scenarios
+      responses:
+        200:
+          description: An Scenario is deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /employer/{employerId}/form:
+    get:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      summary: get forms from an employer
+      description: Get all forms for an employeru2019s form library.n
+      tags:
+      - Employers
+      responses:
+        200:
+          description: A list of employer forms
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/EmployerForm'
+              pagination:
+                $ref: '#/definitions/Pagination'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: the form object that you are creating
+        schema:
+          $ref: '#/definitions/EmployerForm'
+      summary: create a form from an employer
+      description: Creates a form from an employeru2019s form library.n
+      tags:
+      - Employers
+      responses:
+        201:
+          description: An employer form is created and added to an employer
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/EmployerForm'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /employer/{employerId}/form/{id}:
+    put:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: the form object that you are editing
+        schema:
+          $ref: '#/definitions/EmployerForm'
+      summary: update a form for an employer
+      description: Updates a form from an employeru2019s form library.n
+      tags:
+      - Employers
+      responses:
+        204:
+          description: An employer form is updated
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/EmployerForm'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: return a form from an employer
+      description: Returns a form from an employeru2019s form library.n
+      tags:
+      - Employers
+      responses:
+        200:
+          description: An employer form is returned
+          schema:
+            properties:
+              status:
+                type: string
+              data:
+                $ref: '#/definitions/EmployerForm'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      parameters:
+      - name: employerId
+        in: path
+        description: employer id
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+      summary: delete a form from an employer
+      description: Removes a form from an employeru2019s form library.n
+      tags:
+      - Employers
+      responses:
+        200:
+          description: An employer form is deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":13:{s:16:\"SignatureRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"productIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"scenario\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"titanData\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FamilyAndProducts\";}s:11:\"dataChanged\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FamilyAndProducts\";}}}s:12:\"EnvelopeForm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"envelopeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"formId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:18:\"docusignDocumentId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"form\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Form\";}}}s:20:\"EmployerFormScenario\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"employerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:21:\"employerFormLibraryId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"scenarioId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"groupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"productStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"adminSigned\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"adminViewable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"timestampEdited\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:12:\"FormScenario\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"formId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"scenarioId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"groupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:12:\"EmployerForm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"employerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"formId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"form\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Form\";}s:7:\"formPdf\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"formScenarios\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/EmployerFormScenario\";}}}}s:4:\"Form\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:10:\"productIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:4:\"file\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:22:\"adminSignatureRequired\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"adminViewable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"startDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"endDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"active\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"Envelope\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:18:\"docusignEnvelopeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lastStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"timestampCreated\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:23:\"timestampEmployeeSigned\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:20:\"timestampAdminSigned\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:18:\"timestampCompleted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:5:\"forms\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Form\";}}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"FamilyAndProducts\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Family\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:8:\"Products\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Product\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"vendorId\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"name
+  of product.\";}s:14:\"titanProductId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Scenario\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"name
+  of product.\";}}}s:10:\"Pagination\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"current\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"Position
+  in pagination.\";}s:10:\"totalItems\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Total
+  number of items available.\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"Number
+  of items to retrieve (50 default).\";}s:10:\"totalPages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Total
+  number of pages available.\";}s:4:\"next\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"Next
+  page\";}}}s:6:\"Vendor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"name
+  of product.\";}}}}"
+...

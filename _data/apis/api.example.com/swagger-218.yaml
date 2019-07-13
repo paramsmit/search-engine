@@ -1,0 +1,128 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:6:\"17.1.0\";s:5:\"title\";s:9:\"Transmart\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:11:\"description\";s:7211:\"\n#
+  OAuth2\nAll calls need an Authorization header. https://wiki.transmartfoundation.org/display/transmartwiki/RESTful+API\n```\nAuthorization:Bearer
+  {token}\n```\n\n# Constraints\nConstraints are used to build queries and are required
+  in the `v2` API. They consist of a `Type` and that type's specific arguments. The
+  implementation is in [Constraint.groovy](../transmart-core-db/src/main/groovy/org/transmartproject/db/multidimquery/query/Constraint.groovy).\n\n##
+  Combinations (And/Or)\nMost often a combination of constraints is needed to get
+  the right result. This can be done by the constraints with type \"and\" and \"or\".\nThey
+  take a list `args` with constraints. All args will be evaluated together on each
+  observation. So an 'and' operator with a `patient_set` and a `concept` will return
+  all observations for the given concept linked to the patient set.\nHowever an `and`
+  constraint with two ConceptConstraints will evaluate to an empty result, as no observation
+  can have two concepts. This is also true even if nested with a different combination
+  because constraints do not know scope.\n(There is also a constraint with type \"combination\"
+  on which the And and Or constraints are built. It does not provide any functionality
+  not provided by And and Or constraints, and it should be considered deprecated for
+  direct usage.)\n\nExample:\n```json\n{\"type\": \"and\",\n \"args\": [\n    {\"type\":
+  \"patient_set\", \"patientIds\": -62},\n    {\"type\": \"concept\", \"path\":\"
+  \\\\Public Studies\\\\EHR\\\\Vital Signs\\\\Heart Rate\\\\\"}\n    ]\n}\n```\n\n```json\n{\"type\":
+  \"or\",\n \"args\": [\n    {\"type\": \"concept\", \"path\":\" \\\\Public Studies\\\\EHR\\\\Vital
+  Signs\\\\Blood Pressure\\\\\"}\n    {\"type\": \"concept\", \"path\":\" \\\\Public
+  Studies\\\\EHR\\\\Vital Signs\\\\Heart Rate\\\\\"}\n    ]\n}\n```\n\n## StudyName\nEvaluate
+  if an observation is part of a particular study\n\nExample:\n```json\n{\n  \"type\":
+  \"study_name\",\n  \"studyId\": \"EHR\"\n}\n```\n\n## Concept\nEvaluate if an observation
+  is of a particular Concept. Either by `path` or `conceptCode`.\n\n```json\n{\n  \"type\":
+  \"concept\",\n  \"path\": \"\\\\Public Studies\\\\EHR\\\\Vital Signs\\\\Heart Rate\\\\\",\n
+  \ \"conceptCode\": \"HR\"\n}\n```\n\n## Value\nEvaluate if the value of an observation
+  is within the given parameters. It needs a `valueType`, `operator` and `value`.\n
+  \ `valueType`: [\\\"NUMERIC\\\", \\\"STRING\\\"]\n  `operator`: [&lt;, &gt;, =,
+  !=, &lt;=, &gt;=, in, like, contains]\n\nExample:\n```json\n{\n  \"type\": \"value\",\n
+  \ \"valueType\": \"NUMERIC\",\n  \"operator\": \"=\", \"value\": 176\n}\n```\n\n##
+  Field\nEvaluate if a specific field of an observation is within the given parameters.
+  it needs a `field`, `operator` and `value`.\n  `operator`: [&lt;, &gt;, =, !=, &lt;=,
+  &gt;=, in, like, contains]\n\nExample:\n```json\n{\n  \"type\": \"field\",\n  \"field\":
+  {\n      \"dimension\": \"patient\",\n      \"fieldName\": \"age\",\n      \"type\":
+  \"NUMERIC\"\n      },\n  \"operator\": \"!=\",\n  \"value\": 100\n}\n```\n\n## Time\nEvaluate
+  if an observation is within the specified time period. It needs a `field` the type
+  of which needs to be `DATE`. It needs a time relevant `operator` and a list of `values`.\nThe
+  list must hold one date for the before(<-) and after(->) operator. It must hold
+  two dates for the between(<-->) operator. If the given date field for an observation
+  is empty, the observation will be ignored.\n`operator`: [\"&lt;-\", \"-&gt;\", \"&lt;--&gt;\"]\n\nExample:\n```json\n{\n
+  \ \"type\": \"time\",\n  \"field\": {\n      \"dimension\": \"start time\",\n      \"fieldName\":
+  \"startDate\",\n      \"type\": \"DATE\"\n      },\n  \"operator\": \"->\",\n  \"values\":
+  [\"2016-01-01T00:00:00Z\"]\n}\n```\n\n## PatientSet\nEvaluate if an observation
+  is liked to a patient in the set. It needs either a `patientSetId` or a list of
+  `patientIds`.\n\nExample:\n```json\n{\n    \"type\": \"patient_set\",\n    \"patientSetId\":
+  28820,\n    \"patientIds\": [-62, -63]\n}\n```\n\n## SubSelection\nCreate a subselection
+  of patients, visits, or another dimension element, and then select all observations
+  for these dimension elements.\n\nExample: Select all observations for patients who
+  have a certain diagnosis.\n```json\n{\n    \"type\": \"subselection\",\n    \"dimension\":
+  \"patient\",\n    \"constraint\": {\n        \"type\": \"and\",\n        \"args\":
+  [{\n                \"type\": \"concept\",\n                \"path\": \"\\\\Public
+  Studies\\\\EHR\\\\Diagnosis\\\\\",\n                \"conceptCode\": \"DIAG\"\n
+  \           }, {\n                \"type\": \"value\",\n                \"valueType\":
+  \"STRING\",\n                \"operator\": \"=\",\n                \"value\": \"My
+  eye hurts\"\n            }]\n    }\n}\n```\n\n## Temporal\nEvaluate if an observation
+  happened before or after an event. It needs an `operator` and an `event`. Any constraint
+  can be used as an event. Most likely a combination.\n`operator`: [\"&lt;-\", \"-&gt;\",
+  \"exists\"]\n\nExample:\n```json\n{\n    \"type\": \"temporal\",\n    \"operator\":
+  \"exists\",\n    \"event\": {\n          \"type\": \"value\",\n          \"valueType\":
+  \"NUMERIC\",\n          \"operator\": \"=\",\n          \"value\": 60\n          }\n}\n```\n\n##
+  Null\nEvaluate if an specific field of an observation is null. It needs a field.\n\nExample:\n```json\n{\n
+  \   \"type\": \"null\",\n    \"field\":{\n        \"dimension\": \"end time\",\n
+  \       \"fieldName\": \"endDate\",\n        \"type\": \"DATE\"\n        }\n}\n```\n\n##
+  Modifier\nEvaluate if an observation is linked to the specified modifier. Optionally
+  if that modifier has the specific value. It must have a `path`, `dimensionName`
+  or `modifierCode` and may have `values` in the form of a ValueConstraint.\n\nExample:\n```json\n{\n
+  \   \"type\": \"modifier\",\n    \"modifierCode\": \"TNS:SMPL\",\n    \"path\":
+  \"\\\\Public Studies\\\\TUMOR_NORMAL_SAMPLES\\\\Sample Type\\\\\",\n    \"dimensionName\":
+  \"sample_type\",\n    \"values\": {\n        \"type\": \"value\",\n        \"valueType\":
+  \"STRING\",\n        \"operator\": \"=\",\n        \"value\": \"Tumor\"\n        }\n}\n```\n\n##
+  Negation\nEvaluate if for an observation the given `arg` is false. `arg` is a constraint.\n\nExample:\n```json\n{\n
+  \   \"type\": \"negation\",\n    \"arg\": {\n        \"type\": \"patient_set\",\n
+  \       \"patientIds\": [-62,-52,-42]\n        }\n}\n```\nreturns all observations
+  not linked to patient with id -62, -52 or -42\n\n## Biomarker\nUsed to filter high
+  dimensional observations. It needs a 'biomarkerType' and a 'params' object. It can
+  only be used\nwhen retrieving high dimensional data, and if so needs to be specified
+  in a separate url parameter\n`biomarker_constraint`.\n`biomarkerType`: `[\"transcripts\",
+  \"genes\"]`.\n\nExample:\n```json\n{\n    \"type\": \"biomarker\",\n    \"biomarkerType\":
+  \"genes\",\n    \"params\": {\n        \"names\": [\"TP53\"]\n        }\n}\n```\n\n##
+  True\n**!!WARNING!!** Use mainly for testing.  \nThe most basic of constraints.
+  Evaluates to true for all observations. This returns all observations the requesting
+  user has access to.\n\nExample:\n```json\n{\n    \"type\": \"true\"\n}\n```\n\n\n#
+  Response types\n#### application/json\nAll calls support json. however this might
+  not always be the best option. You will find schemas for the responses in this documentation.\n\n####
+  `application/hal+json`\nOnly the tree_node endpoint supports the application/hal+json
+  format.\n\n#### `application/x-protobuf`\nCalls that return observations support
+  protobuf as a more efficient binary format. The description of the protobuf object
+  can be found in [observations.proto](../transmart-rest-api/src/protobuf/v2/observations.proto).
+  Information on [google protobuf](https://developers.google.com/protocol-buffers/).\n\";}"
+paths: ~
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":21:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"prefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"the
+  url prefix where this api can be found\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"the
+  full version string\";}s:5:\"major\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"minor\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"patch\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"tag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"features\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:121:\"string
+  keys and numeric values that indicate features and their revision level. These are
+  only present for -dev versions.\";}}}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:6:\"prefix\";i:2;s:5:\"major\";}}s:13:\"v1observation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/patient\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ontologyTerm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fullName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"jsonStudy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"ontologyTerm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fullName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:13:\"hal+jsonStudy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"_links\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:9:\"_embedded\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"ontologyTerm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"fullName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:5:\"STUDY\";}s:6:\"_links\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"observations\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"children\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}}}}}}}s:15:\"hal+jsonStudies\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:9:\"_embedded\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"studies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/hal+jsonStudy\";}}}}}}s:13:\"storageSystem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"systemType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"systemVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"singleFileCollections\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:8:\"fileLink\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"sourceSystem\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"sourceSystem
+  field is an integer ID representing #storage_system from `/v2/storage`\";s:4:\"type\";s:7:\"integer\";}s:5:\"study\";O:8:\"stdClass\":2:{s:11:\"description\";s:131:\"Short
+  case insensitive String identifying tranSMART study, usually study name, given during
+  ETL, can be retrieved by `/v2/studies`.\";s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"supportedWorkflow\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"arvadosInstanceUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"arvadosVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"defaultParams\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"a
+  map of key value pairs\";s:4:\"type\";s:6:\"object\";}}}s:8:\"treeNode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"children\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:47:\"A
+  list of treeNodes if there are any children. \";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:8:\"fullName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Example:
+  `\\Public Studies\\SHARED_CONCEPTS_STUDY_A\\`\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Example:
+  SHARED_CONCEPTS_STUDY_A\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Example:
+  STUDY\";s:4:\"type\";s:6:\"string\";}s:16:\"visualAttributes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Example:
+  [FOLDER, ACTIVE, STUDY]\";s:4:\"type\";s:6:\"string\";}}s:16:\"observationCount\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"only
+  available on ConceptNodes\";s:4:\"type\";s:7:\"integer\";}s:12:\"patientCount\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"only
+  available on ConceptNodes\";s:4:\"type\";s:7:\"integer\";}s:10:\"constraint\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"only
+  available on ConceptNodes\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Example:
+  ConceptConstraint\";s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"Example:
+  `\\Public Studies\\CLINICAL_TRIAL\\Demography\\Age\\`\";s:4:\"type\";s:6:\"string\";}}}}}s:7:\"v2Study\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"studyID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"bioExperimentId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"dimensions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:7:\"patient\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:3:\"age\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"birthDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:9:\"deathDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"inTrialId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"maritalStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"race\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"religion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"sex\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"trial\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"patient_set\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"errorMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"setSize\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"requestConstraints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"apiVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"observation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:11:\"conceptCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"encounterNum\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"endDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";}s:11:\"instanceNum\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"locationCd\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"modifierCd\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"numberValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"patient\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:10:\"providerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"sourcesystemCd\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"startDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";}s:9:\"textValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"trialVisit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:9:\"valueFlag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"valueType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"observations\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"header\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:21:\"dimensionDeclarations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/dimensionDeclaration\";}}}}s:5:\"cells\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/cell\";}}s:6:\"footer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"dimensions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/dimensionValue\";}}}}}}}s:20:\"dimensionDeclaration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"inline\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"If
+  true, this dimension will be inlined in the cell. Only present if true.\";s:4:\"type\";s:7:\"boolean\";}s:6:\"fields\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"Fields
+  is omitted if the dimension consists of one field.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/field\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"STRING,
+  INTEGER, DATE, OBJECT\";s:4:\"type\";s:6:\"string\";}}}s:5:\"field\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"STRING,
+  INTEGER, DATE\";s:4:\"type\";s:6:\"string\";}}}s:4:\"cell\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:40:\"numericValue
+  or stringValue, never both.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:16:\"dimensionIndexes\";O:8:\"stdClass\":3:{s:11:\"description\";s:164:\"The
+  index in the array is equal to the index of the dimension in the dimensions array
+  in the footer. The number is the index of the dimensionValue in the dimension.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:16:\"inlineDimensions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/dimensionValue\";}}s:12:\"numericValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:11:\"stringValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"dimensionValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:158:\"The
+  structure of this value is described in the header. The order of the dimensionValues
+  is determined by the order of the dimensionDeclaration in the header.\";}s:17:\"dimensionElements\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"apiVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"elements\";O:8:\"stdClass\":3:{s:11:\"description\";s:73:\"List
+  of dimension elements with properties specific to a given dimension.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:10:\"export_job\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"jobName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"jobStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"jobStatusTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"viewerURL\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

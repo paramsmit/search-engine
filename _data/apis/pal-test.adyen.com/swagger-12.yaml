@@ -1,0 +1,599 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:7:\"version\";s:2:\"30\";s:5:\"title\";s:21:\"Adyen
+  Payment Service\";s:11:\"description\";s:1275:\"A set of API endpoints that allow
+  you to initiate, settle, and modify payments on the Adyen payments platform. You
+  can use the API to accept card payments (including One-Click and 3D Secure), bank
+  transfers, ewallets, and many other payment methods.\n\nTo learn more about the
+  API, visit [Ecommerce integration](https://docs.adyen.com/developers/ecommerce-integration).\n\n##
+  Authentication\nTo connect to the Payments API, you must use your basic authentication
+  credentials. For this, create your web service user, as described in [How to get
+  the WS user password](https://docs.adyen.com/developers/user-management/how-to-get-the-web-service-ws-user-password).
+  Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U
+  \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\"
+  \\\n...\n```\nNote that when going live, you need to generate new web service user
+  credentials to access the [live endpoints](https://docs.adyen.com/developers/api-reference/live-endpoints).\n\n##
+  Versioning\nPayments API supports versioning of its endpoints through a version
+  suffix in the endpoint URL. This suffix has the following format: \"vXX\", where
+  XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v30/authorise\n```\";s:14:\"termsOfService\";s:45:\"https://docs.adyen.com/legal/terms-conditions\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:13:\"Adyen
+  Support\";s:3:\"url\";s:26:\"https://support.adyen.com/\";s:5:\"email\";s:17:\"support@adyen.com\";}}"
+host: pal-test.adyen.com
+basePath: /pal/servlet/Payment/v30
+paths:
+  /adjustAuthorisation:
+    post:
+      summary: Increases or decreases the authorised amount.
+      description: Allows you to increase or decrease the authorised amount after
+        the initial authorisation has taken place. This functionality enables tipping,
+        improving the chances your authorisation will be valid, charging the shopper
+        when they have already left the merchant premises, etc.nnFor more information,
+        refer to [Adjust Authorisation](https://docs.adyen.com/developers/payment-modifications#adjustauthorisation).
+      x-groupName: Modifications
+      x-sortIndex: 6
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /authorise:
+    post:
+      summary: Creates a payment authorisation.
+      description: Creates a payment with a unique reference (`pspReference`) and
+        attempts to obtain an authorisation hold. For cards, this amount can be captured
+        or cancelled later. Non-card payment methods typically don't support this
+        and will automatically capture as part of the authorisation.nnFor more information,
+        refer to [Ecommerce quick integration](https://docs.adyen.com/developers/ecommerce-integration).
+      x-groupName: General
+      x-sortIndex: 1
+      parameters:
+      - name: paymentRequest
+        in: body
+        schema:
+          $ref: '#/definitions/PaymentRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/PaymentResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /authorise3d:
+    post:
+      summary: Completes a 3D Secure payment authorisation.
+      description: For an authenticated 3D Secure session, completes the payment authorisation.
+        This endpoint must receive the `md` and `paResponse` parameters that you get
+        from the card issuer after a shopper pays via 3D Secure.nnFor more information,
+        refer to [3D Secure](https://docs.adyen.com/developers/risk-management/3d-secure).
+      x-groupName: General
+      x-sortIndex: 2
+      parameters:
+      - name: paymentRequest3d
+        in: body
+        schema:
+          $ref: '#/definitions/PaymentRequest3d'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/PaymentResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /cancel:
+    post:
+      summary: Cancels an authorised payment.
+      description: Cancels the authorisation hold on a payment, returning a unique
+        reference for this request. You can cancel payments after authorisation only
+        for payment methods that support distinct authorisations and captures.nnFor
+        more information, refer to [Cancel](https://docs.adyen.com/developers/payment-modifications#cancel).
+      x-groupName: Modifications
+      x-sortIndex: 2
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /cancelOrRefund:
+    post:
+      summary: Cancels or refunds a payment.
+      description: Cancels a payment if it has not yet been captured yet, or refunds
+        it if it has already been captured. This is useful when it is not certain
+        if the payment has been captured or not (for example, when using auto-capture).nnFor
+        more information, refer to [Cancel or refund](https://docs.adyen.com/developers/payment-modifications#cancelorrefund).
+      x-groupName: Modifications
+      x-sortIndex: 4
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /capture:
+    post:
+      summary: Captures an authorised payment.
+      description: Captures the authorisation hold on a payment, returning a unique
+        reference for this request. Usually the full authorisation amount is captured,
+        however it's also possible to capture a smaller amount, which results in cancelling
+        the remaining authorisation balance.nnPayment methods, which automatically
+        capture as part of authorisation, don't need to be captured, but submitting
+        a capture request on these transactions will not result in double charges.
+        If immediate or delayed auto-capture is enabled, calling the capture method
+        is not neccessary.nnFor more information, refer to [Capture](https://docs.adyen.com/developers/payment-modifications#capture).
+      x-groupName: Modifications
+      x-sortIndex: 1
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /refund:
+    post:
+      summary: Refunds a captured payment.
+      description: Refunds a payment that has previously been captured, returning
+        a unique reference for this request. Refunding can be done on the full captured
+        amount or a partial amount. Multiple (partial) refunds will be accepted as
+        long as their sum doesn't exceed the captured amount. Payments which have
+        been authorised, but not captured, cannot be refunded, use the /cancel method
+        instead.nn> Some payment methods/gateways do not support partial/multiple
+        refunds.n> A margin above the captured limit can be configured to cover shipping/handling
+        costs.nnFor more information, refer to [Refund](https://docs.adyen.com/developers/payment-modifications#refund).
+      x-groupName: Modifications
+      x-sortIndex: 3
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+  /technicalCancel:
+    post:
+      summary: Cancels an authorised payment using a custom reference.
+      description: Cancels a previously authorised payment using a custom reference
+        value, that you submitted as a `reference` parameter in the original `/authorise`
+        request.nnFor more information, refer to [Technical Cancel](https://docs.adyen.com/developers/payment-modifications#technicalcancel).
+      x-groupName: Modifications
+      x-sortIndex: 5
+      parameters:
+      - name: modificationRequest
+        in: body
+        schema:
+          $ref: '#/definitions/ModificationRequest'
+      responses:
+        200:
+          description: OK - the request has succeeded.
+          schema:
+            $ref: '#/definitions/ModificationResult'
+        400:
+          description: Bad Request - a problem reading or understanding the request.
+        422:
+          description: Unprocessable Entity - a request validation error.
+        401:
+          description: Unauthorized - authentication required.
+        500:
+          description: Internal Server Error - the server could not process the request.
+        403:
+          description: Forbidden - insufficient permissions to process the request.
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":17:{s:7:\"Address\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:113:\"The
+  name of the city.\n>Required if either houseNumberOrName, street, postalCode, or
+  stateOrProvince are provided.\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:121:\"The
+  two-character country code of the address\n>The permitted country codes are defined
+  in ISO-3166-1 alpha-2 (e.g. 'NL').\";s:4:\"type\";s:6:\"string\";}s:17:\"houseNumberOrName\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  number or name of the house.\";s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:234:\"The
+  postal code.\n>A maximum of five (5) digits for an address in the USA, or a maximum
+  of ten (10) characters for an address in all other countries.\n>Required if either
+  houseNumberOrName, street, city, or stateOrProvince are provided.\";s:4:\"type\";s:6:\"string\";}s:15:\"stateOrProvince\";O:8:\"stdClass\":2:{s:11:\"description\";s:292:\"The
+  abbreviation of the state or province.\n>Two (2) characters for an address in the
+  USA or Canada, or a maximum of three (3) characters for an address in all other
+  countries.\n>Required for an address in the USA or Canada if either houseNumberOrName,
+  street, city, or postalCode are provided.\";s:4:\"type\";s:6:\"string\";}s:6:\"street\";O:8:\"stdClass\":2:{s:11:\"description\";s:227:\"The
+  name of the street.\n>The house number should not be included in this field; it
+  should be separately provided via `houseNumberOrName`.\n>Required if either houseNumberOrName,
+  city, postalCode, or stateOrProvince are provided.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"country\";}}s:6:\"Amount\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"currency\";O:8:\"stdClass\":4:{s:11:\"description\";s:90:\"The
+  three-character [ISO currency code](https://docs.adyen.com/developers/currency-codes).\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:3;s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:208:\"The
+  payable amount that can be charged for the transaction.\n\nThe transaction amount
+  needs to be represented in minor units according to the [following table](https://docs.adyen.com/developers/currency-codes).\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:2:{i:0;s:5:\"value\";i:1;s:8:\"currency\";}}s:11:\"BankAccount\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":9:{s:17:\"bankAccountNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"The
+  bank account number (without separators).\";s:4:\"type\";s:6:\"string\";}s:8:\"bankCity\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  bank city.\";s:4:\"type\";s:6:\"string\";}s:14:\"bankLocationId\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"The
+  location id of the bank. The field value is `nil` in most cases.\";s:4:\"type\";s:6:\"string\";}s:8:\"bankName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the bank.\";s:4:\"type\";s:6:\"string\";}s:3:\"bic\";O:8:\"stdClass\":2:{s:11:\"description\";s:157:\"The
+  [Business Identifier Code](https://en.wikipedia.org/wiki/ISO_9362) (BIC) is the
+  SWIFT address assigned to a bank. The field value is `nil` in most cases.\";s:4:\"type\";s:6:\"string\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"Country
+  code where the bank is located.\n\nA valid value is an ISO two-character country
+  code (e.g. 'NL').\";s:4:\"type\";s:6:\"string\";}s:4:\"iban\";O:8:\"stdClass\":2:{s:11:\"description\";s:112:\"The
+  [International Bank Account Number](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
+  (IBAN).\";s:4:\"type\";s:6:\"string\";}s:9:\"ownerName\";O:8:\"stdClass\":2:{s:11:\"description\";s:733:\"The
+  name of the bank account holder.\nIf you submit a name with non-Latin characters,
+  we automatically replace some of them with corresponding Latin characters to meet
+  the FATF recommendations. For example:\n* \u03C712 is converted to ch12.\n* \xFCA
+  is converted to euA.\n* Peter M\xF8ller is converted to Peter Mller, because banks
+  don't accept '\xF8'.\nAfter replacement, the ownerName must have at least three
+  alphanumeric characters (A-Z, a-z, 0-9), and at least one of them must be a valid
+  Latin character (A-Z, a-z). For example:\n* John17 - allowed.\n* J17 - allowed.\n*
+  171 - not allowed.\n* John-7 - allowed.\n> If provided details don't match the required
+  format, the response returns the error message: 203 'Invalid bank account holder
+  name'.\";s:4:\"type\";s:6:\"string\";}s:5:\"taxId\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  bank account holder's tax ID.\";s:4:\"type\";s:6:\"string\";}}}s:11:\"BrowserInfo\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"acceptHeader\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"The
+  accept header value of the shopper's browser.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:10;s:4:\"type\";s:6:\"string\";}s:9:\"userAgent\";O:8:\"stdClass\":4:{s:11:\"description\";s:46:\"The
+  user agent value of the shopper's browser.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:10;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:9:\"userAgent\";i:1;s:12:\"acceptHeader\";}}s:4:\"Card\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:3:\"cvc\";O:8:\"stdClass\":4:{s:11:\"description\";s:659:\"The
+  [card verification code](https://docs.adyen.com/developers/payment-glossary#cardsecuritycodecvccvvcid)
+  (1-20 characters). Depending on the card brand, it is known also as:\n* CVV2/CVC2
+  \u2013 length: 3 digits\n* CID \u2013 length: 4 digits\n> If you are using [Client-Side
+  Encryption](https://docs.adyen.com/developers/ecommerce-integration), the CVC code
+  is present in the encrypted data. You must never post the card details to the server.\n>
+  This field must be always present in a [one-click payment request](https://docs.adyen.com/developers/features/recurring-payments).\n>
+  When this value is returned in a response, it is always empty because it is not
+  stored.\";s:9:\"maxLength\";i:20;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:11:\"expiryMonth\";O:8:\"stdClass\":4:{s:11:\"description\";s:113:\"The
+  card expiry month.\nFormat: 2 digits, zero-padded for single digits. For example:\n*
+  03 = March\n* 11 = November\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:10:\"expiryYear\";O:8:\"stdClass\":4:{s:11:\"description\";s:57:\"The
+  card expiry year.\nFormat: 4 digits. For example: 2018\";s:9:\"maxLength\";i:4;s:9:\"minLength\";i:4;s:4:\"type\";s:6:\"string\";}s:10:\"holderName\";O:8:\"stdClass\":4:{s:11:\"description\";s:51:\"The
+  name of the cardholder, as printed on the card.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:11:\"issueNumber\";O:8:\"stdClass\":4:{s:11:\"description\";s:60:\"The
+  issue number of the card (for some UK debit cards only).\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:6:\"number\";O:8:\"stdClass\":4:{s:11:\"description\";s:160:\"The
+  card number (4-19 characters). Do not use any separators.\nWhen this value is returned
+  in a response, only the last 4 digits of the card number are returned.\";s:9:\"maxLength\";i:19;s:9:\"minLength\";i:4;s:4:\"type\";s:6:\"string\";}s:10:\"startMonth\";O:8:\"stdClass\":4:{s:11:\"description\";s:69:\"The
+  month component of the start date (for some UK debit cards only).\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:9:\"startYear\";O:8:\"stdClass\":4:{s:11:\"description\";s:68:\"The
+  year component of the start date (for some UK debit cards only).\";s:9:\"maxLength\";i:4;s:9:\"minLength\";i:4;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:6:\"number\";i:1;s:11:\"expiryMonth\";i:2;s:10:\"expiryYear\";i:3;s:10:\"holderName\";}}s:10:\"ForexQuote\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"The
+  account name.\";s:4:\"type\";s:6:\"string\";}s:11:\"accountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"The
+  account type.\";s:4:\"type\";s:6:\"string\";}s:10:\"baseAmount\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  base amount.\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:10:\"basePoints\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"The
+  base points.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:3:\"buy\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"The
+  buy rate.\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:9:\"interbank\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  interbank amount.\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  reference assigned to the forex quote request.\";s:4:\"type\";s:6:\"string\";}s:4:\"sell\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  sell rate.\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:9:\"signature\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  signature to validate the integrity.\";s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  source of the forex quote.\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  type of forex.\";s:4:\"type\";s:6:\"string\";}s:9:\"validTill\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"The
+  date until which the forex quote is valid.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:9:\"validTill\";i:1;s:10:\"basePoints\";}}s:16:\"FraudCheckResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"accountScore\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"The
+  fraud score generated by the risk check.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"checkId\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  ID of the risk check.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  name of the risk check.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:7:\"checkId\";i:1;s:4:\"name\";i:2;s:12:\"accountScore\";}}s:11:\"FraudResult\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"accountScore\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"The
+  total fraud score generated by the risk checks.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"results\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"The
+  result of the individual risk checks.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/FraudCheckResult\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:12:\"accountScore\";}}s:12:\"Installments\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:284:\"Defines
+  the number of installments. Its value needs to be greater than zero.\n\nUsually,
+  the maximum allowed number of installments is capped. For example, it may not be
+  possible to split a payment in more than 24 installments. The acquirer sets this
+  upper limit, so its value may vary.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:1:{i:0;s:5:\"value\";}}s:19:\"ModificationRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:14:\"additionalData\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:413:\"This
+  field contains additional data, which may be required for a particular modification
+  request.\n\nThe additionalData object consists of entries, each of which includes
+  the key and value. For more information on possible key-value pairs, refer to the
+  [ModificationRequest.additionalData](https://docs.adyen.com/developers/api-reference/payments-api/modificationrequest/modificationrequest-additionaldata)
+  section.\";s:4:\"type\";s:6:\"object\";}s:15:\"merchantAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  merchant account that is used to process the payment.\";s:4:\"type\";s:6:\"string\";}s:18:\"modificationAmount\";O:8:\"stdClass\":2:{s:11:\"description\";s:242:\"The
+  amount that needs to be captured/refunded. Required for `/capture` and `/refund`,
+  not allowed for `/cancel`. The `currency` must match the currency used in authorisation,
+  the `value` must be smaller than or equal to the authorised amount.\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:25:\"originalMerchantReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  original merchant reference to cancel.\";s:4:\"type\";s:6:\"string\";}s:17:\"originalReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:136:\"The
+  original pspReference of the payment to modify.\nThis reference is returned in:\n*
+  authorisation response\n* authorisation notification\";s:4:\"type\";s:6:\"string\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:11:\"description\";s:162:\"Optionally,
+  you can specify your reference for the payment modification. This reference is visible
+  in Customer Area and in reports.\nMaximum length: 80 characters.\";s:4:\"type\";s:6:\"string\";}s:15:\"tenderReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"The
+  transaction reference provided by the PED. For Point-of-sale integrations only.\";s:4:\"type\";s:6:\"string\";}s:16:\"uniqueTerminalId\";O:8:\"stdClass\":2:{s:11:\"description\";s:106:\"Unique
+  terminal ID for the PED that originally processed the request. For Point-of-sale
+  integrations only.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:15:\"merchantAccount\";i:1;s:17:\"originalReference\";}}s:18:\"ModificationResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"additionalData\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:97:\"This
+  field contains additional data, which may be returned in a particular modification
+  response.\";s:4:\"type\";s:6:\"object\";}s:12:\"pspReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:165:\"Adyen's
+  16-digit unique reference associated with the transaction/the request. This value
+  is globally unique; quote it when communicating with us about this request.\";s:4:\"type\";s:6:\"string\";}s:8:\"response\";O:8:\"stdClass\":3:{s:11:\"description\";s:71:\"Indicates
+  if the modification request has been received for processing.\";s:4:\"enum\";a:4:{i:0;s:18:\"[capture-received]\";i:1;s:17:\"[cancel-received]\";i:2;s:17:\"[refund-received]\";i:3;s:25:\"[cancelOrRefund-received]\";}s:4:\"type\";s:6:\"string\";}}}s:4:\"Name\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"The
+  first name.\";s:4:\"type\";s:6:\"string\";}s:6:\"gender\";O:8:\"stdClass\":5:{s:11:\"description\";s:77:\"The
+  gender.\n>The following values are permitted: `MALE`, `FEMALE`, `UNKNOWN`.\";s:4:\"enum\";a:3:{i:0;s:4:\"MALE\";i:1;s:6:\"FEMALE\";i:2;s:7:\"UNKNOWN\";}s:9:\"maxLength\";i:1;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:5:\"infix\";O:8:\"stdClass\":2:{s:11:\"description\";s:88:\"The
+  name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  last name.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:9:\"firstName\";i:1;s:8:\"lastName\";i:2;s:6:\"gender\";}}s:14:\"PaymentRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":40:{s:16:\"additionalAmount\";O:8:\"stdClass\":2:{s:11:\"description\";s:340:\"If
+  you want a [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification)
+  request to use a non-zero value, assign this value to `additionalAmount` (while
+  the amount must be still set to 0 to trigger BIN or card verification).\nRequired
+  to be in the same currency as the `amount`. \";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:14:\"additionalData\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:364:\"This
+  field contains additional data, which may be required for a particular payment request.\n\nThe
+  `additionalData` object consists of entries, each of which includes the key and
+  value. For more information on possible key-value pairs, refer to the [additionalData
+  section](https://docs.adyen.com/developers/api-reference/payments-api#paymentrequestadditionaldata).\";s:4:\"type\";s:6:\"object\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:202:\"The
+  amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification)
+  requests, set amount to 0 (zero).\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:11:\"bankAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"The
+  details of the bank account, from which the payment should be made.\n> Either `bankAccount`
+  or `card` field must be provided in a payment request.\";s:4:\"$ref\";s:25:\"#/definitions/BankAccount\";}s:14:\"billingAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  address where to send the invoice.\";s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:11:\"browserInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  shopper's browser information.\";s:4:\"$ref\";s:25:\"#/definitions/BrowserInfo\";}s:17:\"captureDelayHours\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  delay between the authorisation and scheduled auto-capture, specified in hours.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"card\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"A
+  container for card data.\n> Either `bankAccount` or `card` field must be provided
+  in a payment request.\";s:4:\"$ref\";s:18:\"#/definitions/Card\";}s:11:\"dateOfBirth\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"The
+  shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime):
+  YYYY-MM-DD\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"dccQuote\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"The
+  forex quote as returned in the response of the forex service.\";s:4:\"$ref\";s:24:\"#/definitions/ForexQuote\";}s:15:\"deliveryAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"The
+  address where the purchased goods should be delivered.\";s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:12:\"deliveryDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:182:\"The
+  date and time the purchased goods should be delivered.\n\nFormat [ISO 8601](https://www.w3.org/TR/NOTE-datetime):
+  YYYY-MM-DDThh:mm:ss.sssTZD\n\nExample: 2017-07-17T13:42:40.428+01:00\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:17:\"deviceFingerprint\";O:8:\"stdClass\":2:{s:11:\"description\";s:182:\"A
+  string containing the shopper's device fingerprint. For more information, refer
+  to [Device fingerprinting](https://docs.adyen.com/developers/risk-management/device-fingerprinting).\";s:4:\"type\";s:6:\"string\";}s:10:\"entityType\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"The
+  type of the entity the payment is processed for.\";s:4:\"enum\";a:2:{i:0;s:13:\"NaturalPerson\";i:1;s:11:\"CompanyName\";}s:4:\"type\";s:6:\"string\";}s:11:\"fraudOffset\";O:8:\"stdClass\":3:{s:11:\"description\";s:103:\"An
+  integer value that is added to the normal fraud score. The value can be either positive
+  or negative.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"installments\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"Contains
+  installment settings. For more information, refer to [Installments](https://docs.adyen.com/developers/payment-methods/installment-payments).\";s:4:\"$ref\";s:26:\"#/definitions/Installments\";}s:3:\"mcc\";O:8:\"stdClass\":2:{s:11:\"description\";s:237:\"The
+  [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC)
+  is a four-digit number, which relates to a particular market segment. This code
+  reflects the predominant activity that is conducted by the merchant.\";s:4:\"type\";s:6:\"string\";}s:15:\"merchantAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"The
+  merchant account identifier, with which you want to process the transaction.\";s:4:\"type\";s:6:\"string\";}s:22:\"merchantOrderReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:235:\"This
+  reference allows linking multiple transactions to each other.\n> When providing
+  the `merchantOrderReference` value, we also recommend you submit `retry.orderAttemptNumber`,
+  `retry.chainAttemptNumber`, and `retry.skipRetry` values. \";s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:127:\"Metadata
+  consists of entries, each of which includes a key and a value.\nLimitations: Error
+  \"177\", \"Metadata size exceeds limit\"\";s:4:\"type\";s:6:\"object\";}s:7:\"mpiData\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"Authentication
+  data produced by an MPI (Mastercard SecureCode or Verified By Visa).\";s:4:\"$ref\";s:30:\"#/definitions/ThreeDSecureData\";}s:11:\"nationality\";O:8:\"stdClass\":3:{s:11:\"description\";s:60:\"The
+  two-character country code of the shopper's nationality.\";s:9:\"maxLength\";i:2;s:4:\"type\";s:6:\"string\";}s:14:\"orderReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  order reference to link multiple partial payments.\";s:4:\"type\";s:6:\"string\";}s:9:\"recurring\";O:8:\"stdClass\":2:{s:11:\"description\";s:166:\"The
+  recurring settings for the payment. Use this property when you want to enable [recurring
+  payments](https://docs.adyen.com/developers/features/recurring-payments).\";s:4:\"$ref\";s:23:\"#/definitions/Recurring\";}s:24:\"recurringProcessingModel\";O:8:\"stdClass\":3:{s:11:\"description\";s:377:\"Defines
+  a recurring payment type.\nAllowed values:\n* `Subscription` \u2013 A transaction
+  for a fixed or variable amount, which follows a fixed schedule.\n* `CardOnFile`
+  \u2013 Card details are stored to enable one-click or omnichannel journeys, or simply
+  to streamline the checkout process. Any subscription not following a fixed schedule
+  is also considered a card-on-file transaction.\";s:4:\"enum\";a:2:{i:0;s:10:\"CardOnFile\";i:1;s:12:\"Subscription\";}s:4:\"type\";s:6:\"string\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:11:\"description\";s:332:\"The
+  reference to uniquely identify a payment. This reference is used in all communication
+  with you about the payment status. We recommend using a unique value per payment;
+  however, it is not a requirement.\nIf you need to provide multiple references for
+  a transaction, separate them with hyphens (\"-\").\nMaximum length: 80 characters.\";s:4:\"type\";s:6:\"string\";}s:13:\"selectedBrand\";O:8:\"stdClass\":2:{s:11:\"description\";s:270:\"Some
+  payment methods require defining a value for this field to specify how to process
+  the transaction.\n\nFor the Bancontact payment method, it can be set to:\n* `maestro`
+  (default), to be processed like a Maestro card, or\n* `bcmc`, to be processed like
+  a Bancontact card.\";s:4:\"type\";s:6:\"string\";}s:32:\"selectedRecurringDetailReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:148:\"The
+  `recurringDetailReference` you want to use for this payment. The value `LATEST`
+  can be used to select the most recently stored recurring detail.\";s:4:\"type\";s:6:\"string\";}s:9:\"sessionId\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"A
+  session ID used to identify a payment session.\";s:4:\"type\";s:6:\"string\";}s:12:\"shopperEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:109:\"The
+  shopper's email address. We recommend that you provide this data, as it is used
+  in velocity fraud checks.\";s:4:\"type\";s:6:\"string\";}s:9:\"shopperIP\";O:8:\"stdClass\":2:{s:11:\"description\";s:345:\"The
+  shopper's IP address. We recommend that you provide this data, as it is used in
+  a number of risk checks (for instance, number of payment attempts or location-based
+  checks).\n> This field is mandatory for some merchants depending on your business
+  model. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).\";s:4:\"type\";s:6:\"string\";}s:18:\"shopperInteraction\";O:8:\"stdClass\":3:{s:11:\"description\";s:938:\"Specifies
+  the sales channel, through which the shopper gives their card details, and whether
+  the shopper is a returning customer.\nFor the web service API, Adyen assumes Ecommerce
+  shopper interaction by default.\n\nThis field has the following possible values:\n*
+  `Ecommerce` - Online transactions where the cardholder is present (online). For
+  better authorisation rates, we recommend sending the card security code (CSC) along
+  with the request.\n* `ContAuth` - Card on file and/or subscription transactions,
+  where the cardholder is known to the merchant (returning customer). If the shopper
+  is present (online), you can supply also the CSC to improve authorisation (one-click
+  payment).\n* `Moto` - Mail-order and telephone-order transactions where the shopper
+  is in contact with the merchant via email or telephone.\n* `POS` - Point-of-sale
+  transactions where the shopper is physically present to make a payment using a secure
+  payment terminal.\";s:4:\"enum\";a:4:{i:0;s:9:\"Ecommerce\";i:1;s:8:\"ContAuth\";i:2;s:4:\"Moto\";i:3;s:3:\"POS\";}s:4:\"type\";s:6:\"string\";}s:13:\"shopperLocale\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"The
+  combination of a language code and a country code to specify the language to be
+  used in the payment.\";s:4:\"type\";s:6:\"string\";}s:11:\"shopperName\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  shopper's full name and gender (if specified).\";s:4:\"$ref\";s:18:\"#/definitions/Name\";}s:16:\"shopperReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:136:\"The
+  shopper's reference to uniquely identify this shopper (e.g. user ID or account ID).\n>
+  This field is required for recurring payments.\";s:4:\"type\";s:6:\"string\";}s:16:\"shopperStatement\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"The
+  text to appear on the shopper's bank statement.\";s:4:\"type\";s:6:\"string\";}s:20:\"socialSecurityNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  shopper's social security number.\";s:4:\"type\";s:6:\"string\";}s:5:\"store\";O:8:\"stdClass\":4:{s:11:\"description\";s:56:\"The
+  physical store, for which this payment is processed.\";s:9:\"maxLength\";i:16;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:15:\"telephoneNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  shopper's telephone number.\";s:4:\"type\";s:6:\"string\";}s:11:\"totalsGroup\";O:8:\"stdClass\":4:{s:11:\"description\";s:119:\"The
+  reference value to aggregate sales totals in reporting. When not specified, the
+  store field is used (if available).\";s:9:\"maxLength\";i:16;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:15:\"merchantAccount\";i:1;s:9:\"reference\";i:2;s:6:\"amount\";}}s:16:\"PaymentRequest3d\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":37:{s:16:\"additionalAmount\";O:8:\"stdClass\":2:{s:11:\"description\";s:340:\"If
+  you want a [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification)
+  request to use a non-zero value, assign this value to `additionalAmount` (while
+  the amount must be still set to 0 to trigger BIN or card verification).\nRequired
+  to be in the same currency as the `amount`. \";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:14:\"additionalData\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:364:\"This
+  field contains additional data, which may be required for a particular payment request.\n\nThe
+  `additionalData` object consists of entries, each of which includes the key and
+  value. For more information on possible key-value pairs, refer to the [additionalData
+  section](https://docs.adyen.com/developers/api-reference/payments-api#paymentrequestadditionaldata).\";s:4:\"type\";s:6:\"object\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:202:\"The
+  amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification)
+  requests, set amount to 0 (zero).\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:14:\"billingAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  address where to send the invoice.\";s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:11:\"browserInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  shopper's browser information.\";s:4:\"$ref\";s:25:\"#/definitions/BrowserInfo\";}s:17:\"captureDelayHours\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  delay between the authorisation and scheduled auto-capture, specified in hours.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"dateOfBirth\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"The
+  shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime):
+  YYYY-MM-DD\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"dccQuote\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"The
+  forex quote as returned in the response of the forex service.\";s:4:\"$ref\";s:24:\"#/definitions/ForexQuote\";}s:15:\"deliveryAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"The
+  address where the purchased goods should be delivered.\";s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:12:\"deliveryDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:182:\"The
+  date and time the purchased goods should be delivered.\n\nFormat [ISO 8601](https://www.w3.org/TR/NOTE-datetime):
+  YYYY-MM-DDThh:mm:ss.sssTZD\n\nExample: 2017-07-17T13:42:40.428+01:00\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:17:\"deviceFingerprint\";O:8:\"stdClass\":2:{s:11:\"description\";s:182:\"A
+  string containing the shopper's device fingerprint. For more information, refer
+  to [Device fingerprinting](https://docs.adyen.com/developers/risk-management/device-fingerprinting).\";s:4:\"type\";s:6:\"string\";}s:11:\"fraudOffset\";O:8:\"stdClass\":3:{s:11:\"description\";s:103:\"An
+  integer value that is added to the normal fraud score. The value can be either positive
+  or negative.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"installments\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"Contains
+  installment settings. For more information, refer to [Installments](https://docs.adyen.com/developers/payment-methods/installment-payments).\";s:4:\"$ref\";s:26:\"#/definitions/Installments\";}s:3:\"mcc\";O:8:\"stdClass\":2:{s:11:\"description\";s:237:\"The
+  [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC)
+  is a four-digit number, which relates to a particular market segment. This code
+  reflects the predominant activity that is conducted by the merchant.\";s:4:\"type\";s:6:\"string\";}s:2:\"md\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"The
+  payment session identifier returned by the card issuer.\";s:4:\"type\";s:6:\"string\";}s:15:\"merchantAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"The
+  merchant account identifier, with which you want to process the transaction.\";s:4:\"type\";s:6:\"string\";}s:22:\"merchantOrderReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:235:\"This
+  reference allows linking multiple transactions to each other.\n> When providing
+  the `merchantOrderReference` value, we also recommend you submit `retry.orderAttemptNumber`,
+  `retry.chainAttemptNumber`, and `retry.skipRetry` values. \";s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:127:\"Metadata
+  consists of entries, each of which includes a key and a value.\nLimitations: Error
+  \"177\", \"Metadata size exceeds limit\"\";s:4:\"type\";s:6:\"object\";}s:14:\"orderReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  order reference to link multiple partial payments.\";s:4:\"type\";s:6:\"string\";}s:10:\"paResponse\";O:8:\"stdClass\":2:{s:11:\"description\";s:135:\"Payment
+  authorisation response returned by the card issuer. The `paResponse` field holds
+  the PaRes value received from the card issuer.\";s:4:\"type\";s:6:\"string\";}s:9:\"recurring\";O:8:\"stdClass\":2:{s:11:\"description\";s:166:\"The
+  recurring settings for the payment. Use this property when you want to enable [recurring
+  payments](https://docs.adyen.com/developers/features/recurring-payments).\";s:4:\"$ref\";s:23:\"#/definitions/Recurring\";}s:24:\"recurringProcessingModel\";O:8:\"stdClass\":3:{s:11:\"description\";s:377:\"Defines
+  a recurring payment type.\nAllowed values:\n* `Subscription` \u2013 A transaction
+  for a fixed or variable amount, which follows a fixed schedule.\n* `CardOnFile`
+  \u2013 Card details are stored to enable one-click or omnichannel journeys, or simply
+  to streamline the checkout process. Any subscription not following a fixed schedule
+  is also considered a card-on-file transaction.\";s:4:\"enum\";a:2:{i:0;s:10:\"CardOnFile\";i:1;s:12:\"Subscription\";}s:4:\"type\";s:6:\"string\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:11:\"description\";s:332:\"The
+  reference to uniquely identify a payment. This reference is used in all communication
+  with you about the payment status. We recommend using a unique value per payment;
+  however, it is not a requirement.\nIf you need to provide multiple references for
+  a transaction, separate them with hyphens (\"-\").\nMaximum length: 80 characters.\";s:4:\"type\";s:6:\"string\";}s:13:\"selectedBrand\";O:8:\"stdClass\":2:{s:11:\"description\";s:270:\"Some
+  payment methods require defining a value for this field to specify how to process
+  the transaction.\n\nFor the Bancontact payment method, it can be set to:\n* `maestro`
+  (default), to be processed like a Maestro card, or\n* `bcmc`, to be processed like
+  a Bancontact card.\";s:4:\"type\";s:6:\"string\";}s:32:\"selectedRecurringDetailReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:148:\"The
+  `recurringDetailReference` you want to use for this payment. The value `LATEST`
+  can be used to select the most recently stored recurring detail.\";s:4:\"type\";s:6:\"string\";}s:9:\"sessionId\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"A
+  session ID used to identify a payment session.\";s:4:\"type\";s:6:\"string\";}s:12:\"shopperEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:109:\"The
+  shopper's email address. We recommend that you provide this data, as it is used
+  in velocity fraud checks.\";s:4:\"type\";s:6:\"string\";}s:9:\"shopperIP\";O:8:\"stdClass\":2:{s:11:\"description\";s:345:\"The
+  shopper's IP address. We recommend that you provide this data, as it is used in
+  a number of risk checks (for instance, number of payment attempts or location-based
+  checks).\n> This field is mandatory for some merchants depending on your business
+  model. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).\";s:4:\"type\";s:6:\"string\";}s:18:\"shopperInteraction\";O:8:\"stdClass\":3:{s:11:\"description\";s:938:\"Specifies
+  the sales channel, through which the shopper gives their card details, and whether
+  the shopper is a returning customer.\nFor the web service API, Adyen assumes Ecommerce
+  shopper interaction by default.\n\nThis field has the following possible values:\n*
+  `Ecommerce` - Online transactions where the cardholder is present (online). For
+  better authorisation rates, we recommend sending the card security code (CSC) along
+  with the request.\n* `ContAuth` - Card on file and/or subscription transactions,
+  where the cardholder is known to the merchant (returning customer). If the shopper
+  is present (online), you can supply also the CSC to improve authorisation (one-click
+  payment).\n* `Moto` - Mail-order and telephone-order transactions where the shopper
+  is in contact with the merchant via email or telephone.\n* `POS` - Point-of-sale
+  transactions where the shopper is physically present to make a payment using a secure
+  payment terminal.\";s:4:\"enum\";a:4:{i:0;s:9:\"Ecommerce\";i:1;s:8:\"ContAuth\";i:2;s:4:\"Moto\";i:3;s:3:\"POS\";}s:4:\"type\";s:6:\"string\";}s:13:\"shopperLocale\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"The
+  combination of a language code and a country code to specify the language to be
+  used in the payment.\";s:4:\"type\";s:6:\"string\";}s:11:\"shopperName\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  shopper's full name and gender (if specified).\";s:4:\"$ref\";s:18:\"#/definitions/Name\";}s:16:\"shopperReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:136:\"The
+  shopper's reference to uniquely identify this shopper (e.g. user ID or account ID).\n>
+  This field is required for recurring payments.\";s:4:\"type\";s:6:\"string\";}s:16:\"shopperStatement\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"The
+  text to appear on the shopper's bank statement.\";s:4:\"type\";s:6:\"string\";}s:20:\"socialSecurityNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  shopper's social security number.\";s:4:\"type\";s:6:\"string\";}s:5:\"store\";O:8:\"stdClass\":4:{s:11:\"description\";s:56:\"The
+  physical store, for which this payment is processed.\";s:9:\"maxLength\";i:16;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}s:15:\"telephoneNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  shopper's telephone number.\";s:4:\"type\";s:6:\"string\";}s:11:\"totalsGroup\";O:8:\"stdClass\":4:{s:11:\"description\";s:119:\"The
+  reference value to aggregate sales totals in reporting. When not specified, the
+  store field is used (if available).\";s:9:\"maxLength\";i:16;s:9:\"minLength\";i:1;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:5:{i:0;s:15:\"merchantAccount\";i:1;s:9:\"reference\";i:2;s:6:\"amount\";i:3;s:10:\"paResponse\";i:4;s:2:\"md\";}}s:13:\"PaymentResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":11:{s:14:\"additionalData\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:203:\"This
+  field contains additional data, which may be required to return in a particular
+  payment response. To choose data fields to be returned, go to **Customer Area**
+  > **Settings** > **API and Response**.\";s:4:\"type\";s:6:\"object\";}s:8:\"authCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:182:\"Authorisation
+  code:\n* When the payment is authorised successfully, this field holds the authorisation
+  code for the payment.\n* When the payment is not authorised, this field is empty.\";s:4:\"type\";s:6:\"string\";}s:9:\"dccAmount\";O:8:\"stdClass\":2:{s:11:\"description\";s:242:\"Includes
+  the currency of the conversion and the value of the transaction.\n> This value only
+  applies if you have implemented Dynamic Currency Conversion. For more information,
+  [contact Support](https://support.adyen.com/hc/en-us/requests/new).\";s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:12:\"dccSignature\";O:8:\"stdClass\":2:{s:11:\"description\";s:219:\"Cryptographic
+  signature used to verify `dccQuote`.\n> This value only applies if you have implemented
+  Dynamic Currency Conversion. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).\";s:4:\"type\";s:6:\"string\";}s:11:\"fraudResult\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  fraud result properties of the payment.\";s:4:\"$ref\";s:25:\"#/definitions/FraudResult\";}s:9:\"issuerUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"The
+  URL to direct the shopper to.\n> In case of SecurePlus, do not redirect a shopper
+  to this URL.\";s:4:\"type\";s:6:\"string\";}s:2:\"md\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  payment session.\";s:4:\"type\";s:6:\"string\";}s:9:\"paRequest\";O:8:\"stdClass\":2:{s:11:\"description\";s:278:\"The
+  3D request data for the issuer.\n\nIf the value is **CUPSecurePlus-CollectSMSVerificationCode**,
+  collect an SMS code from the shopper and pass it in the `/authorise3D` request.
+  For more information, see [3D Secure](https://docs.adyen.com/developers/risk-management/3d-secure).\";s:4:\"type\";s:6:\"string\";}s:12:\"pspReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:234:\"Adyen's
+  16-digit unique reference associated with the transaction/the request. This value
+  is globally unique; quote it when communicating with us about this request.\n\n>
+  `pspReference` is returned only for non-redirect payment methods.\";s:4:\"type\";s:6:\"string\";}s:13:\"refusalReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:272:\"If
+  the payment's authorisation is refused or an error occurs during authorisation,
+  this field holds Adyen's mapped reason for the refusal or a description of the error.\n\nWhen
+  a transaction fails, the authorisation response includes `resultCode` and `refusalReason`
+  values.\";s:4:\"type\";s:6:\"string\";}s:10:\"resultCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:1561:\"The
+  result of the payment. Possible values:\n\n* **Authorised** \u2013 Indicates the
+  payment authorisation was successfully completed. This state serves as an indicator
+  to proceed with the delivery of goods and services. This is a final state.\n* **Refused**
+  \u2013 Indicates the payment was refused. The reason is given in the `refusalReason`
+  field. This is a final state.\n* **RedirectShopper** \u2013 Indicates the shopper
+  should be redirected to an external web page or app to complete the authorisation.
+  For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/payments#handlingaredirect).\n*
+  **Received** \u2013 Indicates the payment has successfully been received by Adyen,
+  and will be processed. This is the initial state for all payments.\n* **Cancelled**
+  \u2013 Indicates the payment has been cancelled (either by the shopper or the merchant)
+  before processing was completed. This is a final state.\n* **Pending** \u2013 Indicates
+  that it is not possible to obtain the final status of the payment. This can happen
+  if the systems providing final status information for the payment are unavailable,
+  or if the shopper needs to take further action to complete the payment. For more
+  information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/developers/development-resources/payments-with-pending-status).\n*
+  **Error** \u2013 Indicates an error occurred during processing of the payment. The
+  reason is given in the `refusalReason` field. This is a final state.\";s:4:\"enum\";a:7:{i:0;s:10:\"Authorised\";i:1;s:19:\"PartiallyAuthorised\";i:2;s:7:\"Refused\";i:3;s:5:\"Error\";i:4;s:9:\"Cancelled\";i:5;s:8:\"Received\";i:6;s:15:\"RedirectShopper\";}s:4:\"type\";s:6:\"string\";}}}s:9:\"Recurring\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"contract\";O:8:\"stdClass\":3:{s:11:\"description\";s:708:\"The
+  type of recurring contract to be used.\nPossible values:\n* `ONECLICK` \u2013 Payment
+  details can be used to initiate a one-click payment, where the shopper enters the
+  [card security code (CVC/CVV)](https://docs.adyen.com/developers/payment-glossary#cardsecuritycodecvccvvcid).\n*
+  `RECURRING` \u2013 Payment details can be used without the card security code to
+  initiate [card-not-present transactions](https://docs.adyen.com/developers/payment-glossary#cardnotpresentcnp).\n*
+  `ONECLICK,RECURRING` \u2013 Payment details can be used regardless of whether the
+  shopper is on your site or not.\n* `PAYOUT` \u2013 Payment details can be used to
+  [make a payout](https://docs.adyen.com/developers/features/third-party-payouts).\";s:4:\"enum\";a:3:{i:0;s:8:\"ONECLICK\";i:1;s:9:\"RECURRING\";i:2;s:6:\"PAYOUT\";}s:4:\"type\";s:6:\"string\";}s:19:\"recurringDetailName\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"A
+  descriptive name for this detail.\";s:4:\"type\";s:6:\"string\";}s:12:\"tokenService\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  name of the token service.\";s:4:\"enum\";a:2:{i:0;s:16:\"VISATOKENSERVICE\";i:1;s:14:\"MCTOKENSERVICE\";}s:4:\"type\";s:6:\"string\";}}}s:16:\"ThreeDSecureData\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:22:\"authenticationResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:58:\"The
+  authentication response if the shopper was redirected.\";s:4:\"enum\";a:4:{i:0;s:1:\"Y\";i:1;s:1:\"N\";i:2;s:1:\"U\";i:3;s:1:\"A\";}s:4:\"type\";s:6:\"string\";}s:4:\"cavv\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"The
+  cardholder authentication value (base64 encoded, 20 bytes in a decoded form).\";s:6:\"format\";s:4:\"byte\";s:4:\"type\";s:6:\"string\";}s:13:\"cavvAlgorithm\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  CAVV algorithm used.\";s:4:\"type\";s:6:\"string\";}s:17:\"directoryResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"The
+  enrollment response from the 3D directory server.\";s:4:\"enum\";a:4:{i:0;s:1:\"Y\";i:1;s:1:\"N\";i:2;s:1:\"U\";i:3;s:1:\"E\";}s:4:\"type\";s:6:\"string\";}s:3:\"eci\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  electronic commerce indicator.\";s:4:\"type\";s:6:\"string\";}s:3:\"xid\";O:8:\"stdClass\":3:{s:11:\"description\";s:72:\"The
+  transaction identifier (base64 encoded, 20 bytes in a decoded form).\";s:6:\"format\";s:4:\"byte\";s:4:\"type\";s:6:\"string\";}}}}"
+...

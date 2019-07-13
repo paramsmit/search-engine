@@ -1,0 +1,485 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:18:\"${project.version}\";s:5:\"title\";s:18:\"Hawkular
+  Inventory\";}"
+basePath: /hawkular/inventory
+paths:
+  /:
+    get:
+      tags:
+      - API Info
+      summary: List Endpoints
+      description: Lists all the REST API endpoints available
+      operationId: ping
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        default:
+          description: successful operation
+  /bulk:
+    post:
+      tags:
+      - Bulk Create
+      summary: Bulk creation of new entities.
+      description: The response body contains details about results of creation of
+        individual entities. The return value is a map where keys are types of entities
+        created and values are again maps where keys are the canonical paths of the
+        entities to be created and values are HTTP status codes - 201 OK, 400 if invalid
+        path is supplied, 409 if the entity already exists on given path or 500 in
+        case of internal error.
+      operationId: addEntities
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: This is a map where keys are paths to the parents under which
+          entities should be created. The values are again maps where keys are one
+          of [environment, resourceType, metricType, operationType, feed, resource,
+          metric, dataEntity, relationship] and values are arrays of blueprints of
+          entities of the corresponding types.
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+      responses:
+        201:
+          description: Entities successfully created
+  /entity/{path}:
+    get:
+      tags:
+      - Single Entity
+      summary: Reads an inventory entity on the given location.
+      description: ""
+      operationId: get
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the path.
+      responses:
+        200:
+          description: A single entity found and returned.
+          schema:
+            $ref: '#/definitions/AbstractElement'
+        404:
+          description: No entity found on given path.
+        500:
+          description: Internal server error
+    delete:
+      tags:
+      - Single Entity
+      summary: Deletes an inventory entity on the given location.
+      description: ""
+      operationId: delete
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the path.
+      responses:
+        204:
+          description: Entity deleted.
+        404:
+          description: No entity found on given traversal URI.
+        500:
+          description: Internal server error
+    put:
+      tags:
+      - Single Entity
+      summary: Updates an entity. The path is actually a canonical path. The format
+        of the accepted JSON object is governed by the type of the entity being updated.
+        If you're updating an environment, look for EnvironmentUpdate type, etc.
+      description: ""
+      operationId: put
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the path.
+      - in: body
+        name: update
+        required: true
+        schema:
+          $ref: '#/definitions/AbstractElementUpdate'
+      responses:
+        204:
+          description: Entity updated.
+        400:
+          description: Data in wrong format
+        403:
+          description: Unauthorized access
+        404:
+          description: Entity not found.
+        500:
+          description: Server error.
+  /entity/{path}/{type}:
+    post:
+      tags:
+      - Single Entity
+      summary: Creates a new entity
+      description: As all POSTs, this can also accept an array of blueprints to create
+        more than 1 entity at a time.
+      operationId: post
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the path.
+      - name: type
+        in: path
+        required: true
+        type: string
+        enum:
+        - environment
+        - e
+        - resourceType
+        - rt
+        - metricType
+        - mt
+        - operationType
+        - ot
+        - metadataPack
+        - mp
+        - feed
+        - f
+        - resource
+        - r
+        - metric
+        - m
+        - data
+        - d
+        description: The type is either a camel-cased full name of the entity type
+          or its short identifier as used in canonical path.
+      - in: body
+        name: blueprint
+        required: true
+        schema:
+          $ref: '#/definitions/AbstractElementBlueprint'
+      responses:
+        201:
+          description: Entity(ies) created.
+          schema:
+            $ref: '#/definitions/AbstractElement'
+        400:
+          description: Data in wrong format
+        403:
+          description: Unauthorized access
+        404:
+          description: One of the related entities doesn't exist.
+        500:
+          description: Server error.
+  /entity/{path}/treeHash:
+    get:
+      tags:
+      - Single Entity
+      summary: Obtains the identity tree hash of the entity.
+      description: ""
+      operationId: getTreeHash
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the path.
+      responses:
+        200:
+          description: Tree hash returned.
+          schema:
+            $ref: '#/definitions/IdentityHashTree'
+        400:
+          description: The entity doesn't support identity hashing.
+        404:
+          description: No entity found on given traversal URI.
+        500:
+          description: Internal server error
+  /events:
+    get:
+      tags:
+      - Events
+      summary: Listen on stream of the events
+      description: ""
+      operationId: getEvents
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: type
+        in: query
+        required: false
+        type: string
+        default: resource
+      - name: action
+        in: query
+        required: false
+        type: string
+        default: created
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized access
+        404:
+          description: Tenant doesn't exist
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ApiError'
+  /graph:
+    get:
+      tags:
+      - Graph
+      summary: Gets the graph.
+      description: ""
+      operationId: getGraph
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized access
+        404:
+          description: Tenant doesn't exist
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ApiError'
+  /sync/{path}:
+    post:
+      tags:
+      - Sync
+      summary: Make the inventory under given path match the provided inventory structure.
+        Note that the relationships specified in the provided entities will be ignored
+        and will not be applied.
+      description: ""
+      operationId: sync
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: path
+        in: path
+        required: true
+        type: string
+        description: The canonical path to the synced root entity. This does not have
+          to exist in inventory prior to the request.
+      - name: structure
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SyncRequest'
+      responses:
+        204:
+          description: Synchronization success
+        400:
+          description: If the entity to be synchronized doesn't support synchronization
+          schema:
+            $ref: '#/definitions/ApiError'
+        404:
+          description: Authorization problem
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ApiError'
+  /tenant:
+    get:
+      tags:
+      - Tenant Information
+      summary: Retrieves the details of the current tenant.
+      description: ""
+      operationId: getTenant
+      responses:
+        200:
+          description: Tenant obtained
+          schema:
+            $ref: '#/definitions/Tenant'
+        403:
+          description: Authorization error
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ApiError'
+    put:
+      tags:
+      - Tenant Information
+      summary: Updates the properties of the tenant
+      description: ""
+      operationId: putTenant
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/TenantUpdate'
+      responses:
+        204:
+          description: Tenant updated
+        403:
+          description: Authorization error
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ApiError'
+  /tenant/relationship:
+    post:
+      tags:
+      - Tenant Information
+      summary: Creates new relationship(s) on a tenant
+      description: As all POSTs, this can also accept an array of blueprints to create
+        more than 1 relationship at a time.
+      operationId: createRelationships
+      responses:
+        201:
+          description: Relationship(s) created.
+          schema:
+            $ref: '#/definitions/Relationship'
+        400:
+          description: Data in wrong format
+        403:
+          description: Unauthorized access
+        404:
+          description: One of the related entities doesn't exist.
+        500:
+          description: Server error.
+  /tenant/relationships.*:
+    get:
+      tags:
+      - Tenant Information
+      summary: Retrieves tenant's relationships
+      description: By default, all the outgoing relationships are returned. This can
+        be modified using the same techniques as in the entity graph traversal.
+      operationId: getRelationships
+      responses:
+        200:
+          description: Relationships returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Relationship'
+        403:
+          description: Authorization error
+          schema:
+            $ref: '#/definitions/ApiError'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ApiError'
+  /traversal/{traversal}:
+    get:
+      tags:
+      - Entity Graph Traversal
+      summary: Retrieves a list of entities
+      description: Given the traversal of inventory expressed in the URL, this will
+        return a (possibly empty) list of entities that the traversal found. The results
+        can be paged. See above for a thorough description of the format of the URL.
+        The type of the returned elements is determined by the URL.
+      operationId: getTraversal
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: traversal
+        in: path
+        required: true
+        type: string
+        description: See the documentation above for the format of the traversal.
+      responses:
+        200:
+          description: Traversal finished successfully.
+          schema:
+            $ref: '#/definitions/AbstractElement'
+definitions: !php/object "O:8:\"stdClass\":50:{s:15:\"AbstractElement\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CanonicalPath\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"path\";}}s:24:\"AbstractElementBlueprint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:21:\"AbstractElementUpdate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:8:\"ApiError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"errorMsg\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Detailed
+  error message of what happened\";s:8:\"readOnly\";b:1;}s:7:\"details\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:77:\"Optional
+  details about the error beyond what's provided in the error message.\";s:8:\"readOnly\";b:1;}}s:11:\"description\";s:68:\"If
+  REST-call returns other than success, detailed error is returned.\";}s:13:\"CanonicalPath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:765:\"A
+  canonical path is slash-separated list of path segments that uniquely identity an
+  entity in the Hawkular Inventory graph. The path follows the \"contains\" relationships
+  in inventory (which form a tree structure). Each segment specifies the type of the
+  element on that position in the tree, followed by semicolon and the ID of the element.
+  An example of a canonical path would be \"/t;tenant/f;my-feed/r;my-resource\". The
+  type is one of 't' (tenant), 'e' (environment), 'rt' (resource type), 'mt' (metric
+  type), 'ot' (operation type), 'mp' (metadata pack), 'r' (resource), 'm' (metric),
+  'd' (data) or 'rl' (relationship). Please consult Hawkular Inventory documentation
+  for a more thorough discussion of the different types of entities and their places
+  in the model.\";}s:10:\"DataEntity\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:11:\"description\";s:91:\"Data
+  entity contains JSON data and serves a certain \"role\" in the entity it is contained
+  in\";}}}s:19:\"DataEntityBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/JSON\";}}s:8:\"required\";a:1:{i:0;s:5:\"value\";}}}}s:16:\"DataEntityUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:1:{i:0;s:5:\"value\";}}}}s:6:\"Entity\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AbstractElement\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"description\";s:61:\"Defines
+  the basic properties of all entity types in inventory\";}}}s:15:\"EntityBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/AbstractElementBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"outgoingRelationships\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:105:\"This
+  is an object where keys are the names of the relationships and values are arrays
+  of canonical paths.\";}s:21:\"incomingRelationships\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:105:\"This
+  is an object where keys are the names of the relationships and values are arrays
+  of canonical paths.\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}}}s:12:\"EntityUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/AbstractElementUpdate\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:11:\"Environment\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:72:\"Environment
+  can incorporate feeds and can contain resources and metrics.\";}}}s:20:\"EnvironmentBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:17:\"EnvironmentUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:4:\"Feed\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:74:\"A
+  feed represents a remote \"agent\" that is reporting its data to Hawkular.\";}}}s:13:\"FeedBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:10:\"FeedUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:16:\"IdentityHashTree\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"path\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RelativePath\";}s:4:\"hash\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"children\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/IdentityHashTree\";}}}s:8:\"required\";a:2:{i:0;s:4:\"path\";i:1;s:4:\"hash\";}}s:20:\"IdentityHashedEntity\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}i:1;O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"identityHash\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:12:\"identityHash\";}s:11:\"description\";s:58:\"A
+  super type of all entities that support identity hashing\";}}}s:4:\"JSON\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:22:\"Just
+  a free form JSON.\";}s:12:\"MetadataPack\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:87:\"A
+  metadata pack can incorporate global resource and metric types making them read-only.\";}}}s:21:\"MetadataPackBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/AbstractElementBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"members\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CanonicalPath\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"members\";}}}}s:18:\"MetadataPackUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:6:\"Metric\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/MetricType\";}s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:18:\"collectionInterval\";}s:11:\"description\";s:227:\"A
+  metric represents a monitored \"quality\". Its metric type specifies the unit in
+  which the metric reports its values and the collection interval specifies how often
+  the feed should be collecting the metric for changes in value.\";}}}s:15:\"MetricBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"metricTypePath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:8:\"required\";a:2:{i:0;s:14:\"metricTypePath\";i:1;s:18:\"collectionInterval\";}}}}s:10:\"MetricType\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:35:{i:0;s:4:\"NONE\";i:1;s:10:\"PERCENTAGE\";i:2;s:5:\"BYTES\";i:3;s:9:\"KILOBYTES\";i:4;s:9:\"MEGABYTES\";i:5;s:9:\"GIGABYTES\";i:6;s:9:\"TERABYTES\";i:7;s:9:\"PETABYTES\";i:8;s:4:\"BITS\";i:9;s:8:\"KILOBITS\";i:10;s:8:\"MEGABITS\";i:11;s:8:\"GIGABITS\";i:12;s:8:\"TERABITS\";i:13;s:8:\"PETABITS\";i:14;s:18:\"EPOCH_MILLISECONDS\";i:15;s:13:\"EPOCH_SECONDS\";i:16;s:6:\"JIFFYS\";i:17;s:11:\"NANOSECONDS\";i:18;s:12:\"MICROSECONDS\";i:19;s:12:\"MILLISECONDS\";i:20;s:7:\"SECONDS\";i:21;s:7:\"MINUTES\";i:22;s:5:\"HOURS\";i:23;s:4:\"DAYS\";i:24;s:9:\"PER_JIFFY\";i:25;s:14:\"PER_NANOSECOND\";i:26;s:15:\"PER_MICROSECOND\";i:27;s:15:\"PER_MILLISECOND\";i:28;s:10:\"PER_SECOND\";i:29;s:10:\"PER_MINUTE\";i:30;s:8:\"PER_HOUR\";i:31;s:7:\"PER_DAY\";i:32;s:7:\"CELSIUS\";i:33;s:6:\"KELVIN\";i:34;s:12:\"FAHRENHEIGHT\";}}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"GAUGE\";i:1;s:12:\"AVAILABILITY\";i:2;s:7:\"COUNTER\";i:3;s:12:\"COUNTER_RATE\";}}s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:8:\"required\";a:3:{i:0;s:4:\"unit\";i:1;s:4:\"type\";i:2;s:18:\"collectionInterval\";}s:11:\"description\";s:177:\"Metric
+  type defines the unit and data type of a metric. It also specifies the default  collection
+  interval as a guideline for the feed on how often to collect the metric values.\";}}}s:19:\"MetricTypeBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:35:{i:0;s:4:\"NONE\";i:1;s:10:\"PERCENTAGE\";i:2;s:5:\"BYTES\";i:3;s:9:\"KILOBYTES\";i:4;s:9:\"MEGABYTES\";i:5;s:9:\"GIGABYTES\";i:6;s:9:\"TERABYTES\";i:7;s:9:\"PETABYTES\";i:8;s:4:\"BITS\";i:9;s:8:\"KILOBITS\";i:10;s:8:\"MEGABITS\";i:11;s:8:\"GIGABITS\";i:12;s:8:\"TERABITS\";i:13;s:8:\"PETABITS\";i:14;s:18:\"EPOCH_MILLISECONDS\";i:15;s:13:\"EPOCH_SECONDS\";i:16;s:6:\"JIFFYS\";i:17;s:11:\"NANOSECONDS\";i:18;s:12:\"MICROSECONDS\";i:19;s:12:\"MILLISECONDS\";i:20;s:7:\"SECONDS\";i:21;s:7:\"MINUTES\";i:22;s:5:\"HOURS\";i:23;s:4:\"DAYS\";i:24;s:9:\"PER_JIFFY\";i:25;s:14:\"PER_NANOSECOND\";i:26;s:15:\"PER_MICROSECOND\";i:27;s:15:\"PER_MILLISECOND\";i:28;s:10:\"PER_SECOND\";i:29;s:10:\"PER_MINUTE\";i:30;s:8:\"PER_HOUR\";i:31;s:7:\"PER_DAY\";i:32;s:7:\"CELSIUS\";i:33;s:6:\"KELVIN\";i:34;s:12:\"FAHRENHEIGHT\";}}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"GAUGE\";i:1;s:12:\"AVAILABILITY\";i:2;s:7:\"COUNTER\";i:3;s:12:\"COUNTER_RATE\";}}s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:8:\"required\";a:3:{i:0;s:4:\"unit\";i:1;s:4:\"type\";i:2;s:18:\"collectionInterval\";}}}}s:16:\"MetricTypeUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:35:{i:0;s:4:\"NONE\";i:1;s:10:\"PERCENTAGE\";i:2;s:5:\"BYTES\";i:3;s:9:\"KILOBYTES\";i:4;s:9:\"MEGABYTES\";i:5;s:9:\"GIGABYTES\";i:6;s:9:\"TERABYTES\";i:7;s:9:\"PETABYTES\";i:8;s:4:\"BITS\";i:9;s:8:\"KILOBITS\";i:10;s:8:\"MEGABITS\";i:11;s:8:\"GIGABITS\";i:12;s:8:\"TERABITS\";i:13;s:8:\"PETABITS\";i:14;s:18:\"EPOCH_MILLISECONDS\";i:15;s:13:\"EPOCH_SECONDS\";i:16;s:6:\"JIFFYS\";i:17;s:11:\"NANOSECONDS\";i:18;s:12:\"MICROSECONDS\";i:19;s:12:\"MILLISECONDS\";i:20;s:7:\"SECONDS\";i:21;s:7:\"MINUTES\";i:22;s:5:\"HOURS\";i:23;s:4:\"DAYS\";i:24;s:9:\"PER_JIFFY\";i:25;s:14:\"PER_NANOSECOND\";i:26;s:15:\"PER_MICROSECOND\";i:27;s:15:\"PER_MILLISECOND\";i:28;s:10:\"PER_SECOND\";i:29;s:10:\"PER_MINUTE\";i:30;s:8:\"PER_HOUR\";i:31;s:7:\"PER_DAY\";i:32;s:7:\"CELSIUS\";i:33;s:6:\"KELVIN\";i:34;s:12:\"FAHRENHEIGHT\";}}s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}}}s:12:\"MetricUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:18:\"collectionInterval\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}}}s:13:\"OperationType\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:276:\"Defines
+  an type of operation that can be executed on resources of a resource type that contains
+  this operation type. The operation type contains \"returnType\" and \"parameterTypes\"
+  data entities which correspond to JSON schemas of values expected during the operation
+  execution.\";}}}s:22:\"OperationTypeBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:19:\"OperationTypeUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:4:\"Path\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:12:\"Relationship\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AbstractElement\";}i:1;O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CanonicalPath\";}s:6:\"target\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/CanonicalPath\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:6:\"source\";i:2;s:6:\"target\";}s:11:\"description\";s:36:\"A
+  relationship between two entities.\";}}}s:21:\"RelationshipBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/AbstractElementUpdate\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"otherEnd\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Path\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:8:\"outgoing\";i:1;s:8:\"incoming\";i:2;s:4:\"both\";}}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:8:\"otherEnd\";i:2;s:9:\"direction\";}}}}s:18:\"RelationshipUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/AbstractElementUpdate\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:12:\"RelativePath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"Resource\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResourceType\";}}s:11:\"description\";s:103:\"A
+  resource has a type, can have configuration and connection configuration and can
+  incorporate metrics.\";}}}s:17:\"ResourceBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:16:\"resourceTypePath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:16:\"resourceTypePath\";}}}}s:12:\"ResourceType\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/IdentityHashedEntity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:239:\"A
+  resource type contains metadata about resources it defines. It contains \"configurationSchema\"
+  and \"connectionConfigurationSchema\" data entities that can prescribe a JSON schema
+  to which the configurations of the resources should conform.\";}}}s:21:\"ResourceTypeBlueprint\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}}}s:18:\"ResourceTypeUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}}}s:14:\"ResourceUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}}}s:6:\"Tenant\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Entity\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:124:\"The
+  tenants partition the data in the inventory graph. No relationships between entities
+  from 2 different tenants can exist.\";}}}s:12:\"TenantUpdate\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/EntityUpdate\";}}}s:18:\"InventoryStructure\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:4:\"feed\";i:1;s:12:\"resourceType\";i:2;s:10:\"metricType\";i:3;s:13:\"operationType\";i:4;s:6:\"metric\";i:5;s:8:\"resource\";i:6;s:10:\"dataEntity\";}}s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}s:8:\"children\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/InventoryStructureMap\";}}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:4:\"data\";}}s:21:\"InventoryStructureMap\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"feed\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:8:\"resource\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:12:\"resourceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:6:\"metric\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:10:\"metricType\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:10:\"dataEntity\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}s:13:\"operationType\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/InventoryStructureChild\";}}}}s:23:\"InventoryStructureChild\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EntityBlueprint\";}s:8:\"children\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/InventoryStructureMap\";}}}s:8:\"required\";a:1:{i:0;s:4:\"data\";}}s:11:\"SyncRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SyncConfiguration\";}s:9:\"structure\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/InventoryStructure\";}}s:8:\"required\";a:1:{i:0;s:9:\"structure\";}}s:17:\"SyncConfiguration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"deepSearch\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;s:8:\"required\";b:0;}s:11:\"syncedTypes\";O:8:\"stdClass\":5:{s:4:\"type\";s:5:\"array\";s:8:\"minItems\";i:1;s:11:\"uniqueItems\";b:1;s:11:\"description\";s:108:\"The
+  values can be one of: \"f\", \"rt\", \"mt\", \"ot\", \"r\", \"m\", \"d\" that represent
+  the entity types to be synced.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:1:\"f\";i:1;s:2:\"rt\";i:2;s:2:\"mt\";i:3;s:2:\"ot\";i:4;s:1:\"r\";i:5;s:1:\"m\";i:6;s:1:\"d\";}}}}}}"
+...

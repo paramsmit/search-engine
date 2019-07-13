@@ -1,0 +1,1273 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"TME SSO Micro Services\";s:11:\"description\";s:88:\"These
+  API provide detailed usage guidelines for integrating with TME SSO Micro services.\";s:7:\"version\";s:5:\"1.1.0\";}"
+host: sso-prod-signon-service.herokuapp.com
+basePath: ""
+paths:
+  /authenticate:
+    post:
+      summary: Authenticate a USER
+      description: The authenticate endpoint is used to check whether a user is an
+        authenticated user registered withnOpen AM or not. The response includes the
+        details for the user which has been authenticatednand lists the details in
+        the proper display order which can be consumed by any client app.n
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: login-request-body
+        in: body
+        description: Parameters details for a authenticate request
+        required: true
+        schema:
+          $ref: '#/definitions/Authenticate'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: A user profile object containing all relevant properties
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/UserProfile'
+        401:
+          description: An invalid authentication request
+        403:
+          description: Verification flow Required
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      x-amples:
+      - description: authenticate
+        request:
+          headers:
+            content-type: application/x-www-form-urlencoded
+            X-TME-BRAND: lexus
+            X-TME-LC: it-it
+          body:
+            username: testingmylexusitaly@mailinator.com
+            password: lexus123
+  /authorize:
+    post:
+      summary: Authorize a USER
+      description: The authorize endpoint is used to check whether a user is an authorized
+        user or not. The response includes the details for the user which has been
+        authorizednand lists the details in the proper display order which can be
+        consumed by any client app.n
+      parameters:
+      - name: auth-request-body
+        in: body
+        description: Parameters details for authorize request
+        required: true
+        schema:
+          $ref: '#/definitions/Authorize'
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: A user profile object containing all relevant properties
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/UserProfile'
+        401:
+          description: An invalid authorization request
+        403:
+          description: Verification flow Required
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /labels:
+    get:
+      summary: Get static content from CMS
+      description: This end point is used to retrieve the atatic content from CMS
+        Mongo via Node server
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: A response of the required content in JSON format
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An invalid request
+        403:
+          description: Request is not allowed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /redirectConfirmEmailLink:
+    get:
+      summary: Redirect the call from service to GUI for Email Confirmation flow
+      description: This end point is used to redirect the request coming from Email
+        of user to the SSO client for verification
+      parameters:
+      - name: email
+        in: query
+        type: string
+        description: Email ID from where the request for redirection originated
+        required: true
+      - name: brand
+        in: query
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: uuid
+        in: query
+        type: string
+        description: UUID of the user for which verification is in progress
+        required: true
+      tags:
+      - Redirection API specs
+      responses:
+        200:
+          description: Successful Redirection
+        400:
+          description: A request with invalid parameters
+        401:
+          description: The request is not authorized
+        403:
+          description: Request is not allowed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /redirectResetPasswordLink:
+    get:
+      summary: Redirect the call from service to GUI for Reset Password flow
+      description: This end point is used to redirect the request coming from Email
+        of user to the SSO client for resetting the password
+      parameters:
+      - name: email
+        in: query
+        type: string
+        description: Email ID from where the request for redirection originated
+        required: true
+      - name: brand
+        in: query
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: lc
+        in: query
+        type: string
+        description: language-country code for the user
+        required: true
+      - name: resetToken
+        in: query
+        type: string
+        description: Reset Token provided by the user in the reset password email
+          sent by the system
+        required: true
+      tags:
+      - Redirection API specs
+      responses:
+        200:
+          description: Successful Redirection
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An invalid request
+        403:
+          description: Request is not allowed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /redirectConfirmUserLink:
+    get:
+      summary: Redirect the call from service to GUI for Account Activation flow
+      description: This end point is used to redirect the request coming from Email
+        of user to the SSO client for activating the user account
+      parameters:
+      - name: email
+        in: query
+        type: string
+        description: Email ID from where the request for redirection originated
+        required: true
+      - name: brand
+        in: query
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: lc
+        in: query
+        type: string
+        description: language-country code for the user
+        required: true
+      - name: emailToken
+        in: query
+        type: string
+        description: Email Token provided by the user in the user confirmation email
+          sent by the system
+        required: true
+      - name: uuid
+        in: query
+        type: string
+        description: UUID of the user for which verification is in progress
+        required: true
+      tags:
+      - Redirection API specs
+      responses:
+        200:
+          description: Successful Redirection
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An invalid request
+        403:
+          description: Request is not allowed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /isUserNameAvailable:
+    post:
+      summary: Check availability for user name in Open AM
+      description: The isUserNameAvailable endpoint is used to check whether a particular
+        user name is available to the end user or         not. The response includes
+        status code 200 or 404 based on whether the user name was found or not in
+        Open AM.n
+      parameters:
+      - name: username-available-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/UserNameAvailable'
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: User name has been found and is not available
+        404:
+          description: User name has been not been found and is available
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /isTokenValid:
+    post:
+      summary: Validates the user token with TAAS backend
+      description: This endpoint has been provided to explicitly check the validity
+        of users session with open AM via the       TAAS back end API.
+      parameters:
+      - name: tokenvalid-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/TokenValid'
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: Returned if token is valid
+          schema:
+            $ref: '#/definitions/isTokenValid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      x-amples:
+      - description: tokenValid
+        request:
+          headers:
+            content-type: application/json
+          body:
+            token: true
+  /register:
+    post:
+      summary: Register a new user with Open AM and Customer Master
+      description: This endpoint has been provided to register a new user with Customer
+        Master and Open AM.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: register-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/Registration'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: Returned on successful registration
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /resendUserConfirmationMail:
+    post:
+      summary: Resend Account Activation email
+      description: This endpoint has been provided to resend account activation mail
+        for a newly created account.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: resend-confirmation-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ResendUserConfirmationMail'
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned on successful resend
+        400:
+          description: A request with invalid parameters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /validateStandAloneUser:
+    post:
+      summary: Resend Account Activation email
+      description: This endpoint has been provided to resend account activation mail
+        for a newly created account.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: validate-standalone-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ValidateStandAloneUser'
+      tags:
+      - Migration API specs
+      responses:
+        200:
+          description: Returned on successful validation
+        400:
+          description: A request with invalid parameters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /migrateNewAccount:
+    post:
+      summary: Migrate New Account
+      description: This endpoint has been provided to facilitate migration of newly
+        registered users.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: validate-standalone-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/MigrateNewUser'
+      tags:
+      - Migration API specs
+      responses:
+        200:
+          description: Returned on successful migration
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An unauthorized request
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /migrateTMEAccount:
+    post:
+      summary: Migrate existing TME Account
+      description: This endpoint has been provided to facilitate migration of existing
+        TME registered users.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: validate-standalone-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/MigrateExistingUser'
+      tags:
+      - Migration API specs
+      responses:
+        200:
+          description: Returned on successful migration
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An unauthorized request
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /migrateTGBAccount:
+    post:
+      summary: Migrate existing TGB Account
+      description: This endpoint has been provided to facilitate migration of existing
+        TGB registered users.
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: validate-standalone-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/MigrateExistingUser'
+      tags:
+      - Migration API specs
+      responses:
+        200:
+          description: Returned on successful migration
+        400:
+          description: A request with invalid parameters
+        401:
+          description: An unauthorized request
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /sendResetPasswordEmail:
+    post:
+      summary: Sends a mail to the user in order to reset its account password
+      description: This endpoint has been provided so that an user can initiate the
+        process to reset its account password       in case they have forgotten. User
+        can initiate the flow from the GUI by providing the registered user name and           email.
+        On submitting the form, a mail is sent to the user at th provided email address.
+        For a normal user,               registered email and user name should be
+        the same. But, for any users that are being migrated from the legacy            systems
+        might have different user names and email combinations. This combination is
+        required to ascertain that user       has reset password for the correct account.
+      parameters:
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: resetmail-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ResetPasswordMail'
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned when mail has been sent successfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      x-amples:
+      - description: sendResetPasswordEmail
+        request:
+          headers:
+            content-type: application/x-www-form-urlencoded
+            X-TME-BRAND: lexus
+            X-TME-LC: it-it
+          body:
+            email: testingmylexusitaly@mailinator.com
+            username: testingmylexusitaly@mailinator.com
+  /resetPassword:
+    post:
+      summary: Reset user's account password
+      description: This endpoint has been provided so that an user can reset its account
+        password in case they have            forgotten. User can initiate this flow
+        from the mail that is sent when a user initiates reset password request. On       clicking
+        the link, user is redirected to a GUI where it needs to provide the new password.
+        Once submitted, user's        account is updated with the new password of
+        its choice.
+      parameters:
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: resetpwd-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ResetPassword'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: Returned when password has been changed successfully
+          schema:
+            $ref: '#/definitions/ResetPasswordRes'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /logout:
+    post:
+      summary: Logout the user
+      description: This endpoint has been provided so that an user can logout and
+        securely close its session.
+      parameters:
+      - name: logout-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/Logout'
+      tags:
+      - Customer API Specs
+      responses:
+        204:
+          description: Returned when user has been logged out successfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /resendActivationMail:
+    post:
+      summary: resend Mail to user for account activation
+      description: This endpoint has been provided so that an user can get an email
+        for account activation
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: email
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ResendActivationMail'
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned when account activation mail sent to the user
+        409:
+          description: It will give an error if email is not present
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /createUser:
+    post:
+      summary: Register a new user with Open AM and Customer Master for NMSC
+      description: This endpoint has been provided to register a new user with Customer
+        Master and Open AM for NMSC
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: createUser-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateUser'
+      tags:
+      - NMSC oriented API specs
+      responses:
+        200:
+          description: Returned on successful user creation
+          schema:
+            $ref: '#/definitions/UserProfile'
+        400:
+          description: Returned on improper formation of Request Body
+        409:
+          description: Returned on providing an existing email ID for registration
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /setPassword:
+    post:
+      summary: Reset user's account password
+      description: This endpoint has been provided so that an user can set its account
+        password. User can initiate this flow from the mail that is sent when a user
+        initiates user confirmation request. On clicking the link, user is redirected
+        to a GUI where it needs to provide the new password. Once submitted, user's
+        account is updated with the new password of its choice.
+      parameters:
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: setPwd-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/SetPassword'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: Returned when password has been set successfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /resendConfirmationMail:
+    post:
+      summary: resend Mail to user for account activation
+      description: This endpoint has been provided so that an user can get an email
+        for account activation
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: email
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ResendConfirmationMail'
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned when account activation mail sent to the user
+        409:
+          description: It will give an error if email is not present
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /saml:
+    post:
+      summary: Generates a SAML Fedaeration Token from OpenAM Token
+      description: This endpoint has been provided to generate the SAML Federation
+        Token
+      parameters:
+      - name: samlToken-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/SAMLToken'
+      tags:
+      - TFS API specs
+      responses:
+        200:
+          description: Returned if user token from OpenAM is valid
+        400:
+          description: Returned on Invalid Request body
+        401:
+          description: Returned on Expired OpenAM Token
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /sendMailToNmscUsers:
+    post:
+      summary: Sends a mail to the user in order to activate the account
+      description: This endpoint has been provided so that a set of users can get
+        an account activation mail
+      parameters:
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: MigMailRequest
+        in: body
+        required: true
+        schema:
+          $ref: MigMailRequest
+      tags:
+      - NMSC oriented API specs
+      responses:
+        200:
+          description: Returned when mail has been sent successfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /generateActivationLinks:
+    post:
+      summary: Generate activation links for given users
+      description: Generate activation links for given users
+      parameters:
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: MigMailRequest
+        in: body
+        required: true
+        schema:
+          $ref: MigMailRequest
+      tags:
+      - NMSC oriented API specs
+      responses:
+        200:
+          description: Links in response
+          schema:
+            type: array
+            items:
+              $ref: MigUsersResponse
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/getUserByToken:
+    post:
+      summary: Retrieves user details from OpenAM based token
+      description: Retrieves UUID from OpenAM based token
+      parameters:
+      - name: OpenAMToken
+        in: body
+        required: true
+        schema:
+          $ref: OpenAMToken
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: Returns UUID for the requested User from Open AM
+          schema:
+            $ref: UserByToken
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /taas/userByToken:
+    post:
+      summary: Retrieves user details from OpenAM based token
+      description: Retrieves UUID from OpenAM based token
+      parameters:
+      - name: taasUserByToken-request-body
+        in: body
+        required: true
+        schema:
+          $ref: OpenAMToken
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: Returns UUID for the requested User from Open AM
+          schema:
+            $ref: UserByToken
+        400:
+          description: Returned on improper formation of Request Body
+        401:
+          description: Returned on invalid TOKEN
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /isAdminTokenValid:
+    post:
+      summary: Validates the admin token with TAAS backend
+      description: This endpoint has been provided to explicitly check the authorization
+        of admin token with open AM via the TAAS back end API.
+      parameters:
+      - name: admintokenvalid-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/TokenValid'
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: Returned if admin token is valid
+        401:
+          description: Returned if admin token is not valid
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /changeEmail:
+    post:
+      summary: Used to change primary email id of the user
+      description: This endpoint has been provided to send an email to new primary
+        email address if it available and to send an email to old email address
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: createUser-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/changeEmail'
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned on successfully sending both the emails
+        400:
+          description: Returned on improper formation of Request Body
+        409:
+          description: Returned on providing an existing email ID
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /setNewEmail:
+    post:
+      summary: Used to change primary user name of provided account
+      description: This endpoint has been provided to change primary user name in
+        CP/CM of provided account
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: createUser-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/setNewEmail'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: Returned on successful sending both the emails
+        400:
+          description: Returned on improper formation of Request Body
+        409:
+          description: Returned on providing an existing email ID
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /personalDataTerms:
+    put:
+      summary: Update the Personal Data Terms of the user
+      description: This endpoint has been provided to update the Personal Data Terms
+        of the user
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: X-TME-TOKEN
+        in: header
+        type: string
+        description: This should contain user token
+        required: true
+      - name: updatePersonalDataTerms-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/personalDataTerms'
+      tags:
+      - Customer API Specs
+      responses:
+        204:
+          description: Returned on successful updating the Personal Data Terms
+        400:
+          description: Returned on improper formation of Request Body
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /validateUser:
+    post:
+      summary: Retrieves the UUID of the user if it is present in TME system
+      description: This endpoint has been provided to retrieve UUID if the user is
+        present in CP and CM
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: X-TME-TOKEN
+        in: header
+        type: string
+        description: This should contain the ADMIN TOKEN
+        required: true
+      - name: validateUser-request-body
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/validateUser'
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: Returns UUID, email and LC for the user
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/ValidateUserRes'
+        400:
+          description: Returned on improper formation of Request Body
+        401:
+          description: Returned on invalid ADMIN TOKEN
+        403:
+          description: Returned when trying to access email for a user of a different
+            country compared to the supplied in HEADER
+        404:
+          description: Returned when trying to access email which is not present in
+            TME system
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /taas/login:
+    post:
+      summary: Retrieves the Open AM Token from TAAS
+      description: This endpoint has been provided to retrieve Open AM Token from
+        TAAS system
+      parameters:
+      - name: taasLogin-request-body
+        in: body
+        required: true
+        schema:
+          $ref: Authenticate
+      tags:
+      - TAAS wrapper API specs
+      responses:
+        200:
+          description: Returns Open AM Token
+          schema:
+            $ref: taasLogin
+        400:
+          description: Returned on improper formation of Request Body
+        401:
+          description: Returned on invalid credentials
+        403:
+          description: Returned when LDAP account is inactive
+        404:
+          description: Returned when user is not found
+        500:
+          description: Returned on Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cp/userByToken:
+    get:
+      summary: Retrieve Customer Object from TME system
+      description: This end point is used to retrieve the Customer object from TME
+        system
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: X-TME-TOKEN
+        in: header
+        type: string
+        description: This should contain the Open AM Token
+        required: true
+      tags:
+      - Customer API Specs
+      responses:
+        200:
+          description: A response of the required content in JSON format
+          schema:
+            $ref: UserProfile
+        400:
+          description: A request with invalid parameters
+        401:
+          description: Invalid Open AM Token
+        403:
+          description: Request is not allowed
+        500:
+          description: Internal Server Error
+        503:
+          description: Service Unavailable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/CP_Error'
+  /activationStatus:
+    post:
+      summary: 'check activation status of user and if user is not active then send
+        activation mail to user '
+      description: This endpoint has been provided so that an user can get an email
+        for account activation
+      parameters:
+      - name: X-TME-LC
+        in: header
+        type: string
+        description: This should contain the language-country code
+        required: true
+      - name: X-TME-BRAND
+        in: header
+        type: string
+        description: This should contain the brand name - TOYOTA or LEXUS
+        required: true
+      - name: X-TME-TOKEN
+        in: header
+        type: string
+        description: This should contain user token
+        required: true
+      - name: email
+        in: body
+        description: Parameters details for the request
+        required: true
+        schema:
+          $ref: '#/definitions/ActivationStatus'
+      - name: sendEmail
+        in: query
+        type: string
+        description: set this variable to true to send mail to inactive user
+        required: false
+      tags:
+      - Email Service API specs
+      responses:
+        200:
+          description: Returned when account activation mail sent to the user
+          schema:
+            $ref: '#/definitions/ActivationStatusRes'
+        404:
+          description: It will give an error if email is not present
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":38:{s:11:\"OpenAMToken\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"User
+  Token from OpenAM\";}}}s:11:\"UserByToken\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"ldap_entryuuid
+  of user from OpenAM\";}}}s:14:\"MigMailRequest\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"lc\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"language-country
+  combination\";}s:5:\"users\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:8:\"MigUsers\";}}}}s:16:\"MigUsersResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"MigUsers\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Authorize\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"uri\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"URI
+  to be authorized for\";}s:6:\"action\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Type
+  of Action for authorization\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Token
+  required for validating auth request\";}}}s:12:\"Authenticate\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Username
+  or Email of the user\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}}}s:11:\"UserProfile\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Username
+  or Email of the user\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"E-Mail
+  of the user\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"First
+  name of the user\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Last
+  name of the user\";}s:12:\"languageCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Language
+  code of user's account\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Country
+  code of user's account\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Title
+  of the user\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the user\";}s:8:\"commPref\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:8:\"commPref\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Token
+  from user's current session\";}s:9:\"addresses\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"myToyotaId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:21:\"personalDataTreatment\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"personalDataTransfer\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:17:\"UserNameAvailable\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Username
+  or Email of the user\";}}}s:10:\"TokenValid\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"User
+  token from current session\";}}}s:12:\"Registration\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"First
+  name of the user\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Last
+  Name of the user\";}s:28:\"hasAcceptedDataProcessingTnC\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:54:\"Flag
+  for Personal Data Processing Terms and Conditions\";}s:26:\"hasAcceptedDataTransferTnC\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:52:\"Flag
+  for Personal Data Transfer Terms and Conditions\";}}}s:26:\"ResendUserConfirmationMail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}}}s:22:\"ValidateStandAloneUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Token
+  of the logged in user\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the user\";}}}s:14:\"MigrateNewUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Token
+  of the logged in user\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the user\";}s:9:\"emailUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"UUID
+  of the new user\";}s:7:\"tmeUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"UUID
+  of the existing entries\";}s:13:\"migrationType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Migration
+  type for the process\";}}}s:19:\"MigrateExistingUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Token
+  of the logged in user\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the user\";}s:9:\"emailUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"UUID
+  of the new user\";}s:7:\"tmeUuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"UUID
+  of the existing entries\";}s:13:\"migrationType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Migration
+  type for the process\";}s:11:\"tgbUserName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"user
+  name from TGB system\";}}}s:17:\"ResetPasswordMail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Username
+  of the user\";}}}s:13:\"ResetPassword\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"New
+  password of the user\";}s:10:\"resetToken\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Redis
+  token which was generated when the reset password mail was sent\";}}}s:16:\"ResetPasswordRes\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"User
+  Token of the user\";}}}s:20:\"ResendActivationMail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:8:\"username\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Username
+  of the user\";}}}s:6:\"Logout\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"User's
+  token from the current session\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"CP_Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:3:\"msg\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"isTokenValid\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"valid\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:10:\"CreateUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"title
+  of the user\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"First
+  name of the user\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Last
+  Name of the user\";}}}s:9:\"SAMLToken\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"openAMToken\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"User
+  Token from OpenAM\";}s:15:\"federation_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Name
+  of Federation for which the endpoint is used\";}}}s:11:\"SetPassword\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"lc\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"language-country
+  combination\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"New
+  password of the user\";}s:10:\"resetToken\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Redis
+  token which was generated when the reset password mail was sent\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"UUID
+  generated after the User is registered with TME\";}}}s:22:\"ResendConfirmationMail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}}}s:8:\"commPref\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"sms\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"tel\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"post\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"emails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:11:\"EmailInPref\";}}s:6:\"phones\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"language\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"EmailInPref\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"primary\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"preferred\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:17:\"isAdminTokenValid\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"valid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:17:\"Admin
+  Token valid\";}}}s:11:\"changeEmail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"oldEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Old
+  primary email address of the user\";}s:8:\"newEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"New
+  primary email address of the user\";}s:16:\"originalUsername\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Username
+  in TAAS i.e. the original username\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"First
+  name of the user\";}}}s:11:\"setNewEmail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Password
+  of the user\";}s:10:\"emailToken\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"Email
+  Token provided by the user in the user confirmation email sent by the system\";}}}s:17:\"personalDataTerms\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"UUID
+  generated after the User is registered with TME\";}s:33:\"hasAcceptedPersonalDataProcessing\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:33:\"Personal
+  Data Processing TOU flag\";}s:31:\"hasAcceptedPersonalDataTransfer\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:31:\"Personal
+  Data Transfer TOU flag\";}}}s:15:\"ValidateUserRes\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the User\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the User\";}s:2:\"lc\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Language-Country
+  of the User\";}}}s:12:\"validateUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Email
+  of the user for which UUID is required\";}}}s:9:\"taasLogin\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Open
+  AM token\";}}}s:16:\"ActivationStatus\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}}}s:19:\"ActivationStatusRes\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"emailId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Email
+  of the user\";}s:13:\"previousEmail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:110:\"Previous
+  Email of User In case if he updated primary Email else 'email and 'previousEmail'
+  value would be same\";}s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"UUID
+  of the user\";}s:16:\"activationStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:37:\"Account
+  activation status of the user\";}}}}"
+...

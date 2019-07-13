@@ -1,0 +1,482 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:20:\"Betsson Expense Tool\";s:7:\"version\";s:5:\"1.0.0\";s:11:\"description\";s:285:\"The
+  following are a list of API resources required for the Betsson Expense Tool Implementation.
+  One can observe that most of the endpoints have /1/ in them. Their purpose for the
+  API developers to keep version control of API endpoints, hence be able to service
+  old versions of the app.\";}"
+host: www.betssongroup.com
+basePath: /1
+paths:
+  /sessions:
+    post:
+      summary: Authenticate User
+      description: Once the user is successfully logged in, the server will return
+        an authentication token to the client in the header.nEvery time there is a
+        call to the service, the token lifetime will be extended.
+      parameters:
+      - name: credentials
+        in: body
+        description: Loggin credentials
+        required: true
+        schema:
+          $ref: '#/definitions/Credentials'
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK
+          headers:
+            Location:
+              description: Login was successful.
+              type: string
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+      - Session
+    put:
+      summary: Keep-Alive
+      description: The authentication token will have an expiry time and when the
+        token expires, all API endpoints that require a valid token will return an
+        HTTP Status 403 (forbidden). This situation can occur if the user is interacting
+        with the app, but he leaves the mobile in the same screen until the token
+        expires. He will still be considered as logged in for the app's purposes,
+        but the token will expire, and API calls start to fail.An easy and clean solution
+        for this problem is to have a Keep-Alive service, and if the app is running,
+        the app will automatically hit this endpoint upon fixed times (say every 5-10
+        minutes, as advised by the API developers) so that if the token is about to
+        expire, the API will renew the token so that the authentication will be retained.
+      parameters: []
+      security:
+      - token: []
+      tags:
+      - Session
+      responses:
+        200:
+          description: OK - Token is renewed
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+  /currencies:
+    get:
+      summary: Get Currencies
+      description: This service will retrieve a list of all included currencies and
+        exchange rates that will later on be used in currency selectors, and calculations
+        involving exchange rates. Data is returned in alphabetical order sorted by
+        currency.
+      tags:
+      - Currency
+      parameters: []
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Currency'
+        401:
+          description: Unauthorised - invalid or non existing token
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+  /expensetypes:
+    get:
+      summary: Get Expense Types
+      description: This service will retrieve a list of all available expense types
+        defined by business. Data is returned in alphabetical order sorted by name.
+        The expense types are required by the API in order to be able to determine
+        who will be the manager who needs to authorise which expense.
+      tags:
+      - ExpenseType
+      parameters: []
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExpenseType'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+  /trips/{id}:
+    get:
+      summary: Find trip by id
+      description: Load a trip by the id provided
+      tags:
+      - Trips
+      parameters:
+      - in: path
+        name: id
+        type: number
+        format: int64
+        description: The trip id that is being edited
+        required: true
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK - Returns the found trip
+          schema:
+            $ref: '#/definitions/Trip'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update Trip
+      description: Loads the trip with the id provided and update the data accordingly
+      tags:
+      - Trips
+      parameters:
+      - in: path
+        name: id
+        type: number
+        format: int64
+        description: The trip id that is being edited
+        required: true
+      - in: body
+        name: trip
+        description: The trip object you want to persist
+        required: true
+        schema:
+          $ref: '#/definitions/Trip'
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Trip'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+  /expenses/{id}:
+    get:
+      summary: Find Expenses By Search Criteria
+      description: Returns a list of Expenses based on the search criteria provided
+        in query string parameters
+      security:
+      - token: []
+      parameters:
+      - in: query
+        name: pageNumber
+        type: number
+        format: int32
+        description: The data page number that needs to be returned. Default- 0
+        required: false
+      - in: query
+        name: pageCount
+        type: number
+        format: int32
+        description: The amount of data contained in one single page. Default- 100
+      - in: query
+        name: type
+        type: string
+        description: Specify which type of expense you want to retrieve. Default-
+          null (no type condition applied)
+        enum:
+        - TRIP
+        - ONE_OFF
+        required: false
+      - in: query
+        name: settled
+        type: boolean
+        description: When true - return expenses with status APPROVED, APPROVED_REVISED.
+          When false - return expenses with status OPEN, SENT, REJECTED. Default-
+          null (no status condition applied)
+        required: false
+      responses:
+        200:
+          description: OK - Returns the Paged Expenses
+          schema:
+            $ref: '#/definitions/PagedExpenses'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+      - Expense
+    post:
+      summary: Create Expense
+      description: An expense is essentially the glue that ties a trip to a list of
+        receipts, and includes information of what expenses were carried out during
+        the trip.
+      security:
+      - token: []
+      parameters:
+      - in: body
+        name: expense
+        description: The expense object that will be persisted. If a trip object is
+          defined inside the Expense Create Request model, then a trip will be created
+          and associated with the expense
+        required: true
+        schema:
+          $ref: '#/definitions/ExpenseCreateRequest'
+      responses:
+        200:
+          description: OK - Returns the created Expense
+          schema:
+            $ref: '#/definitions/Expense'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+      - Expense
+    put:
+      summary: Update Expense
+      description: An expense can be updated
+      tags:
+      - Expense
+      parameters:
+      - name: id
+        in: path
+        description: The expense id to update
+        required: true
+        type: string
+      - in: body
+        name: expense
+        description: The expense object that will be updated
+        required: true
+        schema:
+          $ref: '#/definitions/ExpenseUpdateRequest'
+      responses:
+        200:
+          description: OK - Returns the matched Expense
+          schema:
+            $ref: '#/definitions/Expense'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: This is an http status indicating that no expense matched the
+            id provided.
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete Expense
+      description: Delete a expense by the *id* provided. The Process will delete
+        the expense, associated trip (if any) and also any the associated scanned
+        receipts. The API developer can opt for physical / virtual deletion as necessary.
+      tags:
+      - Expense
+      parameters:
+      - name: id
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: This is an http status indicating that no expense matched the
+            id provided.
+          schema:
+            $ref: '#/definitions/Error'
+  /receipt/{id}:
+    post:
+      summary: Create a receipt
+      description: When a receipt is created, the image url will not be provided inside
+        the payload, mainly because encoding image data inside a json payload will
+        triple the data size and is not considered as a best practice to include binary
+        data inside a json file.
+      tags:
+      - Receipts
+      parameters:
+      - in: query
+        name: expenseId
+        type: number
+        format: int64
+        description: When provided, the receipt will be associated with the expense
+          requested
+        required: false
+      - in: body
+        name: receipt
+        description: The receipt object that will be persisted
+        required: true
+        schema:
+          $ref: '#/definitions/Receipt'
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK - Returns the newly created receipt
+          schema:
+            $ref: '#/definitions/Receipt'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+  /receipt/{id}/upload:
+    post:
+      summary: Upload Receipt Scan
+      description: When a receit is created, the app will upload the receipt scan
+        using a multipart/form-data request. The uploaded file will have its filename
+        as [receiptId]. jpg/png/gif. If possible (to check with Infusion), the API
+        will return the associated Receipt object. Content-type header must be set
+        to multipart/form-data.
+      tags:
+      - Receipts
+      parameters:
+      - name: id
+        in: path
+        description: The uploaded image will be associated with the Receipt id provided
+        required: true
+        type: number
+        format: int64
+      - name: data
+        in: body
+        description: The image binary data that needs to be uploaded and associated
+          with a receipt
+        type: string
+        required: true
+      security:
+      - token: []
+      responses:
+        200:
+          description: OK - Returns the matched receipt
+          schema:
+            $ref: '#/definitions/Receipt'
+        401:
+          description: Incorrect Credentials
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden / Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: This is an http status indicating that no matching receipt
+            has been found for the given receipt scan file.
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":10:{s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Error
+  messge description describing the error message returned by the server\";}}}s:11:\"Credentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"username\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"The
+  user name\";s:7:\"example\";s:7:\"johndoe\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  user's password\";}s:8:\"deviceid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:168:\"The
+  app will pick up the unique device's id and use together with the authentication
+  credentials. The device might be blocked in case the user has lost his mobile phone\";}}}s:8:\"Currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"currencyCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  currency code\";s:7:\"example\";s:3:\"eur\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  currency name\";s:7:\"example\";s:3:\"EUR\";}s:6:\"symbol\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  currency symbol\";s:7:\"example\";s:3:\"\u20AC\";}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:7:\"example\";i:1;}}}s:11:\"ExpenseType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:71:\"The
+  Expense type reference (possibly an autonumber set up on the server\";s:7:\"example\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"The
+  name, that will be displayed on the screen\";s:7:\"example\";s:7:\"Fitness\";}}}s:4:\"Trip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:89:\"The
+  trip's id. This property will be null when a new trip is being created by the client.\";s:7:\"example\";i:1001;s:8:\"required\";b:0;}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Trip
+  type, being one of the enum values provided\";s:4:\"enum\";a:2:{i:0;s:8:\"BUSINESS\";i:1;s:9:\"MARKETING\";}s:8:\"required\";b:1;}s:10:\"campaignId\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:128:\"Campaign
+  id is required when the trip type is a Marketing trip. The user has to enter a campaign
+  id associated with this expense\";s:7:\"example\";s:5:\"B1005\";s:8:\"required\";b:0;}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Friendly
+  trip name\";s:7:\"example\";s:29:\"Team Building Activity Travel\";s:8:\"required\";b:1;}s:11:\"destination\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Trip
+  Destination name\";s:7:\"example\";s:9:\"Stockholm\";s:8:\"required\";b:1;}s:9:\"departure\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"This
+  is the departure date and time\";s:6:\"format\";s:24:\"yyyy-MM-dd'T'HH:mm:ss'Z'\";s:8:\"required\";b:1;}s:6:\"return\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"This
+  is the trip's return date and time\";s:6:\"format\";s:24:\"yyyy-MM-dd'T'HH:mm:ss'Z'\";s:8:\"required\";b:1;}s:4:\"note\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Additional
+  notes that the user might provide together with this trip\";s:8:\"required\";b:1;}s:19:\"privateAccomodation\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:84:\"Enabled
+  if the accomodation is not going to be paid by the company. Default is false\";}}}s:7:\"Receipt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:95:\"The
+  receipt's id. This property will be null when a new receipt is being created by
+  the client.\";s:7:\"example\";i:100;}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Trip
+  type, being one of the enum values provided\";s:4:\"enum\";a:2:{i:0;s:8:\"BUSINESS\";i:1;s:9:\"MARKETING\";}s:8:\"required\";b:1;}s:10:\"campaignId\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:128:\"Campaign
+  id is required when the trip type is a Marketing trip. The user has to enter a campaign
+  id associated with this expense\";s:7:\"example\";s:5:\"B1005\";s:8:\"required\";b:0;}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Expense
+  description\";s:7:\"example\";s:13:\"Taxi to hotel\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:96:\"Stamp
+  of the currency object, including conversion rate at the time when the receipt was
+  created\";s:4:\"$ref\";s:22:\"#/definitions/Currency\";}s:11:\"expenseType\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/ExpenseType\";}s:6:\"amount\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:101:\"The
+  amount that is displayed on the receipt that the user entered, and will be vetted
+  by the manager.\";s:7:\"example\";i:1;s:8:\"required\";b:1;}s:4:\"date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:24:\"yyyy-MM-dd'T'HH:mm:ss'Z'\";s:11:\"description\";s:45:\"Date
+  and time when the receipt was registered\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"This
+  is a special instruction that the user wants to add to the note\";}s:7:\"scanUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:135:\"If
+  a scanned image is uploaded, then this field will contain an absolute url to an
+  image that the app can download to display in a list\";}}}s:20:\"ExpenseUpdateRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:32:\"The
+  expense update request model\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"receipts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:83:\"This
+  is a collection of receipt ids that will be managed by this expense definition\";s:16:\"collectionFormat\";s:5:\"multi\";}s:8:\"required\";b:0;}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Expense's
+  current status\";s:4:\"enum\";a:5:{i:0;s:4:\"OPEN\";i:1;s:4:\"SENT\";i:2;s:8:\"APPROVED\";i:3;s:16:\"APPROVED_REVISED\";i:4;s:8:\"REJECTED\";}s:8:\"required\";b:1;}s:14:\"breakfastCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  amount of breakfasts that the employee is not paying for\";s:8:\"required\";b:0;}s:10:\"lunchCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:57:\"The
+  amount of lunches that the employee is not paying for\";s:8:\"required\";b:0;}s:11:\"dinnerCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:57:\"The
+  amount of dinners that the employee is not paying for\";s:8:\"required\";b:0;}}}s:20:\"ExpenseCreateRequest\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:28:\"The
+  expense creation request\";s:5:\"allof\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ExpenseUpdateRequest\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"trip\";O:8:\"stdClass\":3:{s:11:\"description\";s:183:\"The
+  associated trip id. This can be null if the expense is a one-off expense. When defined,
+  the API will create a Trip object together with the Expense object, and bind them
+  together.\";s:4:\"$ref\";s:18:\"#/definitions/Trip\";s:8:\"required\";b:0;}}}s:7:\"Expense\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:89:\"The
+  expense's id. This property will be null when a new expense is created by the client.\";s:7:\"example\";i:1003;s:8:\"required\";b:1;}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:149:\"An
+  enumeration value indicating the type of expense it is. Currently only Trip / one-of
+  expenses are supported, but we might have more in the future.\";s:4:\"enum\";a:2:{i:0;s:4:\"TRIP\";i:1;s:7:\"ONE_OFF\";}s:8:\"required\";b:1;}s:4:\"trip\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  trip associated with this expense\";s:4:\"$ref\";s:18:\"#/definitions/Trip\";s:8:\"required\";b:0;}s:8:\"receipts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Receipt\";}s:8:\"required\";b:0;}s:15:\"statusTimestamp\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:24:\"yyyy-MM-dd'T'HH:mm:ss'Z'\";s:11:\"description\";s:85:\"The
+  timestamp of the date the last status was updated. This is updated by the server.\";s:8:\"required\";b:1;}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Expense's
+  current status\";s:4:\"enum\";a:5:{i:0;s:4:\"OPEN\";i:1;s:4:\"SENT\";i:2;s:8:\"APPROVED\";i:3;s:16:\"APPROVED_REVISED\";i:4;s:8:\"REJECTED\";}s:8:\"required\";b:1;}s:14:\"rejectedReason\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:167:\"If
+  the trip has been rejected, the manager can add a note informing the user why the
+  trip has been rejected. Field is expected to be null if the status is not REJECTED\";s:8:\"required\";b:0;}s:14:\"breakfastCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  amount of breakfasts that the employee is not paying for\";s:8:\"required\";b:0;}s:10:\"lunchCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:57:\"The
+  amount of lunches that the employee is not paying for\";s:8:\"required\";b:0;}s:11:\"dinnerCount\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:57:\"The
+  amount of dinners that the employee is not paying for\";s:8:\"required\";b:0;}}}s:13:\"PagedExpenses\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:42:\"The
+  amount of data returned by the search.\";}s:4:\"page\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:46:\"The
+  page number that is currently being viewed\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Expense\";}}}}}"
+...

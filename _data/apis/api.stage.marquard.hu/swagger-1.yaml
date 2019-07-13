@@ -1,0 +1,643 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:15:\"MarquardCMS API\";s:7:\"version\";s:5:\"0.5.3\";}"
+host: api.stage.marquard.hu
+basePath: /
+paths:
+  /oauth2/token:
+    post:
+      summary: Get a token for user/device with ouath2.n
+      parameters:
+      - name: client_id
+        in: query
+        required: true
+        type: string
+      - name: client_secret
+        in: query
+        required: true
+        type: string
+      - name: grant_type
+        in: query
+        required: true
+        type: string
+        description: '''client_credentials'' or ''password''n'
+      - name: username
+        in: query
+        required: false
+        type: string
+      - name: password
+        in: query
+        required: false
+        type: string
+      responses:
+        200:
+          description: OAuth2 appropriate standard answer
+  /oauth2/token-with-facebook:
+    post:
+      summary: Login with an exist user, or create new account.n
+      parameters:
+      - name: client_id
+        in: query
+        required: true
+        type: string
+      - name: client_secret
+        in: query
+        required: true
+        type: string
+      - name: token
+        in: query
+        required: true
+        type: string
+        description: Facebook tokenn
+      responses:
+        200:
+          description: OAuth2 appropriate standard answer
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /oauth2/revoke:
+    delete:
+      summary: Destroy access token.n
+      responses:
+        200:
+          description: Boolean
+  /user:
+    post:
+      summary: Create a new user.n
+      parameters:
+      - name: client_id
+        in: query
+        required: true
+        type: string
+      - name: client_secret
+        in: query
+        required: true
+        type: string
+      - name: name
+        in: query
+        description: Displayed name
+        required: true
+        type: string
+      - name: username
+        in: query
+        description: E-mail address
+        required: true
+        type: string
+      - name: password
+        in: query
+        description: Password
+        required: true
+        type: string
+      - name: date_of_birth
+        in: query
+        description: YYYY-mm-dd
+        required: false
+        type: string
+      - name: gender
+        in: query
+        description: Gender (1 - woman, 2 - man)
+        required: false
+        type: string
+      responses:
+        200:
+          description: Signup error, or OAuth2 token
+    put:
+      summary: Change user deteails.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: name
+        in: query
+        description: Displayed name
+        required: false
+        type: string
+      - name: username
+        in: query
+        description: E-mail address
+        required: false
+        type: string
+      - name: password
+        in: query
+        description: Password
+        required: false
+        type: string
+      - name: date_of_birth
+        in: query
+        description: YYYY-mm-dd
+        required: false
+        type: string
+      - name: gender
+        in: query
+        description: Gender (1 - woman, 2 - man)
+        required: false
+        type: integer
+      - name: give_push
+        in: query
+        required: false
+        type: integer
+      responses:
+        200:
+          description: True or false
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: Get user details.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      responses:
+        200:
+          description: User details
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/forgotten-password:
+    post:
+      parameters:
+      - name: username
+        description: E-mail address
+        in: query
+        required: true
+        type: string
+      responses:
+        200:
+          description: True or false
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/follows:
+    get:
+      summary: Get followed brands and topics.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: type
+        in: query
+        description: Filter by type (brand or topic)
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of followed things.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Follows'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Follow a brand or topic.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: type
+        in: query
+        description: Type (brand or topic)
+        required: true
+        type: string
+      - name: followed_id
+        in: query
+        description: Brand ID or topic ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: An array of brands
+          schema:
+            $ref: '#/definitions/Follows'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/follows/{id}:
+    delete:
+      summary: Unfollow a brand os topic.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: Follow ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: True or false
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/favorites:
+    get:
+      summary: Get favorite articles.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of favorites
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Favorites'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Add an article to favorites.n
+      parameters:
+      - name: access_token
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: article_id
+        in: query
+        description: Article ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Favorite details
+          schema:
+            $ref: '#/definitions/Favorites'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user/favorites/{id}:
+    delete:
+      summary: Remove an article from favorites.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User access token
+        required: true
+        type: string
+      - name: id
+        in: path
+        description: Favorite ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: True or false
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /brand-list:
+    get:
+      summary: Get all brands.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of brands
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Brand'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topic-list:
+    get:
+      summary: Get all topics.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: brand_id
+        in: query
+        description: Brand ID
+        required: false
+        type: integer
+      responses:
+        200:
+          description: An array of topics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Topic'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /magazine/{brand_id}:
+    get:
+      summary: List all issues in selected brand.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: brand_id
+        in: path
+        description: Brand ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: An array of issues
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Issue'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /magazine/issue/{issue_id}:
+    get:
+      summary: Get issue details.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: issue_id
+        in: path
+        description: Issue ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Issue details
+          schema:
+            $ref: '#/definitions/Issue'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /magazine/issue/{issue_id}/contents:
+    get:
+      summary: Get contents for issue.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: issue_id
+        in: path
+        description: Issue ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: An array of contents
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/IssueContent'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /personal-article-list:
+    get:
+      summary: Get all available article by user follows.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: from_time
+        in: query
+        description: Last article's date in ISO 8601 on prev feed page
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of articles
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Article'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /article-list:
+    get:
+      summary: Get all available article from optional selected brand and/or topic.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: brand_id
+        in: query
+        description: Brand ID
+        required: false
+        type: integer
+      - name: topic_id
+        in: query
+        description: Topic ID
+        required: false
+        type: integer
+      - name: from_time
+        in: query
+        description: Last article's date in ISO 8601 on prev feed page
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of articles
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Article'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /article/{article_id}:
+    get:
+      description: Get details of selected article.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: article_id
+        in: path
+        description: Article ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: An array of article's datas
+          schema:
+            $ref: '#/definitions/Article'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /article/{article_id}/html:
+    get:
+      description: Get HTML code of selected article.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: article_id
+        in: path
+        description: Article ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Article in HTML.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /gallery/{gallery_id}:
+    get:
+      description: Get details of selected article.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: gallery_id
+        in: path
+        description: Gallery ID
+        required: true
+        type: integer
+      responses:
+        200:
+          description: An array of gallery's datas
+          schema:
+            $ref: '#/definitions/Gallery'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /fb-video-list:
+    get:
+      responses:
+        200:
+          description: An array of videos
+          schema:
+            $ref: '#/definitions/FbVideo'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /feed-embed:
+    get:
+      description: Get feed embed itemn
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: topic_id
+        in: query
+        description: Filter by topic ID
+        required: false
+        type: integer
+      - name: brand_id
+        in: query
+        description: Filter by brand ID
+        required: false
+        type: integer
+      responses:
+        200:
+          description: Feed embed details
+          schema:
+            $ref: '#/definitions/FeedEmbed'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /device-token:
+    post:
+      description: Save device token for push messages.n
+      parameters:
+      - name: Authorization
+        in: header
+        description: User/Device access token
+        required: true
+        type: string
+      - name: token
+        in: query
+        description: Device token
+        required: false
+        type: string
+      responses:
+        200:
+          description: True or false
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /impress:
+    get:
+      description: Get impress in HTML format.n
+      responses:
+        200:
+          description: Impress in HTML.
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":12:{s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"fb_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"date_of_birth\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"gender\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"give_push\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:7:\"Follows\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"brand
+  / topic\";}s:11:\"followed_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"brand_id
+  / topic_id\";}}}s:9:\"Favorites\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"article\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Article\";}}}s:5:\"Brand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"print\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:17:\"Has
+  print content\";}s:6:\"online\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:18:\"Has
+  online content\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"logo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"white\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"black\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"cropped\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"white\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"black\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}}s:5:\"Topic\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"color\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Issue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"cover_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"release_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"generated_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"pdf_in_package\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"pdf_password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"package_size\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"package_hash\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"package_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"brand\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Brand\";}}}s:12:\"IssueContent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"lead\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"topics\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Topic\";}}s:9:\"html_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"pdf_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"file_url_small\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Article\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"lead\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"is_print\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"topics\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Topic\";}}s:6:\"brands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Brand\";}}s:5:\"issue\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Issue\";}s:6:\"author\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"updated_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"file_url_small\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Gallery\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"images\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"desc\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:9:\"FeedEmbed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"'native_promo'
+  or 'url'\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Position
+  in feed\";}s:11:\"promo_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Title
+  if type is 'native_promo'\";}s:14:\"promo_brand_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Promoted
+  magazine's brand ID\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"URL
+  if type is 'url'\";}s:6:\"height\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"URL
+  frame's height in px if type is 'url'\";}}}s:7:\"FbVideo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:8:\"video_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"video_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"video_deeplink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"lead\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"image_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"topics\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Topic\";}}s:6:\"brands\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Brand\";}}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

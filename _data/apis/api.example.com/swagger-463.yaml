@@ -1,0 +1,1889 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":1:{s:5:\"title\";s:16:\"openHAB REST API\";}"
+basePath: /rest
+paths:
+  /:
+    get:
+      operationId: getRoot
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+  /bindings:
+    get:
+      tags:
+      - bindings
+      summary: Get all bindings.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/BindingInfoDTO'
+  /bindings/{bindingId}/config:
+    get:
+      tags:
+      - bindings
+      summary: Get binding configuration for given binding ID.
+      description: ""
+      operationId: getConfiguration
+      produces:
+      - application/json
+      parameters:
+      - name: bindingId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        500:
+          description: Configuration can not be read due to internal error
+        404:
+          description: Binding does not exist
+    put:
+      tags:
+      - bindings
+      summary: Updates a binding configuration for given binding ID and returns the
+        old configuration.
+      description: ""
+      operationId: updateConfiguration
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: bindingId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        500:
+          description: Configuration can not be updated due to internal error
+        204:
+          description: No old configuration
+        404:
+          description: Binding does not exist
+  /channel-types:
+    get:
+      tags:
+      - channel-types
+      summary: Gets all available channel types.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/ChannelTypeDTO'
+  /channel-types/{channelTypeUID}:
+    get:
+      tags:
+      - channel-types
+      summary: Gets channel type by UID.
+      description: ""
+      operationId: getByUID
+      produces:
+      - application/json
+      parameters:
+      - name: channelTypeUID
+        in: path
+        description: channelTypeUID
+        required: true
+        type: string
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: Channel type with provided channelTypeUID does not exist.
+          schema:
+            $ref: '#/definitions/ChannelTypeDTO'
+        404:
+          description: No content
+  /channel-types/{channelTypeUID}/linkableItemTypes:
+    get:
+      tags:
+      - channel-types
+      summary: Gets the item types the given trigger channel type UID can be linked
+        to.
+      description: ""
+      operationId: getLinkableItemTypes
+      produces:
+      - application/json
+      parameters:
+      - name: channelTypeUID
+        in: path
+        description: channelTypeUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+        204:
+          description: 'No content: channel type has no linkable items or is no trigger
+            channel.'
+        404:
+          description: Given channel type UID not found.
+  /config-descriptions:
+    get:
+      tags:
+      - config-descriptions
+      summary: Gets all available config descriptions.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ConfigDescriptionDTO'
+  /config-descriptions/{uri}:
+    get:
+      tags:
+      - config-descriptions
+      summary: Gets a config description by URI.
+      description: ""
+      operationId: getByURI
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      - name: uri
+        in: path
+        description: uri
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ConfigDescriptionDTO'
+        400:
+          description: Invalid URI syntax
+        404:
+          description: Not found
+  /discovery:
+    get:
+      tags:
+      - discovery
+      summary: Gets all bindings that support discovery.
+      description: ""
+      operationId: getDiscoveryServices
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+  /discovery/bindings/{bindingId}/scan:
+    post:
+      tags:
+      - discovery
+      summary: Starts asynchronous discovery process for a binding and returns the
+        timeout in seconds of the discovery operation.
+      description: ""
+      operationId: scan
+      produces:
+      - text/plain
+      parameters:
+      - name: bindingId
+        in: path
+        description: bindingId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+            format: int32
+  /extensions:
+    get:
+      tags:
+      - extensions
+      summary: Get all extensions.
+      description: ""
+      operationId: getExtensions
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+  /extensions/types:
+    get:
+      tags:
+      - extensions
+      summary: Get all extension types.
+      description: ""
+      operationId: getTypes
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+  /extensions/url/{url}/install:
+    post:
+      tags:
+      - extensions
+      summary: Installs the extension from the given URL.
+      description: ""
+      operationId: installExtensionByURL
+      parameters:
+      - name: url
+        in: path
+        description: extension install URL
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: The given URL is malformed or not valid.
+  /extensions/{extensionId}:
+    get:
+      tags:
+      - extensions
+      summary: Get extension with given ID.
+      description: ""
+      operationId: getById
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: extensionId
+        in: path
+        description: extension ID
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9-]*'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Not found
+  /extensions/{extensionId}/install:
+    post:
+      tags:
+      - extensions
+      summary: Installs the extension with the given ID.
+      description: ""
+      operationId: installExtension
+      parameters:
+      - name: extensionId
+        in: path
+        description: extension ID
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9-:]*'
+      responses:
+        200:
+          description: OK
+  /extensions/{extensionId}/uninstall:
+    post:
+      tags:
+      - extensions
+      operationId: uninstallExtension
+      parameters:
+      - name: extensionId
+        in: path
+        description: extension ID
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9-:]*'
+      responses:
+        200:
+          description: OK
+  /habpanel/gallery/{galleryName}/widgets:
+    get:
+      tags:
+      - habpanel
+      summary: Gets the list of widget gallery items.
+      description: ""
+      operationId: getGalleryWidgetList
+      produces:
+      - application/json
+      parameters:
+      - name: galleryName
+        in: path
+        description: gallery name e.g. 'community'
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Unknown gallery
+  /habpanel/gallery/{galleryName}/widgets/{id}:
+    get:
+      tags:
+      - habpanel
+      summary: Gets the details about a widget gallery item.
+      description: ""
+      operationId: getGalleryWidgetsItem
+      produces:
+      - application/json
+      parameters:
+      - name: galleryName
+        in: path
+        description: gallery name e.g. 'community'
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: id
+        in: path
+        description: id within the gallery
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Unknown gallery or gallery item not found
+  /iconsets:
+    get:
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /inbox:
+    get:
+      tags:
+      - inbox
+      summary: Get all discovered things.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DiscoveryResultDTO'
+  /inbox/{thingUID}:
+    delete:
+      tags:
+      - inbox
+      summary: Removes the discovery result from the inbox.
+      description: ""
+      operationId: delete
+      parameters:
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Discovery result not found in the inbox.
+  /inbox/{thingUID}/approve:
+    post:
+      tags:
+      - inbox
+      summary: Approves the discovery result by adding the thing to the registry.
+      description: ""
+      operationId: approve
+      consumes:
+      - text/plain
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: thing label
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Thing not found in the inbox.
+        409:
+          description: No binding found that supports this thing.
+  /inbox/{thingUID}/ignore:
+    post:
+      tags:
+      - inbox
+      summary: Flags a discovery result as ignored for further processing.
+      description: ""
+      operationId: ignore
+      parameters:
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /inbox/{thingUID}/unignore:
+    post:
+      tags:
+      - inbox
+      summary: Removes ignore flag from a discovery result.
+      description: ""
+      operationId: unignore
+      parameters:
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /items:
+    get:
+      tags:
+      - items
+      summary: Get all available items.
+      description: ""
+      operationId: getItems
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: type
+        in: query
+        description: item type filter
+        required: false
+        type: string
+      - name: tags
+        in: query
+        description: item tag filter
+        required: false
+        type: string
+      - name: recursive
+        in: query
+        description: get member items recursivly
+        required: false
+        type: boolean
+        default: false
+      - name: fields
+        in: query
+        description: limit output to the given fields (comma separated)
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EnrichedItemDTO'
+    put:
+      tags:
+      - items
+      summary: Adds a list of items to the registry or updates the existing items.
+      description: ""
+      operationId: createOrUpdateItems
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: array of item data
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/GroupItemDTO'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: Item list is null.
+  /items/{itemName}/members/{memberItemName}:
+    put:
+      tags:
+      - items
+      summary: Adds a new member to a group item.
+      description: ""
+      operationId: addMember
+      parameters:
+      - name: itemName
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: memberItemName
+        in: path
+        description: member item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+        404:
+          description: Item or member item not found or item is not of type group
+            item.
+        405:
+          description: Member item is not editable.
+    delete:
+      tags:
+      - items
+      summary: Removes an existing member from a group item.
+      description: ""
+      operationId: removeMember
+      parameters:
+      - name: itemName
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: memberItemName
+        in: path
+        description: member item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+        404:
+          description: Item or member item not found or item is not of type group
+            item.
+        405:
+          description: Member item is not editable.
+  /items/{itemname}:
+    get:
+      tags:
+      - items
+      summary: Gets a single item.
+      description: ""
+      operationId: getItemData
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/EnrichedItemDTO'
+        404:
+          description: Item not found
+    post:
+      tags:
+      - items
+      summary: Sends a command to an item.
+      description: ""
+      operationId: postItemCommand
+      consumes:
+      - text/plain
+      parameters:
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - in: body
+        name: body
+        description: valid item command (e.g. ON, OFF, UP, DOWN, REFRESH)
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Item command null
+        404:
+          description: Item not found
+    put:
+      tags:
+      - items
+      summary: Adds a new item to the registry or updates the existing item.
+      description: ""
+      operationId: createOrUpdateItem
+      consumes:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - in: body
+        name: body
+        description: item data
+        required: true
+        schema:
+          $ref: '#/definitions/GroupItemDTO'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        201:
+          description: Item created.
+        400:
+          description: Item null.
+        404:
+          description: Item not found.
+        405:
+          description: Item not editable.
+    delete:
+      tags:
+      - items
+      summary: Removes an item from the registry.
+      description: ""
+      operationId: removeItem
+      parameters:
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+        404:
+          description: Item not found or item is not editable.
+  /items/{itemname}/state:
+    get:
+      tags:
+      - items
+      summary: Gets the state of an item.
+      description: ""
+      operationId: getPlainItemState
+      produces:
+      - text/plain
+      parameters:
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Item not found
+    put:
+      tags:
+      - items
+      summary: Updates the state of an item.
+      description: ""
+      operationId: putItemState
+      consumes:
+      - text/plain
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - in: body
+        name: body
+        description: valid item state (e.g. ON, OFF)
+        required: true
+        schema:
+          type: string
+      responses:
+        202:
+          description: Accepted
+        400:
+          description: Item state null
+        404:
+          description: Item not found
+  /items/{itemname}/tags/{tag}:
+    put:
+      tags:
+      - items
+      summary: Adds a tag to an item.
+      description: ""
+      operationId: addTag
+      parameters:
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: tag
+        in: path
+        description: tag
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Item not found.
+        405:
+          description: Item not editable.
+    delete:
+      tags:
+      - items
+      summary: Removes a tag from an item.
+      description: ""
+      operationId: removeTag
+      parameters:
+      - name: itemname
+        in: path
+        description: item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: tag
+        in: path
+        description: tag
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Item not found.
+        405:
+          description: Item not editable.
+  /links:
+    get:
+      tags:
+      - links
+      summary: Gets all available links.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ItemChannelLinkDTO'
+  /links/auto:
+    get:
+      tags:
+      - links
+      summary: Tells whether automatic link mode is active or not
+      description: ""
+      operationId: isAutomatic
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: boolean
+  /links/{itemName}/{channelUID}:
+    put:
+      tags:
+      - links
+      summary: Links item to a channel.
+      description: ""
+      operationId: link
+      parameters:
+      - name: itemName
+        in: path
+        description: itemName
+        required: true
+        type: string
+      - name: channelUID
+        in: path
+        description: channelUID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: link data
+        required: false
+        schema:
+          $ref: '#/definitions/ItemChannelLinkDTO'
+      responses:
+        200:
+          description: OK
+        400:
+          description: Content does not match the path
+    delete:
+      tags:
+      - links
+      summary: Unlinks item from a channel.
+      description: ""
+      operationId: unlink
+      parameters:
+      - name: itemName
+        in: path
+        description: itemName
+        required: true
+        type: string
+      - name: channelUID
+        in: path
+        description: channelUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Link not found.
+        405:
+          description: Link not editable.
+  /persistence:
+    get:
+      tags:
+      - persistence
+      summary: Gets a list of persistence services.
+      description: ""
+      operationId: httpGetPersistenceServices
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+  /persistence/items:
+    get:
+      tags:
+      - persistence
+      summary: Gets a list of items available via a specific persistence service.
+      description: ""
+      operationId: httpGetPersistenceServiceItems
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: query
+        description: Id of the persistence service. If not provided the default service
+          will be used
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+  /persistence/items/{itemname}:
+    get:
+      tags:
+      - persistence
+      summary: Gets item persistence data from the persistence service.
+      description: ""
+      operationId: httpGetPersistenceItemData
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: query
+        description: Id of the persistence service. If not provided the default service
+          will be used
+        required: false
+        type: string
+      - name: itemname
+        in: path
+        description: The item name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: starttime
+        in: query
+        description: Start time of the data to return. Will default to 1 day before
+          endtime. [yyyy-MM-dd'T'HH:mm:ss.SSSZ]
+        required: false
+        type: string
+      - name: endtime
+        in: query
+        description: End time of the data to return. Will default to current time.
+          [yyyy-MM-dd'T'HH:mm:ss.SSSZ]
+        required: false
+        type: string
+      - name: page
+        in: query
+        description: Page number of data to return. This parameter will enable paging.
+        required: false
+        type: integer
+        format: int32
+      - name: pagelength
+        in: query
+        description: The length of each page.
+        required: false
+        type: integer
+        format: int32
+      - name: boundary
+        in: query
+        description: Gets one value before and after the requested period.
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ItemHistoryDTO'
+        404:
+          description: Unknown Item or persistence service
+    put:
+      tags:
+      - persistence
+      summary: Stores item persistence data into the persistence service.
+      description: ""
+      operationId: httpPutPersistenceItemData
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: query
+        description: Id of the persistence service. If not provided the default service
+          will be used
+        required: false
+        type: string
+      - name: itemname
+        in: path
+        description: The item name.
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: time
+        in: query
+        description: Time of the data to be stored. Will default to current time.
+          [yyyy-MM-dd'T'HH:mm:ss.SSSZ]
+        required: true
+        type: string
+      - name: state
+        in: query
+        description: The state to store.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ItemHistoryDTO'
+        404:
+          description: Unknown Item or persistence service
+    delete:
+      tags:
+      - persistence
+      summary: Delete item data from a specific persistence service.
+      description: ""
+      operationId: httpDeletePersistenceServiceItem
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: query
+        description: Id of the persistence service.
+        required: true
+        type: string
+      - name: itemname
+        in: path
+        description: The item name.
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: starttime
+        in: query
+        description: Start time of the data to return. [yyyy-MM-dd'T'HH:mm:ss.SSSZ]
+        required: true
+        type: string
+      - name: endtime
+        in: query
+        description: End time of the data to return. [yyyy-MM-dd'T'HH:mm:ss.SSSZ]
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+        400:
+          description: Invalid filter parameters
+        404:
+          description: Unknown persistence service
+  /services:
+    get:
+      tags:
+      - services
+      summary: Get all configurable services.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ConfigurableServiceDTO'
+  /services/{serviceId}:
+    get:
+      tags:
+      - services
+      summary: Get configurable service for given service ID.
+      description: ""
+      operationId: getById
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ConfigurableServiceDTO'
+        404:
+          description: Not found
+  /services/{serviceId}/config:
+    get:
+      tags:
+      - services
+      summary: Get service configuration for given service ID.
+      description: ""
+      operationId: getConfiguration
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        500:
+          description: Configuration can not be read due to internal error
+    put:
+      tags:
+      - services
+      summary: Updates a service configuration for given service ID and returns the
+        old configuration.
+      description: ""
+      operationId: updateConfiguration
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        500:
+          description: Configuration can not be updated due to internal error
+        204:
+          description: No old configuration
+    delete:
+      tags:
+      - services
+      summary: Deletes a service configuration for given service ID and returns the
+        old configuration.
+      description: ""
+      operationId: deleteConfiguration
+      produces:
+      - application/json
+      parameters:
+      - name: serviceId
+        in: path
+        description: service ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        500:
+          description: Configuration can not be deleted due to internal error
+        204:
+          description: No old configuration
+  /sitemaps:
+    get:
+      tags:
+      - sitemaps
+      summary: Get all available sitemaps.
+      description: ""
+      operationId: getSitemaps
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: OK
+  /sitemaps/events/subscribe:
+    post:
+      tags:
+      - sitemaps
+      summary: Creates a sitemap event subscription.
+      description: ""
+      operationId: createEventSubscription
+      parameters: []
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+        201:
+          description: Subscription created.
+  /sitemaps/events/{subscriptionid}:
+    get:
+      tags:
+      - sitemaps
+      summary: Get sitemap events.
+      description: ""
+      operationId: getSitemapEvents
+      produces:
+      - text/event-stream
+      parameters:
+      - name: subscriptionid
+        in: path
+        description: subscription id
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9-]*'
+      - name: sitemap
+        in: query
+        description: sitemap name
+        required: false
+        type: string
+      - name: pageid
+        in: query
+        description: page id
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Subscription not found.
+  /sitemaps/{sitemapname}:
+    get:
+      tags:
+      - sitemaps
+      summary: Get sitemap by name.
+      description: ""
+      operationId: getSitemapData
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: sitemapname
+        in: path
+        description: sitemap name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: type
+        in: query
+        required: false
+        type: string
+      - name: jsoncallback
+        in: query
+        required: false
+        type: string
+        default: callback
+      responses:
+        200:
+          description: OK
+  /sitemaps/{sitemapname}/{pageid}:
+    get:
+      tags:
+      - sitemaps
+      summary: Polls the data for a sitemap.
+      description: ""
+      operationId: getPageData
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: sitemapname
+        in: path
+        description: sitemap name
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: pageid
+        in: path
+        description: page id
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      - name: subscriptionid
+        in: query
+        description: subscriptionid
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Invalid subscription id has been provided.
+        404:
+          description: Sitemap with requested name does not exist or page does not
+            exist, or page refers to a non-linkable widget
+  /thing-types:
+    get:
+      tags:
+      - thing-types
+      summary: Gets all available thing types without config description, channels
+        and properties.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/StrippedThingTypeDTO'
+  /thing-types/{thingTypeUID}:
+    get:
+      tags:
+      - thing-types
+      summary: Gets thing type by UID.
+      description: ""
+      operationId: getByUID
+      produces:
+      - application/json
+      parameters:
+      - name: thingTypeUID
+        in: path
+        description: thingTypeUID
+        required: true
+        type: string
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: Thing type with provided thingTypeUID does not exist.
+          schema:
+            $ref: '#/definitions/ThingTypeDTO'
+        404:
+          description: No content
+  /thing-types/{thingTypeUID}/firmwares:
+    get:
+      tags:
+      - thing-types
+      summary: Get all available firmwares for provided thingType
+      description: ""
+      operationId: getFirmwares
+      produces:
+      - application/json
+      parameters:
+      - name: thingTypeUID
+        in: path
+        description: thingTypeUID
+        required: true
+        type: string
+      - name: Accept-Language
+        in: header
+        description: Accept-Language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+        204:
+          description: No firmwares found.
+  /things:
+    get:
+      tags:
+      - things
+      summary: Get all available things.
+      description: ""
+      operationId: getAll
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/EnrichedThingDTO'
+    post:
+      tags:
+      - things
+      summary: Creates a new thing and adds it to the registry.
+      description: ""
+      operationId: create
+      consumes:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - in: body
+        name: body
+        description: thing data
+        required: true
+        schema:
+          $ref: '#/definitions/ThingDTO'
+      responses:
+        201:
+          description: Created
+          schema:
+            type: string
+        400:
+          description: A uid must be provided, if no binding can create a thing of
+            this type.
+        409:
+          description: A thing with the same uid already exists.
+  /things/{thingUID}:
+    get:
+      tags:
+      - things
+      summary: Gets thing by UID.
+      description: ""
+      operationId: getByUID
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ThingDTO'
+        404:
+          description: Thing not found.
+    put:
+      tags:
+      - things
+      summary: Updates a thing.
+      description: ""
+      operationId: update
+      consumes:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: thing
+        required: true
+        schema:
+          $ref: '#/definitions/ThingDTO'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ThingDTO'
+        404:
+          description: Thing not found.
+        409:
+          description: Thing could not be updated as it is not editable.
+    delete:
+      tags:
+      - things
+      summary: Removes a thing from the registry. Set 'force' to __true__ if you want
+        the thing te be removed immediately.
+      description: ""
+      operationId: remove
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thingUID
+        required: true
+        type: string
+      - name: force
+        in: query
+        description: force
+        required: false
+        type: boolean
+        default: false
+      responses:
+        200:
+          description: OK, was deleted.
+        202:
+          description: ACCEPTED for asynchronous deletion.
+        404:
+          description: Thing not found.
+        409:
+          description: Thing could not be deleted because it's not editable.
+  /things/{thingUID}/config:
+    put:
+      tags:
+      - things
+      summary: Updates thing's configuration.
+      description: ""
+      operationId: updateConfiguration
+      consumes:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thing
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: configuration parameters
+        required: false
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Thing'
+        400:
+          description: Configuration of the thing is not valid.
+        404:
+          description: Thing not found
+        409:
+          description: Thing could not be updated as it is not editable.
+  /things/{thingUID}/config/status:
+    get:
+      tags:
+      - things
+      summary: Gets thing's config status.
+      description: ""
+      operationId: getConfigStatus
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thing
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Thing not found.
+  /things/{thingUID}/firmware/status:
+    get:
+      tags:
+      - things
+      summary: Gets thing's firmware status.
+      description: ""
+      operationId: getFirmwareStatus
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thing
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        204:
+          description: No firmware status provided by this Thing.
+  /things/{thingUID}/firmware/{firmwareVersion}:
+    put:
+      tags:
+      - things
+      summary: Update thing firmware.
+      description: ""
+      operationId: updateFirmware
+      consumes:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thing
+        required: true
+        type: string
+      - name: firmwareVersion
+        in: path
+        description: version
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Firmware update preconditions not satisfied.
+        404:
+          description: Thing not found.
+  /things/{thingUID}/status:
+    get:
+      tags:
+      - things
+      summary: Gets thing's status.
+      description: ""
+      operationId: getStatus
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        type: string
+      - name: thingUID
+        in: path
+        description: thing
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Thing not found.
+  /uuid:
+    get:
+      tags:
+      - uuid
+      summary: A unified unique id.
+      description: ""
+      operationId: getInstanceUUID
+      produces:
+      - text/plain
+      parameters: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+  /voice/interpreters:
+    get:
+      tags:
+      - voice
+      summary: Get the list of all interpreters.
+      description: ""
+      operationId: getInterpreters
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+    post:
+      tags:
+      - voice
+      summary: Sends a text to the default human language interpreter.
+      description: ""
+      operationId: interpret
+      consumes:
+      - text/plain
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - in: body
+        name: body
+        description: text to interpret
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: interpretation exception occurs
+        404:
+          description: No human language interpreter was found.
+  /voice/interpreters/{id}:
+    get:
+      tags:
+      - voice
+      summary: Gets a single interpreters.
+      description: ""
+      operationId: getInterpreter
+      produces:
+      - application/json
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - name: id
+        in: path
+        description: interpreter id
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+        404:
+          description: Interpreter not found
+    post:
+      tags:
+      - voice
+      summary: Sends a text to a given human language interpreter.
+      description: ""
+      operationId: interpret
+      consumes:
+      - text/plain
+      parameters:
+      - name: Accept-Language
+        in: header
+        description: language
+        required: false
+        type: string
+      - in: body
+        name: body
+        description: text to interpret
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: interpreter id
+        required: true
+        type: string
+        pattern: '[a-zA-Z_0-9]*'
+      responses:
+        200:
+          description: OK
+        400:
+          description: interpretation exception occurs
+        404:
+          description: No human language interpreter was found.
+definitions: !php/object "O:8:\"stdClass\":41:{s:10:\"SitemapDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"homepage\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/PageDTO\";}}}s:13:\"Configuration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:10:\"ChannelDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:3:\"uid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"channelTypeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"itemType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"defaultTags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"configuration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:25:\"ChannelGroupDefinitionDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ChannelDefinitionDTO\";}}}}s:12:\"ThingHandler\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"thing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Thing\";}}}s:22:\"ConfigurableServiceDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"configDescriptionURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"WidgetDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":24:{s:8:\"widgetId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"labelcolor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"valuecolor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"mappings\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/MappingDTO\";}}s:13:\"switchSupport\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"sendFrequency\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"separator\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"refresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"height\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"minValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"maxValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"step\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"encoding\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"service\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"period\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"legend\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/EnrichedItemDTO\";}s:10:\"linkedPage\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/PageDTO\";}s:7:\"widgets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/WidgetDTO\";}}}}s:14:\"BindingInfoDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"author\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"configDescriptionURI\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"ItemHistoryDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"totalrecords\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"datapoints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/HistoryDataBean\";}}}}s:11:\"EventOutput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Type\";}s:6:\"closed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:14:\"ChannelTypeUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"asString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bindingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"EnrichedItemDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"groupNames\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"transformedState\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"stateDescription\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/StateDescription\";}}}s:10:\"ChannelUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"thingUID\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ThingUID\";}s:14:\"idWithoutGroup\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"inGroup\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"asString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bindingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"FilterCriteriaDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"GroupFunctionDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"params\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:5:\"Thing\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:13:\"configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Configuration\";}s:7:\"handler\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ThingHandler\";}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:13:\"UNINITIALIZED\";i:1;s:12:\"INITIALIZING\";i:2;s:7:\"UNKNOWN\";i:3;s:6:\"ONLINE\";i:4;s:7:\"OFFLINE\";i:5;s:8:\"REMOVING\";i:6;s:7:\"REMOVED\";}}s:3:\"uid\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ThingUID\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"thingTypeUID\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ThingTypeUID\";}s:9:\"bridgeUID\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/ThingUID\";}s:10:\"statusInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ThingStatusInfo\";}s:8:\"channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Channel\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:16:\"StateDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"minimum\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"maximum\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"step\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"pattern\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"readOnly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"options\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/StateOption\";}}}}s:29:\"ConfigDescriptionParameterDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":22:{s:7:\"context\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"defaultValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:4:\"TEXT\";i:1;s:7:\"INTEGER\";i:2;s:7:\"DECIMAL\";i:3;s:7:\"BOOLEAN\";}}s:3:\"min\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:3:\"max\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"stepsize\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"pattern\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"readOnly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"multiple\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:13:\"multipleLimit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"groupName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"advanced\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:6:\"verify\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:14:\"limitToOptions\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:4:\"unit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"unitLabel\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"options\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ParameterOptionDTO\";}}s:14:\"filterCriteria\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FilterCriteriaDTO\";}}}}s:7:\"PageDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"link\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"parent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/PageDTO\";}s:4:\"leaf\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"timeout\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"widgets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/WidgetDTO\";}}}}s:20:\"ConfigDescriptionDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"parameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ConfigDescriptionParameterDTO\";}}s:15:\"parameterGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/ConfigDescriptionParameterGroupDTO\";}}}}s:8:\"ThingDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bridgeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"configuration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"UID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"thingTypeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ChannelDTO\";}}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ThingTypeDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:3:\"UID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"listed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:23:\"supportedBridgeTypeUIDs\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"bridge\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:8:\"channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ChannelDefinitionDTO\";}}s:13:\"channelGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/ChannelGroupDefinitionDTO\";}}s:16:\"configParameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ConfigDescriptionParameterDTO\";}}s:15:\"parameterGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/ConfigDescriptionParameterGroupDTO\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:24:\"extensibleChannelTypeIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:14:\"ChannelTypeDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:10:\"parameters\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ConfigDescriptionParameterDTO\";}}s:15:\"parameterGroups\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/ConfigDescriptionParameterGroupDTO\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"itemType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"stateDescription\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/StateDescription\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"UID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"advanced\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:7:\"Channel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:16:\"acceptedItemType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"STATE\";i:1;s:7:\"TRIGGER\";}}s:3:\"uid\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ChannelUID\";}s:14:\"channelTypeUID\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ChannelTypeUID\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/Configuration\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"defaultTags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:15:\"ThingStatusInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:7:{i:0;s:13:\"UNINITIALIZED\";i:1;s:12:\"INITIALIZING\";i:2;s:7:\"UNKNOWN\";i:3;s:6:\"ONLINE\";i:4;s:7:\"OFFLINE\";i:5;s:8:\"REMOVING\";i:6;s:7:\"REMOVED\";}}s:12:\"statusDetail\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:12:{i:0;s:4:\"NONE\";i:1;s:21:\"HANDLER_MISSING_ERROR\";i:2;s:25:\"HANDLER_REGISTERING_ERROR\";i:3;s:26:\"HANDLER_INITIALIZING_ERROR\";i:4;s:29:\"HANDLER_CONFIGURATION_PENDING\";i:5;s:21:\"CONFIGURATION_PENDING\";i:6;s:19:\"COMMUNICATION_ERROR\";i:7;s:19:\"CONFIGURATION_ERROR\";i:8;s:14:\"BRIDGE_OFFLINE\";i:9;s:17:\"FIRMWARE_UPDATING\";i:10;s:10:\"DUTY_CYCLE\";i:11;s:20:\"BRIDGE_UNINITIALIZED\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ParameterOptionDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"DiscoveryResultDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"bridgeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"flag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"NEW\";i:1;s:7:\"IGNORED\";}}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:22:\"representationProperty\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"thingUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"thingTypeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ItemChannelLinkDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"itemName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"channelUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"configuration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}}s:11:\"StateOption\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"StrippedThingTypeDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"UID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"listed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:23:\"supportedBridgeTypeUIDs\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"bridge\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:4:\"Type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"typeName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:34:\"ConfigDescriptionParameterGroupDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"context\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"advanced\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"FirmwareStatusDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"updatableVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"ChannelDefinitionDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"stateDescription\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/StateDescription\";}s:8:\"advanced\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}s:7:\"typeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"GroupItemDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"groupNames\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"groupType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"function\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/GroupFunctionDTO\";}}}s:16:\"EnrichedThingDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bridgeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"configuration\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:3:\"UID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"thingTypeUID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"channels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ChannelDTO\";}}s:8:\"location\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"statusInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ThingStatusInfo\";}s:14:\"firmwareStatus\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FirmwareStatusDTO\";}s:8:\"editable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:27:\"HumanLanguageInterpreterDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"locales\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:8:\"ThingUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"thingTypeUID\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ThingTypeUID\";}s:9:\"bridgeIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"thingTypeId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"asString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bindingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ThingTypeUID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"asString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bindingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"MappingDTO\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"command\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"HistoryDataBean\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"time\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

@@ -1,0 +1,542 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":7:{s:7:\"contact\";O:8:\"stdClass\":2:{s:5:\"email\";s:17:\"info@audiosear.ch\";s:4:\"name\";s:12:\"Audiosear.ch\";}s:11:\"description\";s:652:\"The
+  Audiosear.ch API requires OAuth, which you can manage at <a href='/oauth/applications'>OAuth
+  Applications</a>.<br/>API SDK clients available in <a href='https://github.com/popuparchive/audiosearch-client-python'
+  target='_blank'>Python</a>, <a href='https://github.com/popuparchive/audiosearch-client-ruby'
+  target='_blank'>Ruby</a>, <a href='https://github.com/popuparchive/audiosearch-client-php'
+  target='_blank'>PHP</a>, and <a href='https://github.com/popuparchive/audiosearch-client-node'
+  target='_blank'>Node</a>.<br/>Read the <a href='https://github.com/popuparchive/audiosearch-cookbook/wiki'>API
+  Cookbook</a> for easy copy-and-paste recipes.\";s:14:\"termsOfService\";s:37:\"https://www.auidosear.ch/terms_of_use\";s:5:\"title\";s:16:\"Audiosear.ch
+  API\";s:7:\"version\";s:5:\"1.0.0\";s:8:\"x-origin\";O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:60:\"https://www.audiosear.ch/developer/api-docs/v1/api-docs.json\";s:7:\"version\";s:3:\"2.0\";}s:14:\"x-providerName\";s:12:\"audiosear.ch\";}"
+host: www.audiosear.ch
+basePath: /api
+paths:
+  /episodes/{id}:
+    get:
+      description: Gets a single episode record by ID
+      parameters:
+      - description: ID of episode to fetch
+        format: integer
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returns an individual episode
+          schema:
+            $ref: '#/definitions/episode'
+      tags:
+      - episodes
+  /episodes/{id}/related:
+    get:
+      description: Returns episodes related to a given episode
+      parameters:
+      - description: ID of episode for which to get related episodes
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Number of episodes to be returned. Must be paired with <b>from</b>.
+        format: int64
+        in: query
+        name: size
+        required: false
+        type: integer
+      - description: Offset of result from which to start (zero-based). Must be paired
+          with <b>size</b>.
+        format: int64
+        in: query
+        name: from
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: An array of episodes
+          schema:
+            $ref: '#/definitions/related_result'
+      tags:
+      - episodes
+  /episodes/{id}/snippet/{time_in_secs}:
+    get:
+      description: Returns a specific moment from an episode with two lines of context.
+      parameters:
+      - description: ID of episode for which to get related episodes
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Timestamp of moment in audio in seconds.
+        format: int64
+        in: path
+        name: time_in_secs
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: An array of episodes
+          schema:
+            $ref: '#/definitions/snippet'
+      tags:
+      - episodes
+  /people/{id}:
+    get:
+      description: This endpoint will return the metadata for a single person.
+      parameters:
+      - description: ID of person to fetch
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: person id response
+          schema:
+            $ref: '#/definitions/person'
+      tags:
+      - people
+  /search/episodes/{query}:
+    get:
+      description: Returns search results
+      parameters:
+      - description: Thing you would like to search for
+        in: path
+        name: query
+        required: true
+        type: string
+      - description: Limit a search by any field value. This example uses <b>network</b>
+          but any field name could be used. E.g. <b>filters[physical_location]=popuparchive</b>
+          or <b>filters[network]=NPR</b> or <b>filters[categories.name]=Talk%20Show</b>.
+          Use <b>filters[with_transcript]</b> to filter out episodes with no transcript.
+        in: query
+        name: filters[network]
+        required: false
+        type: string
+      - description: Sort results by any field value. The default is by the relevancy
+          score (<b>_score</b>). Must be paired with <b>sort_order</b>.
+        in: query
+        name: sort_by
+        required: false
+        type: string
+      - description: Sort direction. Must be either <b>asc</b> or <b>desc</b>. Must
+          be paired with <b>sort_by</b>.
+        in: query
+        name: sort_order
+        required: false
+        type: string
+      - description: Shortcut for specifying sort_by and sort_order in a single value.
+          E.g. <b>date_created desc</b>.
+        in: query
+        name: s
+        required: false
+        type: string
+      - description: The number of results in a single page. Default is <b>10</b>.
+          If present, must be paired with <b>from</b>.
+        in: query
+        name: size
+        required: false
+        type: string
+      - description: Offset when doing manual pagination. Must be paired with <b>size</b>.
+        in: query
+        name: from
+        required: false
+        type: string
+      - description: The page number of results. Default is <b>1</b>.
+        in: query
+        name: page
+        required: false
+        type: string
+      - description: Set to positive integer to include an array of N related episodes
+          for each search result
+        in: query
+        name: related
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returns search results
+          schema:
+            $ref: '#/definitions/results'
+      tags:
+      - episodes
+      - episode search
+  /search/people/{query}:
+    get:
+      description: This endpoint returns search results for People
+      parameters:
+      - description: Thing you would like to search for
+        in: path
+        name: query
+        required: true
+        type: string
+      - description: Limit a search by any field value. This example uses <b>shows.id</b>
+          but any field name could be used. E.g. <b>filters[shows.id]=123</b> or <b>filters[episode.id]=456</b>.
+        in: query
+        name: filters[shows.id]
+        required: false
+        type: string
+      - description: Sort results by any field value. The default is by the relevancy
+          score (<b>_score</b>). Must be paired with <b>sort_order</b>.
+        in: query
+        name: sort_by
+        required: false
+        type: string
+      - description: Sort direction. Must be either <b>asc</b> or <b>desc</b>. Must
+          be paired with <b>sort_by</b>.
+        in: query
+        name: sort_order
+        required: false
+        type: string
+      - description: Shortcut for specifying sort_by and sort_order in a single value.
+          E.g. <b>name desc</b>.
+        in: query
+        name: s
+        required: false
+        type: string
+      - description: The number of results in a single page. Default is <b>10</b>.
+          If present, must be paired with <b>from</b>.
+        in: query
+        name: size
+        required: false
+        type: string
+      - description: Offset when doing manual pagination. Must be paired with <b>size</b>.
+        in: query
+        name: from
+        required: false
+        type: string
+      - description: The page number of results. Default is <b>1</b>.
+        in: query
+        name: page
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returns search results
+          schema:
+            $ref: '#/definitions/person_search_results'
+      tags:
+      - people
+      - people search
+  /search/shows/{query}:
+    get:
+      description: This endpoint returns search results for Shows
+      parameters:
+      - description: Thing you would like to search for
+        in: path
+        name: query
+        required: true
+        type: string
+      - description: Limit a search by any field value. This example uses <b>network</b>
+          but any field name could be used. E.g. <b>filters[network]=NPR</b> or <b>filters[categories.name]=Talk%20Show</b>.
+        in: query
+        name: filters[network]
+        required: false
+        type: string
+      - description: Sort results by any field value. The default is by the relevancy
+          score (<b>_score</b>). Must be paired with <b>sort_order</b>.
+        in: query
+        name: sort_by
+        required: false
+        type: string
+      - description: Sort direction. Must be either <b>asc</b> or <b>desc</b>. Must
+          be paired with <b>sort_by</b>.
+        in: query
+        name: sort_order
+        required: false
+        type: string
+      - description: Shortcut for specifying sort_by and sort_order in a single value.
+          E.g. <b>date_created desc</b>.
+        in: query
+        name: s
+        required: false
+        type: string
+      - description: The number of results in a single page. Default is <b>10</b>.
+          If present, must be paired with <b>from</b>.
+        in: query
+        name: size
+        required: false
+        type: string
+      - description: Offset when doing manual pagination. Must be paired with <b>size</b>.
+        in: query
+        name: from
+        required: false
+        type: string
+      - description: The page number of results. Default is <b>1</b>.
+        in: query
+        name: page
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returns search results
+          schema:
+            $ref: '#/definitions/show_results'
+      tags:
+      - shows
+      - show search
+  /shows/{id}:
+    get:
+      description: This endpoint will return the medatdata for a single show.
+      parameters:
+      - description: ID of show to fetch
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: show id response
+          schema:
+            $ref: '#/definitions/shows'
+      tags:
+      - shows
+  /shows/{id}/related:
+    get:
+      description: Returns shows related to the supplied show.
+      parameters:
+      - description: ID of show to fetch
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: related show response
+          schema:
+            $ref: '#/definitions/show_search_result'
+      tags:
+      - shows
+  /tastemakers/episodes/{n}:
+    get:
+      description: Returns search results based on what podcast tastemakers are talking
+        about.
+      parameters:
+      - default: 10
+        description: Number of results to fetch
+        format: int64
+        in: path
+        name: "n"
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: tastemakers episodes response
+          schema:
+            $ref: '#/definitions/episode_tastemaker'
+      tags:
+      - episodes
+  /tastemakers/episodes/source/{tastemaker_id}/{n}:
+    get:
+      description: Returns search results based on what podcast tastemakers are talking
+        about filtered by tastemaker source.
+      parameters:
+      - description: Recommendation source
+        format: int64
+        in: path
+        name: tastemaker_id
+        required: true
+        type: integer
+      - default: 10
+        description: Number of results to fetch
+        format: int64
+        in: path
+        name: "n"
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: tastemakers episodes response
+          schema:
+            $ref: '#/definitions/episode_tastemaker'
+      tags:
+      - episodes
+  /tastemakers/shows/{n}:
+    get:
+      description: This endpoint returns search results based on what tastemakers
+        are talking about.
+      parameters:
+      - default: 10
+        description: Number of results to fetch
+        format: int64
+        in: path
+        name: "n"
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: tastemakers shows response
+          schema:
+            $ref: '#/definitions/shows'
+      tags:
+      - shows
+  /trending:
+    get:
+      description: Returns episodes related to trending terms from Twitter
+      produces:
+      - application/json
+      responses:
+        200:
+          description: A list of episodes
+          schema:
+            $ref: '#/definitions/trending'
+      tags:
+      - episodes
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":31:{s:9:\"all_shows\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:10:\"categories\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:8:\"category\";s:7:\"wrapped\";b:1;}}s:10:\"created_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Date
+  and time the show was created\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:10:\"deleted_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Date
+  and time the show was deleted\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Show
+  description\";s:4:\"type\";s:6:\"string\";}s:5:\"extra\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"additional
+  information\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"itunes_url\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Link
+  to show on iTunes\";s:4:\"type\";s:6:\"string\";}s:7:\"sc_feed\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Link
+  to SoundCloud user page\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Unique
+  identifier for the show\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Show
+  title\";s:4:\"type\";s:6:\"string\";}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Date
+  and time the show was last updated\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:10:\"created_at\";i:1;s:2:\"id\";i:2;s:5:\"title\";i:3;s:10:\"updated_at\";}}s:10:\"audio_file\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:14:\"current_status\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Status
+  of audio file processing in Audiosear.ch\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Length
+  of audio file\";s:4:\"type\";s:7:\"integer\";}s:8:\"filename\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Audio
+  file name\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Unique
+  identifier for the show's audio file\";s:4:\"type\";s:7:\"integer\";}s:3:\"url\";O:8:\"stdClass\":4:{s:11:\"description\";s:29:\"Absolute
+  paths to audio files\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"url\";s:7:\"wrapped\";b:1;}}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:8:\"filename\";i:2;s:8:\"duration\";i:3;s:14:\"current_status\";i:4;s:3:\"url\";}}s:8:\"category\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"parent_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"ID
+  for parent category\";s:4:\"type\";s:7:\"integer\";}}}s:12:\"contribution\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"episode\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/episode_brief\";s:4:\"type\";s:6:\"object\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"the
+  Role the Person played in the Episode\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"role\";i:1;s:7:\"episode\";}}s:6:\"entity\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"category\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Entity
+  category\";s:4:\"type\";s:6:\"string\";}s:5:\"extra\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Additional
+  information about the entity\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Unique
+  identifier for the entity\";s:4:\"type\";s:7:\"integer\";}s:10:\"identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"OpenCalais
+  link\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Name
+  of the entity\";s:4:\"type\";s:6:\"string\";}s:5:\"score\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Entity
+  confidence\";s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"Entity
+  type\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"score\";i:2;s:8:\"category\";}}s:7:\"episode\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":20:{s:11:\"audio_files\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/audio_file\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Categories\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/category\";}s:4:\"type\";s:5:\"array\";}s:10:\"date_added\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"Date
+  and time episode was incorporated into Audiosear.ch\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:12:\"date_created\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Date
+  show originally aired\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Show
+  description\";s:4:\"type\";s:6:\"string\";}s:16:\"digital_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"URL
+  for episode page\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"Length
+  of audio file in seconds\";s:4:\"type\";s:7:\"integer\";}s:8:\"entities\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/entity\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:5:\"extra\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"additional
+  resource information\";s:4:\"type\";s:6:\"object\";}s:10:\"highlights\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Unique
+  identifier for the show\";s:4:\"type\";s:7:\"integer\";}s:10:\"identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"URL
+  for source audio file\";s:4:\"type\";s:6:\"string\";}s:11:\"image_files\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_file\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:17:\"physical_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Source
+  of episode (e.g., SoundCloud, iTunes\";s:4:\"type\";s:6:\"string\";}s:7:\"show_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"ID
+  of parent show\";s:4:\"type\";s:7:\"integer\";}s:10:\"show_title\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Title
+  of parent show\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:4:\"Tags\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Show
+  title\";s:4:\"type\";s:6:\"string\";}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Date
+  and time item was last updated\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/urls\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:10:\"date_added\";i:3;s:7:\"show_id\";i:4;s:10:\"show_title\";}}s:13:\"episode_brief\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Unique
+  identifier for the Episode\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Episode
+  title\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"self\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"URI
+  to Episode API response\";s:4:\"type\";s:6:\"string\";}s:2:\"ui\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"URI
+  to Episode human response\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:4:\"urls\";}}s:18:\"episode_tastemaker\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":10:{s:11:\"audio_files\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/audio_file\";}s:4:\"type\";s:5:\"array\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Categories\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/category\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Unique
+  identifier for the show\";s:4:\"type\";s:7:\"integer\";}s:10:\"image_urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_urls\";s:4:\"type\";s:6:\"object\";}s:7:\"network\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Network
+  that produces show\";s:4:\"type\";s:6:\"string\";}s:7:\"show_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"ID
+  of parent show\";s:4:\"type\";s:7:\"integer\";}s:10:\"show_title\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Title
+  of parent show\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:4:\"Tags\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Show
+  title\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/urls\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:7:\"show_id\";i:3;s:10:\"show_title\";}}s:7:\"excerpt\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"end_time\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"start_time\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"highlight_transcript\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"end_time\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"End
+  time of highlight\";s:4:\"type\";s:6:\"string\";}s:10:\"start_time\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Start
+  time of highlight\";s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Highlight
+  text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"text\";i:1;s:10:\"start_time\";i:2;s:8:\"end_time\";}}s:10:\"highlights\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Audio
+  file id\";s:4:\"type\";s:7:\"integer\";}s:10:\"transcript\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/highlight_transcript\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"highlight\";s:7:\"wrapped\";b:1;}}s:3:\"url\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"File
+  url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:3:\"url\";i:1;s:2:\"id\";i:2;s:10:\"transcript\";}}s:10:\"image_file\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":4:{s:11:\"description\";s:29:\"Absolute
+  paths to image files\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"url\";s:7:\"wrapped\";b:1;}}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}}s:10:\"image_urls\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"full\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"URL
+  for full-size image\";s:4:\"type\";s:6:\"string\";}s:5:\"thumb\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"URL
+  for thumbail image\";s:4:\"type\";s:6:\"string\";}}}s:6:\"person\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"episodes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/contribution\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"episode\";s:7:\"wrapped\";b:1;}}s:5:\"extra\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"additional
+  resource information\";s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Unique
+  identifier for the person\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"Person
+  name\";s:4:\"type\";s:6:\"string\";}s:5:\"shows\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/show\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"show\";s:7:\"wrapped\";b:1;}}s:4:\"slug\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"URI-safe
+  Person name\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"URI
+  to Person API response\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}}s:20:\"person_search_result\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"episodes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/contribution\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"episode\";s:7:\"wrapped\";b:1;}}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"ID
+  for the Person\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Person's
+  name\";s:4:\"type\";s:6:\"string\";}s:5:\"shows\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:31:\"#/definitions/show_contribution\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"show\";s:7:\"wrapped\";b:1;}}s:4:\"slug\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"URI-safe
+  Person's name\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"URI
+  to Person API response\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}}s:21:\"person_search_results\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"query\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/person_search_result\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:16:\"results_per_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"total_results\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:14:\"recent_episode\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"file_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Audio
+  file name\";s:4:\"type\";s:6:\"string\";}s:11:\"file_status\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Episode
+  processing status\";s:4:\"type\";s:6:\"string\";}s:7:\"item_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Episode
+  unique id\";s:4:\"type\";s:7:\"integer\";}s:9:\"item_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Episode
+  name\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:9:\"item_name\";i:1;s:7:\"item_id\";i:2;s:11:\"file_status\";}}s:14:\"related_result\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":19:{s:11:\"audio_files\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Array
+  of audio files attributes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/audio_file\";}s:4:\"type\";s:5:\"array\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Categories\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/category\";}s:4:\"type\";s:5:\"array\";}s:10:\"date_added\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Date
+  added to Audiosear.ch\";s:4:\"type\";s:6:\"string\";}s:12:\"date_created\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Created
+  date for the item\";s:4:\"type\";s:6:\"string\";}s:16:\"digital_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"External
+  item page of source material\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Length
+  of audio file\";s:4:\"type\";s:7:\"integer\";}s:8:\"entities\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Array
+  of entites related to the item\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/entity\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"ID
+  for the item\";s:4:\"type\";s:7:\"integer\";}s:10:\"identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Link
+  to external permanent url\";s:4:\"type\";s:6:\"string\";}s:10:\"image_urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_urls\";s:4:\"type\";s:6:\"object\";}s:7:\"network\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  Show network\";s:4:\"type\";s:6:\"string\";}s:17:\"physical_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Episode
+  import source\";s:4:\"type\";s:6:\"string\";}s:7:\"show_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Show
+  ID that the returned item belongs to\";s:4:\"type\";s:7:\"integer\";}s:10:\"show_title\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Show
+  title associated with the returned item\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Title
+  for the item\";s:4:\"type\";s:6:\"string\";}s:6:\"topics\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Array
+  of topics related to the item\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Date
+  and time the show was last updated\";s:4:\"type\";s:7:\"integer\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/urls\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:10:\"date_added\";i:3;s:7:\"show_id\";i:4;s:10:\"show_title\";}}s:7:\"results\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"query\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/search_result\";s:4:\"type\";s:5:\"array\";}s:16:\"results_per_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"total_results\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:13:\"search_result\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":22:{s:11:\"audio_files\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Array
+  of audio files attributes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/audio_file\";}s:4:\"type\";s:5:\"array\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Categories\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/category\";}s:4:\"type\";s:5:\"array\";}s:10:\"date_added\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Date
+  added to Audiosear.ch\";s:4:\"type\";s:6:\"string\";}s:12:\"date_created\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Created
+  date for the item\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"description
+  of the audio file\";s:4:\"type\";s:6:\"string\";}s:16:\"digital_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"External
+  item page of source material\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Length
+  of audio file\";s:4:\"type\";s:7:\"integer\";}s:8:\"entities\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Array
+  of entites related to the item\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/entity\";}s:4:\"type\";s:5:\"array\";}s:8:\"excerpts\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/excerpt\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:10:\"highlights\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/highlights\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"ID
+  for the item\";s:4:\"type\";s:7:\"integer\";}s:10:\"identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Link
+  to external permanent url\";s:4:\"type\";s:6:\"string\";}s:10:\"image_urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_urls\";s:4:\"type\";s:6:\"object\";}s:9:\"locations\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"network\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  Show network\";s:4:\"type\";s:6:\"string\";}s:17:\"physical_location\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Episode
+  import source\";s:4:\"type\";s:6:\"string\";}s:7:\"show_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Show
+  ID that the returned item belongs to\";s:4:\"type\";s:7:\"integer\";}s:10:\"show_title\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Show
+  title associated with the returned item\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Title
+  for the item\";s:4:\"type\";s:6:\"string\";}s:6:\"topics\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"Array
+  of topics related to the item\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Date
+  and time the show was last updated\";s:4:\"type\";s:7:\"integer\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/urls\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:10:\"date_added\";i:3;s:7:\"show_id\";i:4;s:10:\"show_title\";}}s:4:\"show\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:10:\"categories\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:22:\"#/definitions/category\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"description
+  of the show\";s:4:\"type\";s:6:\"string\";}s:11:\"episode_ids\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";s:5:\"array\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"episode_id\";s:7:\"wrapped\";b:1;}}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"unique
+  identifier for the show\";s:4:\"type\";s:7:\"integer\";}s:11:\"image_files\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_file\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"network\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"number_of_episodes\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Number
+  of episodes available for this show\";s:4:\"type\";s:7:\"integer\";}s:15:\"recent_episodes\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:28:\"#/definitions/recent_episode\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"sc_feed\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"SoundCloud
+  URL\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"title
+  of the show\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"Relative
+  URL to api endpoint\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}s:12:\"web_profiles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"title\";}}s:10:\"show_brief\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Unique
+  identifier for the Show\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Show
+  title\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"self\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"URI
+  to Show API response\";s:4:\"type\";s:6:\"string\";}s:2:\"ui\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"URI
+  to Show human response\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"title\";i:2;s:4:\"urls\";}}s:17:\"show_contribution\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"the
+  Role the Person played in the Show\";s:4:\"type\";s:6:\"string\";}s:4:\"show\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/show_brief\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:2:{i:0;s:4:\"role\";i:1;s:4:\"show\";}}s:12:\"show_results\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"query\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/show_search_result\";s:4:\"type\";s:5:\"array\";}s:16:\"results_per_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"total_results\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:18:\"show_search_result\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:10:\"categories\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"description
+  of the show\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"unique
+  identifier for the show\";s:4:\"type\";s:7:\"integer\";}s:11:\"image_files\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_file\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"network\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Distribution
+  network for show\";s:4:\"type\";s:6:\"string\";}s:7:\"sc_feed\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"SoundCloud
+  URL\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"title
+  of the show\";s:4:\"type\";s:6:\"string\";}s:12:\"web_profiles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"title\";}}s:5:\"shows\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"query\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/show\";s:4:\"type\";s:5:\"array\";}s:16:\"results_per_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"total_results\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:20:\"simple_search_result\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":9:{s:11:\"audio_files\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Array
+  of audio files attributes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/audio_file\";}s:4:\"type\";s:5:\"array\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Categories\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/category\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"ID
+  for the item\";s:4:\"type\";s:7:\"integer\";}s:10:\"image_urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:24:\"#/definitions/image_urls\";s:4:\"type\";s:6:\"object\";}s:7:\"network\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  Show network\";s:4:\"type\";s:6:\"string\";}s:7:\"show_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Show
+  ID that the returned item belongs to\";s:4:\"type\";s:7:\"integer\";}s:10:\"show_title\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Show
+  title associated with the returned item\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Title
+  for the item\";s:4:\"type\";s:6:\"string\";}s:4:\"urls\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:18:\"#/definitions/urls\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"title\";}}s:7:\"snippet\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"end_time\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"start_time\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:25:\"source_episode_tastemaker\";O:8:\"stdClass\":0:{}s:8:\"trending\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:16:\"related_episodes\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/simple_search_result\";s:4:\"type\";s:5:\"array\";}s:5:\"trend\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Name
+  of trend\";s:4:\"type\";s:6:\"string\";}s:11:\"twitter_url\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Link
+  to Twitter search results for the trend\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"trend\";i:1;s:11:\"twitter_url\";}}s:4:\"urls\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"self\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"API
+  URL\";s:4:\"type\";s:6:\"string\";}s:2:\"ui\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Audiosear.ch
+  URL\";s:4:\"type\";s:6:\"string\";}}}}"
+...

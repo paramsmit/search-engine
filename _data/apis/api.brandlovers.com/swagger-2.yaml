@@ -1,0 +1,1757 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:30:\"BrandLovers Marketplace
+  API V1\";s:11:\"description\";s:306:\"Allows sellers to: 1) Load products definitions
+  to the BrandLovers marktplace. 2) Receive and update orders status. 3) Receive and
+  update shipping information. 4) Receive and update customer tickets. All requests
+  consume and return application/json content. All request must be authenticated and
+  use HTTPS.\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: api.brandlovers.com
+basePath: /marketplace/v1
+paths:
+  /products:
+    post:
+      responses:
+        200:
+          description: Sucess! Server received your request and will start background
+            processing.
+        400:
+          description: Bad Request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: This enpoint to creates new products in the Marketplace using `skuSellerId`
+        as a primary key. This enpoint expects a json document with array of products.
+        The server will load each product as an individual item that can be manipulated
+        using your own `skuSellerId`. All requests to This endpoint are idenpontent
+        with respect of the `skuSellerId`, this means that once a `skuSellerId` is
+        created it cannot be re-created using this tool. In order to update use the
+        PUT method with the correct `skuSellerId`. You can also use the POST /product
+        to create a single product per request
+      tags:
+      - products
+      summary: Allows new products from the seller to be loaded into the marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: JSON with a list of new products to be updloaded to the platform
+        name: products
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Product'
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetProductsResponse'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Get a list of my products loaded into the Marketplace. This dosen't
+        means that products are eligible for sale, just that they are loaded in the
+        database.
+      tags:
+      - products
+      summary: Returns a list of products loaded into BrandLovers Marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+      - authorization: []
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number of items to retun. Defaults to 100. Max alowed is 200.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /product/{skuSellerId}:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetProduct'
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+        404:
+          description: Object not found. In general this means a invalid skuSellerId.
+      description: Returns detailed information of a single product with the seller
+        `skuSellerId`. This service will return a json document with product detail,
+        status, price, invetory among other infomarion availble in the Brand Lovers
+        marketplace
+      tags:
+      - product
+      summary: Returns details of a single product using the seller `skuSellerId`
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+      - authorization: []
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: SKU ID do Lojista.
+        name: skuSellerId
+        required: true
+        type: string
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+        404:
+          description: Object not found.
+      description: Update a single product information such as name, brand, attribute,
+        dimension, etc. Please note that data from your request will be merged with
+        existing data. This allows you to easliy update only certain fields without
+        the need to re-inform the other unchanged fields. For example in order to
+        update just the field `title` simply send just this field with new information,
+        remaining fields will not be changed. In order to erase an item the field
+        must be informed as its default value, for example in order to erase the `videos`
+        field must be sent as videos:[]. The `skuSellerId` field is always mandatory
+        in the path and in the product json Object.
+      tags:
+      - products
+      summary: Update product details
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+      - authorization: []
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Unique Product Id (SKU) in the seller system that will be updated.
+        name: skuSellerId
+        required: true
+        type: string
+      - in: body
+        description: New product information.
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ProductUpdate'
+  /product:
+    post:
+      responses:
+        200:
+          description: Sucess! Server received your request and will start background
+            processing.
+        400:
+          description: Bad Request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Use this enpoint to create a single new product to the Marketplace.
+        This enpoint expects a json document with one product. If you whant to upload
+        multiple products in a single API call use POST /products method. The server
+        will load each product as an individual item that can be manipulated using
+        your own `skuSellerId`. This system is idenpontent, this means that once a
+        `skuSellerId` is created it cannot be re-created using this tool. In order
+        to update, edit a product use the PUT method with the correct reference to
+        your `skuSellerId`
+      tags:
+      - product
+      summary: Create a new product to the marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: New Produt that will be create
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+  /products/status:
+    get:
+      responses:
+        200:
+          description: Success fetching results.
+          schema:
+            $ref: '#/definitions/GetSellerProductsStatus'
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list with seller products status. Please note that this
+        endpoint will not return all details of each product, just the skuSellerId
+        and status. Also please note that this endpoint will return 250 products per
+        call. For full details of a given procuct use GET /product/{skuSellerId}
+      tags:
+      - products
+      summary: Returns seller products status in the marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number of items to return in this query. Defaults to 250. Maximum
+          1000. Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Bulk enable/disable products in the marketplace. This endpoint
+        requires an array of objects with the seller SKU `skuSellerId` and boolean
+        value that defines if the product is enabled or not for sale. This endpoint
+        can be used to set a single product or many products.
+      tags:
+      - products
+      summary: Bulk enable/disable products in the marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: List of seller products with new status information
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ProductStatusUpdate'
+  /products/prices:
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Allows bulk update of product prices. This endpoint expects a json
+        document with an array of products with the `skuSellerId` and the new price.
+        Server will process each new product update individually and will ackwlodge
+        as much updates as possible, even if a single product update fails. After
+        this request you can query product final status with GET /product/status
+      tags:
+      - products
+      summary: Allows bulk update of product prices.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: Data for bulk product price update
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/SellerItemPrices'
+  /products/stocks:
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Bulk product stock update. This endpoint expect a array of products
+        `skuSellerId` with new inventory data
+      tags:
+      - products
+      summary: Bulk product stock update
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: Array of product SKUs.
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ProductStock'
+  /product/{skuSellerId}/status:
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Update product status in the Marketplace. Set to `true` to enable,
+        `false` to disable sale.
+      tags:
+      - product
+      summary: Enable/disable a single product in the Marketplace
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Unique Product Id (SKU) in the seller system
+        name: skuSellerId
+        required: true
+        type: string
+      - in: body
+        description: Seller SKU that will be enabled or disabled
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/SellerItemStatus'
+  /product/{skuSellerId}/stock:
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Update a single product inventory information. Products with zero
+        stock will not be eligible for sale.
+      tags:
+      - product
+      summary: Update a single product stock
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Unique Product Id (SKU) in the seller system that will be updated
+        name: skuSellerId
+        required: true
+        type: string
+      - in: body
+        description: New product inventory information
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Stock'
+  /product/{skuSellerId}/prices:
+    put:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+      description: Allows seller to set the SKU prices (MSRP and/or offer price).
+        All prices must be informed in cents. No commas or periods are accepeted.
+        For example one dollar should be informed as 100. Same as $1,2345.67 must
+        be informed solely as 1234567
+      tags:
+      - product
+      summary: Allows seller to update prices of a single SKU
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Product SKU
+        name: skuSellerId
+        required: true
+        type: string
+      - in: body
+        description: JSON document with the SKU price
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ProductPrice'
+  /products/status/selling:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetProductsStatusSelling'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns products that are successfully listed for sale.
+      tags:
+      - products
+      summary: Returns products that are successfully listed for sale.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Retuns a list of orders associated with this seller. The list is
+        ordered by dateCreated.
+      tags:
+      - orders
+      summary: Returns orders details
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/shipments/delivered:
+    post:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Bulk update of order shipments status. This alows to inform multiple
+        shipments status
+      tags:
+      - orders
+      summary: Bulk update of order shipments
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: JSON body with list of shipments to be updated.
+        name: ordersshipments
+        required: true
+        schema:
+          $ref: '#/definitions/OrdersShipments'
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrdersShipments'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns list of shipments. By default this will return list of
+        the last shipments ordered by dateCreated, folowed by last update date.
+      tags:
+      - orders
+      summary: Returns list of shipments
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Query by shippment status.
+        name: status
+        required: false
+        type: string
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/shipments/shipped:
+    post:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Allows bulk updates of orders shippments.
+      tags:
+      - orders
+      summary: Bulk update of order shipments
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        description: JSON payload with list of shippments of orders.
+        name: ordersshipments
+        required: true
+        schema:
+          $ref: '#/definitions/OrdersShipments'
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrdersShipments'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of shipments shipped. By Default returns items ordered
+        by dateCreated folowed by last update
+      tags:
+      - orders
+      summary: Returns a list of shipments shipped
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Product status.
+        name: status
+        required: false
+        type: string
+        enum:
+        - NEW
+        - APPROVED
+        - DECLINED
+        - PENDING
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/status/approved:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of approved orders. Orders in the `approved` state
+        must be fullfiled imediadetelly.
+      tags:
+      - orders
+      summary: Return list of approved orders
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 100,
+          max 200. Use this in conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/status/canceled:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list with canceled orders. Canceled orders should not
+        be fullfiled.
+      tags:
+      - orders
+      summary: Returns lists of canceled orders
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Default 100,
+          max 250. Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        default: 100
+        required: false
+        type: integer
+  /orders/status/delivered:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of orders successfully delivered associated with
+        this seller.
+      tags:
+      - orders
+      summary: Returns a list of orders successfully delivered associated with this
+        seller.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/status/new:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of orders flagged as new. New orders should not
+        be fullfiled until marketplace flags them as approved.
+      tags:
+      - orders
+      summary: Returns a list of orders flagged as new.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 100.
+          Max 250. Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        default: 100
+        required: false
+        type: integer
+  /orders/status/partiallyDelivered:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of partially deliverd orders. This is a list of
+        orders with items shipped but with not all items ackwlodged as deliverd
+      tags:
+      - orders
+      summary: Returns a list of partially deliverd orders
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 100.
+          Max 250. Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        default: 100
+        required: false
+        type: integer
+  /orders/status/partiallySent:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list of orders that contain one (or more) items that
+        where not shipped. This will list the entire order as well the items with
+        peding shipment. Use this service to track orders that need to be fullfiled.
+      tags:
+      - orders
+      summary: Returns a list of orders partially fullfiled
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 100.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /orders/status/sent:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetOrders'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+      description: Returns a list with orders completely fullfiled, this means orders
+        with all items sent. Orders will ordered by dateCreated fowllowed by last
+        update
+      tags:
+      - orders
+      summary: Returns a list with orders fully sent
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /order/{orderId}:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/Order'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: Returns all details of a single order, including last status, items
+        shipped or not.
+      tags:
+      - order
+      summary: Returns all details of a order
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Unique Id of this order.
+        name: orderId
+        required: true
+        type: string
+  /order/{orderId}/shipment/cancel:
+    post:
+      responses:
+        200:
+          description: success.
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: Confirm shipment canceletion (when requested by the customer) or
+        failure to deliver one shipment
+      tags:
+      - order
+      summary: Confirm shipment canceletion (when requested by the customer) or failure
+        to deliver
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/NewTrackingRefund'
+      - in: path
+        description: Unique Order Id
+        name: orderId
+        required: true
+        type: string
+  /order/{orderId}/shipment/delivered:
+    post:
+      responses:
+        200:
+          description: Sucess!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: Confirms that a shipment was delivered. Must inform quantity of
+        successfully deliverd items even if items deliverd was less than the original
+        order
+      tags:
+      - order
+      summary: Confirms that a shipment was delivered
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Newshipmentstatus'
+      - in: path
+        description: Unique Order Id
+        name: orderId
+        required: true
+        type: string
+  /order/{orderId}/shipment/exchange:
+    post:
+      responses:
+        200:
+          description: Sucess!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: This enpoint to confirm item exchange when failure to deliver or
+        requested by the customer. All customer requests are tracket via trouble tickets
+      tags:
+      - order
+      summary: Confirm item exchange
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/NewTrackingRefund'
+      - in: path
+        description: Unique Order Id
+        name: orderId
+        required: true
+        type: string
+  /order/{orderId}/shipment/return:
+    post:
+      responses:
+        200:
+          description: Sucess!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: Use this endpoint to return and refund items froma a order. In
+        order to fully return an order list all items and applicate quantity.
+      tags:
+      - order
+      summary: Confirm order item return and refund
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/NewTrackingRefund'
+      - in: path
+        description: Order unique Id
+        name: orderId
+        required: true
+        type: string
+  /order/{orderId}/shipment/sent:
+    post:
+      responses:
+        200:
+          description: Sucess!
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        404:
+          description: Object not found. Was not able to find orderId
+      description: Updates order to include shipment shiped information. This endpoint
+        can be used to include a single or multiple shipments for any give order.
+        In order to inform that all items of a order where shipped list all of them,
+        including applicable quantities in the payload.
+      tags:
+      - order
+      summary: Update new order to include shipment information
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Newshipmentstatus'
+      - in: path
+        description: Unique Order Id
+        name: orderId
+        required: true
+        type: string
+  /tickets:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetTickets'
+        400:
+          description: Bad request.
+      description: Allows seller to receive and status, queries, requests and complaints
+        from customers. As well related messages
+      tags:
+      - tickets
+      summary: Get customers trouble tickets
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: query
+        description: Query by trouble ticket status
+        name: status
+        required: false
+        type: string
+        enum:
+        - OPEN
+        - REOPENED
+        - CLOSED
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /ticket:
+    post:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+      description: Use this service to create a new trouble ticket. Use this to include
+        relevant information about the order, comunicate with the customer or marketplace
+        team. Whenever possible message will be pushed to Mobile first. This is the
+        primary mean of comunicaiton with the customer regarding orders, shippments,
+        shippments status. New tickets will be automatically be set to 'OPEN'. Trouble
+        tickets need to be associated with a orderId or customer. New tickets can
+        optionally include a new message.
+      tags:
+      - tickets
+      summary: Creates a new trouble ticket
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: body
+        description: JSON object with new trouble ticket
+        name: newTicket
+        required: true
+        schema:
+          $ref: '#/definitions/NewTicket'
+  /ticket/{ticketId}/messages:
+    get:
+      responses:
+        200:
+          description: Success!
+          schema:
+            $ref: '#/definitions/GetTicketMessages'
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Access denied. You can only access your trouble tickets
+      description: Returns trouble ticket history with all messages exchanged. Only
+        tickets related to your seller will be returned. Attempt to read other tickets
+        will return 403 (acess denied).
+      tags:
+      - tickets
+      summary: Get trouble ticket messages
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Trouble ticket ID.
+        name: ticketId
+        required: true
+        type: string
+      - in: query
+        description: Number or items to skip when executing query. List starts at
+          zero. If omitted will default to zero. Use this conjuction with `limit`
+          to paginate across the results.
+        name: offset
+        required: false
+        type: integer
+      - in: query
+        description: Number or items to return when executing query. Defaults to 10.
+          Use this conjuction with `offset` to paginate across the results.
+        name: limit
+        required: false
+        type: integer
+  /ticket/{ticketId}/message:
+    post:
+      responses:
+        200:
+          description: Success!
+        400:
+          description: Bad request.
+        404:
+          description: Object not found.
+      description: Add a new message to this trouble ticket. Messages can be `CUSTOMER`
+        (customer will be able to see it) or `INTERNAL`.
+      tags:
+      - tickets
+      summary: Add new message to trouble ticket
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Trouble ticket ID.
+        name: ticketId
+        required: true
+        type: string
+      - in: body
+        description: New message object to append to trouble ticket.
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/NewTicketMessage'
+  /ticket/{ticketId}/status:
+    put:
+      responses:
+        200:
+          description: successfully received transaction
+        400:
+          description: Bad request.
+        401:
+          description: Access denied. You're not authenticated or token expired. Check
+            your request header the `authorization` field is required.
+        403:
+          description: Server refused to process your request. Please check the API
+            SLA and reduce number of requests per second.
+        404:
+          description: Object not found.
+      description: Alows the seller to update the status of a trouble ticket
+      tags:
+      - tickets
+      summary: Update trouble ticket status
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: header
+        description: Authorization token. The Authorization token can be found in
+          your Admin console.
+        name: authorization
+        type: string
+        required: true
+      - in: path
+        description: Trouble ticket unique identification
+        name: ticketId
+        required: true
+        type: string
+      - in: body
+        description: New trouble ticket status
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/TicketStatus'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":52:{s:8:\"Metadata\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"JSON
+  attribute key\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"JSON
+  object value\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Error
+  type\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Friendly
+  message describing the error\";}s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"When
+  applicabe will include `skuSellerId` related to this error\";}}}s:19:\"GetProductsResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"skus\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/GetProduct\";}}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}s:11:\"description\";s:21:\"Payload
+  with response\";}}}s:7:\"Product\";O:8:\"stdClass\":2:{s:8:\"required\";a:9:{i:0;s:11:\"skuSellerId\";i:1;s:5:\"title\";i:2;s:11:\"description\";i:3;s:5:\"brand\";i:4;s:5:\"price\";i:5;s:10:\"categories\";i:6;s:5:\"stock\";i:7;s:6:\"images\";i:8;s:10:\"attributes\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:9:\"productId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:91:\"Brand
+  Lovers Product ID. Use this to suggest a product association. This field is optional.\";}s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:14:\"productGroupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:214:\"Unique
+  Product Group ID. Products with the same `productGroupId` will be grouped and displayed
+  as a unique entry. Use `productGroupId` to group diferent SKUs that represent diferent
+  colors, sizes, capacities, etc..\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"Product
+  name as advertised by manufacturer. This how the product will be displayed in the
+  Marketplace\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Product
+  description.\";}s:5:\"brand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Brand
+  name\";}s:4:\"gtin\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:50:\"Array
+  of product EAN and/or ISBN and/or ASIN codes\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:48:\"Array
+  of categories associated with this product\";}s:6:\"images\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:77:\"List
+  of valid Product image URLs. HTTP or HTTPS are valid. HTTPS is prefered.\";}s:6:\"videos\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:96:\"List
+  of videos de URLs associated with this product. HTTP or HTTPS are valid. HTTPS is
+  prefered.\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}s:5:\"stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:140:\"Number
+  of products availble for sale from the seller. Each new successfull order will automatically
+  reduce the number of products available.\";}s:10:\"dimensions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dimensions\";}s:8:\"giftWrap\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/GiftWrap\";}s:10:\"attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:137:\"List
+  of `key` `value` attributes of this product. This is very important for search and
+  SEO optmization. Include all relevant information\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductAttribute\";}}}}s:13:\"ProductUpdate\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:11:\"skuSellerId\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:9:\"productId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Brand
+  Lovers Product Id. Use this to recommend a product association\";}s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:14:\"productGroupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:214:\"Unique
+  Product Group ID. Products with the same `productGroupId` will be grouped and displayed
+  as a unique entry. Use `productGroupId` to group diferent SKUs that represent diferent
+  colors, sizes, capacities, etc..\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"Product
+  name as advertised by manufacturer. This how the product will be displayed in the
+  Marketplace\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Product
+  text description.\";}s:5:\"brand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Brand
+  name\";}s:4:\"gtin\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:50:\"Array
+  of product EAN and/or ISBN and/or ASIN codes\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:48:\"Array
+  of categories associated with this product\";}s:6:\"images\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:77:\"List
+  of valid Product image URLs. HTTP or HTTPS are valid. HTTPS is prefered.\";}s:6:\"videos\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:96:\"List
+  of videos de URLs associated with this product. HTTP or HTTPS are valid. HTTPS is
+  prefered.\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}s:5:\"stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:140:\"Number
+  of products availble for sale from the seller. Each new successfull order will automatically
+  reduce the number of products available.\";}s:10:\"dimensions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dimensions\";}s:8:\"giftWrap\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/GiftWrap\";}s:10:\"attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:137:\"List
+  of `key` `value` attributes of this product. This is very important for search and
+  SEO optmization. Include all relevant information\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductAttribute\";}}}}s:10:\"GetProduct\";O:8:\"stdClass\":2:{s:8:\"required\";a:10:{i:0;s:11:\"skuSellerId\";i:1;s:5:\"title\";i:2;s:11:\"description\";i:3;s:5:\"brand\";i:4;s:5:\"price\";i:5;s:10:\"categories\";i:6;s:10:\"attributes\";i:7;s:5:\"stock\";i:8;s:6:\"images\";i:9;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:14:\"productGroupId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:214:\"Unique
+  Product Group ID. Products with the same `productGroupId` will be grouped and displayed
+  as a unique entry. Use `productGroupId` to group diferent SKUs that represent diferent
+  colors, sizes, capacities, etc..\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"Product
+  name as advertised by manufacturer. This how the product will be displayed in the
+  Marketplace\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Product
+  text description.\";}s:5:\"brand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Brand
+  name\";}s:4:\"gtin\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:50:\"Array
+  of product EAN and/or ISBN and/or ASIN codes\";}s:10:\"categories\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:48:\"Array
+  of categories associated with this product\";}s:6:\"images\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:77:\"List
+  of valid Product image URLs. HTTP or HTTPS are valid. HTTPS is prefered.\";}s:6:\"videos\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:96:\"List
+  of videos de URLs associated with this product. HTTP or HTTPS are valid. HTTPS is
+  prefered.\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}s:5:\"stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:140:\"Number
+  of products availble for sale from the seller. Each new successfull order will automatically
+  reduce the number of products available.\";}s:10:\"dimensions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dimensions\";}s:8:\"giftWrap\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/GiftWrap\";}s:10:\"attributes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductAttribute\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Product
+  status\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}}s:16:\"ProductAttribute\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Attribute
+  name\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Attribute
+  value\";}}}s:10:\"Dimensions\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:6:\"weight\";i:1;s:6:\"length\";i:2;s:5:\"width\";i:3;s:6:\"height\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"weight\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:179:\"Product
+  weight in Grams. No commas or periods are accepeted. For example one killo must
+  be informed as 1000. Another example 1 Kilo and 234 grams should be informed solely
+  as 1234\";}s:6:\"length\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:198:\"Product
+  length in millimeters. No commas or periods are accepeted. For example one meter
+  produc must be informed as 1000. Another example 1 meter and 23 centimeters should
+  be informed solely as 1230\";}s:5:\"width\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:197:\"Product
+  width in millimeters. No commas or periods are accepeted. For example one meter
+  produc must be informed as 1000. Another example 1 meter and 23 centimeters should
+  be informed solely as 1230\";}s:6:\"height\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:198:\"Product
+  height in millimeters. No commas or periods are accepeted. For example one meter
+  produc must be informed as 1000. Another example 1 meter and 23 centimeters should
+  be informed solely as 1230\";}}}s:8:\"GiftWrap\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:9:\"available\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"available\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:62:\"Flag
+  that defines if this product is eligible for giftwrapping\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:201:\"Amount
+  charged for gift wrap. All prices must be provided in cents. No commas or periods
+  are accepeted. For example one dollar should be informed as 100. $1,2345.67 should
+  be informed solely as 1234567\";}s:14:\"messageSupport\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:61:\"Flag
+  that defines if seller supports giftwrapp with a message\";}}}s:18:\"GetOrdersShipments\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"shipments\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:22:\"Order
+  Shippment Status\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/OrderShippmentStatus\";}}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}s:11:\"description\";s:16:\"Response
+  payload\";}}}s:20:\"OrderShippmentStatus\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"shipmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Shippment
+  unique Id\";}s:11:\"trackingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Courier
+  tracking URL\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrderItemReference\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Shipment
+  status\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}}s:15:\"OrdersShipments\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"shipments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/OrderShippment\";}}}}s:14:\"OrderShippment\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:5:\"order\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Order
+  unique Id\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrderItemReference\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Shipment
+  status.\";}s:10:\"occurredAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:35:\"Date
+  that this shippment was shiped\";}s:11:\"trackingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Courier
+  tracking URL\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Courier
+  unique trackign Id associated with this shipment\";}s:16:\"sellerShipmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"Unique
+  Seller shipment Id. This must be unique across all orders and shipments\";}s:3:\"cte\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Conhecimento
+  de Transporte Elet\xF4niconico\";}s:7:\"courier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Courier\";}s:7:\"invoice\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Invoice\";}}}s:18:\"OrderItemReference\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:11:\"skuSellerId\";i:1;s:8:\"quantity\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"Unique
+  Product Id (SKU) in the seller system. This is the key that defines witch product
+  will be updated\";}s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Quantity
+  of items\";}}}s:23:\"GetSellerProductsStatus\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"skus\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:38:\"Status
+  of the products from the seller\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/GetSellerProductStatus\";}}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}s:11:\"description\";s:16:\"Response
+  payload\";}}}s:22:\"GetSellerProductStatus\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:11:\"skuSellerId\";i:1;s:6:\"status\";i:2;s:5:\"price\";i:3;s:5:\"stock\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Unique
+  Product Id (SKU) in the seller system.\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Product
+  status in the marketplace\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}s:5:\"stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:140:\"Number
+  of products availble for sale from the seller. Each new successfull order will automatically
+  reduce the number of products available.\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}}s:19:\"ProductStatusUpdate\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:11:\"skuSellerId\";i:1;s:6:\"active\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Seller
+  product unique Id that will be updated\";}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:74:\"Defines
+  if this product is ready for sale. Active `true`, disabled `false`\";}}}s:16:\"SellerItemStatus\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:6:\"active\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:75:\"Defines
+  if this product is ready for sale. Active `true`, disabled `false` \";}}}s:16:\"SellerItemPrices\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:11:\"skuSellerId\";i:1;s:5:\"price\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  product Id from seller that will be updated\";}s:5:\"price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}}}s:12:\"ProductPrice\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:7:\"default\";i:1;s:5:\"offer\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:277:\"List
+  price, also known as MSRP (Manufacturer Suggest Retail Price) or the recommended
+  retail price (RRP). All prices must be provided in cents. No commas or periods are
+  accepeted. For example one dollar should be informed as 100. $1,2345.67 should be
+  informed solely as 1234567\";}s:5:\"offer\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:232:\"Product
+  price. This is what will be offered to the customer. All prices must be provided
+  in cents. No commas or periods are accepeted. For example one dollar should be informed
+  as 100. $1,2345.67 should be informed solely as 1234567\";}}}s:12:\"ProductStock\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:11:\"skuSellerId\";i:1;s:6:\"stocks\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:6:\"stocks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:20:\"Invetory
+  information\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Stock\";}}}}s:5:\"Stock\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:8:\"quantity\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:15:\"Stock
+  available\";}s:16:\"crossDockingTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"default\";i:0;s:11:\"description\";s:216:\"Time
+  it will take to manufacture, prepare or setup this product. Time must be provided
+  in seconds. For example 1 day should be informed as 86400. This time will be included
+  in the product ETA informed to the customer\";}}}s:7:\"Courier\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Courier
+  name\";}s:5:\"taxID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Courier
+  taxId information. For example CNPJ\";}}}s:7:\"Invoice\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:6:\"number\";i:1;s:5:\"serie\";i:2;s:9:\"accessKey\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"cnpj\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:124:\"CNPJ
+  respons\xE1vel pelo envio dos produtos. Pode ser diferente caso a empresa possua
+  diversos Centros de Distribui\xE7\xE3o (CDs)\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"N\xFAmero
+  da Nota Fiscal\";}s:5:\"serie\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"N\xFAmero
+  de serie da Nota Fiscal\";}s:8:\"issuedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:31:\"Data
+  de emiss\xE3o da Nota Fiscal\";}s:9:\"accessKey\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"N\xFAmero
+  da chave de acesso \xE0 nota fiscal. A chave possui 44 d\xEDgitos e cont\xE9m todas
+  as informa\xE7\xF5es da DANFE\";}s:7:\"linkXml\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Url
+  para consulta da NFE\";}s:9:\"linkDanfe\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Url
+  para consulta da DANFE\";}}}s:24:\"GetProductsStatusSelling\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:11:\"sellerItems\";i:1;s:8:\"metadata\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"sellerItems\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/SellerItem\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}}s:10:\"SellerItem\";O:8:\"stdClass\":2:{s:8:\"required\";a:10:{i:0;s:11:\"skuSellerId\";i:1;s:5:\"title\";i:2;s:5:\"brand\";i:3;s:6:\"status\";i:4;s:6:\"prices\";i:5;s:6:\"stocks\";i:6;s:10:\"attributes\";i:7;s:7:\"product\";i:8;s:6:\"images\";i:9;s:10:\"dimensions\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"Product
+  name as advertised by manufacturer. This how the product will be displayed in the
+  Marketplace\";}s:5:\"brand\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Brand
+  name\";}s:4:\"gtin\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:50:\"Array
+  of product EAN and/or ISBN and/or ASIN codes\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:63:\"Product
+  status for each marketplace that this product is listed\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/SellerItemStatus\";}}s:6:\"prices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:66:\"Price
+  information for each marketplace that this product is listed\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ProductPrice\";}}s:6:\"stocks\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:69:\"Invetory
+  information for each marketplace that this product is listed\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ControlledStock\";}}s:4:\"urls\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:49:\"List
+  of URLs where the product is listed for sale\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ProductSiteReference\";}}s:6:\"images\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:33:\"List
+  of valid Product image URLs.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Image\";}}s:7:\"product\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductReference\";}s:10:\"dimensions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dimensions\";}s:8:\"giftWrap\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/GiftWrap\";}s:10:\"attributes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProductAttribute\";}}}}s:16:\"ProductReference\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"ID
+  do recurso\";}s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Link
+  para acesso ao recurso\";}}}s:15:\"ControlledStock\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:8:\"quantity\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"Quantity
+  of product available for sale\";}s:8:\"reserved\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:86:\"Locked
+  product invetory for orders that are not approved and are not ready to fullfil.\";}s:16:\"crossDockingTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"default\";i:0;s:11:\"description\";s:208:\"Time
+  it will take to manufacture, prepare or setup this product. Time must be provided
+  in seconds. For example 1 day should be informed as 86400. This time will be included
+  in the ETA informed to the customer\";}}}s:5:\"Image\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:4:\"type\";i:1;s:4:\"main\";i:2;s:3:\"url\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Image
+  format\";}s:4:\"main\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:18:\"Sets
+  as main image\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Image
+  URL\";}}}s:20:\"ProductSiteReference\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:3:\"url\";i:1;s:11:\"skuSellerId\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Seller
+  unique product Id\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Link
+  do produto no site\";}}}s:9:\"GetOrders\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:6:\"orders\";i:1;s:8:\"metadata\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"orders\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Order\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}}s:5:\"Order\";O:8:\"stdClass\":2:{s:8:\"required\";a:15:{i:0;s:7:\"orderId\";i:1;s:18:\"orderMarketplaceId\";i:2;s:9:\"createdAt\";i:3;s:9:\"updatedAt\";i:4;s:6:\"status\";i:5;s:11:\"totalAmount\";i:6;s:16:\"totalItemsAmount\";i:7;s:19:\"totalShippingAmount\";i:8;s:19:\"totalDiscountAmount\";i:9;s:7:\"freight\";i:10;s:8:\"customer\";i:11;s:14:\"billingAddress\";i:12;s:5:\"items\";i:13;s:15:\"shippingAddress\";i:14;s:9:\"shipments\";}s:10:\"properties\";O:8:\"stdClass\":17:{s:7:\"orderId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Unique
+  order Id (related to this seller)\";}s:18:\"orderMarketplaceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"Unique
+  Order Id that will be displayed to the customer. This Id is not the same as `orderId`\";}s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:32:\"Date
+  that this order was created\";}s:10:\"approvedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"Date
+  that this order was approved for fullfilment\";}s:9:\"updatedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:30:\"Last
+  update data of this order\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Order
+  status\";}s:11:\"totalAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:202:\"Order
+  total in cents, this is what the customer will be charged for. No commas or periods
+  are accepeted. For example one dollar should be informed as 100. $1,2345.67 should
+  be informed solely as 1234567\";}s:16:\"totalItemsAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:168:\"Order
+  items total amount in cents. No commas or periods are accepeted. For example one
+  dollar should be informed as 100. $1,2345.67 should be informed solely as 1234567\";}s:19:\"totalShippingAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:163:\"Total
+  shipments amount items. No commas or periods are accepeted. For example one dollar
+  should be informed as 100. $1,2345.67 should be informed solely as 1234567\";}s:19:\"totalDiscountAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:165:\"Total
+  order discounts in cents. No commas or periods are accepeted. For example one dollar
+  should be informed as 100. $1,2345.67 should be informed solely as 1234567\";}s:14:\"billingAddress\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:8:\"customer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Customer\";}s:7:\"freight\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Freight\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OrderItem\";}}s:15:\"shippingAddress\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:9:\"shipments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Shippment\";}}s:6:\"seller\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Seller\";}}}s:6:\"Seller\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Seller
+  unique Id in the Brand Lovers Marketplace\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Seller
+  name in the Brand Lovers Marketplace\";}}}s:8:\"Customer\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:14:\"documentNumber\";i:3;s:4:\"type\";i:4;s:6:\"phones\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Customer
+  unqiue Id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Customer
+  Name\";}s:14:\"documentNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Customer
+  tax information\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Customer
+  type: Enterprise or Consumer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Customer
+  Email (when available). Please note: Email is not a mandatory field\";}s:6:\"phones\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:21:\"Customer
+  phone number\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Phone\";}}}}s:5:\"Phone\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Phone
+  number\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Phone
+  number type, home, office, mobile, etc\";}}}s:9:\"OrderItem\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:11:\"skuSellerId\";i:2;s:4:\"name\";i:3;s:7:\"freight\";i:4;s:9:\"salePrice\";i:5;s:4:\"sent\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Unique
+  Id representing this item\";}s:11:\"skuSellerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Unique
+  Product Id (SKU) in the seller system\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Product
+  name\";}s:9:\"salePrice\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Product
+  unit price\";}s:4:\"sent\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:35:\"Flag
+  if product was already shipped\";}s:7:\"freight\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Freight\";}s:8:\"giftWrap\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/OrderGiftWrap\";}s:10:\"promotions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"Promotions
+  array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Promotion\";}}}}s:9:\"Promotion\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Promotion
+  unique idenfitcation number\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Promotion
+  name\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:158:\"Total
+  discount in cents. No commas or periods are accepeted. For example one dollar should
+  be informed as 100. $1,2345.67 should be informed solely as 1234567\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Promotion
+  type\";}}}s:13:\"OrderGiftWrap\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:9:\"available\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"available\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:53:\"Defines
+  if giftwrpping is available for this product.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:201:\"Amount
+  charged for gift wrap. All prices must be provided in cents. No commas or periods
+  are accepeted. For example one dollar should be informed as 100. $1,2345.67 should
+  be informed solely as 1234567\";}s:14:\"messageSupport\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:53:\"Defines
+  if giftwrpping is available for this product.\";}s:8:\"giftCard\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/GiftCard\";}}}s:8:\"GiftCard\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:4:\"from\";i:1;s:2:\"to\";i:2;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"from\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Giftcard
+  `from` field\";}s:2:\"to\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Giftcard
+  `to` field\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Giftcard
+  `body` message\";}}}s:7:\"Freight\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:13:\"defaultAmount\";i:1;s:13:\"chargedAmount\";i:2;s:11:\"transitTime\";i:3;s:16:\"crossDockingTime\";i:4;s:14:\"additionalInfo\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:13:\"defaultAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:32:\"Default
+  value of this shippment.\";}s:13:\"chargedAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:181:\"Shipment
+  cost. Must be informed in cents. No commas or periods are accepeted. For example
+  one dollar should be informed as 100. Same as $1,2345.67 must be informed solely
+  as 1234567\";}s:11:\"transitTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:176:\"Deliver
+  time in seconds. Time must be provided in seconds. For example 1 day should be informed
+  as 86400. This time will be included in the product ETA informed to the customer\";}s:16:\"crossDockingTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"default\";i:0;s:11:\"description\";s:216:\"Time
+  it will take to manufacture, prepare or setup this product. Time must be provided
+  in seconds. For example 1 day should be informed as 86400. This time will be included
+  in the product ETA informed to the customer\";}s:14:\"additionalInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Aditional
+  information for the courier\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Freight
+  type\";}s:3:\"ETA\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:25:\"Estimated
+  time of arrival\";}s:15:\"scheduledPeriod\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Scheduled
+  period\";}}}s:9:\"Shippment\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:5:\"items\";i:1;s:6:\"status\";i:2;s:10:\"occurredAt\";i:3;s:16:\"sellerShipmentId\";i:4;s:7:\"invoice\";i:5;s:7:\"courier\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:31:\"List
+  of items of this shippment\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrderItemReference\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Shipment
+  status\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Additinal
+  shipment tracking information\";}s:10:\"occurredAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"Date
+  time when this shippment happened\";}s:11:\"trackingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Courier
+  tracking URL\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"Courier
+  unique trackign Id associated with this shipment\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:99:\"Shipment
+  Id associated with this shippment used to group diferent item or items from a single
+  order\";}s:16:\"sellerShipmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"Unique
+  Seller shipment Id. This must be unique across all orders and shipments\";}s:3:\"cte\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Conhecimento
+  de Transporte Eletr\xF4nico\";}s:7:\"courier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Courier\";}s:7:\"invoice\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Invoice\";}}}s:17:\"Newshipmentstatus\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:5:\"items\";i:1;s:10:\"occurredAt\";i:2;s:16:\"sellerShipmentId\";i:3;s:7:\"courier\";i:4;s:7:\"invoice\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:85:\"List
+  of Order IDs of this items from this order that will be updated in this shipment\";}s:10:\"occurredAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:19:\"Data
+  da ocorr\xEAncia\";}s:11:\"trackingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Courier
+  tracking URL\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Unique
+  id shipment Id in the courier system\";}s:16:\"sellerShipmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:79:\"Unique
+  Seller shipment Id. This must be unique across all orders and shipmnents\";}s:3:\"cte\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Conhecimento
+  do Transporte Eletr\xF4nico\";}s:7:\"courier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Courier\";}s:7:\"invoice\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Invoice\";}}}s:17:\"NewTrackingRefund\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:5:\"items\";i:1;s:4:\"info\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrderItemReference\";}}s:4:\"info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Aditional
+  information about this shippment\";}s:10:\"occurredAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:31:\"Date
+  time that this was created\";}s:12:\"tranckingUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Courier
+  tracking URL\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Tracking
+  Id in the courier\";}s:16:\"sellerShipmentId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"Unique
+  Seller shipment Id. This must be unique across all orders and shipments\";}s:3:\"cte\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Conhecimento
+  do Transporte Eletr\xF4nico\";}s:7:\"courier\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Courier\";}}}s:7:\"Address\";O:8:\"stdClass\":2:{s:8:\"required\";a:8:{i:0;s:7:\"address\";i:1;s:6:\"number\";i:2;s:10:\"complement\";i:3;s:13:\"neighbourhood\";i:4;s:4:\"city\";i:5;s:5:\"state\";i:6;s:9:\"countryId\";i:7;s:7:\"zipCode\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Address
+  first line (ave, street name, etc..)\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Address
+  number\";}s:10:\"complement\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"Complementary
+  info (aptartament number, building name, suite)\";}s:13:\"neighbourhood\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Address
+  neighbourhood\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Pontos
+  de refer\xEAncia\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"City\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"State\";}s:9:\"countryId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"Contry
+  code using aplpha ISO-3166, Example: BR, US, AR, GB, CN\";}s:7:\"zipCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Zip
+  Code\";}s:13:\"recipientName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Recipient
+  Name\";}}}s:9:\"NewTicket\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:7:\"orderId\";i:1;s:4:\"from\";i:2;s:4:\"body\";i:3;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"orderId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Unique
+  order Id that this trouble ticket belongs to\";}s:4:\"from\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:96:\"Friendly
+  name of the person sending this message, if not provided the seller `name` will
+  be used\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Message
+  to the customer\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/NewTicketMessage\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Trouble
+  ticket type.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Trouble
+  ticked brief description\";}s:8:\"customer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CustomerReference\";}}}s:10:\"GetTickets\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"tickets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Ticket\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}}s:6:\"Ticket\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:8:\"ticketId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Trouble
+  Ticket unique identification Id\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Trouble
+  Ticket status. 'OPEN','CLOSED','REOPENED'\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Trouble
+  ticket type.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Trouble
+  ticked brief description\";}s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:33:\"Date
+  time that ticket was created\";}s:9:\"updatedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:41:\"Date-time
+  with last update of this ticket\";}s:8:\"closedAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:32:\"Date-time
+  when ticket was closed\";}s:8:\"priority\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Trouble
+  ticket priority\";}s:8:\"customer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CustomerReference\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Short
+  one line title describing ticket.\";}s:3:\"sla\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:76:\"Date-time
+  with a promisse for the customer when this ticket will be resolved\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}}s:17:\"CustomerReference\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Customer
+  name\";}s:11:\"phoneNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Customer
+  phone mumber\";}}}s:16:\"NewTicketMessage\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:10:\"visibility\";i:1;s:4:\"body\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"visibility\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"Defines
+  if this message is `CUSTOMER` (customer will receive a copy) or `INTERNAL`\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Message
+  text\";}}}s:17:\"GetTicketMessages\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:8:\"metadata\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TicketMessage\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}}}s:13:\"TicketMessage\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:9:\"createdAt\";i:1;s:2:\"id\";i:2;s:4:\"body\";i:3;s:10:\"visibility\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"createdAt\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:12:\"Date
+  created\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Trouble
+  Ticket Id.\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Message
+  text\";}s:10:\"visibility\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"Defines
+  if this message is `CUSTOMER` (customer will receive a copy) or `INTERNAL`\";}}}s:12:\"TicketStatus\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:12:\"ticketStatus\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"ticketStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:65:\"New
+  trouble ticket status. Valid options are `REOPENED`, `CLOSED`\";}}}}"
+...

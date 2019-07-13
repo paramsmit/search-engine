@@ -1,0 +1,635 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:17:\"krak8s API Server\";s:11:\"description\";s:53:\"API
+  Service for Kubernetes, Kraken, and Helm Commands\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:58:\"https://github.com/samsung-cnct/krak8s/blob/master/LICENSE\";}s:7:\"version\";s:2:\"v1\";}"
+host: localhost:8080
+paths:
+  /openapi:
+    get:
+      summary: Download swagger/swagger.json
+      operationId: openapi#/openapi
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /openapi.json:
+    get:
+      summary: Download swagger/swagger.json
+      operationId: openapi#/openapi.json
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /openapi.yaml:
+    get:
+      summary: Download swagger/swagger.yaml
+      operationId: openapi#/openapi.yaml
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /swagger:
+    get:
+      summary: Download swagger/swagger.json
+      operationId: swagger#/swagger
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /swagger.json:
+    get:
+      summary: Download swagger/swagger.json
+      operationId: swagger#/swagger.json
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /swagger.yaml:
+    get:
+      summary: Download swagger/swagger.yaml
+      operationId: swagger#/swagger.yaml
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+  /v1/healthz:
+    get:
+      tags:
+      - health
+      summary: health health
+      description: The health check service endpoint
+      operationId: health#health
+      produces:
+      - text/plain
+      responses:
+        200:
+          description: OK
+      schemes:
+      - http
+  /v1/projects:
+    get:
+      tags:
+      - project
+      summary: list project
+      description: Retrieve all projects.
+      operationId: project#list
+      produces:
+      - application/project+json; type=collection
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ProjectCollection'
+      schemes:
+      - http
+    post:
+      tags:
+      - project
+      summary: create project
+      description: Create a new project entry with the provided name.
+      operationId: project#create
+      produces:
+      - application/vnd.goa.error
+      - application/project+json
+      parameters:
+      - name: payload
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateProjectPayload'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Project'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        500:
+          description: Internal Server Error
+      schemes:
+      - http
+  /v1/projects/{projectid}:
+    get:
+      tags:
+      - project
+      summary: get project
+      description: Retrieve project with given id.
+      operationId: project#get
+      produces:
+      - application/vnd.goa.error
+      - application/project+json
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Project'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    delete:
+      tags:
+      - project
+      summary: delete project
+      operationId: project#delete
+      produces:
+      - application/vnd.goa.error
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+      schemes:
+      - http
+  /v1/projects/{projectid}/applications:
+    get:
+      tags:
+      - application
+      summary: list application
+      description: Retrieve the collection of all applications in the project/namespace.
+      operationId: application#list
+      produces:
+      - application/application+json; type=collection
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: payload
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ListApplicationPayload'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ApplicationCollection'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    post:
+      tags:
+      - application
+      summary: create application
+      description: Request the creation of an application deployment in the project/namespace
+      operationId: application#create
+      produces:
+      - application/application+json
+      - application/vnd.goa.error
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: payload
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ApplicationPostBody'
+      responses:
+        202:
+          description: Accepted
+          schema:
+            $ref: '#/definitions/Application'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+      schemes:
+      - http
+  /v1/projects/{projectid}/applications/{appid}:
+    get:
+      tags:
+      - application
+      summary: get application
+      description: Get the status of the specified application in the project/namespace
+      operationId: application#get
+      produces:
+      - application/application+json
+      parameters:
+      - name: appid
+        in: path
+        required: true
+        type: string
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Application'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    delete:
+      tags:
+      - application
+      summary: delete application
+      description: Delete the specified application from the project/namespace
+      operationId: application#delete
+      produces:
+      - application/vnd.goa.error
+      parameters:
+      - name: appid
+        in: path
+        required: true
+        type: string
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+      schemes:
+      - http
+  /v1/projects/{projectid}/cluster:
+    post:
+      tags:
+      - cluster
+      summary: create cluster
+      description: Request the creation of the cluster resources in the project/namespace
+      operationId: cluster#create
+      produces:
+      - application/cluster+json
+      - application/vnd.goa.error
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: payload
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ClusterPostBody'
+      responses:
+        202:
+          description: Accepted
+          schema:
+            $ref: '#/definitions/Cluster'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+        409:
+          description: Conflict
+        500:
+          description: Internal Server Error
+      schemes:
+      - http
+  /v1/projects/{projectid}/cluster/{resource_id}:
+    get:
+      tags:
+      - cluster
+      summary: get cluster
+      description: Get the status of the cluster resources in the project/namespace
+      operationId: cluster#get
+      produces:
+      - application/cluster+json
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: resource_id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    delete:
+      tags:
+      - cluster
+      summary: delete cluster
+      description: Delete the cluster resources from the project/namespace
+      operationId: cluster#delete
+      produces:
+      - application/vnd.goa.error
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: resource_id
+        in: path
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+      schemes:
+      - http
+  /v1/projects/{projectid}/namespaces:
+    get:
+      tags:
+      - namespace
+      summary: list namespace
+      description: Retrieve all of a projects namespaces.
+      operationId: namespace#list
+      produces:
+      - application/namespace+json; type=collection
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/NamespaceCollection'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    post:
+      tags:
+      - namespace
+      summary: create namespace
+      description: Create a namespace in the specified project
+      operationId: namespace#create
+      produces:
+      - application/vnd.goa.error
+      - application/namespace+json
+      parameters:
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      - name: payload
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateNamespacePayload'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Namespace'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+      schemes:
+      - http
+  /v1/projects/{projectid}/namespaces/{namespaceid}:
+    get:
+      tags:
+      - namespace
+      summary: get namespace
+      description: Get the details of the specified namespace from the project
+      operationId: namespace#get
+      produces:
+      - application/namespace+json
+      parameters:
+      - name: namespaceid
+        in: path
+        required: true
+        type: string
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Namespace'
+        404:
+          description: Not Found
+      schemes:
+      - http
+    delete:
+      tags:
+      - namespace
+      summary: delete namespace
+      description: Delete the specified namespace from the project
+      operationId: namespace#delete
+      produces:
+      - application/vnd.goa.error
+      parameters:
+      - name: namespaceid
+        in: path
+        required: true
+        type: string
+      - name: projectid
+        in: path
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+        404:
+          description: Not Found
+      schemes:
+      - http
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":18:{s:11:\"Application\";O:8:\"stdClass\":6:{s:5:\"title\";s:64:\"Mediatype
+  identifier: application/application+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:7:\"channel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Application
+  chart's channel\";s:7:\"example\";s:16:\"Nam ut incidunt.\";}s:6:\"config\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Application
+  chart config --set argument string\";s:7:\"example\";s:32:\"Quos nobis placeat iusto
+  itaque.\";}s:10:\"created_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Date
+  of creation\";s:7:\"example\";s:25:\"1982-04-22T08:06:03-08:00\";s:6:\"format\";s:9:\"date-time\";}s:15:\"deployment_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Cluster
+  application deployment name\";s:7:\"example\";s:12:\"Nemo veniam.\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"generated
+  resource unique id (8 character hexadecimal value)\";s:7:\"example\";s:8:\"e1ea1660\";}s:11:\"json_values\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Application
+  chart's json values stringr\";s:7:\"example\";s:33:\"Rerum dolore impedit iste beatae.\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Application
+  chart name\";s:7:\"example\";s:20:\"Et omnis et aperiam.\";}s:12:\"namespace_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  related namespace's generated unique id, not the namespace's name\";s:7:\"example\";s:8:\"da9871c7\";}s:8:\"registry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Application
+  registry identifier\";s:7:\"example\";s:38:\"Sed et voluptates quidem perspiciatis.\";}s:6:\"server\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Application
+  chart registry host server\";s:7:\"example\";s:36:\"Inventore tempora molestiae
+  eos non.\";}s:6:\"status\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Last
+  deployment time\";s:7:\"example\";s:25:\"1998-10-05T15:15:30-07:00\";s:6:\"format\";s:9:\"date-time\";}s:5:\"notes\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"Application
+  specific notification / statuses / notes (if any)\";s:7:\"example\";s:39:\"Consequatur
+  distinctio cumque repellat.\";}s:5:\"state\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Deployment
+  state\";s:7:\"example\";s:8:\"DELETING\";s:4:\"enum\";a:6:{i:0;s:7:\"UNKNOWN\";i:1;s:8:\"DEPLOYED\";i:2;s:7:\"DELETED\";i:3;s:10:\"SUPERSEDED\";i:4;s:6:\"FAILED\";i:5;s:8:\"DELETING\";}}}s:7:\"example\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";s:25:\"1998-10-05T15:15:30-07:00\";s:5:\"notes\";s:39:\"Consequatur
+  distinctio cumque repellat.\";s:5:\"state\";s:8:\"DELETING\";}s:8:\"required\";a:2:{i:0;s:11:\"deployed_at\";i:1;s:5:\"state\";}}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"constant:
+  object type\";s:7:\"example\";s:11:\"application\";}s:10:\"updated_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Date
+  of last update\";s:7:\"example\";s:25:\"1990-08-27T22:36:31-07:00\";s:6:\"format\";s:9:\"date-time\";}s:8:\"username\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Registry
+  server username\";s:7:\"example\";s:19:\"Facere est nostrum.\";}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Application
+  chart version (tag) string\";s:7:\"example\";s:17:\"Perferendis enim.\";}}s:11:\"description\";s:57:\"Application
+  deployment representation type (default view)\";s:7:\"example\";O:8:\"stdClass\":15:{s:7:\"channel\";s:16:\"Nam
+  ut incidunt.\";s:6:\"config\";s:32:\"Quos nobis placeat iusto itaque.\";s:10:\"created_at\";s:25:\"1982-04-22T08:06:03-08:00\";s:15:\"deployment_name\";s:12:\"Nemo
+  veniam.\";s:2:\"id\";s:8:\"e1ea1660\";s:11:\"json_values\";s:33:\"Rerum dolore impedit
+  iste beatae.\";s:4:\"name\";s:20:\"Et omnis et aperiam.\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:8:\"registry\";s:38:\"Sed
+  et voluptates quidem perspiciatis.\";s:6:\"server\";s:36:\"Inventore tempora molestiae
+  eos non.\";s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";s:25:\"1998-10-05T15:15:30-07:00\";s:5:\"notes\";s:39:\"Consequatur
+  distinctio cumque repellat.\";s:5:\"state\";s:8:\"DELETING\";}s:4:\"type\";s:11:\"application\";s:10:\"updated_at\";s:25:\"1990-08-27T22:36:31-07:00\";s:8:\"username\";s:19:\"Facere
+  est nostrum.\";s:7:\"version\";s:17:\"Perferendis enim.\";}s:8:\"required\";a:15:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:12:\"namespace_id\";i:3;s:15:\"deployment_name\";i:4;s:6:\"server\";i:5;s:8:\"registry\";i:6;s:4:\"name\";i:7;s:7:\"version\";i:8;s:7:\"channel\";i:9;s:8:\"username\";i:10;s:6:\"config\";i:11;s:11:\"json_values\";i:12;s:6:\"status\";i:13;s:10:\"created_at\";i:14;s:10:\"updated_at\";}}s:21:\"ApplicationCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:81:\"Mediatype
+  identifier: application/application+json; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Application\";}s:11:\"description\";s:82:\"ApplicationCollection
+  is the media type for an array of Application (default view)\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":15:{s:7:\"channel\";s:16:\"Nam
+  ut incidunt.\";s:6:\"config\";s:32:\"Quos nobis placeat iusto itaque.\";s:10:\"created_at\";s:25:\"1982-04-22T08:06:03-08:00\";s:15:\"deployment_name\";s:12:\"Nemo
+  veniam.\";s:2:\"id\";s:8:\"e1ea1660\";s:11:\"json_values\";s:33:\"Rerum dolore impedit
+  iste beatae.\";s:4:\"name\";s:20:\"Et omnis et aperiam.\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:8:\"registry\";s:38:\"Sed
+  et voluptates quidem perspiciatis.\";s:6:\"server\";s:36:\"Inventore tempora molestiae
+  eos non.\";s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";s:25:\"1998-10-05T15:15:30-07:00\";s:5:\"notes\";s:39:\"Consequatur
+  distinctio cumque repellat.\";s:5:\"state\";s:8:\"DELETING\";}s:4:\"type\";s:11:\"application\";s:10:\"updated_at\";s:25:\"1990-08-27T22:36:31-07:00\";s:8:\"username\";s:19:\"Facere
+  est nostrum.\";s:7:\"version\";s:17:\"Perferendis enim.\";}i:1;O:8:\"stdClass\":15:{s:7:\"channel\";s:16:\"Nam
+  ut incidunt.\";s:6:\"config\";s:32:\"Quos nobis placeat iusto itaque.\";s:10:\"created_at\";s:25:\"1982-04-22T08:06:03-08:00\";s:15:\"deployment_name\";s:12:\"Nemo
+  veniam.\";s:2:\"id\";s:8:\"e1ea1660\";s:11:\"json_values\";s:33:\"Rerum dolore impedit
+  iste beatae.\";s:4:\"name\";s:20:\"Et omnis et aperiam.\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:8:\"registry\";s:38:\"Sed
+  et voluptates quidem perspiciatis.\";s:6:\"server\";s:36:\"Inventore tempora molestiae
+  eos non.\";s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";s:25:\"1998-10-05T15:15:30-07:00\";s:5:\"notes\";s:39:\"Consequatur
+  distinctio cumque repellat.\";s:5:\"state\";s:8:\"DELETING\";}s:4:\"type\";s:11:\"application\";s:10:\"updated_at\";s:25:\"1990-08-27T22:36:31-07:00\";s:8:\"username\";s:19:\"Facere
+  est nostrum.\";s:7:\"version\";s:17:\"Perferendis enim.\";}i:2;O:8:\"stdClass\":15:{s:7:\"channel\";s:16:\"Nam
+  ut incidunt.\";s:6:\"config\";s:32:\"Quos nobis placeat iusto itaque.\";s:10:\"created_at\";s:25:\"1982-04-22T08:06:03-08:00\";s:15:\"deployment_name\";s:12:\"Nemo
+  veniam.\";s:2:\"id\";s:8:\"e1ea1660\";s:11:\"json_values\";s:33:\"Rerum dolore impedit
+  iste beatae.\";s:4:\"name\";s:20:\"Et omnis et aperiam.\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:8:\"registry\";s:38:\"Sed
+  et voluptates quidem perspiciatis.\";s:6:\"server\";s:36:\"Inventore tempora molestiae
+  eos non.\";s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"deployed_at\";s:25:\"1998-10-05T15:15:30-07:00\";s:5:\"notes\";s:39:\"Consequatur
+  distinctio cumque repellat.\";s:5:\"state\";s:8:\"DELETING\";}s:4:\"type\";s:11:\"application\";s:10:\"updated_at\";s:25:\"1990-08-27T22:36:31-07:00\";s:8:\"username\";s:19:\"Facere
+  est nostrum.\";s:7:\"version\";s:17:\"Perferendis enim.\";}}}s:19:\"ApplicationPostBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:19:\"ApplicationPostBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:7:\"channel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Application
+  chart's channel\";s:7:\"example\";s:6:\"stable\";}s:15:\"deployment_name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Cluster
+  application deployment name\";s:7:\"default\";s:26:\"samsung-mongodb-replicaset\";s:7:\"example\";s:26:\"samsung-mongodb-replicaset\";}s:11:\"json_values\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Application
+  chart's json values string\";s:7:\"example\";s:41:\"Ea corporis eaque id saepe aut
+  provident.\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Application
+  chart name\";s:7:\"example\";s:18:\"mongodb-replicaset\";}s:12:\"namespace_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  related namespace's generated unique id, not the namespace's name\";s:7:\"example\";s:8:\"da9871c7\";}s:8:\"password\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Registry
+  server password\";s:7:\"example\";s:28:\"Aut minima inventore et nam.\";}s:8:\"registry\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Application
+  chart's registry\";s:7:\"default\";s:12:\"samsung_cnct\";s:7:\"example\";s:12:\"samsung_cnct\";}s:6:\"server\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Application
+  chart registry host server\";s:7:\"default\";s:7:\"quay.io\";s:7:\"example\";s:7:\"quay.io\";}s:3:\"set\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Application
+  chart config --set argument string\";s:7:\"example\";s:26:\"Et soluta assumenda
+  iusto.\";}s:8:\"username\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Registry
+  server username\";s:7:\"example\";s:28:\"Et quidem alias et corporis.\";}s:7:\"version\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Application
+  chart version string\";s:7:\"default\";s:6:\"latest\";s:7:\"example\";s:6:\"latest\";}}s:7:\"example\";O:8:\"stdClass\":11:{s:7:\"channel\";s:6:\"stable\";s:15:\"deployment_name\";s:26:\"samsung-mongodb-replicaset\";s:11:\"json_values\";s:41:\"Ea
+  corporis eaque id saepe aut provident.\";s:4:\"name\";s:18:\"mongodb-replicaset\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:8:\"password\";s:28:\"Aut
+  minima inventore et nam.\";s:8:\"registry\";s:12:\"samsung_cnct\";s:6:\"server\";s:7:\"quay.io\";s:3:\"set\";s:26:\"Et
+  soluta assumenda iusto.\";s:8:\"username\";s:28:\"Et quidem alias et corporis.\";s:7:\"version\";s:6:\"latest\";}s:8:\"required\";a:4:{i:0;s:15:\"deployment_name\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:12:\"namespace_id\";}}s:14:\"ApplicationRef\";O:8:\"stdClass\":6:{s:5:\"title\";s:68:\"Mediatype
+  identifier: application/application.ref+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"oid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  application resource unique oid\";s:7:\"example\";s:8:\"e1ea1660\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"url
+  of the collection that contains this object\";s:7:\"example\";s:33:\"/v1/project/30299bea/applications\";}}s:11:\"description\";s:74:\"An
+  application object reference by object id (oid), and url (default view)\";s:7:\"example\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}s:8:\"required\";a:2:{i:0;s:3:\"oid\";i:1;s:3:\"url\";}}s:24:\"ApplicationRefCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:85:\"Mediatype
+  identifier: application/application.ref+json; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ApplicationRef\";}s:11:\"description\";s:88:\"ApplicationRefCollection
+  is the media type for an array of ApplicationRef (default view)\";s:7:\"example\";a:2:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}}}s:7:\"Cluster\";O:8:\"stdClass\":6:{s:5:\"title\";s:60:\"Mediatype
+  identifier: application/cluster+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"created_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Date
+  of creation\";s:7:\"example\";s:25:\"1983-08-12T18:07:00-07:00\";s:6:\"format\";s:9:\"date-time\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"generated
+  resource unique id (8 character hexadecimal value)\";s:7:\"example\";s:8:\"de2760b1\";}s:12:\"namespace_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  related namespace's generated unique id, not the namespace's name\";s:7:\"example\";s:8:\"da9871c7\";}s:12:\"nodePoolSize\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:24:\"Requested
+  node pool size\";s:7:\"example\";i:8494125172749612265;s:6:\"format\";s:5:\"int64\";}s:5:\"state\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Lifecycle
+  state\";s:7:\"example\";s:6:\"active\";s:4:\"enum\";a:6:{i:0;s:16:\"create_requested\";i:1;s:8:\"starting\";i:2;s:6:\"active\";i:3;s:16:\"delete_requested\";i:4;s:8:\"deleting\";i:5;s:7:\"deleted\";}}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"constant:
+  object type\";s:7:\"example\";s:7:\"cluster\";}s:10:\"updated_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Date
+  of last update\";s:7:\"example\";s:25:\"1991-12-23T19:04:20-08:00\";s:6:\"format\";s:9:\"date-time\";}}s:11:\"description\";s:51:\"Cluster
+  resource representation type (default view)\";s:7:\"example\";O:8:\"stdClass\":7:{s:10:\"created_at\";s:25:\"1983-08-12T18:07:00-07:00\";s:2:\"id\";s:8:\"de2760b1\";s:12:\"namespace_id\";s:8:\"da9871c7\";s:12:\"nodePoolSize\";i:8494125172749612265;s:5:\"state\";s:6:\"active\";s:4:\"type\";s:7:\"cluster\";s:10:\"updated_at\";s:25:\"1991-12-23T19:04:20-08:00\";}s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:12:\"nodePoolSize\";i:3;s:10:\"created_at\";i:4;s:10:\"updated_at\";i:5;s:5:\"state\";i:6;s:12:\"namespace_id\";}}s:15:\"ClusterPostBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:15:\"ClusterPostBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"namespace_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  related namespace's generated unique id, not the namespace's name\";s:7:\"example\";s:8:\"da9871c7\";}s:12:\"nodePoolSize\";O:8:\"stdClass\":6:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:56:\"The
+  number of worker nodes in the projects resource pool\";s:7:\"default\";i:3;s:7:\"example\";i:10;s:7:\"minimum\";i:3;s:7:\"maximum\";i:11;}}s:7:\"example\";O:8:\"stdClass\":2:{s:12:\"namespace_id\";s:8:\"da9871c7\";s:12:\"nodePoolSize\";i:10;}s:8:\"required\";a:2:{i:0;s:12:\"nodePoolSize\";i:1;s:12:\"namespace_id\";}}s:10:\"ClusterRef\";O:8:\"stdClass\":6:{s:5:\"title\";s:64:\"Mediatype
+  identifier: application/cluster.ref+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"oid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  cluster resources resource unique oid\";s:7:\"example\";s:8:\"de2760b1\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"url
+  of the collection that contains this object\";s:7:\"example\";s:28:\"/v1/project/30299bea/cluster\";}}s:11:\"description\";s:81:\"An
+  cluster reesources object reference by object id (oid), and url (default view)\";s:7:\"example\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"de2760b1\";s:3:\"url\";s:28:\"/v1/project/30299bea/cluster\";}s:8:\"required\";a:2:{i:0;s:3:\"oid\";i:1;s:3:\"url\";}}s:22:\"CreateNamespacePayload\";O:8:\"stdClass\":5:{s:5:\"title\";s:22:\"CreateNamespacePayload\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:32:\"Assumenda
+  quibusdam qui tempore.\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"name\";s:32:\"Assumenda
+  quibusdam qui tempore.\";}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:20:\"CreateProjectPayload\";O:8:\"stdClass\":5:{s:5:\"title\";s:20:\"CreateProjectPayload\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"name
+  of project\";s:7:\"example\";s:5:\"newco\";s:9:\"minLength\";i:2;}}s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"newco\";}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:22:\"ListApplicationPayload\";O:8:\"stdClass\":5:{s:5:\"title\";s:22:\"ListApplicationPayload\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"namespaceid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:52:\"Explicabo
+  enim dicta perferendis sunt nihil ratione.\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:11:\"namespaceid\";s:52:\"Explicabo
+  enim dicta perferendis sunt nihil ratione.\";}s:8:\"required\";a:1:{i:0;s:11:\"namespaceid\";}}s:9:\"Namespace\";O:8:\"stdClass\":6:{s:5:\"title\";s:62:\"Mediatype
+  identifier: application/namespace+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"applications\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/ApplicationRefCollection\";}s:10:\"created_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Date
+  of creation\";s:7:\"example\";s:25:\"2007-09-09T17:56:31-07:00\";s:6:\"format\";s:9:\"date-time\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"generated
+  resource unique id (8 character hexadecimal value)\";s:7:\"example\";s:8:\"da9871c7\";}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"system
+  wide unique namespace name\";s:7:\"example\";s:10:\"newco-prod\";s:9:\"minLength\";i:2;}s:9:\"resources\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ClusterRef\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"constant:
+  object type\";s:7:\"example\";s:9:\"namespace\";}}s:11:\"description\";s:83:\"Users
+  and tennants of the system are represented as the type Project (default view)\";s:7:\"example\";O:8:\"stdClass\":6:{s:12:\"applications\";a:3:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:2;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}}s:10:\"created_at\";s:25:\"2007-09-09T17:56:31-07:00\";s:2:\"id\";s:8:\"da9871c7\";s:4:\"name\";s:10:\"newco-prod\";s:9:\"resources\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"de2760b1\";s:3:\"url\";s:28:\"/v1/project/30299bea/cluster\";}s:4:\"type\";s:9:\"namespace\";}s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:4:\"name\";i:3;s:10:\"created_at\";i:4;s:9:\"resources\";i:5;s:12:\"applications\";}}s:19:\"NamespaceCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:79:\"Mediatype
+  identifier: application/namespace+json; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Namespace\";}s:11:\"description\";s:78:\"NamespaceCollection
+  is the media type for an array of Namespace (default view)\";s:7:\"example\";a:2:{i:0;O:8:\"stdClass\":6:{s:12:\"applications\";a:3:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:2;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}}s:10:\"created_at\";s:25:\"2007-09-09T17:56:31-07:00\";s:2:\"id\";s:8:\"da9871c7\";s:4:\"name\";s:10:\"newco-prod\";s:9:\"resources\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"de2760b1\";s:3:\"url\";s:28:\"/v1/project/30299bea/cluster\";}s:4:\"type\";s:9:\"namespace\";}i:1;O:8:\"stdClass\":6:{s:12:\"applications\";a:3:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}i:2;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"e1ea1660\";s:3:\"url\";s:33:\"/v1/project/30299bea/applications\";}}s:10:\"created_at\";s:25:\"2007-09-09T17:56:31-07:00\";s:2:\"id\";s:8:\"da9871c7\";s:4:\"name\";s:10:\"newco-prod\";s:9:\"resources\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"de2760b1\";s:3:\"url\";s:28:\"/v1/project/30299bea/cluster\";}s:4:\"type\";s:9:\"namespace\";}}}s:12:\"NamespaceRef\";O:8:\"stdClass\":6:{s:5:\"title\";s:66:\"Mediatype
+  identifier: application/namespace.ref+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"oid\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  namespace resource unique oid\";s:7:\"example\";s:8:\"da9871c7\";}s:3:\"url\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"url
+  of the collection that contains this object\";s:7:\"example\";s:31:\"/v1/project/30299bea/namespaces\";}}s:11:\"description\";s:83:\"Users
+  and tennants of the system are represented as the type Project (default view)\";s:7:\"example\";O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}s:8:\"required\";a:2:{i:0;s:3:\"oid\";i:1;s:3:\"url\";}}s:22:\"NamespaceRefCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:83:\"Mediatype
+  identifier: application/namespace.ref+json; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/NamespaceRef\";}s:11:\"description\";s:84:\"NamespaceRefCollection
+  is the media type for an array of NamespaceRef (default view)\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}i:2;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}}}s:7:\"Project\";O:8:\"stdClass\":6:{s:5:\"title\";s:60:\"Mediatype
+  identifier: application/project+json; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"created_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Date
+  of creation\";s:7:\"example\";s:25:\"1979-11-22T20:22:53-08:00\";s:6:\"format\";s:9:\"date-time\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"generated
+  resource unique id (8 character hexadecimal value)\";s:7:\"example\";s:8:\"30299bea\";}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"name
+  of project\";s:7:\"example\";s:5:\"newco\";s:9:\"minLength\";i:2;}s:10:\"namespaces\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/NamespaceRefCollection\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"constant:
+  object type\";s:7:\"example\";s:7:\"project\";}}s:11:\"description\";s:83:\"Users
+  and tennants of the system are represented as the type Project (default view)\";s:7:\"example\";O:8:\"stdClass\":5:{s:10:\"created_at\";s:25:\"1979-11-22T20:22:53-08:00\";s:2:\"id\";s:8:\"30299bea\";s:4:\"name\";s:5:\"newco\";s:10:\"namespaces\";a:2:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}}s:4:\"type\";s:7:\"project\";}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:4:\"name\";i:3;s:10:\"created_at\";i:4;s:10:\"namespaces\";}}s:17:\"ProjectCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:77:\"Mediatype
+  identifier: application/project+json; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Project\";}s:11:\"description\";s:74:\"ProjectCollection
+  is the media type for an array of Project (default view)\";s:7:\"example\";a:2:{i:0;O:8:\"stdClass\":5:{s:10:\"created_at\";s:25:\"1979-11-22T20:22:53-08:00\";s:2:\"id\";s:8:\"30299bea\";s:4:\"name\";s:5:\"newco\";s:10:\"namespaces\";a:2:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}}s:4:\"type\";s:7:\"project\";}i:1;O:8:\"stdClass\":5:{s:10:\"created_at\";s:25:\"1979-11-22T20:22:53-08:00\";s:2:\"id\";s:8:\"30299bea\";s:4:\"name\";s:5:\"newco\";s:10:\"namespaces\";a:2:{i:0;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}i:1;O:8:\"stdClass\":2:{s:3:\"oid\";s:8:\"da9871c7\";s:3:\"url\";s:31:\"/v1/project/30299bea/namespaces\";}}s:4:\"type\";s:7:\"project\";}}}s:5:\"error\";O:8:\"stdClass\":5:{s:5:\"title\";s:61:\"Mediatype
+  identifier: application/vnd.goa.error; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"code\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"an
+  application-specific error code, expressed as a string value.\";s:7:\"example\";s:13:\"invalid_value\";}s:6:\"detail\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"a
+  human-readable explanation specific to this occurrence of the problem.\";s:7:\"example\";s:30:\"Value
+  of ID must be an integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:66:\"a
+  unique identifier for this particular occurrence of the problem.\";s:7:\"example\";s:8:\"3F1FKVRR\";}s:4:\"meta\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:71:\"a
+  meta object containing non-standard meta-information about the error.\";s:7:\"example\";O:8:\"stdClass\":1:{s:9:\"timestamp\";i:1458609066;}s:20:\"additionalProperties\";b:1;}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"the
+  HTTP status code applicable to this problem, expressed as a string value.\";s:7:\"example\";s:3:\"400\";}}s:11:\"description\";s:40:\"Error
+  response media type (default view)\";s:7:\"example\";O:8:\"stdClass\":5:{s:4:\"code\";s:13:\"invalid_value\";s:6:\"detail\";s:30:\"Value
+  of ID must be an integer\";s:2:\"id\";s:8:\"3F1FKVRR\";s:4:\"meta\";O:8:\"stdClass\":1:{s:9:\"timestamp\";i:1458609066;}s:6:\"status\";s:3:\"400\";}}}"
+...

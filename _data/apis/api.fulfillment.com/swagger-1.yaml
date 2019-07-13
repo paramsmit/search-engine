@@ -1,0 +1,156 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:5:\"title\";s:19:\"Fulfillment.com API\";s:11:\"description\";s:7956:\"Welcome
+  to our current iteration of our REST API. While we encourage you to upgrade to v2.0
+  we will continue support for our [SOAP API](https://github.com/fulfillment/soap-integration).\n#
+  Versioning\nThe Fulfillment.com (FDC) REST API is version controlled and backwards
+  compatible. We have many future APIs scheduled for publication within our v2.0 spec
+  so please be prepared for us to add data nodes in our responses, however, we will
+  not remove knowledge from previously published APIs.\n\n#### A Current Response\n```javascript\n{\n
+  \ id: 123\n}\n```\n\n#### A Potential Future Response\n```javascript\n{\n  id: 123,\n
+  \ reason: \"More Knowledge\"\n}\n```\n\n## Using FDC API v2.0\nAll you need to do
+  is specify the version in the URL of your request https://api.fulfillment.com/v2\n\n#
+  Getting Started\n1. We use OAuth v2.0 to authenticate clients, you will need to
+  contact your account executive to obtain an OAuth `client_id` and `client_secret`.\n2.
+  Using those auth credentials along with your `username` and `password` obtain an
+  `access_token` and `refresh_token`\nsee [POST /oauth/access_token](#operation/generateToken).\n
+  \   + Tip: Generate an additional login and use those credentials for your integration
+  so that changes are accredited to that \"user\".\n3. You are now ready to make requests
+  to our other APIs by filling your `Authorization` header with `Bearer {access_token}`.\n\n##
+  Perpetuating Access\nPerpetuating access to FDC without storing your password locally
+  can be achieved using the `refresh_token` returned by [POST /oauth/access_token](#operation/generateToken).
+  \nA simple concept to achieve this is outlined below.\n\n1. Your application/script
+  will ask you for your `username` and `password`, your `client_id` and `client_secret`
+  will be accessible via a DB or ENV.\n2. [Request an access_token](#operation/generateToken)\n
+  \   + Your function should be capable of formatting your request for both a `grant_type`
+  of \"password\" (step 1) and \"refresh_token\" (step 4).\n3. Store the `access_token`
+  and `refresh_token` so future requests can skip step 1\n4. When the `access_token`
+  expires request anew using your `refresh_token`, replace both tokens in local storage.\n
+  \   + If this fails you will have to revert to step 1.\n\nAlternatively if you choose
+  for your application/script to have access to your `username` and `password` you
+  can skip step 4.\n\nIn all scenarios we recommend storing all credentials outside
+  your codebase.\n\n## Date Time Definitions\nWe will report all date-time stamps
+  using the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) standard. When using
+  listing API's where fromDate and toDate are available note that both dates are inclusive
+  while requiring the fromDate to be before or at the toDate.\n\n### The Fulfillment
+  Process\nMany steps are required to fulfill your order we report back to you three
+  fundamental milestones inside the orders model.\n* `recordedOn` When we received
+  your order. This will never change.\n* `dispatchDate` When the current iteration
+  of your order was scheduled for fulfillment. This may change however it is an indicator
+  that the physical process of fulfillment has begun and a tracking number has been
+  **assigned** to your order. The tracking number **MAY CHANGE**. You will not be
+  able to cancel an order once it has been dispatched. If you need to recall an order
+  that has been dispatched please contact your account executive.\n* `departDate`
+  When we recorded your order passing our final inspection and placed with the carrier.
+  At this point it is **safe to inform the consignee** of the tracking number as it
+  will not change.\n\n## Evaluating Error Responses\nWe currently return two different
+  error models, with and without context. All errors will include a `message` node
+  while errors with `context` will include additional information designed to save
+  you time when encountering highly probable errors. For example, when you send us
+  a request to create a duplicate order, we will reject your request and the context
+  will include the FDC order `id` so that you may record it for your records.\n\n###
+  Without Context\nNew order with missing required fields.\n\n| Header | Response
+  |\n| ------ | -------- |\n| Status | `400 Bad Request` |\n\n```javascript\n{\n    \"message\":
+  \"Invalid request body\"\n}\n```\n\n### With Context\nNew order with duplicate `merchantOrderId`.\n\n|
+  Header | Response |\n| ------ | -------- |\n| Status | `409 Conflict` |\n\n```javascript\n{\n
+  \   \"message\": \"Duplicate Order\",\n    \"context\": {\n        \"id\": 123\n
+  \   }\n}\n```\n\n## Status Codes\nCodes are a concatenation of State, Stage, and
+  Detail.\n\n`^[0-9]{2}[0-9]{2}[0-9]{2}$`\n\n| Code | State              | Stage    |
+  Detail         |\n| ---- | ------------------ | -------- | -------------- |\n| 010101
+  | Processing Order | Recieved | Customer Order |\n| 010102 | Processing Order |
+  Recieved | Recieved |\n| 010201 | Processing Order | Approved |  |\n| 010301 | Processing
+  Order | Hold | Merchant Stock |\n| 010302 | Processing Order | Hold | Merchant Funds
+  |\n| 010303 | Processing Order | Hold | For Merchant |\n| 010401 | Processing Order
+  | Address Problem | Incomplete Address |\n| 010501 | Processing Order | Sku Problem
+  | Invalid SKU |\n| 010601 | Processing Order | Facility Problem | Facility Not Mapped
+  |\n| 010402 | Processing Order | Address Problem | Invalid Locality |\n| 010403
+  | Processing Order | Address Problem | Invalid Region |\n| 010404 | Processing Order
+  | Address Problem | Address Not Found |\n| 010405 | Processing Order | Address Problem
+  | Many Addresses Found |\n| 010406 | Processing Order | Address Problem | Invalid
+  Postal Code |\n| 010407 | Processing Order | Address Problem | Country Not Mapped
+  |\n| 010408 | Processing Order | Address Problem | Invalid Recipient Name |\n| 010701
+  | Processing Order | Ship Method Problem | Unmapped Ship Method |\n| 010702 | Processing
+  Order | Ship Method Problem | Unmapped Ship Cost |\n| 010409 | Processing Order
+  | Address Problem | Bad UK Address |\n| 010410 | Processing Order | Address Problem
+  | Invalid Address Line 1 or 2 |\n| 010703 | Processing Order | Ship Method Problem
+  | Missing Ship Method |\n| 010704 | Processing Order | Ship Method Problem | Invalid
+  Ship Method |\n| 010801 | Processing Order | Inventory Problem | Insufficient Inventory
+  In Facility |\n| 010705 | Processing Order | Ship Method Problem | Order Weight
+  Outside of Ship Method Weight |\n| 010501 | Processing Order | Sku Problem | Child
+  Order has Invalid SKUs |\n| 010304 | Processing Order | Hold | Oversized Shipment
+  |\n| 010305 | Processing Order | Hold | Invalid Parent Order |\n| 010306 | Processing
+  Order | Hold | Invalid Address |\n| 010307 | Processing Order | Hold | By Admin
+  |\n| 010802 | Processing Order | Inventory Problem | Issue Encountered During Inventory
+  Adjustment |\n| 010901 | Processing Order | Released To WMS | Released |\n| 020401
+  | Fulfillment In Progress | 4PL Processing |\n| 020101 | Fulfillment In Progress
+  | Postage Problem | Address Issue |\n| 020102 | Fulfillment In Progress | Postage
+  Problem | Postage OK, OMS Issue Occurred |\n| 020501 | Fulfillment In Progress |
+  4PL Problem | Order is Proccessable, Postage Issue Occurred |\n| 020201 | Fulfillment
+  In Progress | Postage Acquired | |\n| 020103 | Fulfillment In Progress | Postage
+  Problem | Postage Void Failed |\n| 020301 | Fulfillment In Progress | Postage Voided
+  | Postage Void Failed Gracefully |\n| 020601 | Fulfillment In Progress | Label Printed
+  | |\n| 020701 | Fulfillment In Progress | Shipment Cubed | |\n| 020801 | Fulfillment
+  In Progress | Picking Inventory | |\n| 020901 | Fulfillment In Progress | Label
+  Print Verified | |\n| 021001 | Fulfillment In Progress | Passed Final Inspection
+  | |\n| 020301 | Fulfillment In Progress | Hold | Departure Hold Requested |\n| 030101
+  | Shipped | Fulfilled By 4PL | |\n| 030102 | Shipped | Fulfilled By 4PL | Successfully
+  Fulfilled, OMS Encountered Issue During Processing |\n| 030201 | Shipped | Fulfilled
+  By FDC | |\n| 040101 | Returned | Returned | |\n| 050101 | Cancelled | Cancelled
+  | |\n| 060101 | Test | Test | Test |\n\";s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:53:\"https://fulfillment.github.io/api/FDC_API_144x144.png\";}s:14:\"termsOfService\";s:40:\"https://fulfillment.github.io/api/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:19:\"dev@fulfillment.com\";}s:7:\"version\";s:3:\"2.0\";}"
+host: api.fulfillment.com
+basePath: /v2
+paths: ~
+definitions: !php/object "O:8:\"stdClass\":20:{s:18:\"accessTokenRequest\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"client_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Id
+  and secret provided by FDC\";s:4:\"type\";s:6:\"string\";}s:13:\"client_secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"grant_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:103:\"Indicates
+  how you're authenticating your request, see `username`, `password`, and `refresh_token`
+  below\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:8:\"password\";i:1;s:13:\"refresh_token\";}}s:5:\"scope\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"Currently
+  limited to Order Management System\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:3:\"oms\";}s:7:\"default\";s:3:\"oms\";}s:8:\"username\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"Required
+  along with `password` if not \"refreshing\" the token\";s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"See
+  above\";s:4:\"type\";s:6:\"string\";}s:13:\"refresh_token\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"You
+  may request future tokens with the `refresh_token` from your previous `/oauth/access_token`
+  request\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:9:\"client_id\";i:1;s:13:\"client_secret\";i:2;s:10:\"grant_type\";i:3;s:5:\"scope\";}}s:19:\"accessTokenResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"access_token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"token_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:6:\"Bearer\";}s:10:\"expires_in\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"default\";i:604800;}s:13:\"refresh_token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:9:\"consignee\";O:8:\"stdClass\":3:{s:8:\"required\";a:8:{i:0;s:2:\"id\";i:1;s:9:\"firstName\";i:2;s:8:\"lastName\";i:3;s:8:\"address1\";i:4;s:15:\"addressLocality\";i:5;s:13:\"addressRegion\";i:6;s:10:\"postalCode\";i:7;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"address1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"address2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"addressLocality\";O:8:\"stdClass\":2:{s:11:\"description\";s:4:\"City\";s:4:\"type\";s:6:\"string\";}s:13:\"addressRegion\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Province
+  / State\";s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Postal
+  Code / Zip\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Ideally
+  provide the two character ISO code\";s:4:\"type\";s:6:\"string\";}s:11:\"companyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"iso\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/isoCountry\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:9:\"updatedBy\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/user\";}}s:4:\"type\";s:6:\"object\";}s:10:\"isoCountry\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Country
+  Name\";s:4:\"type\";s:6:\"string\";}s:4:\"iso2\";O:8:\"stdClass\":5:{s:11:\"description\";s:22:\"Two
+  character ISO code\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:8:\"[A-Z]{2}\";s:7:\"minimum\";i:2;s:7:\"maximum\";i:2;}}s:4:\"type\";s:6:\"object\";}s:8:\"merchant\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Merchant
+  Company Name\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"newContactInfo\";O:8:\"stdClass\":3:{s:8:\"required\";a:8:{i:0;s:9:\"firstName\";i:1;s:8:\"lastName\";i:2;s:5:\"email\";i:3;s:5:\"phone\";i:4;s:8:\"address1\";i:5;s:15:\"addressLocality\";i:6;s:13:\"addressRegion\";i:7;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Email,
+  required for international shipments\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Phone
+  number, required for international shipments\";s:4:\"type\";s:6:\"string\";}s:8:\"address1\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Address
+  Line 1\";s:4:\"type\";s:6:\"string\";}s:8:\"address2\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Address
+  Line 2\";s:4:\"type\";s:6:\"string\";}s:15:\"addressLocality\";O:8:\"stdClass\":2:{s:11:\"description\";s:4:\"City\";s:4:\"type\";s:6:\"string\";}s:13:\"addressRegion\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Province
+  / State\";s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Postal
+  Code / Zip\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"Country,
+  for best results please provide the two character ISO code\";s:4:\"type\";s:6:\"string\";}s:11:\"companyName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"newOrder\";O:8:\"stdClass\":3:{s:8:\"required\";a:4:{i:0;s:15:\"merchantOrderId\";i:1;s:5:\"items\";i:2;s:9:\"recipient\";i:3;s:14:\"shippingMethod\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"merchantId\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Necessary
+  if you have a multitenancy account, otherwise we will associate the order with your
+  account\";s:4:\"type\";s:7:\"integer\";}s:15:\"merchantOrderId\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Unique
+  ID provided by the merchant\";s:4:\"type\";s:6:\"string\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/newOrderItem\";}}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/newContactInfo\";}s:14:\"shippingMethod\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"notes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"integrator\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"newOrderItem\";O:8:\"stdClass\":3:{s:8:\"required\";a:3:{i:0;s:3:\"sku\";i:1;s:13:\"declaredValue\";i:2;s:8:\"quantity\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;}s:3:\"sku\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"declaredValue\";O:8:\"stdClass\":3:{s:11:\"description\";s:211:\"Using
+  USD, a per unit value of a single SKU. If your declaring a kit this is the sum total
+  for a single kit. In both scenarios we will multiply the `declaredValue` against
+  the `quantity` for customs declaration.\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}s:4:\"type\";s:6:\"object\";}s:5:\"order\";O:8:\"stdClass\":3:{s:8:\"required\";a:8:{i:0;s:2:\"id\";i:1;s:15:\"merchantOrderId\";i:2;s:22:\"merchantShippingMethod\";i:3;s:10:\"recordedOn\";i:4;s:8:\"merchant\";i:5;s:13:\"currentStatus\";i:6;s:17:\"originalConsignee\";i:7;s:18:\"validatedConsignee\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"FDC
+  ID for this order\";s:4:\"type\";s:7:\"integer\";}s:11:\"parentOrder\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Reference
+  to parent `id` if order was grouped\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:15:\"merchantOrderId\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Merchant
+  provided ID\";s:4:\"type\";s:6:\"string\";}s:16:\"purchaseOrderNum\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Merchant
+  provided PO#\";s:4:\"type\";s:6:\"string\";}s:22:\"merchantShippingMethod\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Requested
+  ship method\";s:4:\"type\";s:6:\"string\";}s:10:\"recordedOn\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"DateTime
+  order was recorded by FDC\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:12:\"dispatchDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"DateTime
+  order was dispatched for fulfillment by FDC\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"departDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"DateTime
+  order departed an FDC warehouse\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:8:\"merchant\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/merchant\";}s:9:\"warehouse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/warehouse\";}s:13:\"currentStatus\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/statusEvent\";}s:17:\"originalConsignee\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/consignee\";}s:18:\"validatedConsignee\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/consignee\";}s:15:\"trackingNumbers\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/trackingNumber\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:11:\"ordersArray\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/order\";}}s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/pagination\";}}s:4:\"type\";s:6:\"object\";}s:9:\"orderShip\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"trackingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Tracking
+  number of package\";s:4:\"type\";s:6:\"string\";}s:14:\"weightOverride\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Override
+  predicted weight of package\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}}s:4:\"type\";s:6:\"object\";}s:10:\"pagination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"total\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Total
+  number of records available to request\";s:4:\"type\";s:7:\"integer\";}s:5:\"count\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Count
+  of records returned in response, this will be equal to or less then the limit paramater\";s:4:\"type\";s:7:\"integer\";}s:11:\"currentPage\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Current
+  page of the response, this will match the page paramater\";s:4:\"type\";s:7:\"integer\";}s:10:\"totalPages\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Total
+  number of pages available to request\";s:4:\"type\";s:7:\"integer\";}}}s:13:\"standardError\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:24:\"standardErrorWithContext\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"context\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":0:{}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:11:\"statusEvent\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"DateTime
+  of Status Event\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"reason\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Explanation
+  for status\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/statusType\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/user\";}}s:4:\"type\";s:6:\"object\";}s:10:\"statusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:4:\"code\";i:1;s:10:\"detailCode\";i:2;s:5:\"stage\";i:3;s:5:\"state\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Depricated,
+  use code instead\";s:4:\"type\";s:7:\"integer\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"Code,
+  see [status codes](#section/Getting-Started/Status-Codes)\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{6}$\";}s:10:\"detailCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{2}$\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Depricated,
+  use stage/state instead\";s:4:\"type\";s:6:\"string\";}s:6:\"reason\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Depricated\";s:4:\"type\";s:6:\"string\";}s:6:\"detail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"stage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"actionRequiredBy\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Responsibility
+  for resolving this issue\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"Human
+  readable description of responsible party to resolve the issue\";}}}s:8:\"isClosed\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Depricated,
+  does this status event close the order\";s:4:\"type\";s:7:\"boolean\";}}}s:16:\"statusTypeSimple\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:6:\"status\";i:1;s:6:\"reason\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"code\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:7:\"^\\d{6}$\";}}}s:6:\"reason\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Human-readable
+  description\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"trackingNumber\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  human readable tracking number recipients (consignee) expect\";s:4:\"type\";s:6:\"string\";}s:16:\"barcodeScanValue\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  computer readable alternative to the human readable\";s:4:\"type\";s:6:\"string\";}s:7:\"carrier\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"user\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:9:\"warehouse\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}}"
+...

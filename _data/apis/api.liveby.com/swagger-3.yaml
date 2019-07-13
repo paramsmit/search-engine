@@ -1,0 +1,282 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:141:\"Access LiveBy's
+  entire suite of hyper-local data through our custom API to create or enhance your
+  own products. Need API access? Let us know!\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:6:\"LiveBy\";s:14:\"termsOfService\";s:25:\"https://liveby.com/terms/\";}"
+host: api.liveby.com
+basePath: /v1
+paths:
+  /simply-rets-service/properties:
+    post:
+      tags:
+      - Endpoints
+      description: Get properties in the given geometry.
+      parameters:
+      - name: body
+        in: body
+        description: Use this to filter properties by status.
+        schema:
+          type: object
+          properties:
+            status:
+              type: array
+              items:
+                type: string
+                enum:
+                - Active
+                - ActiveUnderContract
+                - Pending
+                - Closed
+            geometry:
+              $ref: '#/definitions/Geometry'
+            select:
+              description: Use this to return only the fields specified by this filter.
+              type: array
+              items:
+                type: string
+            offset:
+              description: Use this to page through properties.
+              default: 0
+              type: integer
+            limit:
+              description: Use this to increase or descrease the amount of properties
+                returned.
+              default: 20
+              type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Property'
+  /local-insights:
+    get:
+      tags:
+      - Endpoints
+      description: Get list of attributes people say about this area.
+      parameters:
+      - in: query
+        name: ne
+        description: NorthEast coordinate of the bounding box to find insights for.
+        required: true
+        type: string
+      - name: sw
+        in: query
+        description: SouthWest coordinate of the bounding box to find insights for.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/LocalInsight'
+  /schools:
+    get:
+      tags:
+      - Endpoints
+      description: Get schools and the info about them, sorted by distance to the
+        requested point.
+      consumes:
+      - application/json
+      parameters:
+      - name: lat
+        in: query
+        description: Latitude of the place to find schools for.
+        required: true
+        type: string
+      - name: lng
+        in: query
+        description: Longitude of the place to find schools for.
+        required: true
+        type: string
+      - name: state
+        in: query
+        description: Full length name of the state the coordinates exists in.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/School'
+  /market-stats:
+    post:
+      tags:
+      - Endpoints
+      description: Get market stats, by month, for a given area.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          type: object
+          properties:
+            geometry:
+              $ref: '#/definitions/Geometry'
+            months:
+              description: The amount of whole months that will be calculated. This
+                starts with the last completed month, and goes back the desired amount
+                of months.
+              type: number
+              default: 6
+            zipcode:
+              description: Filter properties by the zipcode they are in. Must be used
+                if geometry and city are not.
+              type: string
+            city:
+              description: Filter properties by the city they are in. Must be used
+                if geometry and zipcode are not.
+              type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/marketStats'
+  /agents/insights:
+    get:
+      tags:
+      - Endpoints
+      description: Get agent's description of a neighborhood.
+      parameters:
+      - name: brokerage
+        description: the agents' brokerage. Usually denoted by the brokerages domain
+          name.
+        in: query
+        type: string
+      - name: neighborhood
+        description: ID of boundary.
+        in: query
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AgentInsight'
+  /yelp-businesses:
+    post:
+      tags:
+      - Endpoints
+      description: Get points of interest in the area.
+      parameters:
+      - name: body
+        in: body
+        schema:
+          type: object
+          properties:
+            lat:
+              description: latitude of the center of the geometry
+              type: string
+            lng:
+              description: longitude of the center of the geometry
+              type: string
+            geometry:
+              $ref: '#/definitions/Geometry'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PointsOfInterest'
+  /events:
+    post:
+      tags:
+      - Endpoints
+      description: Get events near this geometry.
+      parameters:
+      - name: geometry
+        in: body
+        description: geometry used to find events in.
+        schema:
+          $ref: '#/definitions/Geometry'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Event'
+  /properties-attribute-aggregators:
+    post:
+      tags:
+      - Endpoints
+      description: Get current, or historical information about the market in the
+        area.
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              description: Whether to get historical or current information
+              enum:
+              - Active
+              - Closed
+            neighborhood:
+              description: The geometry of the neighborhood.
+              type: object
+              properties:
+                geometry:
+                  $ref: '#/definitions/Geometry'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PropertyAreaInfo'
+  /demographics:
+    post:
+      tags:
+      - Endpoints
+      description: Get demographics for a place.
+      parameters:
+      - name: body
+        description: The place to calculate demographics for.
+        in: body
+        schema:
+          type: object
+          properties:
+            neighborhood:
+              type: object
+              properties:
+                geometry:
+                  $ref: '#/definitions/Geometry'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Demographics'
+  /housing:
+    post:
+      tags:
+      - Endpoints
+      description: Get housing information for a place.
+      parameters:
+      - name: body
+        description: The place to calculate housing information for.
+        in: body
+        schema:
+          type: object
+          properties:
+            neighborhood:
+              type: object
+              properties:
+                geometry:
+                  $ref: '#/definitions/Geometry'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Housing'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":14:{s:8:\"Property\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":31:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"privateRemarks\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"property\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":40:{s:4:\"roof\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"cooling\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"style\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"area\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"bathsFull\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"bathsHalf\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"stories\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"fireplaces\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"flooring\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"heating\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bathrooms\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"foundation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"laundryFeatures\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"occupantName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"ownerName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"lotDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"pool\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"bedrooms\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"interiorFeatures\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"lotSize\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"areaSource\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"maintenanceExpense\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"additionalRooms\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"exteriorFeatures\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"water\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"view\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lotSizeArea\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"subdivision\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"construction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"parking\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"leased\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"spaces\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"lotSizeAreaUnits\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"garageSpaces\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:17:\"bathsThreeQuarter\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"accessibility\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"acres\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"occupantType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"subTypeText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"yearBuilt\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:5:\"mlsId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"terms\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"showingInstructions\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"office\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"office\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"cell\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"servingName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"brokerid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"leaseTerm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"disclaimer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:11:\"crossStreet\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"streetName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"streetNumberText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"streetNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"full\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"unit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"agreement\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"listDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"agent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"office\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"cell\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"modified\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"school\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"middleSchool\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"highSchool\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"elementarySchool\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"district\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"listPrice\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"listingId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"mls\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"area\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"daysOnMarket\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:21:\"originatingSystemName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"statusText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"areaMinor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"geo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"county\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"lat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:3:\"lng\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:10:\"marketArea\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"directions\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"tax\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"taxYear\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"taxAnnualAmount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"coAgent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"sales\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"closeDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"leaseType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"virtualTourUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"remarks\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"association\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"fee\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"amenities\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"lastCachedDate\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"vendor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"LocalInsight\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:6:\"School\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"schools\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":24:{s:4:\"gsId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"gradeRange\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"enrollment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"gsRating\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"parentRating\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"districtId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"district\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"districtNCESId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"fax\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"website\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"ncesId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"lat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"lon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"overviewLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"ratingsLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"reviewsLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"distance\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"schoolStatsLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:11:\"marketStats\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:3:\"DOM\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}s:11:\"ExpectToPay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:9:\"YearBuilt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}s:4:\"PPSF\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}s:9:\"SalePrice\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}s:13:\"AmountOfSales\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"monthly\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}}}s:12:\"AgentInsight\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"insights\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"fname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"lname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"brokerage\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"brokerageName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"website\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"photo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"neighborhood\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}s:16:\"PointsOfInterest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"dining\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"business\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"review_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}s:8:\"shopping\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"business\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"review_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}s:6:\"active\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"business\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"review_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}s:9:\"nightlife\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"business\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"review_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}s:6:\"beauty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"business\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"review_count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"photos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}}}s:5:\"Event\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"events\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":40:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"html\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"html\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"start\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"timezone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"local\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"utc\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"end\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"timezone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"local\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"utc\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"organization_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"changed\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"capacity\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:18:\"capacity_is_custom\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"currency\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"listed\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"shareable\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"online_event\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"tx_time_limit\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"hide_start_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"hide_end_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"locale\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_locked\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:15:\"privacy_setting\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"is_series\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"is_series_parent\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:19:\"is_reserved_seating\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"show_pick_a_seat\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:22:\"show_seatmap_thumbnail\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:32:\"show_colors_in_seatmap_thumbnail\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"is_free\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"logo_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"organizer_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"venue_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"category_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"subcategory_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"format_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"resource_uri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"series_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"logo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"crop_mask\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"top_left\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:1:\"x\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:1:\"y\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:5:\"width\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"height\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:8:\"original\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"width\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"height\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"aspect_ratio\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"edge_color\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"edge_color_set\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}}}}}s:16:\"PropertyAreaInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"avgBedrooms\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:12:\"avgBathrooms\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"avgSquareFeet\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"minPrice\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"maxPrice\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"count\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:12:\"Demographics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"demographics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:10:\"population\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"median_age\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"ages\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:12:\"ages_percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:23:\"median_household_income\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:17:\"unemployment_rate\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}s:9:\"diversity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"total\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"asian\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"african_american\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"hispanic\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"multiracial\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:15:\"native_american\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"other\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"pacific_islander\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"white\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:17:\"diversity_percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:14:\"total_educated\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:27:\"below_high_school_education\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:21:\"high_school_education\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:24:\"college_associate_degree\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:23:\"college_bachelor_degree\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:36:\"college_graduate_professional_degree\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:24:\"education_levels_percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}}}s:7:\"Housing\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"housing\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:24:\"median_home_construction\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:11:\"median_rent\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:21:\"home_occupied_percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}s:15:\"renter_occupied\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"owner_occupied\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}}}}s:8:\"Geometry\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:16:\"GeoJSon
+  geometry\";s:13:\"discriminator\";s:4:\"type\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:7:\"Polygon\";i:1;s:12:\"MultiPolygon\";}s:11:\"description\";s:17:\"the
+  geometry type\";}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"enum\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Polygon\";}i:1;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/MultiPolygon\";}}}}}}s:7:\"Polygon\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"GeoJSon
+  geometry\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Point2D\";}}}s:12:\"MultiPolygon\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"GeoJSon
+  geometry\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Point2D\";}}}}s:7:\"Point2D\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"maxItems\";i:2;s:8:\"minItems\";i:2;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}"
+...

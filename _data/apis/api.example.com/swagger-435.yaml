@@ -1,0 +1,1047 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:18:\"OpenWhisk REST API\";s:11:\"description\";s:17:\"API
+  for OpenWhisk\";s:7:\"version\";s:5:\"0.1.0\";}"
+basePath: /api/v1
+paths:
+  /namespaces:
+    get:
+      tags:
+      - Namespaces
+      description: Get all namespaces for authenticated user
+      summary: Get all namespaces for authenticated user
+      x-swagger-router-controller: namespaces
+      operationId: getAllNamespaces
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Array of namespaces
+          schema:
+            type: array
+            items:
+              type: string
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}:
+    get:
+      tags:
+      - Namespaces
+      description: Get all entities in a namespace
+      summary: Get all entities in a namespace
+      x-swagger-router-controller: namespaces
+      operationId: getAllEntitiesInNamespace
+      parameters:
+      - name: namespace
+        in: path
+        description: The namespace
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: All entities
+          schema:
+            type: object
+            required:
+            - actions
+            - triggers
+            - rules
+            - packages
+            properties:
+              actions:
+                type: array
+                items:
+                  $ref: '#/definitions/EntityBrief'
+              triggers:
+                type: array
+                items:
+                  $ref: '#/definitions/EntityBrief'
+              rules:
+                type: array
+                items:
+                  $ref: '#/definitions/EntityBrief'
+              packages:
+                type: array
+                items:
+                  $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/actions:
+    get:
+      tags:
+      - Actions
+      description: Get all actions
+      summary: Get all actions
+      x-swagger-router-controller: actions
+      operationId: getAllActions
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: Number of entities to include in the result.
+        required: false
+        type: integer
+      - name: skip
+        in: query
+        description: Number of entities to skip in the result.
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Actions response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/actions/{actionName}:
+    get:
+      tags:
+      - Actions
+      summary: Get action information
+      description: Get action information.
+      x-swagger-router-controller: actions
+      operationId: getActionByName
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: actionName
+        in: path
+        description: Name of action to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returned action
+          schema:
+            $ref: '#/definitions/Action'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    put:
+      tags:
+      - Actions
+      description: Create or update an action
+      summary: Create or update an action
+      x-swagger-router-controller: actions
+      operationId: updateAction
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: actionName
+        in: path
+        description: Name of action
+        required: true
+        type: string
+      - name: overwrite
+        in: query
+        description: Overwrite item if it exists. Default is false.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: action
+        in: body
+        description: The action being updated
+        required: true
+        schema:
+          $ref: '#/definitions/ActionPut'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          $ref: '#/responses/UpdatedItem'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        409:
+          $ref: '#/responses/Conflict'
+        413:
+          $ref: '#/responses/RequestEntityTooLarge'
+        500:
+          $ref: '#/responses/ServerError'
+    delete:
+      tags:
+      - Actions
+      description: Delete an action
+      summary: Delete an action
+      x-swagger-router-controller: actions
+      operationId: deleteAction
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: actionName
+        in: path
+        description: Name of action
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/responses/DeletedItem'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    post:
+      tags:
+      - Actions
+      description: Invoke an action
+      summary: Invoke an action
+      x-swagger-router-controller: actions
+      operationId: invokeAction
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: actionName
+        in: path
+        description: Name of action
+        required: true
+        type: string
+      - name: blocking
+        in: query
+        description: Blocking or non-blocking invocation. Default is non-blocking.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: result
+        in: query
+        description: Return only the result of a blocking activation. Default is false.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: timeout
+        in: query
+        description: Wait no more than specified duration in milliseconds for a blocking
+          response. Default value and max allowed timeout are 60000.
+        required: false
+        type: integer
+      - name: payload
+        in: body
+        description: The parameters for the action being invoked
+        required: true
+        schema:
+          $ref: '#/definitions/KeyValue'
+      responses:
+        200:
+          description: Successful activation
+          schema:
+            $ref: '#/definitions/Activation'
+        202:
+          description: Activation request accepted
+          $ref: '#/responses/AcceptedActivation'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        408:
+          $ref: '#/responses/Timeout'
+        500:
+          $ref: '#/responses/ServerError'
+        502:
+          description: Activation produced an application error
+          schema:
+            $ref: '#/definitions/Activation'
+  /namespaces/{namespace}/rules:
+    get:
+      tags:
+      - Rules
+      description: Get all rules
+      summary: Get all rules
+      x-swagger-router-controller: rules
+      operationId: getAllRules
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: Number of entities to include in the result.
+        required: false
+        type: integer
+      - name: skip
+        in: query
+        description: Number of entities to skip in the result.
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Rules response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/rules/{ruleName}:
+    get:
+      tags:
+      - Rules
+      description: Get rule information
+      summary: Get rule information
+      x-swagger-router-controller: rules
+      operationId: getRuleByName
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: ruleName
+        in: path
+        description: Name of rule to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returned rule
+          schema:
+            $ref: '#/definitions/Rule'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    put:
+      tags:
+      - Rules
+      description: Update a rule
+      summary: Update a rule
+      x-swagger-router-controller: rules
+      operationId: updateRule
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: ruleName
+        in: path
+        description: Name of rule to update
+        required: true
+        type: string
+      - name: overwrite
+        in: query
+        description: Overwrite item if it exists. Default is false.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: rule
+        in: body
+        description: The rule being updated
+        required: true
+        schema:
+          $ref: '#/definitions/RulePut'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          $ref: '#/responses/UpdatedItem'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        409:
+          $ref: '#/responses/Conflict'
+        413:
+          $ref: '#/responses/RequestEntityTooLarge'
+        500:
+          $ref: '#/responses/ServerError'
+    delete:
+      tags:
+      - Rules
+      description: Delete a rule
+      summary: Delete a rule
+      x-swagger-router-controller: rules
+      operationId: deleteRule
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: ruleName
+        in: path
+        description: Name of rule to delete
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/responses/DeletedItem'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    post:
+      tags:
+      - Rules
+      description: Enable or disable a rule
+      summary: Enable or disable a rule
+      x-swagger-router-controller: rules
+      operationId: setState
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: ruleName
+        in: path
+        description: Name of rule to update
+        required: true
+        type: string
+      - name: state
+        in: query
+        type: string
+        description: Set state to enable or disable
+        required: true
+        enum:
+        - disabled
+        - enabled
+      produces:
+      - application/json
+      responses:
+        200:
+          $ref: '#/responses/UpdatedItem'
+        202:
+          $ref: '#/responses/AcceptedRuleStateChange'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/triggers:
+    get:
+      tags:
+      - Triggers
+      description: Get all triggers
+      summary: Get all triggers
+      x-swagger-router-controller: triggers
+      operationId: getAllTriggers
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: Number of entities to include in the result.
+        required: false
+        type: integer
+      - name: skip
+        in: query
+        description: Number of entities to skip in the result.
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Triggers response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/triggers/{triggerName}:
+    get:
+      tags:
+      - Triggers
+      description: Get trigger information
+      summary: Get trigger information
+      x-swagger-router-controller: triggers
+      operationId: getTriggerByName
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: triggerName
+        in: path
+        description: Name of trigger to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returned trigger
+          schema:
+            $ref: '#/definitions/Trigger'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    put:
+      tags:
+      - Triggers
+      description: Update a trigger
+      summary: Update a trigger
+      x-swagger-router-controller: triggers
+      operationId: updateTrigger
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: triggerName
+        in: path
+        description: Name of trigger to update
+        required: true
+        type: string
+      - name: overwrite
+        in: query
+        description: Overwrite item if it exists. Default is false.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: trigger
+        in: body
+        description: The trigger being updated
+        required: true
+        schema:
+          $ref: '#/definitions/TriggerPut'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          $ref: '#/responses/UpdatedItem'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        409:
+          $ref: '#/responses/Conflict'
+        413:
+          $ref: '#/responses/RequestEntityTooLarge'
+        500:
+          $ref: '#/responses/ServerError'
+    delete:
+      tags:
+      - Triggers
+      description: Delete a trigger
+      summary: Delete a trigger
+      x-swagger-router-controller: triggers
+      operationId: deleteTrigger
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: triggerName
+        in: path
+        description: Name of trigger to delete
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/responses/DeletedItem'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    post:
+      tags:
+      - Triggers
+      description: Fire a trigger
+      summary: Fire a trigger
+      x-swagger-router-controller: triggers
+      operationId: fireTrigger
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: triggerName
+        in: path
+        description: Name of trigger being fired
+        required: true
+        type: string
+      - name: payload
+        in: body
+        description: The trigger payload
+        required: true
+        schema:
+          $ref: '#/definitions/KeyValue'
+      responses:
+        200:
+          description: Activation id
+          schema:
+            $ref: '#/definitions/ItemId'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        408:
+          $ref: '#/responses/Timeout'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/packages:
+    get:
+      tags:
+      - Packages
+      description: Get all packages
+      summary: Get all packages
+      x-swagger-router-controller: packages
+      operationId: getAlPackages
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: public
+        in: query
+        description: Include publicly shared entitles in the result.
+        required: false
+        type: boolean
+      - name: limit
+        in: query
+        description: Number of entities to include in the result.
+        required: false
+        type: integer
+      - name: skip
+        in: query
+        description: Number of entities to skip in the result.
+        required: false
+        type: integer
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Packages response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/packages/{packageName}:
+    get:
+      tags:
+      - Packages
+      summary: Get package information
+      description: Get package information.
+      x-swagger-router-controller: packages
+      operationId: getPackageByName
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: packageName
+        in: path
+        description: Name of package to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Returned package
+          schema:
+            $ref: '#/definitions/Package'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+    put:
+      tags:
+      - Packages
+      description: Create or update a package
+      summary: Create or update a package
+      x-swagger-router-controller: packages
+      operationId: updatePackage
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: packageName
+        in: path
+        description: Name of package
+        required: true
+        type: string
+      - name: overwrite
+        in: query
+        description: Overwrite item if it exists. Default is false.
+        required: false
+        type: string
+        enum:
+        - "true"
+        - "false"
+      - name: package
+        in: body
+        description: The package being updated
+        required: true
+        schema:
+          $ref: '#/definitions/PackagePut'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          $ref: '#/responses/UpdatedItem'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        409:
+          $ref: '#/responses/Conflict'
+        413:
+          $ref: '#/responses/RequestEntityTooLarge'
+        500:
+          $ref: '#/responses/ServerError'
+    delete:
+      tags:
+      - Packages
+      description: Delete a package
+      summary: Delete a package
+      x-swagger-router-controller: packages
+      operationId: deletePackage
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: packageName
+        in: path
+        description: Name of package
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/responses/DeletedItem'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/activations:
+    get:
+      tags:
+      - Activations
+      summary: Get activation ids
+      description: Get activation ids.
+      x-swagger-router-controller: activations
+      operationId: getActivations
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: name
+        in: query
+        description: Name of item
+        required: false
+        type: string
+      - name: limit
+        in: query
+        description: Number of entities to include in the result.
+        required: false
+        type: integer
+      - name: skip
+        in: query
+        description: Number of entities to skip in the result.
+        required: false
+        type: integer
+      - name: since
+        in: query
+        description: Only include entities later than this timestamp (measured in
+          milliseconds since Thu, 01 Jan 1970)
+        required: false
+        type: integer
+      - name: upto
+        in: query
+        description: Only include entities earlier than this timestamp (measured in
+          milliseconds since Thu, 01 Jan 1970)
+        required: false
+        type: integer
+      - name: docs
+        in: query
+        description: Whether to include full entity description.
+        required: false
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Activations response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityBrief'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/activations/{activationid}:
+    get:
+      tags:
+      - Activations
+      summary: Get activation information
+      description: Get activation information.
+      x-swagger-router-controller: activations
+      operationId: getActivationById
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: activationid
+        in: path
+        description: Name of activation to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Return output
+          schema:
+            $ref: '#/definitions/Activation'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/activations/{activationid}/logs:
+    get:
+      tags:
+      - Activations
+      summary: Get the logs for an activation
+      description: Get activation logs information.
+      x-swagger-router-controller: activations
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: activationid
+        in: path
+        description: Name of activation to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Return output
+          schema:
+            $ref: '#/definitions/ActivationLogs'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+  /namespaces/{namespace}/activations/{activationid}/result:
+    get:
+      tags:
+      - Activations
+      summary: Get the result of an activation
+      description: Get activation result.
+      x-swagger-router-controller: activations
+      parameters:
+      - name: namespace
+        in: path
+        description: The entity namespace
+        required: true
+        type: string
+      - name: activationid
+        in: path
+        description: Name of activation to fetch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Return output
+          schema:
+            $ref: '#/definitions/ActivationResult'
+        401:
+          $ref: '#/responses/UnauthorizedRequest'
+        404:
+          $ref: '#/responses/ItemNotFound'
+        500:
+          $ref: '#/responses/ServerError'
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":28:{s:8:\"KeyValue\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:11:\"description\";s:14:\"Any
+  JSON value\";}}}s:6:\"ItemId\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ErrorMessage\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"error\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"ActionLimits\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"Limits
+  on a specific action\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:30000;}s:6:\"memory\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:256;}}}s:11:\"EntityBrief\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";s:9:\"minLength\";i:1;}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}}}s:6:\"Action\";O:8:\"stdClass\":2:{s:8:\"required\";a:7:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";i:4;s:4:\"exec\";i:5;s:10:\"parameters\";i:6;s:6:\"limits\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";s:9:\"minLength\";i:1;}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:4:\"exec\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ActionExec\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:63:\"parameter
+  bindings included in the context passed to the action\";}s:6:\"limits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ActionLimits\";}}}s:9:\"ActionPut\";O:8:\"stdClass\":2:{s:11:\"description\";s:126:\"A
+  restricted Action view that elides properties that are auto-assigned or derived
+  from the URI (i.e., the namespace and name).\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:4:\"exec\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ActionExec\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:63:\"parameter
+  bindings included in the context passed to the action\";}s:6:\"limits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ActionLimits\";}}}s:10:\"ActionExec\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:4:\"kind\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"kind\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:9:{i:0;s:6:\"nodejs\";i:1;s:8:\"nodejs:6\";i:2;s:14:\"nodejs:default\";i:3;s:6:\"python\";i:4;s:5:\"swift\";i:5;s:7:\"swift:3\";i:6;s:13:\"swift:default\";i:7;s:4:\"java\";i:8;s:8:\"blackbox\";}s:11:\"description\";s:18:\"the
+  type of action\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  code to execute when kind is not 'blackbox'\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"container
+  image name when kind is 'blackbox'\";}s:4:\"init\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"optional
+  zipfile reference when code kind is 'nodejs'\";}}s:11:\"description\";s:76:\"definition
+  of the action, such as javascript code or the name of a container\";}s:13:\"ActionPayload\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"payload\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"payload\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  payload to pass to the action.\";}}}s:4:\"Rule\";O:8:\"stdClass\":2:{s:8:\"required\";a:7:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";i:4;s:6:\"status\";i:5;s:7:\"trigger\";i:6;s:6:\"action\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";s:9:\"minLength\";i:1;}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Status
+  of a rule\";s:4:\"enum\";a:4:{i:0;s:6:\"active\";i:1;s:8:\"inactive\";i:2;s:10:\"activating\";i:3;s:12:\"deactivating\";}}s:7:\"trigger\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Name
+  of the trigger\";s:9:\"minLength\";i:1;}s:6:\"action\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the action\";s:9:\"minLength\";i:1;}}}s:7:\"RulePut\";O:8:\"stdClass\":2:{s:11:\"description\";s:124:\"A
+  restricted Rule view that elides properties that are auto-assigned or derived from
+  the URI (i.e., the namespace and name).\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:7:\"trigger\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Name
+  of the trigger\";s:9:\"minLength\";i:1;}s:6:\"action\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the action\";s:9:\"minLength\";i:1;}}}s:7:\"Trigger\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";i:4;s:10:\"parameters\";i:5;s:6:\"limits\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";s:9:\"minLength\";i:1;}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:34:\"parameter
+  bindings for the trigger\";}s:6:\"limits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TriggerLimits\";}}}s:10:\"TriggerPut\";O:8:\"stdClass\":2:{s:11:\"description\";s:127:\"A
+  restricted Trigger view that elides properties that are auto-assigned or derived
+  from the URI (i.e., the namespace and name).\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:64:\"parameter
+  bindings included in the context passed to the trigger\";}s:6:\"limits\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/TriggerLimits\";}}}s:14:\"TriggerPayload\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:7:\"payload\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"payload\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  payload of the trigger event.\";}}}s:13:\"TriggerLimits\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Limits
+  on a specific trigger\";s:4:\"type\";s:6:\"object\";}s:7:\"Package\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";i:4;s:10:\"parameters\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"namespace\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";s:9:\"minLength\";i:1;}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";s:9:\"minLength\";i:1;}s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:25:\"parameter
+  for the package\";}s:7:\"binding\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PackageBinding\";}}}s:10:\"PackagePut\";O:8:\"stdClass\":2:{s:11:\"description\";s:127:\"A
+  restricted Package view that elides properties that are auto-assigned or derived
+  from the URI (i.e., the namespace and name).\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:11:\"annotations\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:23:\"annotations
+  on the item\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:25:\"parameter
+  for the package\";}s:7:\"binding\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PackageBinding\";}}}s:14:\"PackageBinding\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"namespace\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Namespace
+  of the item\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";}}}s:10:\"Activation\";O:8:\"stdClass\":2:{s:8:\"required\";a:10:{i:0;s:9:\"namespace\";i:1;s:4:\"name\";i:2;s:7:\"version\";i:3;s:7:\"publish\";i:4;s:7:\"subject\";i:5;s:12:\"activationId\";i:6;s:5:\"start\";i:7;s:3:\"end\";i:8;s:6:\"result\";i:9;s:4:\"logs\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:9:\"namespace\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Namespace
+  of the associated item\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Name
+  of the item\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Semantic
+  version of the item\";}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Whether
+  to publish the item or not\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  subject that activated the item\";}s:12:\"activationId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Id
+  of the activation\";}s:5:\"start\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Time
+  when the activation began\";}s:3:\"end\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Time
+  when the activation completed\";}s:6:\"result\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ActivationResult\";}s:4:\"logs\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Logs
+  generated by the activation\";}}}s:13:\"ActivationIds\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"ids\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:23:\"Array
+  of activation ids\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:14:\"ActivationInfo\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Activation
+  id\";s:9:\"minLength\";i:1;}s:6:\"result\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:17:\"Activation
+  result\";s:8:\"required\";a:1:{i:0;s:6:\"status\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"stdout\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Standard
+  output from activation\";}s:6:\"stderr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Standard
+  error from activation\";}}}s:14:\"ActivationLogs\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"logs\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"Interleaved
+  standard output and error of an activation\";}}}s:16:\"ActivationStderr\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"stderr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Standard
+  error of an activation\";}}}s:16:\"ActivationResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Exit
+  status of the activation\";}s:5:\"value\";O:8:\"stdClass\":1:{s:11:\"description\";s:36:\"The
+  return value from the activation\";}}}s:15:\"ProviderTrigger\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Name
+  of the trigger\";s:9:\"minLength\";i:1;}}}s:14:\"ProviderAction\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Name
+  of the action\";s:9:\"minLength\";i:1;}}}s:15:\"ProviderBinding\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Name
+  of the binding\";s:9:\"minLength\";i:1;}}}s:8:\"Provider\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Name
+  of the provider\";s:9:\"minLength\";i:1;}s:7:\"publish\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:38:\"Whether
+  to publish the provider or not\";}s:10:\"parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/KeyValue\";}s:11:\"description\";s:65:\"parameter
+  bindings included in the context passed to the provider\";}}}}"
+...

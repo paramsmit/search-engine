@@ -1,0 +1,943 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:1159:\"Since 2006, [Gisgraphy](http://www.gisgraphy.com)
+  is a free, open source framework that offers the possibility to do geolocalisation
+  and geocoding via Java APIs or REST webservices. Because geocoding is nothing without
+  data, it provides an easy to use importer that will automatically download and import
+  the necessary (free) data to your local database ([OpenStreetMap](http://www.openstreetmap.org/),
+  [Geonames](http://www.geonames.org/) and [Quattroshapes](http://www.quattroshapes.com/):
+  more than 100 million entries). You can also add your own data with the Web interface
+  or the importer connectors provided. Gisgraphy is production ready, and has been
+  designed to be scalable(load balanced), performant and used in other languages than
+  just java : results can be output in XML, JSON, PHP, Python, Ruby, YAML, GeoRSS,
+  and Atom. One of the most popular GPS tracking System (OpenGTS) also includes a
+  Gisgraphy client...Gisgraphy is a framework. As a result it's flexible and powerful
+  enough to be used in a lot of different use cases. [read more](http://www.gisgraphy.com)\n\n\nif
+  you use the premium servers, you can use the api key to test the webservices\n\";s:7:\"version\";s:5:\"4.0.0\";s:5:\"title\";s:21:\"Gisgraphy
+  webservices\";s:14:\"termsOfService\";s:78:\"http://www.gisgraphy.com/free-access.php
+  | https://premium.gisgraphy.com/terms\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:26:\"davidmasclet@gisgraphy.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:16:\"LGPL
+  license V3.\";s:3:\"url\";s:37:\"http://www.gisgraphy.com/license.html\";}}"
+host: free.gisgraphy.com
+basePath: /
+paths:
+  /geocoding/geocode:
+    get:
+      tags:
+      - geocoding
+      summary: Geocode an address
+      description: The Gisgraphy geocoding service allows you to transform postal
+        addresses or other descriptions (a street, a city, a postal code, a country,
+        or a combination) of a location into a (latitude, longitude) coordinate.
+      operationId: geocode
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      parameters:
+      - name: address
+        in: query
+        description: A postal address, structured or not, a street, a city, a postal
+          code, a country, or a combination.
+        required: true
+        type: string
+      - name: country
+        in: query
+        description: The country where the place/address is. It is used to determine
+          the postal address format and to improve performance. It will probably be
+          optional in next version to ease the usability. The value must be the ISO
+          3166 Alpha 2 code of the country.
+        required: false
+        type: string
+      - name: postal
+        in: query
+        description: Whether the given address is a postal address. default to false.
+          In other words, if the address follow the specification or if it is a well-formed
+          address as it was written on an envelope. This parameter will enable the
+          parsing of the address by the address parser before geocoding, this way,
+          the relevance will be better because because if parsing is successful, we
+          will know the meaning of each word. Note that you can also specify each
+          field if you already know them.
+        required: false
+        type: string
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        default: XML
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: 'The first pagination index. Numbered from 1. If the number is
+          < 1 or not specified, it will be set to the default value : 1'
+        required: false
+        default: 1
+        type: integer
+        format: int32
+      - name: to
+        in: query
+        description: The last pagination index. if < 1 or not specified, it will be
+          set to startindex + 10. Max = 10 (can be changed)
+        required: false
+        type: integer
+        format: int32
+        default: 10
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results. Possible values are true or false (or on
+          when used with the rest service. If you use a checkbox in a web form, to
+          indent the results, the value will be ''on'' or ''off'', so for a simple
+          use : the value of indent can be ''true'' or ''on'''
+        required: false
+        default: "false"
+        type: boolean
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/AddressResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+  /reversegeocoding/reversegeocode:
+    get:
+      tags:
+      - reversegeocoding
+      summary: Reverse geocode an address
+      description: The Reverse geocoding service allows to search for an address for
+        a given GPS position.
+      operationId: reversegeocode
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      - text/plain
+      parameters:
+      - name: lat
+        in: query
+        description: The latitude (north-south) for the location point to search around.
+          The value is a floating number, between -90 and +90. It uses GPS coordinates
+        required: true
+        type: number
+        format: double
+      - name: lng
+        in: query
+        description: TThe longitude (east-West) for the location point to search around.
+          The value is a floating number between -180 and +180. It uses GPS coordinates.
+        required: true
+        type: number
+        format: double
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        default: XML
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: 'The first pagination index. Numbered from 1. If the number is
+          < 1 or not specified, it will be set to the default value : 1'
+        required: false
+        default: 1
+        type: integer
+        format: int32
+      - name: to
+        in: query
+        description: The last pagination index. if < 1 or not specified, it will be
+          set to startindex + 10. Max = 10 (can be changed)
+        required: false
+        type: integer
+        format: int32
+        default: 10
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results. Possible values are true or false (or on
+          when used with the rest service. If you use a checkbox in a web form, to
+          indent the results, the value will be ''on'' or ''off'', so for a simple
+          use : the value of indent can be ''true'' or ''on'''
+        required: false
+        default: "false"
+        type: boolean
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/AddressResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+  /street/find:
+    get:
+      tags:
+      - streetservice
+      summary: Geocode an address
+      description: 'The street service allows you to search for street by GPS position.
+        You can : Specify GPS position, Give the beginning or a part of the name of
+        the street (useful for autocompletion), Limit search to a specific type (e.g
+        : Pedestrian, highway, residential, ... 25 types available), Limit search
+        to a specified radius, Limit search to one way streets,'
+      operationId: streetsearch
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      - text/plain
+      parameters:
+      - name: lat
+        in: query
+        description: The latitude (north-south) for the location point to search around.
+          The value is a floating number, between -90 and +90. It uses GPS coordinates
+        required: true
+        type: number
+        format: double
+      - name: lng
+        in: query
+        description: TThe longitude (east-West) for the location point to search around.
+          The value is a floating number between -180 and +180. It uses GPS coordinates.
+        required: true
+        type: number
+        format: double
+      - name: radius
+        in: query
+        description: distance from the location point in meters we'd like to search
+          around. The value is a number > 0 if it is not specify or incorrect.
+        default: 10000
+        required: false
+        type: number
+        format: double
+      - name: oneway
+        in: query
+        description: 'whether the street should be a oneWay street (optional) : limit
+          the search to the street that are one way street. If you use a checkbox
+          in a form to indent the results, the value will be ''on'' or ''off'', so
+          to simplify the use : the value for the web service can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      - name: distance
+        in: query
+        description: 'Whether (or not) we want the distance field to be output. This
+          option is useful to improve the performance if we don''t care about the
+          distance (e.g : we search for name). Of course, the results won''t be sorted
+          by distance. If you use a checkbox in a form to indent the results, the
+          value will be ''on'' or ''off'', so to simplify the use : the value for
+          the web service can be ''true'' or ''on'''
+        required: false
+        default: true
+        type: boolean
+      - name: streettype
+        in: query
+        description: filter search with a stret type
+        required: false
+        type: string
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        default: XML
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: 'The first pagination index. Numbered from 1. If the number is
+          < 1 or not specified, it will be set to the default value : 1'
+        required: false
+        default: 1
+        type: integer
+        format: int32
+      - name: to
+        in: query
+        description: The last pagination index. if < 1 or not specified, it will be
+          set to startindex + 10. Max = 10 (can be changed)
+        required: false
+        type: integer
+        format: int32
+        default: 10
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results. Possible values are true or false (or on
+          when used with the rest service. If you use a checkbox in a web form, to
+          indent the results, the value will be ''on'' or ''off'', so for a simple
+          use : the value of indent can be ''true'' or ''on'''
+        required: false
+        default: "false"
+        type: boolean
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/StreetSearchResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+  /geoloc/search:
+    get:
+      tags:
+      - geolocalisation
+      summary: Geocode an address
+      description: 'The geolocalisation service allows to search for features around
+        a earth location. you can Specify GPS position, Limit the results to a specific
+        place type (e.g : search all monuments around a point), Limit the results
+        to a specified radius, Paginate the results, Tells if you want the output
+        to be indented (currently, applies only for XML, not JSON for performance
+        reasons. May change in next version)'
+      operationId: geoloc
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      - text/plain
+      parameters:
+      - name: lat
+        in: query
+        description: The latitude (north-south) for the location point to search around.
+          The value is a floating number, between -90 and +90. It uses GPS coordinates
+        required: true
+        type: number
+        format: double
+      - name: lng
+        in: query
+        description: TThe longitude (east-West) for the location point to search around.
+          The value is a floating number between -180 and +180. It uses GPS coordinates.
+        required: true
+        type: number
+        format: double
+      - name: radius
+        in: query
+        description: distance from the location point in meters we'd like to search
+          around. The value is a number > 0 if it is not specify or incorrect.
+        default: 10000
+        required: false
+        type: number
+        format: double
+      - name: distance
+        in: query
+        description: 'Whether (or not) we want the distance field to be output. This
+          option is useful to improve the performance if we don''t care about the
+          distance (e.g : we search for name). Of course, the results won''t be sorted
+          by distance. If you use a checkbox in a form to indent the results, the
+          value will be ''on'' or ''off'', so to simplify the use : the value for
+          the web service can be ''true'' or ''on'''
+        required: false
+        default: true
+        type: boolean
+      - name: placetype
+        in: query
+        description: filter search for a given placetype
+        required: false
+        type: string
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        default: XML
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: 'The first pagination index. Numbered from 1. If the number is
+          < 1 or not specified, it will be set to the default value : 1'
+        required: false
+        default: 1
+        type: integer
+        format: int32
+      - name: to
+        in: query
+        description: The last pagination index. if < 1 or not specified, it will be
+          set to startindex + 10. Max = 10 (can be changed)
+        required: false
+        type: integer
+        format: int32
+        default: 10
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results.Default to false. Possible values are true
+          or false (or on when used with the rest service. If you use a checkbox in
+          a web form, to indent the results, the value will be ''on'' or ''off'',
+          so for a simple use : the value of indent can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/GeolocResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+  /fulltext/search:
+    get:
+      tags:
+      - fulltext - autocomplete
+      summary: search for places by text around a GPS point
+      description: 'The full text service allows you to search for features / places
+        / street and do autocompletion . you can : Specify one or more words search
+        on part of the name (auto completion / suggestion) Search for text or zip
+        code Specify a GPS restriction (promote nearest, not sorted but has an impact
+        on the score), Limit the results to a specific Language, Country, place type,
+        Paginate the results, Specify the output verbosity, Tells if you want the
+        output to be indented, Tells that all words are required or not, The search
+        is case insensitive, use synonyms (Saint/st, ..), separator characters stripping,
+        ...'
+      operationId: fulltxtsearch
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      - text/plain
+      parameters:
+      - name: q
+        in: query
+        description: 'The searched text : The text for the query can be a zip code,
+          a string or one or more strings'
+        required: true
+        type: string
+      - name: allwordsrequired
+        in: query
+        description: Whether the fulltext engine should considers all the words specified
+          as required. Defaults to false (since v 4.0). possible values are true|false
+          (or 'on' when used with the rest service)
+        required: true
+        type: boolean
+        default: "false"
+      - name: spellchecking
+        in: query
+        description: 'The spellchecking (optional) : whether some suggestions should
+          be provided if no results are found'
+        required: false
+        type: string
+      - name: lat
+        in: query
+        description: The latitude (north-south) for the location point to search around.
+          The value is a floating number, between -90 and +90. It uses GPS coordinates
+        required: false
+        type: number
+        format: double
+      - name: lng
+        in: query
+        description: TThe longitude (east-West) for the location point to search around.
+          The value is a floating number between -180 and +180. It uses GPS coordinates.
+        required: false
+        type: number
+        format: double
+      - name: radius
+        in: query
+        description: distance from the location point in meters we'd like to search
+          around. The value is a number > 0 if it is not specify or incorrect.
+        default: 10000
+        required: false
+        type: number
+        format: double
+      - name: suggest
+        default: "false"
+        in: query
+        type: boolean
+        description: If this parameter is set then it will search in part of the names
+          of the street, place,.... It allow you to do auto completion auto suggestion.
+          See the Gisgraphy leaflet plugin for more details. The JSON format will
+          be forced if this parameter is true. See auto completion / suggestions engine
+          for more details
+      - name: style
+        in: query
+        type: string
+        enum:
+        - SHORT
+        - MEDIUM
+        - LONG
+        - FULL
+        default: MEDIUM
+        description: 'The output style verbosity (optional) : Determines the output
+          verbosity. 4 styles are available'
+      - name: country
+        in: query
+        type: string
+        description: 'limit the search to the specified ISO 3166 country code. Default
+          : search in all countries'
+        required: false
+      - name: lang
+        in: query
+        type: string
+        description: 'The language code (optional) : The iso 639 Alpha2 or alpha3
+          Language Code. Some properties such as the AlternateName AdmNames and countryname
+          belong to a certain language code. The language parameter can limit the
+          output of those fields to a certain language (it only apply when style parameter=''style'')
+          : If the language code does not exists or is not specified, properties with
+          all the languages are retrieved If it exists, the properties with the specified
+          language code, are retrieved'
+        required: false
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        - ATOM
+        - GEORSS
+        default: XML
+        required: false
+        type: string
+      - name: from
+        in: query
+        description: 'The first pagination index. Numbered from 1. If the number is
+          < 1 or not specified, it will be set to the default value : 1'
+        required: false
+        default: 1
+        type: integer
+        format: int32
+      - name: to
+        in: query
+        description: The last pagination index. if < 1 or not specified, it will be
+          set to startindex + 10. Max = 10 (can be changed)
+        required: false
+        type: integer
+        format: int32
+        default: 10
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results.Default to false. Possible values are true
+          or false (or on when used with the rest service. If you use a checkbox in
+          a web form, to indent the results, the value will be ''on'' or ''off'',
+          so for a simple use : the value of indent can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/FulltextResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+  /addressparser/parse:
+    get:
+      tags:
+      - addressparser - standardizer
+      summary: split a raw address into several parts
+      description: 'The address parser and address standardizer, are part of the Gisgraphy
+        project (free open source worldwide geocoder). Address parsing is the process
+        of dividing a single address string into its individual component parts. Please
+        visit [http://www.address-parser.net](http://www.address-parser.net) for more
+        details '
+      operationId: addressparsing
+      produces:
+      - application/json
+      - application/xml
+      - application/php
+      - application/ruby
+      - application/yaml
+      - application/python
+      parameters:
+      - name: address
+        in: query
+        description: A postal address.
+        required: true
+        type: string
+      - name: country
+        in: query
+        description: The ISO 3166 Alpha 2 code of the country.
+        required: false
+        type: string
+      - name: format
+        in: query
+        description: The output format.
+        enum:
+        - XML
+        - JSON
+        - PHP
+        - RUBY
+        - PYTHON
+        - YAML
+        default: XML
+        required: false
+        type: string
+      - name: callback
+        in: query
+        description: The callback method name (optional), use to wrap the content
+          into a (alphanumeric) Javascript method. Works only for script output formats
+          (JSON, PHP, Ruby, Python)
+        required: false
+        type: string
+      - name: indent
+        in: query
+        description: 'indents the results.Default to false. Possible values are true
+          or false (or on when used with the rest service. If you use a checkbox in
+          a web form, to indent the results, the value will be ''on'' or ''off'',
+          so for a simple use : the value of indent can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      - name: standardize
+        in: query
+        description: 'Whether the address should be standardized after parsing, the
+          value will be ''on'' or ''off'', so for a simple use : the value of indent
+          can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      - name: geocode
+        in: query
+        description: 'UNUSED YET. Whether the address should be geocoded after parsing,
+          the value will be ''on'' or ''off'', so for a simple use : the value of
+          indent can be ''true'' or ''on'''
+        required: false
+        type: boolean
+        default: "false"
+      responses:
+        200:
+          description: Sucessfully processed
+          schema:
+            $ref: '#/definitions/AddressResultsDto'
+        401:
+          description: Need auth. The API key parameter is missing or wrong, or doesn't
+            correspond to any subscriptions
+        403:
+          description: Unhauthorize (auth will change nothing).Your IP is not allowed.
+        412:
+          description: Missing parameter. Some parameters required for the webservices
+            ar missing, please consult documentation
+        429:
+          description: Too many requests. You exceed the authorized rate
+        500:
+          description: Internal error
+      security:
+      - api_key: []
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":9:{s:17:\"AddressResultsDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"a
+  message\";}s:8:\"numFound\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:21:\"how
+  many result found\";}s:5:\"QTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:23:\"how
+  long the query took\";}s:13:\"parsedAddress\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Address\";s:11:\"description\";s:18:\"the
+  parsed address\";}s:6:\"result\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}}}}s:7:\"Address\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":46:{s:23:\"nameAlternatesLocalized\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"adm1NameAlternatesLocalized\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"adm2NameAlternatesLocalized\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:30:\"countryNameAlternatesLocalized\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"geocodinglevel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:4:\"NONE\";i:1;s:12:\"HOUSE_NUMBER\";i:2;s:6:\"STREET\";i:3;s:4:\"CITY\";i:4;s:5:\"STATE\";i:5;s:7:\"COUNTRY\";}}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:38:\"An
+  internal ID to identify the address\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:28:\"The
+  longitude of the address\";}s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:27:\"The
+  latitude of the address\";}s:10:\"confidence\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"An
+  indicator that mesure how the parser is confident for the result\";}s:8:\"distance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:73:\"The
+  distance of the address for the given parameter location in the query\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:114:\"Name
+  of the place, it is null in case of address but filled if common place. Name is
+  different than recipient name\";}s:13:\"recipientName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"Name
+  of the organisation or person at the given address\";}s:11:\"houseNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:87:\"Official
+  number assigned to an address by the municipality, several languages supported\";}s:15:\"houseNumberInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"All
+  information that give extra information on the house number\";}s:10:\"streetName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  official name of the street or the ordinal number\";}s:10:\"streetType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  type of the street\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:172:\"The
+  city or locality, a small town or village name sometimes is included in an address
+  when the Delivery Point is outside the boundary of the main Post Town that serves
+  it.\";}s:15:\"citySubdivision\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"A
+  sub division of a city\";}s:17:\"dependentLocality\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"'Sub'
+  city atached to a big city\";}s:8:\"postTown\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:71:\"a
+  city is a required part of all postal addresses in the United Kingdom\";}s:10:\"prefecture\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"prefecture
+  of China\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"The
+  state or county when applicable, can be fullname or abbreviation\";}s:8:\"district\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  district, mainly use for Russia\";}s:7:\"quarter\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"A
+  section of an urban settlement\";}s:7:\"zipCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"The
+  zip or post code\";}s:9:\"extraInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Informations
+  on floor, unit, and sometimes POBOX,...\";}s:9:\"suiteType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"Informations
+  on the unit, mainly used and filled by standardizer\";}s:11:\"suiteNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"Informations
+  on the unit, mainly used and filled by standardizer\";}s:5:\"POBox\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Post
+  office box, Boite postale, Casilla de Correo,...\";}s:9:\"POBoxInfo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:66:\"extra
+  info on post office box, Boite postale, Casilla de Correo,..\";}s:11:\"POBoxAgency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"Agency
+  where the office box, Boite postale, Casilla de Correo is\";}s:12:\"preDirection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"The
+  cardinal direction before the name of the street\";}s:13:\"postDirection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  cardinal direction after the name of the street\";}s:22:\"streetNameIntersection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  official name of the intersection street\";}s:22:\"streetTypeIntersection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  type of the intersection street\";}s:24:\"preDirectionIntersection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:65:\"The
+  cardinal direction before the name of the intersection street\";}s:25:\"postDirectionIntersection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"The
+  cardinal direction after the name of the intersection street\";}s:17:\"civicNumberSuffix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"The
+  number that follows the house number (Canada only)\";}s:5:\"floor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  floor in an address, not a floor number in a unit (Brasilia only)\";}s:6:\"sector\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  sector in an address (Brasilia only)\";}s:8:\"quadrant\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"The
+  quadrant in an address (Brasilia only)\";}s:5:\"block\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"The
+  block in an address (Brasilia only) the block in austria, singapore,... address\";}s:4:\"lote\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Lote
+  in Brazilian address\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"The
+  country name\";}s:11:\"countrycode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  countrycode given in the request\";}s:4:\"ward\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Ward
+  in japanese address\";}}}s:18:\"FulltextResultsDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"a
+  message\";}s:8:\"numFound\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:51:\"how
+  many results were found whatever the pagination\";}s:5:\"QTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:23:\"how
+  long the query took\";}s:11:\"resultsSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:27:\"how
+  many results are return\";}s:8:\"maxScore\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:49:\"the
+  max score value accross all the results found\";}s:6:\"result\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/SolrResponseDto\";}}}}s:15:\"SolrResponseDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":59:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  name of the feature\";}s:5:\"score\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:51:\"a
+  number that indicates the relevance of the result\";}s:15:\"name_alternates\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:70:\"The
+  alternate names of the feature that without specific language code\";}s:10:\"feature_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"A
+  unique id that identify the feature\";}s:13:\"feature_class\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"The
+  feature Class.\";}s:12:\"feature_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  feature Code.\";}s:10:\"name_ascii\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"The
+  ASCII name\";}s:9:\"elevation\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:19:\"Elevation
+  in meters\";}s:7:\"gtopo30\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"Average
+  elevation of 30'x30' (ca 900mx900m) area in meters\";}s:8:\"timezone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  timezone (e.g :Europe/Paris).\";}s:20:\"fully_qualified_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:114:\"A
+  name of the form : (adm1Name et adm2Name are printed) Paris, D\xE9partement de Ville-De-Paris,
+  Ile-De-France, (FR)\";}s:9:\"placetype\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  place Type of the Feature\";}s:10:\"population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"How
+  many people live in this feature\";}s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:26:\"The
+  latitude (north-south)\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:25:\"The
+  longitude (east-West)\";}s:9:\"adm1_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 1\";}s:9:\"adm2_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 2\";}s:9:\"adm3_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 3\";}s:9:\"adm4_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 4\";}s:9:\"continent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  continent the country belongs (only for country placetype)\";}s:13:\"currency_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:71:\"The
+  ISO 4217 Currency from the curencycode (only for country placetype)\";}s:13:\"currency_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"The
+  name of the currency of the country (only for country placetype)\";}s:9:\"fips_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:57:\"The
+  FIPS Code of the country (only for country placetype)\";}s:22:\"isoalpha2_country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  ISO 3166 alpha 2 code of the country (only for country placetype)\";}s:22:\"isoalpha3_country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"The
+  ISO 3166 alpha 3 code of the country (only for country placetype)\";}s:16:\"postal_code_mask\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"The
+  mask that postal codes should verify. e.g : ##### (only for country placetype)\";}s:17:\"postal_code_regex\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"The
+  regular expression that postal codes should verify (only for country placetype)\";}s:12:\"phone_prefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  phone prefix of the country. e.g : +33 .(only for country placetype)\";}s:16:\"spoken_languages\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:68:\"List
+  of languages spoken in the country (only for country placetype)\";}s:3:\"tld\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"Top
+  level domain of the country (only for country placetype)\";}s:12:\"capital_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"Name
+  of the capital of the country(only for country placetype)\";}s:4:\"area\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:55:\"Area
+  of the country in m\xB2 (only for country placetype)\";}s:5:\"level\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:55:\"Level
+  of the Adm 1 , 2, 3, or 4(only for Adm placetype)\";}s:9:\"adm1_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 1\";}s:20:\"adm1_names_alternate\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:92:\"The
+  alternate names of the administrative division of level 1 without specific language
+  code\";}s:9:\"adm2_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 2\";}s:20:\"adm2_names_alternate\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:92:\"The
+  alternate names of the administrative division of level 2 without specific language
+  code\";}s:9:\"adm3_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 3\";}s:9:\"adm4_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 4\";}s:8:\"zipcodes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:12:\"The
+  zipcodes\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  ISO 3166 country code\";}s:12:\"country_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  name of the country the features belongs to\";}s:23:\"country_names_alternate\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:65:\"The
+  alternate names of the country without specific language code\";}s:16:\"country_flag_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"The
+  relative URL to get the country flag image\";}s:14:\"google_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  URL to get the location on Google Map\";}s:13:\"yahoo_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  URL to get the location on Yahoo Map\";}s:21:\"openstreetmap_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  URL to get the location on OpenStreetMap.org\";}s:7:\"one_way\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:64:\"whether
+  the street is one way or not (only for placetype street)\";}s:6:\"length\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:52:\"The
+  length of the street (only for placetype street)\";}s:11:\"street_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  type of the street (only for placetype street)\";}s:16:\"openstreetmap_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:69:\"The
+  OpenStreetMap unique id of the street (only for placetype street)\";}s:5:\"is_in\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:139:\"Information
+  on the city where the street / POI is (depends on OpenStreetMap 'is_in' field),
+  the city in general (only for placetype street)\";}s:11:\"is_in_place\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:119:\"Information
+  on the place where the street / POI is (quater, common place). Generally a place
+  at a lower level than city\";}s:9:\"is_in_adm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:69:\"Information
+  of the administration division where the street / POI is.\";}s:9:\"is_in_zip\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:86:\"Information
+  of the zipcode where the street / POI is (often fill for placetype street)\";}s:23:\"fully_qualified_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"NOT
+  USED YET\";}s:13:\"house_numbers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/HouseNumberDto\";}s:11:\"description\";s:88:\"a
+  list of all the house numbers sorted and their coordinates (only for placetype street)\";}s:12:\"municipality\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:146:\"if
+  the place is a municipality. it is usefull for geonames feature that don't have
+  concept of 'city' but a populated place (that can be a quarter)\";}s:7:\"amenity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Informations
+  on category of OpenStreetMap POIs\";}}}s:14:\"HouseNumberDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  lat / long coordinate\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"the
+  house number value\";}}}s:16:\"GeolocResultsDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"numFound\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:84:\"The
+  number of results display with this query (it takes the pagination into account)\";}s:5:\"QTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"The
+  execution time of the query in ms\";}s:6:\"result\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/GisFeatureDistance\";}}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"A
+  String only present if an error occured (e.g : empty Latitude or longitude)\";}}}s:18:\"GisFeatureDistance\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":54:{s:8:\"distance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:60:\"The
+  distance beetween the point and the gisFeature in meters\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  name of the feature\";}s:8:\"adm1Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 1\";}s:8:\"adm2Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 2\";}s:8:\"adm3Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 3\";}s:8:\"adm4Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 4\";}s:8:\"adm5Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:60:\"The
+  internal code for the administrative division of level 5\";}s:8:\"adm1Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 1\";}s:8:\"adm2Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 2\";}s:8:\"adm3Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 3\";}s:8:\"adm4Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 4\";}s:8:\"adm5Name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  name of the administrative division of level 5\";}s:9:\"asciiName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  ASCII name of the feature\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  ISO 3166 country code\";}s:9:\"elevation\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:23:\"The
+  elevation in meters\";}s:12:\"featureClass\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"The
+  feature Class.\";}s:11:\"featureCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  feature Code.\";}s:9:\"featureId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"A
+  unique id that identify the feature\";}s:7:\"gtopo30\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"Average
+  elevation of 30'x30' (ca 900mx900m) area in meters\";}s:10:\"population\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:37:\"How
+  many people lives in this feature\";}s:8:\"timezone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  time zone (e.g : Europe/Paris)\";}s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:26:\"The
+  latitude (north-south)\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:25:\"The
+  longitude (east-West)\";}s:9:\"placeType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  Type of Feature see faq\";}s:6:\"oneWay\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Wether
+  the street is oneway or not\";}s:10:\"streetType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"the
+  type of the street\";}s:15:\"openstreetmapId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:35:\"the
+  id of the openstreetmap element\";}s:6:\"length\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:20:\"length
+  of the street\";}s:8:\"zipCodes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:70:\"The
+  zipcodes (only for city and city subdivision), one node by zipcode\";}s:14:\"google_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  URL to get the location on Google Map\";}s:13:\"yahoo_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  URL to get the location on Yahoo Map\";}s:21:\"openstreetmap_map_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  URL to get the location on Openstreetmap Map\";}s:16:\"country_flag_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"The
+  relative URL to get the country flag image\";}s:5:\"level\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:46:\"The
+  level of the Administrative division (1-5)\";}s:4:\"area\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:23:\"The
+  area of the feature\";}s:3:\"tld\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"top-level
+  domain name, (last part of an Internet domain name) of the country\";}s:11:\"capitalName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  Capital of the country\";}s:9:\"continent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  continent the country belongs\";}s:15:\"postalCodeRegex\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"The
+  regexp that all zipcode/postalcode of the country matches\";}s:12:\"currencyCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"The
+  Currency code (ISO_4217) of the country\";}s:12:\"currencyName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"The
+  Currency name of the country\";}s:18:\"equivalentFipsCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"The
+  fips Code of the country when no code are available\";}s:8:\"fipsCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"The
+  fips Code of the country\";}s:17:\"iso3166Alpha2Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  iso 3166 Alpha 2 code of the country\";}s:17:\"iso3166Alpha3Code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  iso 3166 Alpha 3 code of the country\";}s:18:\"iso3166NumericCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  iso 3166 numeric code of the country\";}s:11:\"phonePrefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"The
+  phone prefix of the country\";}s:14:\"postalCodeMask\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"The
+  mask that all postal code of the country matches\";}s:4:\"isIn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:139:\"Information
+  of the city where the street / POI is (depends on openstreetmap 'is_in' field),
+  the city in general (only for placetype street)\";}s:9:\"isInPlace\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:120:\"Information
+  of the place where the street / POI is (quarter, common place). Generally a place
+  at a lower level than city\";}s:7:\"isInAdm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:70:\"Information
+  of the administration division where the street / POI is. \";}s:7:\"isInZip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Information
+  of the zipcode where the street / POI is\"\";}s:7:\"amenity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Informations
+  on category of OpenStreetMap POIs\";}s:21:\"fullyQualifiedAddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"NOT
+  USED YET\";}}}s:22:\"StreetSearchResultsDto\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"numFound\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:84:\"The
+  number of results display with this query (it takes the pagination into account)\";}s:5:\"QTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"The
+  execution time of the query in ms\";}s:6:\"result\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/StreetDistance\";}}s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"A
+  String only present if an error occured (e.g : empty Latitude or longitude)\";}}}s:14:\"StreetDistance\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  name of the street\";}s:8:\"distance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:76:\"The
+  distance between the point and the nearest point to the street in meters\";}s:3:\"gid\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:72:\"Unique
+  id of the street, it is unique between GeoNames and OpenStreetMap\";}s:15:\"openstreetmapId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"OpenStreetMap
+  unique id of the street\";}s:10:\"streetType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  type of the street (see street type list)\";}s:6:\"oneWay\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:45:\"Whether
+  the street is a one way street or not\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  ISO 3166 country code\";}s:6:\"length\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:30:\"length
+  of the street in meters\";}s:3:\"lat\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:53:\"The
+  latitude of the middle of the street(north-south)\";}s:3:\"lng\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:52:\"The
+  longitude of the middle of the street(east-west)\";}s:4:\"isIn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:105:\"Information
+  on the city where the street is (depends on OpenStreetMap 'is_in' field), the city
+  in general\";}s:9:\"isInPlace\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:113:\"Information
+  on the place where the street is (quater, common place). Generally a place at a
+  lower level than city\";}s:7:\"isInAdm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Information
+  of the administration division where the street is.\";}s:7:\"isInZip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:86:\"Information
+  of the zipcode where the street / POI is (often fill for placetype street)\";}s:21:\"fullyQualifiedAddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"NOT
+  USED YET\";}}}}"
+...

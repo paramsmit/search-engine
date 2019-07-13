@@ -1,0 +1,231 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:60:\"Chatter service describing
+  the streaming features of goa v2.\";s:7:\"version\";s:0:\"\";}"
+host: localhost:80
+paths:
+  /echoer:
+    get:
+      tags:
+      - chatter
+      summary: echoer chatter
+      description: Echoes the message sent by the client.nn**Required security scopes
+        for jwt**:n  * `stream:write`
+      operationId: chatter#echoer
+      parameters:
+      - name: Authorization
+        in: header
+        description: JWT used for authentication
+        required: true
+        type: string
+      responses:
+        101:
+          description: Switching Protocols response.
+          schema:
+            type: string
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterEchoerUnauthorizedResponseBody'
+        403:
+          description: Forbidden response.
+          schema:
+            $ref: '#/definitions/ChatterEchoerInvalidScopesResponseBody'
+      schemes:
+      - ws
+      security:
+      - jwt_header_Authorization: []
+  /history:
+    get:
+      tags:
+      - chatter
+      summary: history chatter
+      description: Returns the chat messages sent to the server.nn**Required security
+        scopes for jwt**:n  * `stream:read`
+      operationId: chatter#history
+      parameters:
+      - name: view
+        in: query
+        description: View to use to render the result
+        required: false
+        type: string
+      - name: Authorization
+        in: header
+        description: JWT used for authentication
+        required: true
+        type: string
+      responses:
+        101:
+          description: Switching Protocols response.
+          schema:
+            $ref: '#/definitions/ChatterHistoryResponseBody'
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterHistoryUnauthorizedResponseBody'
+        403:
+          description: Forbidden response.
+          schema:
+            $ref: '#/definitions/ChatterHistoryInvalidScopesResponseBody'
+      schemes:
+      - ws
+      security:
+      - jwt_header_Authorization: []
+  /listener:
+    get:
+      tags:
+      - chatter
+      summary: listener chatter
+      description: Listens to the messages sent by the client.nn**Required security
+        scopes for jwt**:n  * `stream:write`
+      operationId: chatter#listener
+      parameters:
+      - name: Authorization
+        in: header
+        description: JWT used for authentication
+        required: true
+        type: string
+      responses:
+        101:
+          description: Switching Protocols response.
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterListenerUnauthorizedResponseBody'
+        403:
+          description: Forbidden response.
+          schema:
+            $ref: '#/definitions/ChatterListenerInvalidScopesResponseBody'
+      schemes:
+      - ws
+      security:
+      - jwt_header_Authorization: []
+  /login:
+    post:
+      tags:
+      - chatter
+      summary: login chatter
+      description: Creates a valid JWT token for auth to chat.
+      operationId: chatter#login
+      parameters:
+      - name: Authorization
+        in: header
+        description: Basic Auth security using Basic scheme (https://tools.ietf.org/html/rfc7617)
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK response.
+          schema:
+            type: string
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterLoginUnauthorizedResponseBody'
+      schemes:
+      - http
+      security:
+      - basic_header_Authorization: []
+  /subscribe:
+    get:
+      tags:
+      - chatter
+      summary: subscribe chatter
+      description: Subscribe to events sent when new chat messages are added.nn**Required
+        security scopes for jwt**:n  * `stream:write`
+      operationId: chatter#subscribe
+      parameters:
+      - name: Authorization
+        in: header
+        description: JWT used for authentication
+        required: true
+        type: string
+      responses:
+        101:
+          description: Switching Protocols response.
+          schema:
+            $ref: '#/definitions/ChatterSubscribeResponseBody'
+            required:
+            - message
+            - action
+            - added_at
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterSubscribeUnauthorizedResponseBody'
+        403:
+          description: Forbidden response.
+          schema:
+            $ref: '#/definitions/ChatterSubscribeInvalidScopesResponseBody'
+      schemes:
+      - ws
+      security:
+      - jwt_header_Authorization: []
+  /summary:
+    get:
+      tags:
+      - chatter
+      summary: summary chatter
+      description: Summarizes the chat messages sent by the client.nn**Required security
+        scopes for jwt**:n  * `stream:write`
+      operationId: chatter#summary
+      parameters:
+      - name: Authorization
+        in: header
+        description: JWT used for authentication
+        required: true
+        type: string
+      responses:
+        101:
+          description: Switching Protocols response.
+          schema:
+            $ref: '#/definitions/ChatterChatSummaryResponseCollection'
+        401:
+          description: Unauthorized response.
+          schema:
+            $ref: '#/definitions/ChatterSummaryUnauthorizedResponseBody'
+        403:
+          description: Forbidden response.
+          schema:
+            $ref: '#/definitions/ChatterSummaryInvalidScopesResponseBody'
+      schemes:
+      - ws
+      security:
+      - jwt_header_Authorization: []
+produces:
+- application/json
+- application/xml
+- application/gob
+definitions: !php/object "O:8:\"stdClass\":15:{s:19:\"ChatSummaryResponse\";O:8:\"stdClass\":6:{s:5:\"title\";s:63:\"Mediatype
+  identifier: application/vnd.goa.summary; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"length\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:26:\"Length
+  of the message sent\";s:7:\"example\";i:6954881285768448348;s:6:\"format\";s:5:\"int64\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Message
+  sent to the server\";s:7:\"example\";s:37:\"Soluta placeat vitae voluptatum quos.\";}s:7:\"sent_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Time
+  at which the message was sent\";s:7:\"example\";s:20:\"1997-01-25T18:27:11Z\";s:6:\"format\";s:9:\"date-time\";}}s:11:\"description\";s:46:\"ChatSummaryResponse
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"length\";i:7672494174533432916;s:7:\"message\";s:53:\"Velit
+  veritatis necessitatibus dolorem aut nisi unde.\";s:7:\"sent_at\";s:20:\"1981-05-28T21:50:07Z\";}s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:7:\"sent_at\";}}s:36:\"ChatterChatSummaryResponseCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:80:\"Mediatype
+  identifier: application/vnd.goa.summary; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ChatSummaryResponse\";}s:11:\"description\";s:89:\"SummaryResponseBody
+  is the result type for an array of ChatSummaryResponse (default view)\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":3:{s:6:\"length\";i:4832953061930875130;s:7:\"message\";s:52:\"Molestiae
+  autem voluptatem voluptate autem incidunt.\";s:7:\"sent_at\";s:20:\"1970-05-07T05:21:01Z\";}i:1;O:8:\"stdClass\":3:{s:6:\"length\";i:4832953061930875130;s:7:\"message\";s:52:\"Molestiae
+  autem voluptatem voluptate autem incidunt.\";s:7:\"sent_at\";s:20:\"1970-05-07T05:21:01Z\";}i:2;O:8:\"stdClass\":3:{s:6:\"length\";i:4832953061930875130;s:7:\"message\";s:52:\"Molestiae
+  autem voluptatem voluptate autem incidunt.\";s:7:\"sent_at\";s:20:\"1970-05-07T05:21:01Z\";}}}s:38:\"ChatterEchoerInvalidScopesResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:38:\"ChatterEchoerInvalidScopesResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Qui
+  quas.\";}s:37:\"ChatterEchoerUnauthorizedResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:37:\"ChatterEchoerUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"Culpa
+  deserunt occaecati et.\";}s:39:\"ChatterHistoryInvalidScopesResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:39:\"ChatterHistoryInvalidScopesResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:33:\"Adipisci
+  error impedit sunt modi.\";}s:26:\"ChatterHistoryResponseBody\";O:8:\"stdClass\":6:{s:5:\"title\";s:63:\"Mediatype
+  identifier: application/vnd.goa.summary; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"length\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:26:\"Length
+  of the message sent\";s:7:\"example\";i:2208363874951544999;s:6:\"format\";s:5:\"int64\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Message
+  sent to the server\";s:7:\"example\";s:44:\"Et quae explicabo iure reiciendis explicabo.\";}s:7:\"sent_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Time
+  at which the message was sent\";s:7:\"example\";s:20:\"1992-06-22T23:32:02Z\";s:6:\"format\";s:9:\"date-time\";}}s:11:\"description\";s:46:\"HistoryResponseBody
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"length\";i:8426054968519735487;s:7:\"message\";s:49:\"Nobis
+  iusto sint sapiente vitae quis perferendis.\";s:7:\"sent_at\";s:20:\"2015-07-12T20:28:18Z\";}s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:7:\"sent_at\";}}s:38:\"ChatterHistoryUnauthorizedResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:38:\"ChatterHistoryUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"Quas
+  eos eos velit dolorum consequuntur.\";}s:40:\"ChatterListenerInvalidScopesResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:40:\"ChatterListenerInvalidScopesResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:28:\"Odio
+  magni doloribus at nam.\";}s:39:\"ChatterListenerUnauthorizedResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:39:\"ChatterListenerUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Qui
+  ab quo atque.\";}s:36:\"ChatterLoginUnauthorizedResponseBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:36:\"ChatterLoginUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Credentials
+  are invalid\";s:7:\"example\";s:29:\"Ab laboriosam suscipit nihil.\";}s:41:\"ChatterSubscribeInvalidScopesResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:41:\"ChatterSubscribeInvalidScopesResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:43:\"Aliquam
+  est quaerat deleniti reprehenderit.\";}s:28:\"ChatterSubscribeResponseBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:28:\"ChatterSubscribeResponseBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"action\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"added\";s:4:\"enum\";a:1:{i:0;s:5:\"added\";}}s:8:\"added_at\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Time
+  at which the message was added\";s:7:\"example\";s:20:\"2002-09-30T13:38:52Z\";s:6:\"format\";s:9:\"date-time\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Message
+  sent to the server\";s:7:\"example\";s:30:\"Facilis non quos occaecati in.\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"action\";s:5:\"added\";s:8:\"added_at\";s:20:\"1976-07-27T17:31:27Z\";s:7:\"message\";s:21:\"Voluptatum
+  molestias.\";}s:8:\"required\";a:3:{i:0;s:7:\"message\";i:1;s:6:\"action\";i:2;s:8:\"added_at\";}}s:40:\"ChatterSubscribeUnauthorizedResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:40:\"ChatterSubscribeUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:35:\"Porro
+  quia quos eos enim accusamus.\";}s:39:\"ChatterSummaryInvalidScopesResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:39:\"ChatterSummaryInvalidScopesResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Quisquam
+  aut.\";}s:38:\"ChatterSummaryUnauthorizedResponseBody\";O:8:\"stdClass\":3:{s:5:\"title\";s:38:\"ChatterSummaryUnauthorizedResponseBody\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:41:\"Ad
+  non id iure sunt dolorem perspiciatis.\";}}"
+...

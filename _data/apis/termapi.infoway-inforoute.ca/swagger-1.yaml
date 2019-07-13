@@ -1,0 +1,515 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:53:\"RESTful web services
+  used to browse terminology data.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:15:\"Terminology
+  API\";s:14:\"termsOfService\";s:24:\"http://swagger.io/terms/\";}"
+host: termapi.infoway-inforoute.ca
+basePath: /rest/v1
+paths:
+  /subsets:
+    get:
+      tags:
+      - subsets
+      summary: Retrieves a list of subsets
+      description: Retrieves a list of subsets matching the provided search criteria.
+      operationId: findSubsets
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service.
+        in: query
+        type: string
+        default: AB3
+      - name: active
+        description: returns active or inactive subsets if specified, all subsets
+          if this parameter is absent
+        in: query
+        type: boolean
+      - name: reflang
+        description: returns only subsets for the specified language. The language
+          identifier must be provided in ISO639-1 format
+        in: query
+        type: string
+        enum:
+        - en
+      - name: startdate
+        description: returns only subsets that were active on or after the given start
+          date. The date must be specified as yyyyMMdd
+        in: query
+        type: string
+      - name: enddate
+        description: returns only subsets that were active on or before the given
+          end date. The date must be specified as yyyyMMdd
+        in: query
+        type: string
+      - name: name
+        description: returns only subsets matching the given name. The name filter
+          can use a regular expression format
+        in: query
+        type: string
+      - name: sortby
+        description: sorts the result set by the specified field.
+        in: query
+        type: string
+        enum:
+        - id
+        - name
+        - active
+        - language
+      - name: sortdir
+        description: sorting direction. Only relevant if the sortby parameter is also
+          specified.
+        in: query
+        type: string
+        enum:
+        - ascending
+        - descending
+      - name: page
+        description: page number used for pagination
+        in: query
+        type: integer
+        default: "1"
+      - name: size
+        description: page size used for pagination
+        in: query
+        type: integer
+        default: "1000"
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Subsets'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subsets/download:
+    get:
+      tags:
+      - subsets
+      summary: Returns a downloadable list containing all subsets.
+      description: Generates a full list containing all subsets. The list is returned
+        as an attachment to the HTTP response. This API doesn't apply any pagination
+        to the result set.
+      operationId: downloadSubsets
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: sortby
+        description: sorts the result set by the specified field.
+        in: query
+        type: string
+        enum:
+        - id
+        - name
+        - active
+        - language
+      - name: sortdir
+        description: sorting direction. Only relevant if the sortby parameter is also
+          specified.
+        in: query
+        type: string
+        enum:
+        - ascending
+        - descending
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Subsets'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subset/{subsetid}/versions:
+    get:
+      tags:
+      - subset
+      summary: Returns metadata for all versions of a subset.
+      description: Returns the metadata associated to all subset version.
+      operationId: getSubsetVersions
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: subsetid
+        required: "true"
+        description: subset identifier
+        in: path
+        type: string
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Subset'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subset/{subsetid}:
+    get:
+      tags:
+      - subset
+      summary: Returns metadata for a single subset version.
+      description: Returns the metadata associated to a single subset version.
+      operationId: getSubsetVersion
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: subsetid
+        required: "true"
+        description: subset identifier
+        in: path
+        type: string
+      - name: versionid
+        description: subset version, latest version if not provided
+        in: query
+        type: string
+      - name: reflang
+        description: returns the subset version for the specified language. The language
+          identifier must be provided in ISO639-1 format
+        in: query
+        type: string
+        enum:
+        - en
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SubsetVersion'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subset/{subsetid}/download:
+    get:
+      tags:
+      - subset
+      summary: Downloads the data associated to a subset version.
+      description: Downloads the data associated to a subset version. This includes
+        all concepts that are part of the subset. The data is returned as an attachment
+        to the HTTP response.
+      operationId: downloadSubset
+      produces:
+      - application/xml
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: subsetid
+        required: "true"
+        description: subset identifier
+        in: path
+        type: string
+      - name: versionid
+        description: subset version, latest version if not provided
+        in: query
+        type: string
+      - name: sortby
+        description: sorts the result set by the specified field.
+        in: query
+        type: string
+        enum:
+        - id
+        - name
+        - active
+        - language
+      - name: sortdir
+        description: sorting direction. Only relevant if the sortby parameter is also
+          specified.
+        in: query
+        type: string
+        enum:
+        - ascending
+        - descending
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        - excel
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FullSubsetVersion'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subset/{subsetid}/delta:
+    get:
+      tags:
+      - subset
+      summary: Retrieves the delta between two subset versions.
+      description: Generates a list of differences between two subset versions. The
+        differeces might include changes in the subset metadata or their concept list.
+        The versions that are being compared don't necessarily have to be consecutive.
+      operationId: deltaSubsets
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: subsetid
+        required: "true"
+        description: subset identifier
+        in: path
+        type: string
+      - name: fromversion
+        description: id of the first subset version to be compared. The initial subset
+          version will be used if this parameter isn't specified.
+        in: query
+        type: string
+      - name: toversion
+        description: id of the second subset version to be compared. The most recent
+          subset version will be used if this parameter isn't specified.
+        in: query
+        type: string
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Delta'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+  /subset/{subsetid}/concepts:
+    get:
+      tags:
+      - concepts
+      summary: Retrieves the list of concepts that are part of a subset version.
+      description: Retrieves a full list of concepts that are part of a subset version.
+      operationId: getConcepts
+      produces:
+      - application/xml
+      - application/json
+      parameters:
+      - name: apikey
+        required: "true"
+        description: security key required to access the web service
+        in: query
+        type: string
+        default: AB3
+      - name: subsetid
+        required: "true"
+        description: subset identifier
+        in: path
+        type: string
+      - name: versionid
+        description: subset version, latest version if not provided
+        in: query
+        type: string
+      - name: active
+        description: returns active or inactive concepts if specified, all concepts
+          if this parameter is absent
+        in: query
+        type: boolean
+      - name: reflang
+        description: returns concepts for the specified language. The language identifier
+          must be provided in ISO639-1 format
+        in: query
+        type: string
+        enum:
+        - en
+      - name: name
+        description: returns only concepts matching the given name. The name filter
+          can use a regular expression format
+        in: query
+        type: string
+      - name: sortby
+        description: sorts the result set by the specified field.
+        in: query
+        type: string
+        enum:
+        - id
+        - name
+        - term
+        - effectivedate
+        - active
+      - name: sortdir
+        description: sorting direction. Only relevant if the sortby parameter is also
+          specified.
+        in: query
+        type: string
+        enum:
+        - ascending
+        - descending
+      - name: page
+        description: page number used for pagination
+        in: query
+        type: integer
+        default: "1"
+      - name: size
+        description: page size used for pagination
+        in: query
+        type: integer
+        default: "1000"
+      - name: format
+        required: "false"
+        description: output format
+        in: query
+        type: string
+        enum:
+        - json
+        - xml
+        default: json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Concepts'
+        400:
+          description: Invalid parameters
+        403:
+          description: Missing or invalid apikey
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":9:{s:7:\"Subsets\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"subsets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Subset\";}}s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}}}s:6:\"Subset\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"subset
+  id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"subset
+  name\";}s:13:\"latestVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"id
+  of the most recent subset version\";}s:8:\"versions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/SubsetVersion\";}}}}s:13:\"SubsetVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"subset
+  id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"subset
+  name\";}s:9:\"versionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"subset
+  version id\";}s:13:\"effectiveDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"version
+  date in yyyyMMdd format\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"subset
+  version description\";}s:6:\"active\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"true\";i:1;s:5:\"false\";}s:11:\"description\";s:41:\"subset
+  version status: active or inactive\";}s:8:\"language\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:2:\"en\";}s:11:\"description\";s:42:\"subset
+  version language in ISO639-1 format\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"release
+  comment associated to the subset version\";}s:11:\"codeSystems\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/CodeSystem\";}}}}s:17:\"FullSubsetVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"subset
+  id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"subset
+  name\";}s:9:\"versionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"subset
+  version id\";}s:13:\"effectiveDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"version
+  date in yyyyMMdd format\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"subset
+  version description\";}s:6:\"active\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"true\";i:1;s:5:\"false\";}s:11:\"description\";s:41:\"subset
+  version status: active or inactive\";}s:8:\"language\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:2:\"en\";}s:11:\"description\";s:42:\"subset
+  version language in ISO639-1 format\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"release
+  comment associated to the subset version\";}s:11:\"codeSystems\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/CodeSystem\";}}s:8:\"concepts\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Concept\";}}}}s:8:\"Concepts\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"subsets\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Concept\";}}s:10:\"pagination\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}}}s:7:\"Concept\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"concept
+  id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"concept
+  name\";}s:12:\"codeSystemId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"code
+  system id\";}s:15:\"enPreferredTerm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"preferred
+  term (english)\";}s:15:\"frPreferredTerm\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"preferred
+  term (french)\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"full
+  concept description\";}s:13:\"effectiveDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"date
+  when the concept was added to the concept or last modified in yyyyMMdd format\";}s:6:\"active\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"true\";i:1;s:5:\"false\";}s:11:\"description\";s:34:\"concept
+  status: active or inactive\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"additional
+  comment\";}}}s:10:\"CodeSystem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"code
+  system id\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"code
+  system name\";}s:12:\"businessName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"code
+  system business name\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"code
+  system version\";}s:12:\"organization\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"custodian
+  organization\";}}}s:5:\"Delta\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:13:\"fromVersionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"previous
+  version including data that has been modified\";}s:11:\"toVersionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"version
+  where the change has been introduced\";}s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"type
+  of change\";s:4:\"enum\";a:7:{i:0;s:12:\"SUBSET_ADDED\";i:1;s:18:\"SUBSET_INACTIVATED\";i:2;s:23:\"SUBSET_METADATA_UPDATED\";i:3;s:13:\"CONCEPT_ADDED\";i:4;s:15:\"CONCEPT_UPDATED\";i:5;s:19:\"CONCEPT_INACTIVATED\";i:6;s:15:\"CONCEPT_REMOVED\";}}s:6:\"change\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"textual
+  description of the change\";}s:13:\"effectiveDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"date
+  when the change has been introduced\";}s:14:\"subsetMetadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:88:\"subset
+  version where the change has been introduced, if this is a subset metadata change\";s:4:\"$ref\";s:27:\"#/definitions/SubsetVersion\";}s:7:\"concept\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:68:\"concept
+  that is the object of the delta, if this is a concept change\";s:4:\"$ref\";s:21:\"#/definitions/Concept\";}s:8:\"comments\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"additional
+  comments\";}}}s:10:\"Pagination\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"currentPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"currently
+  returned page\";}s:10:\"totalPages\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:65:\"total
+  number of pages required to displayed the entire result set\";}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"page
+  size\";}s:12:\"totalRecords\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"total
+  number of records in the result set\";}s:11:\"firstRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"first
+  record returned by the current page\";}s:10:\"lastRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:40:\"last
+  record returned by the current page\";}s:8:\"nextPage\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:58:\"next
+  page in the result set or -1 if this is the last page\";}s:10:\"nextRecord\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:79:\"next
+  record in the result set or -1 if there are no more records to be returned\";}}}}"
+...

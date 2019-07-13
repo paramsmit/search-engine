@@ -1,0 +1,358 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:10:\"Nature
+  API\";s:11:\"description\";s:22:\"Read/Write Nature Remo\";}"
+host: api.nature.global
+basePath: /
+paths:
+  /1/users/me:
+    get:
+      description: Fetch the authenticated user's information.
+      security:
+      - oauth2:
+        - basic.read
+      responses:
+        200:
+          description: User information
+          schema:
+            $ref: '#/definitions/User'
+    post:
+      description: Update authenticated user's information.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - name: nickname
+        in: formData
+        description: User's nickname.n
+        type: string
+        required: true
+      responses:
+        200:
+          description: Successfully updated nickname
+          schema:
+            $ref: '#/definitions/User'
+  /1/devices:
+    get:
+      description: Fetch the list of Remo devices the user has access to.
+      security:
+      - oauth2:
+        - basic.read
+      responses:
+        200:
+          description: List of Remo devices
+          schema:
+            $ref: '#/definitions/Devices'
+  /1/detectappliance:
+    post:
+      description: Find the air conditioner best matching the provided infrared signal.
+      security:
+      - oauth2:
+        - detectappliance
+      parameters:
+      - $ref: '#/parameters/irsignal'
+      responses:
+        200:
+          description: List of air conditioner model and settings. Best match comes
+            first.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ApplianceModelAndParam'
+  /1/appliances:
+    get:
+      description: Fetch the list of appliances.
+      security:
+      - oauth2:
+        - basic.read
+      responses:
+        200:
+          description: List of appliances
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Appliance'
+    post:
+      description: Create a new appliance.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - name: nickname
+        in: formData
+        description: Appliance name
+        type: string
+        required: true
+      - name: model
+        in: formData
+        description: ApplianceModel ID if the appliance we're trying to create is
+          included in IRDB.
+        type: string
+        required: false
+      - name: device
+        in: formData
+        description: Device ID
+        type: string
+        required: true
+      - $ref: '#/parameters/applianceImage'
+      responses:
+        201:
+          description: Created an appliance
+          schema:
+            $ref: '#/definitions/Appliance'
+  /1/appliance_orders:
+    post:
+      description: Reorder appliances.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - name: appliances
+        in: formData
+        description: List of all appliances' IDs comma separated
+        type: string
+        required: true
+      responses:
+        200:
+          description: Reordered appliances
+  /1/appliances/{appliance}/delete:
+    post:
+      description: Delete appliance.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/appliance'
+      responses:
+        200:
+          description: Deleted an appliance
+  /1/appliances/{appliance}:
+    post:
+      description: Update appliance.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/appliance'
+      - $ref: '#/parameters/applianceImage'
+      - name: nickname
+        in: formData
+        description: Appliance name
+        type: string
+        required: true
+      responses:
+        200:
+          description: Updated an appliance
+          schema:
+            $ref: '#/definitions/Appliance'
+  /1/appliances/{appliance}/aircon_settings:
+    post:
+      description: Update air conditioner settings.
+      security:
+      - oauth2:
+        - sendir
+      parameters:
+      - name: temperature
+        in: formData
+        description: Temperature
+        type: string
+        required: false
+      - name: operation_mode
+        in: formData
+        description: AC operation mode
+        type: string
+        required: false
+      - name: air_volume
+        in: formData
+        description: AC air volume
+        type: string
+        required: false
+      - name: air_direction
+        in: formData
+        description: AC air direction
+        type: string
+        required: false
+      - name: button
+        in: formData
+        description: Button
+        type: string
+        required: false
+      - $ref: '#/parameters/appliance'
+      responses:
+        200:
+          description: Updated air conditioner settings
+  /1/appliances/{appliance}/signals:
+    get:
+      description: Fetch signals registered under this appliance.
+      security:
+      - oauth2:
+        - basic.read
+      parameters:
+      - $ref: '#/parameters/appliance'
+      responses:
+        200:
+          description: List of signals
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Signal'
+    post:
+      description: Create a signal under this appliance.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/irsignal'
+      - $ref: '#/parameters/appliance'
+      - $ref: '#/parameters/signalImage'
+      - name: name
+        in: formData
+        description: Signal name
+        type: string
+        required: true
+      responses:
+        201:
+          description: Created signal
+          schema:
+            $ref: '#/definitions/Signal'
+  /1/appliances/{appliance}/signal_orders:
+    post:
+      description: Reorder signals under this appliance.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/appliance'
+      - name: signals
+        in: formData
+        description: List of all signals' IDs comma separated
+        type: string
+        required: true
+      responses:
+        200:
+          description: Reordered signals
+  /1/signals/{signal}:
+    post:
+      description: Update infrared signal.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/signal'
+      - $ref: '#/parameters/signalImage'
+      - name: name
+        in: formData
+        description: Signal name
+        type: string
+        required: true
+      responses:
+        200:
+          description: Updated infrared signal
+  /1/signals/{signal}/delete:
+    post:
+      description: Delete an infrared signal.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/signal'
+      responses:
+        200:
+          description: Deleted a signal
+  /1/signals/{signal}/send:
+    post:
+      description: Send infrared signal.
+      security:
+      - oauth2:
+        - sendir
+      parameters:
+      - $ref: '#/parameters/signal'
+      responses:
+        200:
+          description: Successfully sent infrared signal
+  /1/devices/{device}:
+    post:
+      description: Update Remo
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/device'
+      - name: name
+        in: formData
+        description: Signal name
+        type: string
+        required: true
+      responses:
+        200:
+          description: Updated Remo
+  /1/devices/{device}/delete:
+    post:
+      description: Delete Remo.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/device'
+      responses:
+        200:
+          description: Deleted Remo
+  /1/devices/{device}/temperature_offset:
+    post:
+      description: Update temperature offset.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/device'
+      - name: offset
+        in: formData
+        description: Temperature offset value added to the measured temperature.
+        type: integer
+        required: true
+      responses:
+        200:
+          description: Updated
+  /1/devices/{device}/humidity_offset:
+    post:
+      description: Update humidity offset.
+      security:
+      - oauth2:
+        - basic
+      parameters:
+      - $ref: '#/parameters/device'
+      - name: offset
+        in: formData
+        description: Humidity offset value added to the measured humidity.
+        type: integer
+        required: true
+      responses:
+        200:
+          description: Updated
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":21:{s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:8:\"nickname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Devices\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Device\";}}s:6:\"Device\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"temperature_offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"humidity_offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/DateTime\";}s:10:\"updated_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/DateTime\";}s:16:\"firmware_version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"newest_events\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"te\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SensorValue\";}s:2:\"hu\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/SensorValue\";}}}}}s:10:\"DeviceCore\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"temperature_offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:15:\"humidity_offset\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/DateTime\";}s:10:\"updated_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/DateTime\";}s:16:\"firmware_version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Appliance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"device\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/DeviceCore\";}s:5:\"model\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ApplianceModel\";}s:8:\"nickname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Image\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ApplianceType\";}s:8:\"settings\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AirConParams\";}s:6:\"aircon\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/AirCon\";}s:7:\"signals\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Signal\";}}}}s:12:\"AirConParams\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"temp\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Temperature\";}s:4:\"mode\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/OperationMode\";}s:3:\"vol\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/AirVolume\";}s:3:\"dir\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AirDirection\";}s:6:\"button\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Button\";}}}s:6:\"AirCon\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"range\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"modes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"cool\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AirConRangeMode\";}s:4:\"warm\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AirConRangeMode\";}s:3:\"dry\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AirConRangeMode\";}s:4:\"blow\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AirConRangeMode\";}s:4:\"auto\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/AirConRangeMode\";}}}s:12:\"fixedButtons\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Button\";}}}}s:8:\"tempUnit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:0:\"\";i:1;s:1:\"c\";i:2;s:1:\"f\";}}}}s:15:\"AirConRangeMode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"temp\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Temperature\";}}s:3:\"vol\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/AirVolume\";}}s:3:\"dir\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AirDirection\";}}}}s:6:\"Signal\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Image\";}}}s:14:\"ApplianceModel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:12:\"manufacturer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"remote_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"image\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Image\";}}}s:22:\"ApplianceModelAndParam\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"model\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ApplianceModel\";}s:6:\"params\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AirConParams\";}}}s:13:\"ApplianceType\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:392:\"Type
+  of the appliance. \"AC\" (Air conditioner) is 1st class citizen appliance, which
+  is included in our IRDB (InfraRed signals DataBase). The \"ApplianceModel\" stores
+  meta data about the appliance. We provide AC specific UI. Everything else is \"IR\".
+  We just learn the signals from the remote and store them, and when users tap the
+  button on the smartphone app, our server sends it through Remo.\";s:7:\"default\";s:2:\"AC\";s:4:\"enum\";a:2:{i:0;s:2:\"AC\";i:1;s:2:\"IR\";}}s:2:\"Id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";}s:5:\"Image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"Basename
+  of the image file included in the app. Ex: \"ico_ac_1\"\n\";}s:8:\"DateTime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"OperationMode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:210:\"The
+  range of OperationModes which the air conditioner accepts depends on the air conditioner
+  model. Check the 'AirConRangeMode' information in the response for the range of
+  the particular air conditioner model.\";s:4:\"enum\";a:6:{i:0;s:0:\"\";i:1;s:4:\"cool\";i:2;s:4:\"warm\";i:3;s:3:\"dry\";i:4;s:4:\"blow\";i:5;s:4:\"auto\";}}s:11:\"Temperature\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:320:\"The
+  temperature in string format. The unit is described in Aircon object. The range
+  of Temperatures which the air conditioner accepts depends on the air conditioner
+  model and operation mode. Check the 'AirConRangeMode' information in the response
+  for the range of the particular air conditioner model and operation mode.\";s:9:\"x-example\";a:4:{i:0;s:0:\"\";i:1;s:1:\"0\";i:2;s:2:\"38\";i:3;s:2:\"80\";}}s:9:\"AirVolume\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:305:\"Empty
+  means automatic. Numbers express the amount of volume. The range of AirVolumes which
+  the air conditioner accepts depends on the air conditioner model and operation mode.
+  Check the 'AirConRangeMode' information in the response for the range of the particular
+  air conditioner model and operation mode.\";s:4:\"enum\";a:12:{i:0;s:0:\"\";i:1;s:4:\"auto\";i:2;s:1:\"1\";i:3;s:1:\"2\";i:4;s:1:\"3\";i:5;s:1:\"4\";i:6;s:1:\"5\";i:7;s:1:\"6\";i:8;s:1:\"7\";i:9;s:1:\"8\";i:10;s:1:\"9\";i:11;s:2:\"10\";}}s:12:\"AirDirection\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Empty
+  means automatic.\";s:4:\"enum\";a:1:{i:0;s:0:\"\";}}s:6:\"Button\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:95:\"Specify
+  \"power-off\" always if you want the air conditioner powered off. Empty means powered
+  on.\";s:4:\"enum\";a:2:{i:0;s:0:\"\";i:1;s:9:\"power-off\";}}s:11:\"SensorValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:75:\"The
+  reference key to SensorValue means \"te\" = temperature, \"hu\" = humidity.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:10:\"created_at\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/DateTime\";}}}}"
+...

@@ -1,0 +1,971 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:7:\"version\";s:2:\"v2\";s:5:\"title\";s:10:\"AvaTax
+  API\";s:11:\"description\";s:59:\"REST interface to Avalara's enterprise tax service,
+  AvaTax.\";s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:27:\"Avalara Developer
+  Community\";s:3:\"url\";s:29:\"https://community.avalara.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:12:\"Terms
+  of Use\";s:3:\"url\";s:37:\"https://www.avalara.com/terms-of-use/\";}}"
+host: sandbox-rest.avatax.com
+basePath: /
+paths:
+  /api/v2/transactions/create:
+    post:
+      tags:
+      - Transactions
+      summary: Calculate Tax
+      description: Records a new transaction in AvaTax.rnrnThe `CreateTransaction`
+        endpoint uses the configuration values specified by your company to identify
+        the correct tax rulesrnand rates to apply to all line items in this transaction,
+        and reports the total tax calculated by AvaTax based on yourrncompany's configuration
+        and the data provided in this API call.rnrnIf you don't specify type in the
+        provided data, a new transaction with type of SalesOrder will be recorded
+        by default.rnrnA transaction represents a unique potentially taxable action
+        that your company has recorded, and transactions include actions likernsales,
+        purchases, inventory transfer, and returns (also called refunds).rnYou may
+        specify one or more of the following values in the '$include' parameter to
+        fetch additional nested data, using commas to separate multiple values:rn            rn*
+        Linesrn* Details (implies lines)rn* Summary (implies details)rn* Addressesrn            rnIf
+        you don't specify '$include' parameter, it will include both details and addresses.
+      operationId: CreateTransaction
+      consumes:
+      - application/json
+      - text/json
+      - application/json-patch+json
+      produces:
+      - application/json
+      parameters:
+      - name: model
+        in: body
+        description: The transaction you wish to create
+        required: false
+        schema:
+          $ref: '#/definitions/CreateTransactionModel'
+      - name: $include
+        in: query
+        description: A comma separated list of child objects to return underneath
+          the primary object.
+        required: false
+        type: string
+      - name: X-Avalara-Client
+        in: header
+        description: Identifies the software you are using to call this API to aid
+          in debugging and verification.rn                    This is a string in
+          the format `(app name); (app version); (library name); (library version);
+          (machine name)`. rn                    For more information about designing
+          an Avalara client string for your application, please see the developer
+          website.
+        required: false
+        type: string
+        default: Swagger UI; 17.5.1-73; Custom; 1.0
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TransactionModel'
+        401:
+          description: Unauthorized
+        400:
+          description: BadRequest
+      security:
+      - UserSecurity: []
+        OauthSecurity: []
+  /api/v2/addresses/resolve:
+    get:
+      tags:
+      - Addresses
+      summary: Validate an Address
+      description: Resolve an address against Avalara's address-validation system.  If
+        the address can be resolved, this API rnprovides the latitude and longitude
+        of the resolved location.  The value 'resolutionQuality' can be used rnto
+        identify how closely this address can be located.  If the address cannot be
+        clearly located, use the rn'messages' structure to learn more about problems
+        with this address.rnThis is the same API as the POST /api/v2/addresses/resolve
+        endpoint.rnBoth verbs are supported to provide for flexible implementation.
+      operationId: ResolveAddress
+      consumes: []
+      produces:
+      - application/json
+      parameters:
+      - name: line1
+        in: query
+        description: Line 1
+        required: false
+        type: string
+        example: 123 Main Street
+      - name: line2
+        in: query
+        description: Line 2
+        required: false
+        type: string
+      - name: line3
+        in: query
+        description: Line 3
+        required: false
+        type: string
+      - name: city
+        in: query
+        description: City
+        required: false
+        type: string
+        example: Irvine
+      - name: region
+        in: query
+        description: State / Province / Region
+        required: false
+        type: string
+        example: CA
+      - name: postalCode
+        in: query
+        description: Postal Code / Zip Code
+        required: false
+        type: string
+        example: "92615"
+      - name: country
+        in: query
+        description: Two character ISO 3166 Country Code (see /api/v2/definitions/countries
+          for a full list)
+        required: false
+        type: string
+        example: US
+      - name: textCase
+        in: query
+        description: selectable text case for address validation
+        required: false
+        type: string
+        enum:
+        - Upper
+        - Mixed
+        x-enum-type: TextCase
+        x-enum-description: Casing to use for validation result
+        x-enum-value-comments:
+          Upper: Upper case
+          Mixed: Mixed Case
+      - name: latitude
+        in: query
+        description: Geospatial latitude measurement
+        required: false
+        type: number
+        format: double
+      - name: longitude
+        in: query
+        description: Geospatial longitude measurement
+        required: false
+        type: number
+        format: double
+      - name: X-Avalara-Client
+        in: header
+        description: Identifies the software you are using to call this API to aid
+          in debugging and verification.rn                    This is a string in
+          the format `(app name); (app version); (library name); (library version);
+          (machine name)`. rn                    For more information about designing
+          an Avalara client string for your application, please see the developer
+          website.
+        required: false
+        type: string
+        default: Swagger UI; 17.5.1-73; Custom; 1.0
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AddressResolutionModel'
+        401:
+          description: Unauthorized
+        400:
+          description: BadRequest
+      security:
+      - UserSecurity: []
+        OauthSecurity: []
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":33:{s:21:\"AddressValidationInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:31:\"TextCase
+  info for input address\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"textCase\";O:8:\"stdClass\":7:{s:11:\"description\";s:97:\"Specify
+  the text case for the validated address result.  If not specified, will return uppercase.\";s:4:\"enum\";a:2:{i:0;s:5:\"Upper\";i:1;s:5:\"Mixed\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Upper\";s:11:\"x-enum-type\";s:8:\"TextCase\";s:18:\"x-enum-description\";s:35:\"Casing
+  to use for validation result\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":2:{s:5:\"Upper\";s:10:\"Upper
+  case\";s:5:\"Mixed\";s:10:\"Mixed Case\";}}s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:5:\"Line1\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line2\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line3\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:4:\"City\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:25:\"State
+  / Province / Region\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Two
+  character ISO 3166 Country Code\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:22:\"Postal
+  Code / Zip Code\";s:9:\"maxLength\";i:11;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:31:\"Geospatial
+  latitude measurement\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:32:\"Geospatial
+  longitude measurement\";s:4:\"type\";s:6:\"number\";}}s:7:\"example\";O:8:\"stdClass\":6:{s:8:\"textCase\";s:5:\"Upper\";s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}s:22:\"AddressResolutionModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:24:\"Address
+  Resolution Model\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/AddressInfo\";s:11:\"description\";s:20:\"The
+  original address\";s:7:\"example\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}s:18:\"validatedAddresses\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"The
+  validated address or addresses\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ValidatedAddressInfo\";}}s:11:\"coordinates\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:28:\"#/definitions/CoordinateInfo\";s:11:\"description\";s:42:\"The
+  geospatial coordinates of this address\";s:7:\"example\";O:8:\"stdClass\":2:{s:8:\"latitude\";d:33.684883999999997;s:9:\"longitude\";d:-117.851321;}}s:17:\"resolutionQuality\";O:8:\"stdClass\":7:{s:11:\"description\";s:52:\"The
+  resolution quality of the geospatial coordinates\";s:4:\"enum\";a:12:{i:0;s:8:\"NotCoded\";i:1;s:8:\"External\";i:2;s:15:\"CountryCentroid\";i:3;s:14:\"RegionCentroid\";i:4;s:15:\"PartialCentroid\";i:5;s:18:\"PostalCentroidGood\";i:6;s:20:\"PostalCentroidBetter\";i:7;s:18:\"PostalCentroidBest\";i:8;s:12:\"Intersection\";i:9;s:12:\"Interpolated\";i:10;s:7:\"Rooftop\";i:11;s:8:\"Constant\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Rooftop\";s:11:\"x-enum-type\";s:17:\"ResolutionQuality\";s:18:\"x-enum-description\";s:62:\"The
+  address resolution quality of an address validation result\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":12:{s:8:\"NotCoded\";s:25:\"Location
+  was not geocoded\";s:8:\"External\";s:44:\"Location was already geocoded on the
+  request\";s:15:\"CountryCentroid\";s:32:\"Avalara-defined country centroid\";s:14:\"RegionCentroid\";s:41:\"Avalara-defined
+  state / province centroid\";s:15:\"PartialCentroid\";s:54:\"Geocoded at a level
+  more coarse than a PostalCentroid1\";s:18:\"PostalCentroidGood\";s:54:\"Largest
+  postal code (zip5 in US, left three in CA, etc\";s:20:\"PostalCentroidBetter\";s:31:\"Better
+  postal code (zip7 in US)\";s:18:\"PostalCentroidBest\";s:61:\"Best postal code (zip9
+  in US, complete postal code elsewhere)\";s:12:\"Intersection\";s:20:\"Nearest intersection\";s:12:\"Interpolated\";s:23:\"Interpolated
+  to rooftop\";s:7:\"Rooftop\";s:45:\"Assumed to be rooftop level, non-interpolated\";s:8:\"Constant\";s:64:\"Pulled
+  from a static list of geocodes for specific jurisdictions\";}}s:14:\"taxAuthorities\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"List
+  of informational and warning messages regarding this address\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/TaxAuthorityInfo\";}}s:8:\"messages\";O:8:\"stdClass\":4:{s:11:\"description\";s:65:\"List
+  of informational and warning messages regarding this address\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AvaTaxMessage\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":5:{s:7:\"summary\";s:31:\"The
+  address is not deliverable.\";s:7:\"details\";s:206:\"The physical location exists
+  but there are no homes on this street. One reason might be railroad tracks or rivers
+  running alongside this street, as they would prevent construction of homes in this
+  location.\";s:8:\"refersTo\";s:7:\"address\";s:8:\"severity\";s:5:\"Error\";s:6:\"source\";s:31:\"Avalara.AvaTax.Services.Address\";}}}}s:7:\"example\";O:8:\"stdClass\":4:{s:7:\"address\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}s:11:\"coordinates\";O:8:\"stdClass\":2:{s:8:\"latitude\";d:33.684883999999997;s:9:\"longitude\";d:-117.851321;}s:17:\"resolutionQuality\";s:7:\"Rooftop\";s:8:\"messages\";a:1:{i:0;O:8:\"stdClass\":5:{s:7:\"summary\";s:31:\"The
+  address is not deliverable.\";s:7:\"details\";s:206:\"The physical location exists
+  but there are no homes on this street. One reason might be railroad tracks or rivers
+  running alongside this street, as they would prevent construction of homes in this
+  location.\";s:8:\"refersTo\";s:7:\"address\";s:8:\"severity\";s:5:\"Error\";s:6:\"source\";s:31:\"Avalara.AvaTax.Services.Address\";}}}}s:11:\"AddressInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"Represents
+  an address to resolve.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:5:\"Line1\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line2\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line3\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:4:\"City\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:25:\"State
+  / Province / Region\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Two
+  character ISO 3166 Country Code\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:22:\"Postal
+  Code / Zip Code\";s:9:\"maxLength\";i:11;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:31:\"Geospatial
+  latitude measurement\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:32:\"Geospatial
+  longitude measurement\";s:4:\"type\";s:6:\"number\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}s:20:\"ValidatedAddressInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:30:\"Represents
+  a validated address\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:11:\"addressType\";O:8:\"stdClass\":2:{s:11:\"description\";s:213:\"Address
+  type code. One of: \r\n* F - Firm or company address\r\n* G - General Delivery address\r\n*
+  H - High-rise or business complex\r\n* P - PO Box address\r\n* R - Rural route address\r\n*
+  S - Street or residential address\";s:4:\"type\";s:6:\"string\";}s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:5:\"Line1\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line2\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line3\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:4:\"City\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:25:\"State
+  / Province / Region\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Two
+  character ISO 3166 Country Code\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:22:\"Postal
+  Code / Zip Code\";s:9:\"maxLength\";i:11;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:31:\"Geospatial
+  latitude measurement\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:32:\"Geospatial
+  longitude measurement\";s:4:\"type\";s:6:\"number\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}s:14:\"CoordinateInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:15:\"Coordinate
+  Info\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"latitude\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:8:\"Latitude\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:33.684883999999997;}s:9:\"longitude\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:9:\"Longitude\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:-117.851321;}}s:7:\"example\";O:8:\"stdClass\":2:{s:8:\"latitude\";d:33.684883999999997;s:9:\"longitude\";d:-117.851321;}}s:16:\"TaxAuthorityInfo\";O:8:\"stdClass\":5:{s:11:\"description\";s:18:\"Tax
+  Authority Info\";s:8:\"required\";a:1:{i:0;s:16:\"jurisdictionName\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"avalaraId\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"Avalara
+  Id\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"AGAM\";}s:16:\"jurisdictionName\";O:8:\"stdClass\":5:{s:11:\"description\";s:17:\"Jurisdiction
+  Name\";s:9:\"maxLength\";i:128;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"CALIFORNIA\";}s:16:\"jurisdictionType\";O:8:\"stdClass\":7:{s:11:\"description\";s:17:\"Jurisdiction
+  Type\";s:4:\"enum\";a:6:{i:0;s:7:\"Country\";i:1;s:9:\"Composite\";i:2;s:5:\"State\";i:3;s:6:\"County\";i:4;s:4:\"City\";i:5;s:7:\"Special\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"State\";s:11:\"x-enum-type\";s:16:\"JurisdictionType\";s:18:\"x-enum-description\";s:17:\"Jurisdiction
+  Type\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:7:\"Country\";s:7:\"Country\";s:9:\"Composite\";s:10:\"Deprecated\";s:5:\"State\";s:5:\"State\";s:6:\"County\";s:6:\"County\";s:4:\"City\";s:4:\"City\";s:7:\"Special\";s:24:\"Special
+  Tax Jurisdiction\";}}s:13:\"signatureCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:14:\"Signature
+  Code\";s:9:\"maxLength\";i:4;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"AGAM\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:9:\"avalaraId\";s:4:\"AGAM\";s:16:\"jurisdictionName\";s:10:\"CALIFORNIA\";s:16:\"jurisdictionType\";s:5:\"State\";s:13:\"signatureCode\";s:4:\"AGAM\";}}s:13:\"AvaTaxMessage\";O:8:\"stdClass\":4:{s:11:\"description\";s:71:\"Informational
+  or warning messages returned by AvaTax with a transaction\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"summary\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"A
+  brief summary of what this message tells us\";s:4:\"type\";s:6:\"string\";}s:7:\"details\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"Detailed
+  information that explains what the summary provided\";s:4:\"type\";s:6:\"string\";}s:8:\"refersTo\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Information
+  about what object in your request this message refers to\";s:4:\"type\";s:6:\"string\";}s:8:\"severity\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"A
+  category that indicates how severely this message affects the results\";s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"The
+  name of the code or service that generated this message\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":0:{}}s:10:\"BatchModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:41:\"Represents
+  a batch of uploaded documents.\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:4:\"type\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":17:{s:2:\"id\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:35:\"The
+  unique ID number of this batch.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":5:{s:11:\"description\";s:47:\"The
+  user-friendly readable name for this batch.\";s:9:\"maxLength\";i:194;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"TestBatch\";}s:9:\"accountId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"The
+  Account ID number of the account that owns this batch.\";s:4:\"type\";s:7:\"integer\";}s:9:\"companyId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:58:\"The
+  Company ID number of the company that owns this batch.\";s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":7:{s:11:\"description\";s:23:\"The
+  type of this batch.\";s:4:\"enum\";a:13:{i:0;s:13:\"AvaCertUpdate\";i:1;s:16:\"AvaCertUpdateAll\";i:2;s:16:\"BatchMaintenance\";i:3;s:21:\"CompanyLocationImport\";i:4;s:14:\"DocumentImport\";i:5;s:16:\"ExemptCertImport\";i:6;s:10:\"ItemImport\";i:7;s:16:\"SalesAuditExport\";i:8;s:18:\"SstpTestDeckImport\";i:9;s:13:\"TaxRuleImport\";i:10;s:17:\"TransactionImport\";i:11;s:13:\"UPCBulkImport\";i:12;s:19:\"UPCValidationImport\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"TransactionImport\";s:11:\"x-enum-type\";s:9:\"BatchType\";s:18:\"x-enum-description\";s:40:\"The
+  type of data contained in this batch\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":1:{s:17:\"TransactionImport\";s:316:\"This
+  batch type represents tax transaction data being uploaded to AvaTax.  Each line
+  in the batch represents a single transaction\n            or a line in a multi-line
+  transaction.  For reference, see [Batched Transactions in REST v2](http://developer.avalara.com/blog/2016/10/24/batch-transaction-upload-in-rest-v2)\";}}s:6:\"status\";O:8:\"stdClass\":7:{s:11:\"description\";s:38:\"This
+  batch's current processing status\";s:4:\"enum\";a:9:{i:0;s:7:\"Waiting\";i:1;s:12:\"SystemErrors\";i:2;s:9:\"Cancelled\";i:3;s:9:\"Completed\";i:4;s:8:\"Creating\";i:5;s:7:\"Deleted\";i:6;s:6:\"Errors\";i:7;s:6:\"Paused\";i:8;s:10:\"Processing\";}s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:11:\"x-enum-type\";s:11:\"BatchStatus\";s:18:\"x-enum-description\";s:26:\"The
+  status of a batch file\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":9:{s:7:\"Waiting\";s:65:\"Batch
+  file has been received and is in the queue to be processed.\";s:12:\"SystemErrors\";s:61:\"Batch
+  file experienced system errors and cannot be processed.\";s:9:\"Cancelled\";s:23:\"Batch
+  file is cancelled\";s:9:\"Completed\";s:41:\"Batch file has been completely processed.\";s:8:\"Creating\";s:38:\"Batch
+  file is currently being created.\";s:7:\"Deleted\";s:28:\"Batch file has been deleted.\";s:6:\"Errors\";s:42:\"Batch
+  file was processed with some errors.\";s:6:\"Paused\";s:28:\"Batch processing was
+  paused.\";s:10:\"Processing\";s:35:\"Batch is currently being processed.\";}}s:7:\"options\";O:8:\"stdClass\":4:{s:11:\"description\";s:42:\"Any
+  optional flags provided for this batch\";s:9:\"maxLength\";i:200;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:10:\"batchAgent\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"The
+  agent used to create this batch\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"manual\";}s:11:\"startedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:48:\"The
+  date/time when this batch started processing\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:11:\"recordCount\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:61:\"The
+  number of records in this batch; determined by the server\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:13:\"currentRecord\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:34:\"The
+  current record being processed\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:13:\"completedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:54:\"The
+  date/time when this batch was completely processed\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:5:\"files\";O:8:\"stdClass\":4:{s:11:\"description\";s:42:\"The
+  list of files contained in this batch.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/BatchFileModel\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":5:{s:4:\"name\";s:15:\"samplebatch.csv\";s:7:\"content\";s:1752:\"UHJvY2Vzc0NvZGUsRG9jQ29kZSxEb2NUeXBlLERvY0RhdGUsQ29tcGFueUNvZGUsQ3VzdG9tZXJDb2RlLEVudGl0eVVzZUNvZGUsTGluZU5vLFRheENvZGUsVGF4RGF0ZSxJdGVtQ29kZSxEZXNjcmlwdGlvbixRdHksQW1vdW50LERpc2NvdW50LFJlZjEsUmVmMixFeGVtcHRpb25ObyxSZXZBY2N0LERlc3RBZGRyZXNzLERlc3RDaXR5LERlc3RSZWdpb24sRGVzdFBvc3RhbENvZGUsRGVzdENvdW50cnksT3JpZ0FkZHJlc3MsT3JpZ0NpdHksT3JpZ1JlZ2lvbixPcmlnUG9zdGFsQ29kZSxPcmlnQ291bnRyeSxMb2NhdGlvbkNvZGUsU2FsZXNQZXJzb25Db2RlLFB1cmNoYXNlT3JkZXJObyxDdXJyZW5jeUNvZGUsRXhjaGFuZ2VSYXRlLEV4Y2hhbmdlUmF0ZUVmZkRhdGUsUGF5bWVudERhdGUsVGF4SW5jbHVkZWQsRGVzdFRheFJlZ2lvbixPcmlnVGF4UmVnaW9uLFRheGFibGUsVGF4VHlwZSxUb3RhbFRheCxDb3VudHJ5TmFtZSxDb3VudHJ5Q29kZSxDb3VudHJ5UmF0ZSxDb3VudHJ5VGF4LFN0YXRlTmFtZSxTdGF0ZUNvZGUsU3RhdGVSYXRlLFN0YXRlVGF4LENvdW50eU5hbWUsQ291bnR5Q29kZSxDb3VudHlSYXRlLENvdW50eVRheCxDaXR5TmFtZSxDaXR5Q29kZSxDaXR5UmF0ZSxDaXR5VGF4LE90aGVyMU5hbWUsT3RoZXIxQ29kZSxPdGhlcjFSYXRlLE90aGVyMVRheCxPdGhlcjJOYW1lLE90aGVyMkNvZGUsT3RoZXIyUmF0ZSxPdGhlcjJUYXgsT3RoZXIzTmFtZSxPdGhlcjNDb2RlLE90aGVyM1JhdGUsT3RoZXIzVGF4LE90aGVyNE5hbWUsT3RoZXI0Q29kZSxPdGhlcjRSYXRlLE90aGVyNFRheCxSZWZlcmVuY2VDb2RlLEJ1eWVyc1ZBVE5vLElzU2VsbGVySW1wb3J0ZXJPZlJlY29yZCxCUkJ1eWVyVHlwZSxCUkJ1eWVyX0lzRXhlbXB0T3JDYW5ub3RXSF9JUlJGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX1BJU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NPRklOU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NTTExSRixCUkJ1eWVyX0lzRXhlbXB0X1BJUyxCUkJ1eWVyX0lzRXhlbXB0X0NPRklOUyxCUkJ1eWVyX0lzRXhlbXB0X0NTTEwsSGVhZGVyX0Rlc2NyaXB0aW9uLEVtYWlsDQozLDlhYzI4MGMzLTNhNTUtNGEzNS1iZWQyLWE4M2RiNTNiMDUxZSwxLDEvMS8yMDE0LERFRkFVTFQsQ3VzdDEsLDEsLCwsLCwxMDAwLCwsLCwsMjM1IEUgNDJuZCBTdCAsTmV3IFlvcmssTlksMTAwMTctNTcwMyAgLFVTLDkwMCBXaW5zbG93IFdheSxCYWluYnJpZGdlIElzbGFuZCxXQSw5ODExMCxVUywsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwNCg==\";s:13:\"contentLength\";i:0;s:11:\"contentType\";s:8:\"text/csv\";s:13:\"fileExtension\";s:4:\".csv\";}}}}s:7:\"example\";O:8:\"stdClass\":4:{s:4:\"name\";s:9:\"TestBatch\";s:4:\"type\";s:17:\"TransactionImport\";s:10:\"batchAgent\";s:6:\"manual\";s:5:\"files\";a:1:{i:0;O:8:\"stdClass\":5:{s:4:\"name\";s:15:\"samplebatch.csv\";s:7:\"content\";s:1752:\"UHJvY2Vzc0NvZGUsRG9jQ29kZSxEb2NUeXBlLERvY0RhdGUsQ29tcGFueUNvZGUsQ3VzdG9tZXJDb2RlLEVudGl0eVVzZUNvZGUsTGluZU5vLFRheENvZGUsVGF4RGF0ZSxJdGVtQ29kZSxEZXNjcmlwdGlvbixRdHksQW1vdW50LERpc2NvdW50LFJlZjEsUmVmMixFeGVtcHRpb25ObyxSZXZBY2N0LERlc3RBZGRyZXNzLERlc3RDaXR5LERlc3RSZWdpb24sRGVzdFBvc3RhbENvZGUsRGVzdENvdW50cnksT3JpZ0FkZHJlc3MsT3JpZ0NpdHksT3JpZ1JlZ2lvbixPcmlnUG9zdGFsQ29kZSxPcmlnQ291bnRyeSxMb2NhdGlvbkNvZGUsU2FsZXNQZXJzb25Db2RlLFB1cmNoYXNlT3JkZXJObyxDdXJyZW5jeUNvZGUsRXhjaGFuZ2VSYXRlLEV4Y2hhbmdlUmF0ZUVmZkRhdGUsUGF5bWVudERhdGUsVGF4SW5jbHVkZWQsRGVzdFRheFJlZ2lvbixPcmlnVGF4UmVnaW9uLFRheGFibGUsVGF4VHlwZSxUb3RhbFRheCxDb3VudHJ5TmFtZSxDb3VudHJ5Q29kZSxDb3VudHJ5UmF0ZSxDb3VudHJ5VGF4LFN0YXRlTmFtZSxTdGF0ZUNvZGUsU3RhdGVSYXRlLFN0YXRlVGF4LENvdW50eU5hbWUsQ291bnR5Q29kZSxDb3VudHlSYXRlLENvdW50eVRheCxDaXR5TmFtZSxDaXR5Q29kZSxDaXR5UmF0ZSxDaXR5VGF4LE90aGVyMU5hbWUsT3RoZXIxQ29kZSxPdGhlcjFSYXRlLE90aGVyMVRheCxPdGhlcjJOYW1lLE90aGVyMkNvZGUsT3RoZXIyUmF0ZSxPdGhlcjJUYXgsT3RoZXIzTmFtZSxPdGhlcjNDb2RlLE90aGVyM1JhdGUsT3RoZXIzVGF4LE90aGVyNE5hbWUsT3RoZXI0Q29kZSxPdGhlcjRSYXRlLE90aGVyNFRheCxSZWZlcmVuY2VDb2RlLEJ1eWVyc1ZBVE5vLElzU2VsbGVySW1wb3J0ZXJPZlJlY29yZCxCUkJ1eWVyVHlwZSxCUkJ1eWVyX0lzRXhlbXB0T3JDYW5ub3RXSF9JUlJGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX1BJU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NPRklOU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NTTExSRixCUkJ1eWVyX0lzRXhlbXB0X1BJUyxCUkJ1eWVyX0lzRXhlbXB0X0NPRklOUyxCUkJ1eWVyX0lzRXhlbXB0X0NTTEwsSGVhZGVyX0Rlc2NyaXB0aW9uLEVtYWlsDQozLDlhYzI4MGMzLTNhNTUtNGEzNS1iZWQyLWE4M2RiNTNiMDUxZSwxLDEvMS8yMDE0LERFRkFVTFQsQ3VzdDEsLDEsLCwsLCwxMDAwLCwsLCwsMjM1IEUgNDJuZCBTdCAsTmV3IFlvcmssTlksMTAwMTctNTcwMyAgLFVTLDkwMCBXaW5zbG93IFdheSxCYWluYnJpZGdlIElzbGFuZCxXQSw5ODExMCxVUywsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwNCg==\";s:13:\"contentLength\";i:0;s:11:\"contentType\";s:8:\"text/csv\";s:13:\"fileExtension\";s:4:\".csv\";}}}}s:14:\"BatchFileModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:38:\"Represents
+  one file in a batch upload.\";s:8:\"required\";a:4:{i:0;s:4:\"name\";i:1;s:7:\"content\";i:2;s:11:\"contentType\";i:3;s:13:\"fileExtension\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:49:\"The
+  unique ID number assigned to this batch file.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:7:\"batchId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  unique ID number of the batch that this file belongs to.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":5:{s:11:\"description\";s:47:\"Logical
+  Name of file (e.g. \"Input\" or \"Error\").\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"samplebatch.csv\";}s:7:\"content\";O:8:\"stdClass\":4:{s:6:\"format\";s:4:\"byte\";s:11:\"description\";s:26:\"Content
+  of the batch file.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1752:\"UHJvY2Vzc0NvZGUsRG9jQ29kZSxEb2NUeXBlLERvY0RhdGUsQ29tcGFueUNvZGUsQ3VzdG9tZXJDb2RlLEVudGl0eVVzZUNvZGUsTGluZU5vLFRheENvZGUsVGF4RGF0ZSxJdGVtQ29kZSxEZXNjcmlwdGlvbixRdHksQW1vdW50LERpc2NvdW50LFJlZjEsUmVmMixFeGVtcHRpb25ObyxSZXZBY2N0LERlc3RBZGRyZXNzLERlc3RDaXR5LERlc3RSZWdpb24sRGVzdFBvc3RhbENvZGUsRGVzdENvdW50cnksT3JpZ0FkZHJlc3MsT3JpZ0NpdHksT3JpZ1JlZ2lvbixPcmlnUG9zdGFsQ29kZSxPcmlnQ291bnRyeSxMb2NhdGlvbkNvZGUsU2FsZXNQZXJzb25Db2RlLFB1cmNoYXNlT3JkZXJObyxDdXJyZW5jeUNvZGUsRXhjaGFuZ2VSYXRlLEV4Y2hhbmdlUmF0ZUVmZkRhdGUsUGF5bWVudERhdGUsVGF4SW5jbHVkZWQsRGVzdFRheFJlZ2lvbixPcmlnVGF4UmVnaW9uLFRheGFibGUsVGF4VHlwZSxUb3RhbFRheCxDb3VudHJ5TmFtZSxDb3VudHJ5Q29kZSxDb3VudHJ5UmF0ZSxDb3VudHJ5VGF4LFN0YXRlTmFtZSxTdGF0ZUNvZGUsU3RhdGVSYXRlLFN0YXRlVGF4LENvdW50eU5hbWUsQ291bnR5Q29kZSxDb3VudHlSYXRlLENvdW50eVRheCxDaXR5TmFtZSxDaXR5Q29kZSxDaXR5UmF0ZSxDaXR5VGF4LE90aGVyMU5hbWUsT3RoZXIxQ29kZSxPdGhlcjFSYXRlLE90aGVyMVRheCxPdGhlcjJOYW1lLE90aGVyMkNvZGUsT3RoZXIyUmF0ZSxPdGhlcjJUYXgsT3RoZXIzTmFtZSxPdGhlcjNDb2RlLE90aGVyM1JhdGUsT3RoZXIzVGF4LE90aGVyNE5hbWUsT3RoZXI0Q29kZSxPdGhlcjRSYXRlLE90aGVyNFRheCxSZWZlcmVuY2VDb2RlLEJ1eWVyc1ZBVE5vLElzU2VsbGVySW1wb3J0ZXJPZlJlY29yZCxCUkJ1eWVyVHlwZSxCUkJ1eWVyX0lzRXhlbXB0T3JDYW5ub3RXSF9JUlJGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX1BJU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NPRklOU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NTTExSRixCUkJ1eWVyX0lzRXhlbXB0X1BJUyxCUkJ1eWVyX0lzRXhlbXB0X0NPRklOUyxCUkJ1eWVyX0lzRXhlbXB0X0NTTEwsSGVhZGVyX0Rlc2NyaXB0aW9uLEVtYWlsDQozLDlhYzI4MGMzLTNhNTUtNGEzNS1iZWQyLWE4M2RiNTNiMDUxZSwxLDEvMS8yMDE0LERFRkFVTFQsQ3VzdDEsLDEsLCwsLCwxMDAwLCwsLCwsMjM1IEUgNDJuZCBTdCAsTmV3IFlvcmssTlksMTAwMTctNTcwMyAgLFVTLDkwMCBXaW5zbG93IFdheSxCYWluYnJpZGdlIElzbGFuZCxXQSw5ODExMCxVUywsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwNCg==\";}s:13:\"contentLength\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:26:\"Size
+  of content, in bytes.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:0;}s:11:\"contentType\";O:8:\"stdClass\":5:{s:11:\"description\";s:70:\"Content
+  mime type (e.g. text/csv).  This is used for HTTP downloading.\";s:9:\"maxLength\";i:100;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"text/csv\";}s:13:\"fileExtension\";O:8:\"stdClass\":5:{s:11:\"description\";s:26:\"File
+  extension (e.g. CSV).\";s:9:\"maxLength\";i:10;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\".csv\";}s:10:\"errorCount\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:57:\"Number
+  of errors that occurred when processing this file.\";s:4:\"type\";s:7:\"integer\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:4:\"name\";s:15:\"samplebatch.csv\";s:7:\"content\";s:1752:\"UHJvY2Vzc0NvZGUsRG9jQ29kZSxEb2NUeXBlLERvY0RhdGUsQ29tcGFueUNvZGUsQ3VzdG9tZXJDb2RlLEVudGl0eVVzZUNvZGUsTGluZU5vLFRheENvZGUsVGF4RGF0ZSxJdGVtQ29kZSxEZXNjcmlwdGlvbixRdHksQW1vdW50LERpc2NvdW50LFJlZjEsUmVmMixFeGVtcHRpb25ObyxSZXZBY2N0LERlc3RBZGRyZXNzLERlc3RDaXR5LERlc3RSZWdpb24sRGVzdFBvc3RhbENvZGUsRGVzdENvdW50cnksT3JpZ0FkZHJlc3MsT3JpZ0NpdHksT3JpZ1JlZ2lvbixPcmlnUG9zdGFsQ29kZSxPcmlnQ291bnRyeSxMb2NhdGlvbkNvZGUsU2FsZXNQZXJzb25Db2RlLFB1cmNoYXNlT3JkZXJObyxDdXJyZW5jeUNvZGUsRXhjaGFuZ2VSYXRlLEV4Y2hhbmdlUmF0ZUVmZkRhdGUsUGF5bWVudERhdGUsVGF4SW5jbHVkZWQsRGVzdFRheFJlZ2lvbixPcmlnVGF4UmVnaW9uLFRheGFibGUsVGF4VHlwZSxUb3RhbFRheCxDb3VudHJ5TmFtZSxDb3VudHJ5Q29kZSxDb3VudHJ5UmF0ZSxDb3VudHJ5VGF4LFN0YXRlTmFtZSxTdGF0ZUNvZGUsU3RhdGVSYXRlLFN0YXRlVGF4LENvdW50eU5hbWUsQ291bnR5Q29kZSxDb3VudHlSYXRlLENvdW50eVRheCxDaXR5TmFtZSxDaXR5Q29kZSxDaXR5UmF0ZSxDaXR5VGF4LE90aGVyMU5hbWUsT3RoZXIxQ29kZSxPdGhlcjFSYXRlLE90aGVyMVRheCxPdGhlcjJOYW1lLE90aGVyMkNvZGUsT3RoZXIyUmF0ZSxPdGhlcjJUYXgsT3RoZXIzTmFtZSxPdGhlcjNDb2RlLE90aGVyM1JhdGUsT3RoZXIzVGF4LE90aGVyNE5hbWUsT3RoZXI0Q29kZSxPdGhlcjRSYXRlLE90aGVyNFRheCxSZWZlcmVuY2VDb2RlLEJ1eWVyc1ZBVE5vLElzU2VsbGVySW1wb3J0ZXJPZlJlY29yZCxCUkJ1eWVyVHlwZSxCUkJ1eWVyX0lzRXhlbXB0T3JDYW5ub3RXSF9JUlJGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX1BJU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NPRklOU1JGLEJSQnV5ZXJfSXNFeGVtcHRPckNhbm5vdFdIX0NTTExSRixCUkJ1eWVyX0lzRXhlbXB0X1BJUyxCUkJ1eWVyX0lzRXhlbXB0X0NPRklOUyxCUkJ1eWVyX0lzRXhlbXB0X0NTTEwsSGVhZGVyX0Rlc2NyaXB0aW9uLEVtYWlsDQozLDlhYzI4MGMzLTNhNTUtNGEzNS1iZWQyLWE4M2RiNTNiMDUxZSwxLDEvMS8yMDE0LERFRkFVTFQsQ3VzdDEsLDEsLCwsLCwxMDAwLCwsLCwsMjM1IEUgNDJuZCBTdCAsTmV3IFlvcmssTlksMTAwMTctNTcwMyAgLFVTLDkwMCBXaW5zbG93IFdheSxCYWluYnJpZGdlIElzbGFuZCxXQSw5ODExMCxVUywsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwNCg==\";s:13:\"contentLength\";i:0;s:11:\"contentType\";s:8:\"text/csv\";s:13:\"fileExtension\";s:4:\".csv\";}}s:23:\"FetchResult[BatchModel]\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"@recordsetCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/BatchModel\";}}s:9:\"@nextLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"CompanyModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:29:\"A
+  company or business entity.\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:9:\"accountId\";i:2;s:11:\"companyCode\";i:3;s:4:\"name\";i:4;s:14:\"defaultCountry\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":33:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:37:\"The
+  unique ID number of this company.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:9:\"accountId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  unique ID number of the account this company belongs to.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:15:\"parentCompanyId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:101:\"If
+  this company is fully owned by another company, this is the unique identity of the
+  parent company.\";s:4:\"type\";s:7:\"integer\";}s:6:\"sstPid\";O:8:\"stdClass\":4:{s:11:\"description\";s:133:\"If
+  this company files Streamlined Sales Tax, this is the PID of this company as defined
+  by the Streamlined Sales Tax governing board.\";s:9:\"maxLength\";i:9;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:11:\"companyCode\";O:8:\"stdClass\":6:{s:11:\"description\";s:63:\"A
+  unique code that references this company within your account.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:7:\"DEFAULT\";}s:4:\"name\";O:8:\"stdClass\":5:{s:11:\"description\";s:48:\"The
+  name of this company, as shown to customers.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"Default
+  Company\";}s:9:\"isDefault\";O:8:\"stdClass\":3:{s:11:\"description\";s:119:\"This
+  flag is true if this company is the default company for this account.  Only one
+  company may be set as the default.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:17:\"defaultLocationId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:78:\"If
+  set, this is the unique ID number of the default location for this company.\";s:4:\"type\";s:7:\"integer\";}s:8:\"isActive\";O:8:\"stdClass\":3:{s:11:\"description\";s:138:\"This
+  flag indicates whether tax activity can occur for this company.  Set this flag to
+  true to permit the company to process transactions.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:16:\"taxpayerIdNumber\";O:8:\"stdClass\":5:{s:11:\"description\";s:475:\"For
+  United States companies, this field contains your Taxpayer Identification Number.
+  \ \r\nThis is a nine digit number that is usually called an EIN for an Employer
+  Identification Number if this company is a corporation, \r\nor SSN for a Social
+  Security Number if this company is a person.\r\nThis value is required if you subscribe
+  to Avalara Managed Returns or the SST Certified Service Provider services, \r\nbut
+  it is optional if you do not subscribe to either of those services.\";s:9:\"maxLength\";i:11;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"123456789\";}s:10:\"hasProfile\";O:8:\"stdClass\":3:{s:11:\"description\";s:257:\"Set
+  this flag to true to give this company its own unique tax profile.\r\nIf this flag
+  is true, this company will have its own Nexus, TaxRule, TaxCode, and Item definitions.\r\nIf
+  this flag is false, this company will inherit all profile values from its parent.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:17:\"isReportingEntity\";O:8:\"stdClass\":3:{s:11:\"description\";s:170:\"Set
+  this flag to true if this company must file its own tax returns.\r\nFor users who
+  have Returns enabled, this flag turns on monthly Worksheet generation for the company.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:16:\"sstEffectiveDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:112:\"If
+  this company participates in Streamlined Sales Tax, this is the date when the company
+  joined the SST program.\";s:4:\"type\";s:6:\"string\";}s:14:\"defaultCountry\";O:8:\"stdClass\":5:{s:11:\"description\";s:80:\"The
+  two character ISO-3166 country code of the default country for this company.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:16:\"baseCurrencyCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:96:\"This
+  is the three character ISO-4217 currency code of the default currency used by this
+  company.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:15:\"roundingLevelId\";O:8:\"stdClass\":7:{s:11:\"description\";s:92:\"Indicates
+  whether this company prefers to round amounts at the document level or line level.\";s:4:\"enum\";a:2:{i:0;s:4:\"Line\";i:1;s:8:\"Document\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Line\";s:11:\"x-enum-type\";s:15:\"RoundingLevelId\";s:18:\"x-enum-description\";s:42:\"Choice
+  of rounding level for a transaction\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":2:{s:4:\"Line\";s:33:\"Round
+  tax on each line separately\";s:8:\"Document\";s:31:\"Round tax at the document
+  level\";}}s:15:\"warningsEnabled\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Set
+  this value to true to receive warnings in API calls via SOAP.\";s:4:\"type\";s:7:\"boolean\";}s:6:\"isTest\";O:8:\"stdClass\":3:{s:11:\"description\";s:182:\"Set
+  this flag to true to indicate that this company is a test company.\r\nIf you have
+  Returns enabled, Test companies will not file tax returns and can be used for validation
+  purposes.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:20:\"taxDependencyLevelId\";O:8:\"stdClass\":7:{s:11:\"description\";s:60:\"Used
+  to apply tax detail dependency at a jurisdiction level.\";s:4:\"enum\";a:4:{i:0;s:8:\"Document\";i:1;s:5:\"State\";i:2;s:9:\"TaxRegion\";i:3;s:7:\"Address\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Document\";s:11:\"x-enum-type\";s:20:\"TaxDependencyLevelId\";s:18:\"x-enum-description\";s:20:\"TaxDependencyLevelId\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":4:{s:8:\"Document\";s:8:\"Document\";s:5:\"State\";s:5:\"State\";s:9:\"TaxRegion\";s:9:\"TaxRegion\";s:7:\"Address\";s:7:\"Address\";}}s:10:\"inProgress\";O:8:\"stdClass\":3:{s:11:\"description\";s:205:\"Set
+  this value to true to indicate that you are still working to finish configuring
+  this company.\r\nWhile this value is true, no tax reporting will occur and the company
+  will not be usable for transactions.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:24:\"businessIdentificationNo\";O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"Business
+  Identification No\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:8:\"contacts\";O:8:\"stdClass\":3:{s:11:\"description\";s:130:\"Optional:
+  A list of contacts defined for this company.  To fetch this list, add the query
+  string \"?$include=Contacts\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ContactModel\";}}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:124:\"Optional:
+  A list of items defined for this company.  To fetch this list, add the query string
+  \"?$include=Items\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/ItemModel\";}}s:9:\"locations\";O:8:\"stdClass\":3:{s:11:\"description\";s:132:\"Optional:
+  A list of locations defined for this company.  To fetch this list, add the query
+  string \"?$include=Locations\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/LocationModel\";}}s:5:\"nexus\";O:8:\"stdClass\":3:{s:11:\"description\";s:124:\"Optional:
+  A list of nexus defined for this company.  To fetch this list, add the query string
+  \"?$include=Nexus\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/NexusModel\";}}s:8:\"settings\";O:8:\"stdClass\":3:{s:11:\"description\";s:130:\"Optional:
+  A list of settings defined for this company.  To fetch this list, add the query
+  string \"?$include=Settings\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/SettingModel\";}}s:8:\"taxCodes\";O:8:\"stdClass\":3:{s:11:\"description\";s:131:\"Optional:
+  A list of tax codes defined for this company.  To fetch this list, add the query
+  string \"?$include=TaxCodes\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TaxCodeModel\";}}s:8:\"taxRules\";O:8:\"stdClass\":3:{s:11:\"description\";s:131:\"Optional:
+  A list of tax rules defined for this company.  To fetch this list, add the query
+  string \"?$include=TaxRules\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/TaxRuleModel\";}}s:4:\"upcs\";O:8:\"stdClass\":3:{s:11:\"description\";s:122:\"Optional:
+  A list of UPCs defined for this company.  To fetch this list, add the query string
+  \"?$include=UPCs\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/UPCModel\";}}}s:7:\"example\";O:8:\"stdClass\":15:{s:2:\"id\";i:12345;s:9:\"accountId\";i:123456789;s:11:\"companyCode\";s:7:\"DEFAULT\";s:4:\"name\";s:15:\"Default
+  Company\";s:9:\"isDefault\";b:0;s:8:\"isActive\";b:1;s:16:\"taxpayerIdNumber\";s:9:\"123456789\";s:10:\"hasProfile\";b:1;s:17:\"isReportingEntity\";b:0;s:14:\"defaultCountry\";s:2:\"US\";s:16:\"baseCurrencyCode\";s:3:\"USD\";s:15:\"roundingLevelId\";s:4:\"Line\";s:6:\"isTest\";b:1;s:20:\"taxDependencyLevelId\";s:8:\"Document\";s:10:\"inProgress\";b:0;}}s:12:\"ContactModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:31:\"A
+  contact person for a company.\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:11:\"contactCode\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":22:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:37:\"The
+  unique ID number of this contact.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:66:\"The
+  unique ID number of the company to which this contact belongs.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:11:\"contactCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:31:\"A
+  unique code for this contact.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DEFAULT\";}s:9:\"firstName\";O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"The
+  first or given name of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"Bob\";}s:10:\"middleName\";O:8:\"stdClass\":4:{s:11:\"description\";s:32:\"The
+  middle name of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"The
+  last or family name of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"McExample\";}s:5:\"title\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Professional
+  title of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Owner\";}s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:61:\"The
+  first line of the postal mailing address of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:62:\"The
+  second line of the postal mailing address of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:61:\"The
+  third line of the postal mailing address of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:55:\"The
+  city of the postal mailing address of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:77:\"The
+  state, region, or province of the postal mailing address of this contact.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:74:\"The
+  postal code or zip code of the postal mailing address of this contact.\";s:9:\"maxLength\";i:10;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:86:\"The
+  ISO 3166 two-character country code of the postal mailing address of this contact.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:5:\"email\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"The
+  email address of this contact.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"bob@example.org\";}s:5:\"phone\";O:8:\"stdClass\":5:{s:11:\"description\";s:39:\"The
+  main phone number for this contact.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"714
+  555-1212\";}s:6:\"mobile\";O:8:\"stdClass\":4:{s:11:\"description\";s:41:\"The mobile
+  phone number for this contact.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:3:\"fax\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"The
+  facsimile phone number for this contact.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}}s:7:\"example\";O:8:\"stdClass\":13:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:11:\"contactCode\";s:7:\"DEFAULT\";s:9:\"firstName\";s:3:\"Bob\";s:8:\"lastName\";s:9:\"McExample\";s:5:\"title\";s:5:\"Owner\";s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:10:\"postalCode\";s:5:\"92615\";s:7:\"country\";s:2:\"US\";s:5:\"email\";s:15:\"bob@example.org\";s:5:\"phone\";s:12:\"714
+  555-1212\";}}s:9:\"ItemModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:53:\"Represents
+  an item in your company's product catalog.\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:8:\"itemCode\";i:3;s:11:\"description\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:34:\"The
+  unique ID number of this item.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:56:\"The
+  unique ID number of the company that owns this item.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:8:\"itemCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:37:\"A
+  unique code representing this item.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"CERMUG\";}s:9:\"taxCodeId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:222:\"The
+  unique ID number of the tax code that is applied when selling this item.\r\nWhen
+  creating or updating an item, you can either specify the Tax Code ID number or the
+  Tax Code string; you do not need to specify both values.\";s:4:\"type\";s:7:\"integer\";}s:7:\"taxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:224:\"The
+  unique code string of the Tax Code that is applied when selling this item.\r\nWhen
+  creating or updating an item, you can either specify the Tax Code ID number or the
+  Tax Code string; you do not need to specify both values.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"P0000000\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:60:\"A
+  friendly description of this item in your product catalog.\";s:9:\"maxLength\";i:255;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Ceramic
+  Mug\";}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}}s:7:\"example\";O:8:\"stdClass\":5:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:8:\"itemCode\";s:6:\"CERMUG\";s:7:\"taxCode\";s:8:\"P0000000\";s:11:\"description\";s:11:\"Ceramic
+  Mug\";}}s:13:\"LocationModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:136:\"A
+  location where this company does business.\r\nSome jurisdictions may require you
+  to list all locations where your company does business.\";s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:12:\"locationCode\";i:3;s:13:\"addressTypeId\";i:4;s:17:\"addressCategoryId\";i:5;s:5:\"line1\";i:6;s:10:\"postalCode\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":27:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:38:\"The
+  unique ID number of this location.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:67:\"The
+  unique ID number of the company that operates at this location.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:12:\"locationCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:74:\"A
+  code that identifies this location.  Must be unique within your company.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DEFAULT\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"A
+  friendly name for this location.\";s:9:\"maxLength\";i:255;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"Bob's
+  Artisan Pottery\";}s:13:\"addressTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:100:\"Indicates
+  whether this location is a physical place of business or a temporary salesperson
+  location.\";s:4:\"enum\";a:2:{i:0;s:8:\"Location\";i:1;s:11:\"Salesperson\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"Location\";s:11:\"x-enum-type\";s:13:\"AddressTypeId\";s:18:\"x-enum-description\";s:64:\"Indicates
+  whether this address refers to a person or an business\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":2:{s:8:\"Location\";s:63:\"A
+  business location, for example a store, warehouse, or office.\";s:11:\"Salesperson\";s:84:\"A
+  person's address who performs sales tasks for the company remotely from an office.\";}}s:17:\"addressCategoryId\";O:8:\"stdClass\":7:{s:11:\"description\";s:69:\"Indicates
+  the type of place of business represented by this location.\";s:4:\"enum\";a:5:{i:0;s:10:\"Storefront\";i:1;s:10:\"MainOffice\";i:2;s:9:\"Warehouse\";i:3;s:11:\"Salesperson\";i:4;s:5:\"Other\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"MainOffice\";s:11:\"x-enum-type\";s:17:\"AddressCategoryId\";s:18:\"x-enum-description\";s:46:\"The
+  type of address represented by this object\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":5:{s:10:\"Storefront\";s:39:\"Address
+  refers to a storefront location\";s:10:\"MainOffice\";s:47:\"Address refers to a
+  main office of this company\";s:9:\"Warehouse\";s:58:\"Address refers to a warehouse
+  or other non-public location\";s:11:\"Salesperson\";s:53:\"Address refers to a location
+  for a single salesperson\";s:5:\"Other\";s:50:\"Address is a type not reflected
+  in the other lists\";}}s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:56:\"The
+  first line of the physical address of this location.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:57:\"The
+  second line of the physical address of this location.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:56:\"The
+  third line of the physical address of this location.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:50:\"The
+  city of the physical address of this location.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"county\";O:8:\"stdClass\":5:{s:11:\"description\";s:72:\"The
+  county name of the physical address of this location.  Not required.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Orange\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:72:\"The
+  state, region, or province of the physical address of this location.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:69:\"The
+  postal code or zip code of the physical address of this location.\";s:9:\"maxLength\";i:10;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:81:\"The
+  two character ISO-3166 country code of the physical address of this location.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:9:\"isDefault\";O:8:\"stdClass\":3:{s:11:\"description\";s:85:\"Set
+  this flag to true to indicate that this is the default location for this company.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"isRegistered\";O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"Set
+  this flag to true to indicate that this location has been registered with a tax
+  authority.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:7:\"dbaName\";O:8:\"stdClass\":5:{s:11:\"description\";s:130:\"If
+  this location has a different business name from its legal entity name, specify
+  the \"Doing Business As\" name for this location.\";s:9:\"maxLength\";i:100;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"Bob's
+  Artisan Pottery\";}s:10:\"outletName\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"A
+  friendly name for this location.\";s:9:\"maxLength\";i:100;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Main
+  Office\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:74:\"The
+  date when this location was opened for business, or null if not known.\";s:4:\"type\";s:6:\"string\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:82:\"If
+  this place of business has closed, the date when this location closed business.\";s:4:\"type\";s:6:\"string\";}s:19:\"lastTransactionDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:88:\"The
+  most recent date when a transaction was processed for this location.  Set by AvaTax.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"registeredDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:79:\"The
+  date when this location was registered with a tax authority.  Not required.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"2015-01-01T00:00:00\";}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:8:\"settings\";O:8:\"stdClass\":3:{s:11:\"description\";s:303:\"Extra
+  information required by certain jurisdictions for filing.\r\nFor a list of settings
+  recognized by Avalara, query the endpoint \"/api/v2/definitions/locationquestions\".
+  \r\nTo determine the list of settings required for this location, query the endpoint
+  \"/api/v2/companies/(id)/locations/(id)/validate\".\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/LocationSettingModel\";}}}s:7:\"example\";O:8:\"stdClass\":17:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:12:\"locationCode\";s:7:\"DEFAULT\";s:11:\"description\";s:21:\"Bob's
+  Artisan Pottery\";s:13:\"addressTypeId\";s:8:\"Location\";s:17:\"addressCategoryId\";s:10:\"MainOffice\";s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"county\";s:6:\"Orange\";s:6:\"region\";s:2:\"CA\";s:10:\"postalCode\";s:5:\"92615\";s:7:\"country\";s:2:\"US\";s:9:\"isDefault\";b:1;s:12:\"isRegistered\";b:1;s:7:\"dbaName\";s:21:\"Bob's
+  Artisan Pottery\";s:10:\"outletName\";s:11:\"Main Office\";s:14:\"registeredDate\";s:19:\"2015-01-01T00:00:00\";}}s:10:\"NexusModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:74:\"Represents
+  a declaration of nexus within a particular taxing jurisdiction.\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:6:\"region\";i:3;s:9:\"jurisCode\";i:4;s:9:\"jurisName\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":24:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:50:\"The
+  unique ID number of this declaration of nexus.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:0;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:56:\"The
+  unique ID number of the company that declared nexus.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:0;}s:7:\"country\";O:8:\"stdClass\":6:{s:11:\"description\";s:92:\"The
+  two character ISO-3166 country code of the country in which this company declared
+  nexus.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:2:\"US\";}s:6:\"region\";O:8:\"stdClass\":6:{s:11:\"description\";s:114:\"The
+  two or three character ISO region code of the region, state, or province in which
+  this company declared nexus.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:2:\"CA\";}s:11:\"jurisTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:79:\"The
+  jurisdiction type of the jurisdiction in which this company declared nexus.\";s:4:\"enum\";a:5:{i:0;s:3:\"STA\";i:1;s:3:\"CTY\";i:2;s:3:\"CIT\";i:3;s:3:\"STJ\";i:4;s:3:\"CNT\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"STA\";s:11:\"x-enum-type\";s:11:\"JurisTypeId\";s:18:\"x-enum-description\";s:49:\"Types
+  of jurisdiction referenced in a transaction\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":5:{s:3:\"STA\";s:5:\"State\";s:3:\"CTY\";s:6:\"County\";s:3:\"CIT\";s:4:\"City\";s:3:\"STJ\";s:7:\"Special\";s:3:\"CNT\";s:7:\"Country\";}}s:9:\"jurisCode\";O:8:\"stdClass\":6:{s:11:\"description\";s:75:\"The
+  code identifying the jurisdiction in which this company declared nexus.\";s:9:\"maxLength\";i:10;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:2:\"06\";}s:9:\"jurisName\";O:8:\"stdClass\":6:{s:11:\"description\";s:73:\"The
+  common name of the jurisdiction in which this company declared nexus.\";s:9:\"maxLength\";i:200;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:10:\"CALIFORNIA\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:59:\"The
+  date when this nexus began.  If not known, set to null.\";s:4:\"type\";s:6:\"string\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:98:\"If
+  this nexus will end or has ended on a specific date, set this to the date when this
+  nexus ends.\";s:4:\"type\";s:6:\"string\";}s:9:\"shortName\";O:8:\"stdClass\":6:{s:11:\"description\";s:35:\"The
+  short name of the jurisdiction.\";s:9:\"maxLength\";i:15;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:2:\"CA\";}s:13:\"signatureCode\";O:8:\"stdClass\":6:{s:11:\"description\";s:64:\"The
+  signature code of the boundary region as defined by Avalara.\";s:9:\"maxLength\";i:4;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:0:\"\";}s:15:\"stateAssignedNo\";O:8:\"stdClass\":6:{s:11:\"description\";s:47:\"The
+  state assigned number of this jurisdiction.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:0:\"\";}s:11:\"nexusTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:103:\"(DEPRECATED)
+  The type of nexus that this company is declaring.\r\nPlease use NexusTaxTypeGroupId
+  instead.\";s:4:\"enum\";a:5:{i:0;s:4:\"None\";i:1;s:20:\"SalesOrSellersUseTax\";i:2;s:8:\"SalesTax\";i:3;s:12:\"SSTVolunteer\";i:4;s:15:\"SSTNonVolunteer\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"SalesOrSellersUseTax\";s:11:\"x-enum-type\";s:11:\"NexusTypeId\";s:18:\"x-enum-description\";s:77:\"Describes
+  the different types of statuses which describe an entity (company).\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":5:{s:4:\"None\";s:18:\"Indicates
+  no nexus\";s:20:\"SalesOrSellersUseTax\";s:111:\"Indicates the entity is voluntarily
+  collecting tax (default)\n            \n            This has replaced Collect\";s:8:\"SalesTax\";s:109:\"Indicates
+  the entity is required to collect tax in the state\n            \n            This
+  has replaced Legal\";s:12:\"SSTVolunteer\";s:127:\"Indicates the entity is registered
+  as a Volunteer in an SST state.\n            Only your SST administrator may set
+  this option.\";s:15:\"SSTNonVolunteer\";s:131:\"Indicates the entity is registered
+  as a Non-Volunteer in an SST state.\n            Only your SST administrator may
+  set this option.\";}}s:8:\"sourcing\";O:8:\"stdClass\":6:{s:11:\"description\";s:71:\"Indicates
+  whether this nexus is defined as origin or destination nexus.\";s:4:\"enum\";a:3:{i:0;s:5:\"Mixed\";i:1;s:11:\"Destination\";i:2;s:6:\"Origin\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:8:\"Sourcing\";s:18:\"x-enum-description\";s:8:\"Sourcing\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:6:\"Origin\";s:6:\"Origin\";s:11:\"Destination\";s:11:\"Destination\";s:5:\"Mixed\";s:74:\"Mixed
+  sourcing, for states that do both origin and destination calculation\";}}s:13:\"hasLocalNexus\";O:8:\"stdClass\":3:{s:11:\"description\";s:171:\"True
+  if you are also declaring local nexus within this jurisdiction.\r\nMany U.S. states
+  have options for declaring nexus in local jurisdictions as well as within the state.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:16:\"localNexusTypeId\";O:8:\"stdClass\":6:{s:11:\"description\";s:219:\"If
+  you are declaring local nexus within this jurisdiction, this indicates whether you
+  are declaring only \r\na specified list of local jurisdictions, all state-administered
+  local jurisdictions, or all local jurisdictions.\";s:4:\"enum\";a:3:{i:0;s:8:\"Selected\";i:1;s:17:\"StateAdministered\";i:2;s:3:\"All\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:16:\"LocalNexusTypeId\";s:18:\"x-enum-description\";s:23:\"Describes
+  nexus type id\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:8:\"Selected\";s:8:\"Selected\";s:17:\"StateAdministered\";s:17:\"StateAdministered\";s:3:\"All\";s:3:\"All\";}}s:25:\"hasPermanentEstablishment\";O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"Set
+  this value to true if your company has a permanent establishment within this jurisdiction.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:5:\"taxId\";O:8:\"stdClass\":4:{s:11:\"description\";s:72:\"Optional
+  - the tax identification number under which you declared nexus.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:19:\"streamlinedSalesTax\";O:8:\"stdClass\":3:{s:11:\"description\";s:209:\"For
+  the United States, this flag indicates whether this particular nexus falls within
+  a U.S. State that participates \r\nin the Streamlined Sales Tax program.  For countries
+  other than the US, this flag is null.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:11:\"createdDate\";O:8:\"stdClass\":5:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:28:\"2017-05-16T16:22:03.9631084Z\";}s:13:\"createdUserId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:285475;}s:12:\"modifiedDate\";O:8:\"stdClass\":5:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:28:\"2017-05-16T16:22:03.9631084Z\";}s:14:\"modifiedUserId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:285475;}s:17:\"nexusTaxTypeGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:144:\"The
+  type of nexus that this company is declaring.Replaces NexusTypeId.\r\nUse /api/v2/definitions/nexustaxtypegroup
+  for a list of tax type groups.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"SalesAndUse\";}}s:7:\"example\";O:8:\"stdClass\":19:{s:2:\"id\";i:0;s:9:\"companyId\";i:0;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:11:\"jurisTypeId\";s:3:\"STA\";s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:9:\"shortName\";s:2:\"CA\";s:13:\"signatureCode\";s:0:\"\";s:15:\"stateAssignedNo\";s:0:\"\";s:11:\"nexusTypeId\";s:20:\"SalesOrSellersUseTax\";s:13:\"hasLocalNexus\";b:1;s:25:\"hasPermanentEstablishment\";b:1;s:19:\"streamlinedSalesTax\";b:0;s:11:\"createdDate\";s:28:\"2017-05-16T16:22:03.9631084Z\";s:13:\"createdUserId\";i:285475;s:12:\"modifiedDate\";s:28:\"2017-05-16T16:22:03.9631084Z\";s:14:\"modifiedUserId\";i:285475;s:17:\"nexusTaxTypeGroup\";s:11:\"SalesAndUse\";}}s:12:\"SettingModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:355:\"This
+  object is used to keep track of custom information about a company.\r\nA setting
+  can refer to any type of data you need to remember about this company object.\r\nWhen
+  creating this object, you may define your own \"set\", \"name\", and \"value\" parameters.\r\nTo
+  define your own values, please choose a \"set\" name that begins with \"X-\" to
+  indicate an extension.\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:3:\"set\";i:3;s:4:\"name\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:37:\"The
+  unique ID number of this setting.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:59:\"The
+  unique ID number of the company this setting refers to.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:3:\"set\";O:8:\"stdClass\":5:{s:11:\"description\";s:53:\"A
+  user-defined \"set\" containing this name-value pair.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"ItemsToRemember\";}s:4:\"name\";O:8:\"stdClass\":5:{s:11:\"description\";s:47:\"A
+  user-defined \"name\" for this name-value pair.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Texas\";}s:5:\"value\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"The
+  value of this name-value pair.\";s:9:\"maxLength\";i:200;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Alamo\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:3:\"set\";s:15:\"ItemsToRemember\";s:4:\"name\";s:5:\"Texas\";s:5:\"value\";s:5:\"Alamo\";}}s:12:\"TaxCodeModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:173:\"Represents
+  a tax code that can be applied to items on a transaction.\r\nA tax code can have
+  specific rules for specific jurisdictions that change the tax calculation behavior.\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:7:\"taxCode\";i:3;s:13:\"taxCodeTypeId\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:38:\"The
+  unique ID number of this tax code.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  unique ID number of the company that owns this tax code.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:7:\"taxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:44:\"A
+  code string that identifies this tax code.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PS081282\";}s:13:\"taxCodeTypeId\";O:8:\"stdClass\":5:{s:11:\"description\";s:26:\"The
+  type of this tax code.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"P\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"A
+  friendly description of this tax code.\";s:9:\"maxLength\";i:255;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}s:13:\"parentTaxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:86:\"If
+  this tax code is a subset of a different tax code, this identifies the parent code.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PS080100\";}s:10:\"isPhysical\";O:8:\"stdClass\":4:{s:11:\"description\";s:73:\"True
+  if this tax code type refers to a physical object.  Read only field.\";s:4:\"type\";s:7:\"boolean\";s:8:\"readOnly\";b:1;s:7:\"example\";b:1;}s:16:\"goodsServiceCode\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:64:\"The
+  Avalara Goods and Service Code represented by this tax code.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:13:\"entityUseCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:57:\"The
+  Avalara Entity Use Code represented by this tax code.\";s:9:\"maxLength\";i:40;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:8:\"isActive\";O:8:\"stdClass\":3:{s:11:\"description\";s:64:\"True
+  if this tax code is active and can be used in transactions.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:14:\"isSSTCertified\";O:8:\"stdClass\":3:{s:11:\"description\";s:134:\"True
+  if this tax code has been certified by the Streamlined Sales Tax governing board.\r\nBy
+  default, you should leave this value empty.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}}s:7:\"example\";O:8:\"stdClass\":11:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:7:\"taxCode\";s:8:\"PS081282\";s:13:\"taxCodeTypeId\";s:1:\"P\";s:11:\"description\";s:4:\"Yarn\";s:13:\"parentTaxCode\";s:8:\"PS080100\";s:10:\"isPhysical\";b:1;s:16:\"goodsServiceCode\";i:0;s:13:\"entityUseCode\";s:0:\"\";s:8:\"isActive\";b:1;s:14:\"isSSTCertified\";b:0;}}s:12:\"TaxRuleModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:118:\"Represents
+  a tax rule that changes the behavior of Avalara's tax engine for certain products
+  in certain jurisdictions.\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:9:\"jurisCode\";i:3;s:7:\"country\";i:4;s:6:\"region\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":34:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:38:\"The
+  unique ID number of this tax rule.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:56789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:60:\"The
+  unique ID number of the company that owns this tax rule.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:12345;}s:9:\"taxCodeId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:155:\"The
+  unique ID number of the tax code for this rule.\r\nWhen creating or updating a tax
+  rule, you may specify either the taxCodeId value or the taxCode value.\";s:4:\"type\";s:7:\"integer\";}s:7:\"taxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:150:\"The
+  code string of the tax code for this rule.\r\nWhen creating or updating a tax rule,
+  you may specify either the taxCodeId value or the taxCode value.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"FR020800\";}s:9:\"stateFIPS\";O:8:\"stdClass\":5:{s:11:\"description\";s:92:\"For
+  U.S. tax rules, this is the state's Federal Information Processing Standard (FIPS)
+  code.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"04\";}s:9:\"jurisName\";O:8:\"stdClass\":5:{s:11:\"description\";s:60:\"The
+  name of the jurisdiction to which this tax rule applies.\";s:9:\"maxLength\";i:200;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"MARICOPA\";}s:9:\"jurisCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:60:\"The
+  code of the jurisdiction to which this tax rule applies.\";s:9:\"maxLength\";i:10;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"013\";}s:11:\"jurisTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:60:\"The
+  type of the jurisdiction to which this tax rule applies.\";s:4:\"enum\";a:5:{i:0;s:3:\"STA\";i:1;s:3:\"CTY\";i:2;s:3:\"CIT\";i:3;s:3:\"STJ\";i:4;s:3:\"CNT\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"CTY\";s:11:\"x-enum-type\";s:11:\"JurisTypeId\";s:18:\"x-enum-description\";s:49:\"Types
+  of jurisdiction referenced in a transaction\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":5:{s:3:\"STA\";s:5:\"State\";s:3:\"CTY\";s:6:\"County\";s:3:\"CIT\";s:4:\"City\";s:3:\"STJ\";s:7:\"Special\";s:3:\"CNT\";s:7:\"Country\";}}s:17:\"customerUsageType\";O:8:\"stdClass\":5:{s:11:\"description\";s:54:\"The
+  type of customer usage to which this rule applies.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:9:\"taxTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:53:\"Indicates
+  which tax types to which this rule applies.\";s:4:\"enum\";a:15:{i:0;s:6:\"Excise\";i:1;s:7:\"Lodging\";i:2;s:6:\"Bottle\";i:3;s:3:\"All\";i:4;s:18:\"BothSalesAndUseTax\";i:5;s:14:\"ConsumerUseTax\";i:6;s:28:\"ConsumersUseAndSellersUseTax\";i:7;s:22:\"ConsumerUseAndSalesTax\";i:8;s:3:\"Fee\";i:9;s:11:\"VATInputTax\";i:10;s:25:\"VATNonrecoverableInputTax\";i:11;s:12:\"VATOutputTax\";i:12;s:6:\"Rental\";i:13;s:8:\"SalesTax\";i:14;s:6:\"UseTax\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:18:\"BothSalesAndUseTax\";s:11:\"x-enum-type\";s:15:\"MatchingTaxType\";s:18:\"x-enum-description\";s:301:\"This
+  data type is only used when an object must \"Match\" tax types.  By specifying options
+  here,\n            you can indicate which tax types will match for the purposes
+  of this object.\n            For example, if you specify BothSalesAndUseTax, this
+  value matches with both sales and seller's use tax.\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":15:{s:3:\"All\";s:19:\"Match
+  all tax types\";s:18:\"BothSalesAndUseTax\";s:33:\"Match both Sales and Use Tax
+  only\";s:14:\"ConsumerUseTax\";s:27:\"Match Consumer Use Tax only\";s:8:\"SalesTax\";s:20:\"Match
+  Sales Tax only\";s:6:\"UseTax\";s:27:\"Match Seller's Use Tax only\";s:12:\"VATOutputTax\";s:25:\"Match
+  VAT Output Tax only\";s:11:\"VATInputTax\";s:24:\"Match VAT Input Tax only\";s:25:\"VATNonrecoverableInputTax\";s:39:\"Match
+  VAT Nonrecoverable Input Tax only\";s:3:\"Fee\";s:24:\"Match Fee tax types only\";s:6:\"Rental\";s:27:\"Match
+  Rental tax types only\";s:22:\"ConsumerUseAndSalesTax\";s:43:\"Match both Consumer
+  Use and Sales Tax types\";s:28:\"ConsumersUseAndSellersUseTax\";s:50:\"Match both
+  Consumer Use and Seller's Use Tax types\";s:6:\"Excise\";s:25:\"Match medical excise
+  type\";s:7:\"Lodging\";s:22:\"Match Lodging tax type\";s:6:\"Bottle\";s:21:\"Match
+  bottle tax type\";}}s:10:\"rateTypeId\";O:8:\"stdClass\":6:{s:11:\"description\";s:95:\"(DEPRECATED)
+  Enumerated rate type to which this rule applies.  Please use rateTypeCode instead.\";s:4:\"enum\";a:12:{i:0;s:8:\"ReducedA\";i:1;s:8:\"ReducedB\";i:2;s:4:\"Food\";i:3;s:7:\"General\";i:4;s:17:\"IncreasedStandard\";i:5;s:11:\"LinenRental\";i:6;s:7:\"Medical\";i:7;s:7:\"Parking\";i:8;s:12:\"SuperReduced\";i:9;s:8:\"ReducedR\";i:10;s:8:\"Standard\";i:11;s:4:\"Zero\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:8:\"RateType\";s:18:\"x-enum-description\";s:0:\"\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":0:{}}s:12:\"rateTypeCode\";O:8:\"stdClass\":4:{s:11:\"description\";s:135:\"Indicates
+  the code of the rate type that applies to this rule.  Use `/api/v2/definitions/ratetypes`
+  for a full list of rate type codes.\";s:9:\"maxLength\";i:1;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:13:\"taxRuleTypeId\";O:8:\"stdClass\":7:{s:11:\"description\";s:324:\"This
+  type value determines the behavior of the tax rule.\r\nYou can specify that this
+  rule controls the product's taxability or exempt / nontaxable status, the product's
+  rate \r\n(for example, if you have been granted an official ruling for your product's
+  rate that differs from the official rate), \r\nor other types of behavior.\";s:4:\"enum\";a:6:{i:0;s:8:\"RateRule\";i:1;s:16:\"RateOverrideRule\";i:2;s:8:\"BaseRule\";i:3;s:16:\"ExemptEntityRule\";i:4;s:21:\"ProductTaxabilityRule\";i:5;s:9:\"NexusRule\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:21:\"ProductTaxabilityRule\";s:11:\"x-enum-type\";s:13:\"TaxRuleTypeId\";s:18:\"x-enum-description\";s:13:\"TaxRuleTypeId\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:8:\"RateRule\";s:8:\"RateRule\";s:16:\"RateOverrideRule\";s:16:\"RateOverrideRule\";s:8:\"BaseRule\";s:8:\"BaseRule\";s:16:\"ExemptEntityRule\";s:16:\"ExemptEntityRule\";s:21:\"ProductTaxabilityRule\";s:21:\"ProductTaxabilityRule\";s:9:\"NexusRule\";s:9:\"NexusRule\";}}s:10:\"isAllJuris\";O:8:\"stdClass\":3:{s:11:\"description\";s:69:\"Set
+  this value to true if this tax rule applies in all jurisdictions.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:5:\"value\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  corrected rate for this tax rule.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:3:\"cap\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:66:\"The
+  maximum cap for the price of this item according to this rule.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:9:\"threshold\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:65:\"The
+  per-unit threshold that must be met before this rule applies.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:7:\"options\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"Custom
+  option flags for this rule.\";s:9:\"maxLength\";i:100;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:13:\"effectiveDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:109:\"The
+  first date at which this rule applies.  If null, this rule will apply to all dates
+  prior to the end date.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:112:\"The
+  last date for which this rule applies.  If null, this rule will apply to all dates
+  after the effective date.\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"A
+  friendly name for this tax rule.\";s:9:\"maxLength\";i:255;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"Freight\";}s:10:\"countyFIPS\";O:8:\"stdClass\":5:{s:11:\"description\";s:93:\"For
+  U.S. tax rules, this is the county's Federal Information Processing Standard (FIPS)
+  code.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"013\";}s:7:\"isSTPro\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"If
+  true, indicates this rule is for Sales Tax Pro.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:82:\"The
+  two character ISO 3166 country code for the locations where this rule applies.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:78:\"The
+  state, region, or province name for the locations where this rule applies.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"AZ\";}s:8:\"sourcing\";O:8:\"stdClass\":6:{s:11:\"description\";s:46:\"The
+  sourcing types to which this rule applies.\";s:4:\"enum\";a:3:{i:0;s:5:\"Mixed\";i:1;s:11:\"Destination\";i:2;s:6:\"Origin\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:8:\"Sourcing\";s:18:\"x-enum-description\";s:8:\"Sourcing\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:6:\"Origin\";s:6:\"Origin\";s:11:\"Destination\";s:11:\"Destination\";s:5:\"Mixed\";s:74:\"Mixed
+  sourcing, for states that do both origin and destination calculation\";}}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"taxTypeGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:112:\"The
+  group Id of tax types supported by Avalara. Refer to /api/v2/definitions/taxtypegroups
+  for types we support.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"SalesAndUse\";}s:10:\"taxSubType\";O:8:\"stdClass\":3:{s:11:\"description\";s:108:\"The
+  Id of sub tax types supported by Avalara. Refer to /api/v2/definitions/taxsubtypes
+  for types we support.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"ALL\";}s:16:\"taxTypeMappingId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:28:\"Id
+  for TaxTypeMapping object\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:24:\"rateTypeTaxTypeMappingId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:36:\"Id
+  for RateTypeTaxTypeMapping object\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}}s:7:\"example\";O:8:\"stdClass\":23:{s:2:\"id\";i:56789;s:9:\"companyId\";i:12345;s:7:\"taxCode\";s:8:\"FR020800\";s:9:\"stateFIPS\";s:2:\"04\";s:9:\"jurisName\";s:8:\"MARICOPA\";s:9:\"jurisCode\";s:3:\"013\";s:11:\"jurisTypeId\";s:3:\"CTY\";s:17:\"customerUsageType\";s:0:\"\";s:9:\"taxTypeId\";s:18:\"BothSalesAndUseTax\";s:13:\"taxRuleTypeId\";s:21:\"ProductTaxabilityRule\";s:10:\"isAllJuris\";b:1;s:5:\"value\";d:0;s:3:\"cap\";d:0;s:9:\"threshold\";d:0;s:7:\"options\";s:0:\"\";s:13:\"effectiveDate\";s:10:\"2017-05-16\";s:11:\"description\";s:7:\"Freight\";s:10:\"countyFIPS\";s:3:\"013\";s:7:\"isSTPro\";b:0;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"AZ\";s:12:\"taxTypeGroup\";s:11:\"SalesAndUse\";s:10:\"taxSubType\";s:3:\"ALL\";}}s:8:\"UPCModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:62:\"One
+  Universal Product Code object as defined for your company.\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:9:\"companyId\";i:2;s:3:\"upc\";i:3;s:11:\"description\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:34:\"The
+  unique ID number for this UPC.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:9:\"companyId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:62:\"The
+  unique ID number of the company to which this UPC belongs.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:1234567;}s:3:\"upc\";O:8:\"stdClass\":5:{s:11:\"description\";s:107:\"The
+  12-14 character Universal Product Code, European Article Number, or Global Trade
+  Identification Number.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"023032550992\";}s:13:\"legacyTaxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:58:\"Legacy
+  Tax Code applied to any product sold with this UPC.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PS081282\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:53:\"Description
+  of the product to which this UPC applies.\";s:9:\"maxLength\";i:255;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:108:\"If
+  this UPC became effective on a certain date, this contains the first date on which
+  the UPC was effective.\";s:4:\"type\";s:6:\"string\";}s:7:\"endDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:113:\"If
+  this UPC expired or will expire on a certain date, this contains the last date on
+  which the UPC was effective.\";s:4:\"type\";s:6:\"string\";}s:5:\"usage\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:37:\"A
+  usage identifier for this UPC code.\";s:4:\"type\";s:7:\"integer\";}s:8:\"isSystem\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:89:\"A
+  flag indicating whether this UPC code is attached to the AvaTax system or to a company.\";s:4:\"type\";s:7:\"integer\";}s:11:\"createdDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:38:\"The
+  date when this record was created.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:13:\"createdUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:48:\"The
+  User ID of the user who created this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}}s:7:\"example\";O:8:\"stdClass\":5:{s:2:\"id\";i:123456789;s:9:\"companyId\";i:1234567;s:3:\"upc\";s:12:\"023032550992\";s:13:\"legacyTaxCode\";s:8:\"PS081282\";s:11:\"description\";s:4:\"Yarn\";}}s:20:\"LocationSettingModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:72:\"Represents
+  the answer to one local jurisdiction question for a location.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"questionId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:55:\"The
+  unique ID number of the location question answered.\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  answer the user provided.\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":0:{}}s:25:\"FetchResult[CompanyModel]\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"@recordsetCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CompanyModel\";}}s:9:\"@nextLink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"TransactionModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:70:\"A
+  single transaction - for example, a sales invoice or purchase order.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":49:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:41:\"The
+  unique ID number of this transaction.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:4:\"code\";O:8:\"stdClass\":4:{s:11:\"description\";s:61:\"A
+  unique customer-provided code identifying this transaction.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:36:\"855838c1-31da-4874-a25e-ec6ffade1307\";}s:9:\"companyId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:67:\"The
+  unique ID number of the company that recorded this transaction.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:12345;}s:4:\"date\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:44:\"The
+  date on which this transaction occurred.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:11:\"paymentDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:120:\"The
+  date when payment was made on this transaction.  By default, this should be the
+  same as the date of the transaction.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:6:\"status\";O:8:\"stdClass\":7:{s:11:\"description\";s:30:\"The
+  status of the transaction.\";s:4:\"enum\";a:9:{i:0;s:9:\"Temporary\";i:1;s:5:\"Saved\";i:2;s:6:\"Posted\";i:3;s:9:\"Committed\";i:4;s:9:\"Cancelled\";i:5;s:8:\"Adjusted\";i:6;s:6:\"Queued\";i:7;s:15:\"PendingApproval\";i:8;s:3:\"Any\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Committed\";s:11:\"x-enum-type\";s:14:\"DocumentStatus\";s:18:\"x-enum-description\";s:15:\"Document
+  Status\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":9:{s:9:\"Temporary\";s:56:\"Temporary
+  document not saved (SalesOrder, PurchaseOrder)\";s:5:\"Saved\";s:67:\"Saved document
+  (SalesInvoice or PurchaseInvoice) ready to be posted\";s:6:\"Posted\";s:33:\"A posted
+  document (not committed)\";s:9:\"Committed\";s:41:\"A posted document that has been
+  committed\";s:9:\"Cancelled\";s:44:\"A Committed document that has been cancelled\";s:8:\"Adjusted\";s:33:\"A
+  document that has been adjusted\";s:6:\"Queued\";s:55:\"A document which is in Queue
+  status and processed later\";s:15:\"PendingApproval\";s:40:\"A document which is
+  Pending for Approval\";s:3:\"Any\";s:26:\"Any status (for searching)\";}}s:4:\"type\";O:8:\"stdClass\":7:{s:11:\"description\";s:535:\"The
+  type of the transaction.  For Returns customers, a transaction type of \"Invoice\"
+  will be reported to the tax authorities.\r\nA sales transaction represents a sale
+  from the company to a customer.  A purchase transaction represents a purchase made
+  by the company.\r\nA return transaction represents a customer who decided to request
+  a refund after purchasing a product from the company.  An inventory \r\ntransfer
+  transaction represents goods that were moved from one location of the company to
+  another location without changing ownership.\";s:4:\"enum\";a:11:{i:0;s:10:\"SalesOrder\";i:1;s:12:\"SalesInvoice\";i:2;s:13:\"PurchaseOrder\";i:3;s:15:\"PurchaseInvoice\";i:4;s:11:\"ReturnOrder\";i:5;s:13:\"ReturnInvoice\";i:6;s:22:\"InventoryTransferOrder\";i:7;s:24:\"InventoryTransferInvoice\";i:8;s:18:\"ReverseChargeOrder\";i:9;s:20:\"ReverseChargeInvoice\";i:10;s:3:\"Any\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"SalesInvoice\";s:11:\"x-enum-type\";s:12:\"DocumentType\";s:18:\"x-enum-description\";s:14:\"Document
+  Types\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":11:{s:10:\"SalesOrder\";s:109:\"Sales
+  Order, estimate or quote (default).  This is a temporary document type and is not
+  saved in tax history.\";s:12:\"SalesInvoice\";s:13:\"Sales Invoice\";s:13:\"PurchaseOrder\";s:103:\"Purchase
+  order, estimate, or quote.  This is a temporary document type and is not saved in
+  tax history.\";s:15:\"PurchaseInvoice\";s:16:\"Purchase Invoice\";s:11:\"ReturnOrder\";s:87:\"Sales
+  Return Order.  This is a temporary document type and is not saved in tax history.\";s:13:\"ReturnInvoice\";s:20:\"Sales
+  Return Invoice\";s:22:\"InventoryTransferOrder\";s:22:\"InventoryTransferOrder\";s:24:\"InventoryTransferInvoice\";s:24:\"InventoryTransferInvoice\";s:18:\"ReverseChargeOrder\";s:18:\"ReverseChargeOrder\";s:20:\"ReverseChargeInvoice\";s:20:\"ReverseChargeInvoice\";s:3:\"Any\";s:18:\"No
+  particular type\";}}s:9:\"batchCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"If
+  this transaction was created as part of a batch, this code indicates which batch.\";s:4:\"type\";s:6:\"string\";}s:12:\"currencyCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"The
+  three-character ISO 4217 currency code that was used for payment for this transaction.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:17:\"customerUsageType\";O:8:\"stdClass\":3:{s:11:\"description\";s:111:\"The
+  customer usage type for this transaction.  Customer usage types often affect exemption
+  or taxability rules.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:18:\"customerVendorCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"CustomerVendorCode\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"ABC\";}s:8:\"exemptNo\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"If
+  this transaction was exempt, this field will contain the word \"Exempt\".\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:10:\"reconciled\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"If
+  this transaction has been reconciled against the company's ledger, this value is
+  set to true.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"locationCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:226:\"If
+  this transaction was made from a specific reporting location, this is the code string
+  of the location.\r\nFor customers using Returns, this indicates how tax will be
+  reported according to different locations on the tax forms.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DEFAULT\";}s:15:\"purchaseOrderNo\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  customer-supplied purchase order number of this transaction.\";s:4:\"type\";s:6:\"string\";}s:13:\"referenceCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"A
+  user-defined reference code for this transaction.\";s:4:\"type\";s:6:\"string\";}s:15:\"salespersonCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"The
+  salesperson who provided this transaction.  Not required.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"DEF\";}s:15:\"taxOverrideType\";O:8:\"stdClass\":7:{s:11:\"description\";s:99:\"If
+  a tax override was applied to this transaction, indicates what type of tax override
+  was applied.\";s:4:\"enum\";a:6:{i:0;s:4:\"None\";i:1;s:9:\"TaxAmount\";i:2;s:9:\"Exemption\";i:3;s:7:\"TaxDate\";i:4;s:16:\"AccruedTaxAmount\";i:5;s:13:\"DeriveTaxable\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"None\";s:11:\"x-enum-type\";s:17:\"TaxOverrideTypeId\";s:18:\"x-enum-description\";s:17:\"TaxOverrideTypeId\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:4:\"None\";s:11:\"No
+  override\";s:9:\"TaxAmount\";s:31:\"Tax was overriden by the client\";s:9:\"Exemption\";s:53:\"Entity
+  exemption was ignored (e.g. item was consumed)\";s:7:\"TaxDate\";s:31:\"Only the
+  tax date was overriden\";s:16:\"AccruedTaxAmount\";s:27:\"To support Consumer Use
+  Tax\";s:13:\"DeriveTaxable\";s:45:\"Derive the taxable amount from the tax amount\";}}s:17:\"taxOverrideAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:114:\"If
+  a tax override was applied to this transaction, indicates the amount of tax that
+  was requested by the customer.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:17:\"taxOverrideReason\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"If
+  a tax override was applied to this transaction, indicates the reason for the tax
+  override.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:11:\"totalAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  total amount of this transaction.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1000;}s:11:\"totalExempt\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:47:\"The
+  amount of this transaction that was exempt.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:8:\"totalTax\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:59:\"The
+  total tax calculated for all lines in this transaction.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:12:\"totalTaxable\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:69:\"The
+  portion of the total amount of this transaction that was taxable.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1000;}s:18:\"totalTaxCalculated\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:118:\"If
+  a tax override was applied to this transaction, indicates the amount of tax Avalara
+  calculated for the transaction.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:16:\"adjustmentReason\";O:8:\"stdClass\":7:{s:11:\"description\";s:112:\"If
+  this transaction was adjusted, indicates the unique ID number of the reason why
+  the transaction was adjusted.\";s:4:\"enum\";a:10:{i:0;s:11:\"NotAdjusted\";i:1;s:13:\"SourcingIssue\";i:2;s:27:\"ReconciledWithGeneralLedger\";i:3;s:17:\"ExemptCertApplied\";i:4;s:13:\"PriceAdjusted\";i:5;s:15:\"ProductReturned\";i:6;s:16:\"ProductExchanged\";i:7;s:7:\"BadDebt\";i:8;s:5:\"Other\";i:9;s:7:\"Offline\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"NotAdjusted\";s:11:\"x-enum-type\";s:16:\"AdjustmentReason\";s:18:\"x-enum-description\";s:68:\"Indicates
+  the type of adjustment that was performed on a transaction\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":10:{s:11:\"NotAdjusted\";s:37:\"The
+  transaction has not been adjusted\";s:13:\"SourcingIssue\";s:68:\"A sourcing issue
+  existed which caused the transaction to be adjusted\";s:27:\"ReconciledWithGeneralLedger\";s:62:\"Transaction
+  was adjusted to reconcile it with a general ledger\";s:17:\"ExemptCertApplied\";s:67:\"Transaction
+  was adjusted after an exemption certificate was applied\";s:13:\"PriceAdjusted\";s:58:\"Transaction
+  was adjusted when the price of an item changed\";s:15:\"ProductReturned\";s:48:\"Transaction
+  was adjusted due to a product return\";s:16:\"ProductExchanged\";s:50:\"Transaction
+  was adjusted due to a product exchange\";s:7:\"BadDebt\";s:57:\"Transaction was
+  adjusted due to bad or uncollectable debt\";s:5:\"Other\";s:57:\"Transaction was
+  adjusted for another reason not specified\";s:7:\"Offline\";s:7:\"Offline\";}}s:21:\"adjustmentDescription\";O:8:\"stdClass\":3:{s:11:\"description\";s:105:\"If
+  this transaction was adjusted, indicates a description of the reason why the transaction
+  was adjusted.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:6:\"locked\";O:8:\"stdClass\":3:{s:11:\"description\";s:136:\"If
+  this transaction has been reported to a tax authority, this transaction is considered
+  locked and may not be adjusted after reporting.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:78:\"The
+  two-or-three character ISO region code of the region for this transaction.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:68:\"The
+  two-character ISO 3166 code of the country for this transaction.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:7:\"version\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:141:\"If
+  this transaction was adjusted, this indicates the version number of this transaction.
+  \ Incremented each time the transaction\r\nis adjusted.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:15:\"softwareVersion\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  software version used to calculate this transaction.\";s:4:\"type\";s:6:\"string\";}s:15:\"originAddressId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:64:\"The
+  unique ID number of the origin address for this transaction.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:123456789;}s:20:\"destinationAddressId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:69:\"The
+  unique ID number of the destination address for this transaction.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:123456789;}s:25:\"exchangeRateEffectiveDate\";O:8:\"stdClass\":3:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:118:\"If
+  this transaction included foreign currency exchange, this is the date as of which
+  the exchange rate was calculated.\";s:4:\"type\";s:6:\"string\";}s:12:\"exchangeRate\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:96:\"If
+  this transaction included foreign currency exchange, this is the exchange rate that
+  was used.\";s:4:\"type\";s:6:\"number\";}s:24:\"isSellerImporterOfRecord\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"If
+  true, this seller was considered the importer of record of a product shipped internationally.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Description
+  of this transaction.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Email
+  address associated with this transaction.\";s:4:\"type\";s:6:\"string\";}s:24:\"businessIdentificationNo\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"VAT
+  business identification number used for this transaction.\";s:4:\"type\";s:6:\"string\";}s:12:\"modifiedDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  date/time when this record was last modified.\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:14:\"modifiedUserId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:54:\"The
+  user ID of the user who last modified this record.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;}s:7:\"taxDate\";O:8:\"stdClass\":5:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:29:\"Tax
+  date for this transaction\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:5:\"lines\";O:8:\"stdClass\":4:{s:11:\"description\";s:147:\"Optional:
+  A list of line items in this transaction.  To fetch this list, add the query string
+  \"?$include=Lines\" or \"?$include=Details\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/TransactionLineModel\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:13:\"transactionId\";i:123456789;s:10:\"lineNumber\";s:1:\"1\";s:18:\"boundaryOverrideId\";i:0;s:17:\"customerUsageType\";s:0:\"\";s:11:\"description\";s:4:\"Yarn\";s:20:\"destinationAddressId\";i:12345;s:15:\"originAddressId\";i:123456789;s:14:\"discountAmount\";d:100;s:14:\"discountTypeId\";i:0;s:12:\"exemptAmount\";d:0;s:12:\"exemptCertId\";i:0;s:8:\"exemptNo\";s:0:\"\";s:13:\"isItemTaxable\";b:1;s:6:\"isSSTP\";b:0;s:8:\"itemCode\";s:6:\"116292\";s:10:\"lineAmount\";d:1000;s:8:\"quantity\";d:1;s:4:\"ref1\";s:20:\"Note:
+  Deliver to Bob\";s:13:\"reportingDate\";s:10:\"2017-05-16\";s:10:\"revAccount\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:13:\"taxCalculated\";d:62.5;s:7:\"taxCode\";s:8:\"PS081282\";s:7:\"taxDate\";s:10:\"2017-05-16\";s:9:\"taxEngine\";s:0:\"\";s:15:\"taxOverrideType\";s:4:\"None\";s:17:\"taxOverrideAmount\";d:0;s:17:\"taxOverrideReason\";s:0:\"\";s:11:\"taxIncluded\";b:0;s:7:\"details\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:17:\"transactionLineId\";i:123456789;s:13:\"transactionId\";i:123456789;s:9:\"addressId\";i:12345;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:9:\"stateFIPS\";s:2:\"06\";s:12:\"exemptAmount\";d:0;s:14:\"exemptReasonId\";i:4;s:7:\"inState\";b:0;s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:14:\"jurisdictionId\";i:5000531;s:13:\"signatureCode\";s:4:\"AGAM\";s:15:\"stateAssignedNo\";s:0:\"\";s:9:\"jurisType\";s:3:\"STA\";s:16:\"nonTaxableAmount\";d:0;s:16:\"nonTaxableRuleId\";i:0;s:14:\"nonTaxableType\";s:8:\"BaseRule\";s:4:\"rate\";d:0.0625;s:10:\"rateRuleId\";i:1321915;s:12:\"rateSourceId\";i:3;s:7:\"serCode\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:7:\"taxType\";s:5:\"Sales\";s:7:\"taxName\";s:12:\"CA
+  STATE TAX\";s:18:\"taxAuthorityTypeId\";i:45;s:11:\"taxRegionId\";i:2127184;s:13:\"taxCalculated\";d:62.5;s:11:\"taxOverride\";d:0;s:8:\"rateType\";s:7:\"General\";}}}}}s:9:\"addresses\";O:8:\"stdClass\":4:{s:11:\"description\";s:128:\"Optional:
+  A list of line items in this transaction.  To fetch this list, add the query string
+  \"?$include=Addresses\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/TransactionAddressModel\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":9:{s:2:\"id\";i:0;s:13:\"transactionId\";i:0;s:13:\"boundaryLevel\";s:7:\"Address\";s:5:\"line1\";s:30:\"100
+  Ravine Lane Northeast #220\";s:4:\"city\";s:17:\"Bainbridge Island\";s:6:\"region\";s:2:\"WA\";s:10:\"postalCode\";s:5:\"98110\";s:7:\"country\";s:2:\"US\";s:11:\"taxRegionId\";i:0;}}}s:13:\"locationTypes\";O:8:\"stdClass\":3:{s:11:\"description\";s:132:\"Optional:
+  A list of location types in this transaction.  To fetch this list, add the query
+  string \"?$include=Addresses\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/TransactionLocationTypeModel\";}}s:7:\"summary\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"Contains
+  a summary of tax on this transaction.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/TransactionSummary\";}}s:10:\"parameters\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"Contains
+  a list of extra parameters that were set when the transaction was created.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}s:8:\"messages\";O:8:\"stdClass\":3:{s:11:\"description\";s:126:\"List
+  of informational and warning messages regarding this API call.  These messages are
+  only relevant to the current API call.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AvaTaxMessage\";}}}s:7:\"example\";O:8:\"stdClass\":35:{s:2:\"id\";i:123456789;s:4:\"code\";s:36:\"855838c1-31da-4874-a25e-ec6ffade1307\";s:9:\"companyId\";i:12345;s:4:\"date\";s:10:\"2017-05-16\";s:11:\"paymentDate\";s:10:\"2017-05-16\";s:6:\"status\";s:9:\"Committed\";s:4:\"type\";s:12:\"SalesInvoice\";s:12:\"currencyCode\";s:3:\"USD\";s:17:\"customerUsageType\";s:0:\"\";s:18:\"customerVendorCode\";s:3:\"ABC\";s:8:\"exemptNo\";s:0:\"\";s:10:\"reconciled\";b:1;s:12:\"locationCode\";s:7:\"DEFAULT\";s:15:\"salespersonCode\";s:3:\"DEF\";s:15:\"taxOverrideType\";s:4:\"None\";s:17:\"taxOverrideAmount\";d:0;s:17:\"taxOverrideReason\";s:0:\"\";s:11:\"totalAmount\";d:1000;s:11:\"totalExempt\";d:0;s:8:\"totalTax\";d:62.5;s:12:\"totalTaxable\";d:1000;s:18:\"totalTaxCalculated\";d:62.5;s:16:\"adjustmentReason\";s:11:\"NotAdjusted\";s:21:\"adjustmentDescription\";s:0:\"\";s:6:\"locked\";b:0;s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:7:\"version\";i:0;s:15:\"originAddressId\";i:123456789;s:20:\"destinationAddressId\";i:123456789;s:24:\"isSellerImporterOfRecord\";b:0;s:11:\"description\";s:4:\"Yarn\";s:7:\"taxDate\";s:25:\"2017-05-16T00:00:00-07:00\";s:5:\"lines\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:13:\"transactionId\";i:123456789;s:10:\"lineNumber\";s:1:\"1\";s:18:\"boundaryOverrideId\";i:0;s:17:\"customerUsageType\";s:0:\"\";s:11:\"description\";s:4:\"Yarn\";s:20:\"destinationAddressId\";i:12345;s:15:\"originAddressId\";i:123456789;s:14:\"discountAmount\";d:100;s:14:\"discountTypeId\";i:0;s:12:\"exemptAmount\";d:0;s:12:\"exemptCertId\";i:0;s:8:\"exemptNo\";s:0:\"\";s:13:\"isItemTaxable\";b:1;s:6:\"isSSTP\";b:0;s:8:\"itemCode\";s:6:\"116292\";s:10:\"lineAmount\";d:1000;s:8:\"quantity\";d:1;s:4:\"ref1\";s:20:\"Note:
+  Deliver to Bob\";s:13:\"reportingDate\";s:10:\"2017-05-16\";s:10:\"revAccount\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:13:\"taxCalculated\";d:62.5;s:7:\"taxCode\";s:8:\"PS081282\";s:7:\"taxDate\";s:10:\"2017-05-16\";s:9:\"taxEngine\";s:0:\"\";s:15:\"taxOverrideType\";s:4:\"None\";s:17:\"taxOverrideAmount\";d:0;s:17:\"taxOverrideReason\";s:0:\"\";s:11:\"taxIncluded\";b:0;s:7:\"details\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:17:\"transactionLineId\";i:123456789;s:13:\"transactionId\";i:123456789;s:9:\"addressId\";i:12345;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:9:\"stateFIPS\";s:2:\"06\";s:12:\"exemptAmount\";d:0;s:14:\"exemptReasonId\";i:4;s:7:\"inState\";b:0;s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:14:\"jurisdictionId\";i:5000531;s:13:\"signatureCode\";s:4:\"AGAM\";s:15:\"stateAssignedNo\";s:0:\"\";s:9:\"jurisType\";s:3:\"STA\";s:16:\"nonTaxableAmount\";d:0;s:16:\"nonTaxableRuleId\";i:0;s:14:\"nonTaxableType\";s:8:\"BaseRule\";s:4:\"rate\";d:0.0625;s:10:\"rateRuleId\";i:1321915;s:12:\"rateSourceId\";i:3;s:7:\"serCode\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:7:\"taxType\";s:5:\"Sales\";s:7:\"taxName\";s:12:\"CA
+  STATE TAX\";s:18:\"taxAuthorityTypeId\";i:45;s:11:\"taxRegionId\";i:2127184;s:13:\"taxCalculated\";d:62.5;s:11:\"taxOverride\";d:0;s:8:\"rateType\";s:7:\"General\";}}}}s:9:\"addresses\";a:1:{i:0;O:8:\"stdClass\":9:{s:2:\"id\";i:0;s:13:\"transactionId\";i:0;s:13:\"boundaryLevel\";s:7:\"Address\";s:5:\"line1\";s:30:\"100
+  Ravine Lane Northeast #220\";s:4:\"city\";s:17:\"Bainbridge Island\";s:6:\"region\";s:2:\"WA\";s:10:\"postalCode\";s:5:\"98110\";s:7:\"country\";s:2:\"US\";s:11:\"taxRegionId\";i:0;}}}}s:20:\"TransactionLineModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"One
+  line item on this transaction.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":38:{s:2:\"id\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:51:\"The
+  unique ID number of this transaction line item.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:123456789;}s:13:\"transactionId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:72:\"The
+  unique ID number of the transaction to which this line item belongs.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:123456789;}s:10:\"lineNumber\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  line number or code indicating the line on this invoice or receipt or document.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"1\";}s:18:\"boundaryOverrideId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:72:\"The
+  unique ID number of the boundary override applied to this line item.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:17:\"customerUsageType\";O:8:\"stdClass\":3:{s:11:\"description\";s:87:\"The
+  customer usage type for this line item.  Usage type often affects taxability rules.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"A
+  description of the item or service represented by this line.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}s:20:\"destinationAddressId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:255:\"The
+  unique ID number of the destination address where this line was delivered or sold.\r\nIn
+  the case of a point-of-sale transaction, the destination address and origin address
+  will be the same.\r\nIn the case of a shipped transaction, they will be different.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:12345;}s:15:\"originAddressId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:250:\"The
+  unique ID number of the origin address where this line was delivered or sold.\r\nIn
+  the case of a point-of-sale transaction, the origin address and destination address
+  will be the same.\r\nIn the case of a shipped transaction, they will be different.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:123456789;}s:14:\"discountAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:271:\"The
+  amount of discount that was applied to this line item.  This represents the difference
+  between list price and sale price of the item.\r\nIn general, a discount represents
+  money that did not change hands; tax is calculated on only the amount of money that
+  changed hands.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:100;}s:14:\"discountTypeId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:65:\"The
+  type of discount, if any, that was applied to this line item.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:12:\"exemptAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:45:\"The
+  amount of this line item that was exempt.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:12:\"exemptCertId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:81:\"The
+  unique ID number of the exemption certificate that applied to this line item.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:8:\"exemptNo\";O:8:\"stdClass\":3:{s:11:\"description\";s:69:\"If
+  this line item was exempt, this string contains the word 'Exempt'.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:13:\"isItemTaxable\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"True
+  if this item is taxable.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:6:\"isSSTP\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"True
+  if this item is a Streamlined Sales Tax line item.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:8:\"itemCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:58:\"The
+  code string of the item represented by this line item.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"116292\";}s:10:\"lineAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:177:\"The
+  total amount of the transaction, including both taxable and exempt.  This is the
+  total price for all items.\r\nTo determine the individual item price, divide this
+  by quantity.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1000;}s:8:\"quantity\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:48:\"The
+  quantity of products sold on this line item.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1;}s:4:\"ref1\";O:8:\"stdClass\":3:{s:11:\"description\";s:67:\"A
+  user-defined reference identifier for this transaction line item.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"Note:
+  Deliver to Bob\";}s:4:\"ref2\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"A
+  user-defined reference identifier for this transaction line item.\";s:4:\"type\";s:6:\"string\";}s:13:\"reportingDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:246:\"The
+  date when this transaction should be reported.  By default, all transactions are
+  reported on the date when the actual transaction took place.\r\nIn some cases, line
+  items may be reported later due to delayed shipments or other business reasons.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:10:\"revAccount\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"The
+  revenue account number for this line item.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:8:\"sourcing\";O:8:\"stdClass\":7:{s:11:\"description\";s:82:\"Indicates
+  whether this line item was taxed according to the origin or destination.\";s:4:\"enum\";a:3:{i:0;s:5:\"Mixed\";i:1;s:11:\"Destination\";i:2;s:6:\"Origin\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Destination\";s:11:\"x-enum-type\";s:8:\"Sourcing\";s:18:\"x-enum-description\";s:8:\"Sourcing\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:6:\"Origin\";s:6:\"Origin\";s:11:\"Destination\";s:11:\"Destination\";s:5:\"Mixed\";s:74:\"Mixed
+  sourcing, for states that do both origin and destination calculation\";}}s:3:\"tax\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:47:\"The
+  amount of tax generated for this line item.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:13:\"taxableAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:37:\"The
+  taxable amount of this line item.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1000;}s:13:\"taxCalculated\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:152:\"The
+  tax calculated for this line by Avalara.  If the transaction was calculated with
+  a tax override, this amount will be different from the \"tax\" value.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:7:\"taxCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:75:\"The
+  code string for the tax code that was used to calculate this line item.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PS081282\";}s:9:\"taxCodeId\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:80:\"The
+  unique ID number for the tax code that was used to calculate this line item.\";s:4:\"type\";s:7:\"integer\";}s:7:\"taxDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:403:\"The
+  date that was used for calculating tax amounts for this line item.  By default,
+  this date should be the same as the document date.\r\nIn some cases, for example
+  when a consumer returns a product purchased previously, line items may be calculated
+  using a tax date in the past\r\nso that the consumer can receive a refund for the
+  correct tax amount that was charged when the item was originally purchased.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:9:\"taxEngine\";O:8:\"stdClass\":3:{s:11:\"description\";s:68:\"The
+  tax engine identifier that was used to calculate this line item.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:15:\"taxOverrideType\";O:8:\"stdClass\":7:{s:11:\"description\";s:73:\"If
+  a tax override was specified, this indicates the type of tax override.\";s:4:\"enum\";a:6:{i:0;s:4:\"None\";i:1;s:9:\"TaxAmount\";i:2;s:9:\"Exemption\";i:3;s:7:\"TaxDate\";i:4;s:16:\"AccruedTaxAmount\";i:5;s:13:\"DeriveTaxable\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"None\";s:11:\"x-enum-type\";s:17:\"TaxOverrideTypeId\";s:18:\"x-enum-description\";s:17:\"TaxOverrideTypeId\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:4:\"None\";s:11:\"No
+  override\";s:9:\"TaxAmount\";s:31:\"Tax was overriden by the client\";s:9:\"Exemption\";s:53:\"Entity
+  exemption was ignored (e.g. item was consumed)\";s:7:\"TaxDate\";s:31:\"Only the
+  tax date was overriden\";s:16:\"AccruedTaxAmount\";s:27:\"To support Consumer Use
+  Tax\";s:13:\"DeriveTaxable\";s:45:\"Derive the taxable amount from the tax amount\";}}s:24:\"businessIdentificationNo\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"VAT
+  business identification number used for this transaction.\";s:4:\"type\";s:6:\"string\";}s:17:\"taxOverrideAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:85:\"If
+  a tax override was specified, this indicates the amount of tax that was requested.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:17:\"taxOverrideReason\";O:8:\"stdClass\":3:{s:11:\"description\";s:76:\"If
+  a tax override was specified, represents the reason for the tax override.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:11:\"taxIncluded\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"True
+  if tax was included in the purchase price of the item.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:7:\"details\";O:8:\"stdClass\":4:{s:11:\"description\";s:126:\"Optional:
+  A list of tax details for this line item.  To fetch this list, add the query string
+  \"?$include=Details\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/TransactionLineDetailModel\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:17:\"transactionLineId\";i:123456789;s:13:\"transactionId\";i:123456789;s:9:\"addressId\";i:12345;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:9:\"stateFIPS\";s:2:\"06\";s:12:\"exemptAmount\";d:0;s:14:\"exemptReasonId\";i:4;s:7:\"inState\";b:0;s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:14:\"jurisdictionId\";i:5000531;s:13:\"signatureCode\";s:4:\"AGAM\";s:15:\"stateAssignedNo\";s:0:\"\";s:9:\"jurisType\";s:3:\"STA\";s:16:\"nonTaxableAmount\";d:0;s:16:\"nonTaxableRuleId\";i:0;s:14:\"nonTaxableType\";s:8:\"BaseRule\";s:4:\"rate\";d:0.0625;s:10:\"rateRuleId\";i:1321915;s:12:\"rateSourceId\";i:3;s:7:\"serCode\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:7:\"taxType\";s:5:\"Sales\";s:7:\"taxName\";s:12:\"CA
+  STATE TAX\";s:18:\"taxAuthorityTypeId\";i:45;s:11:\"taxRegionId\";i:2127184;s:13:\"taxCalculated\";d:62.5;s:11:\"taxOverride\";d:0;s:8:\"rateType\";s:7:\"General\";}}}s:17:\"lineLocationTypes\";O:8:\"stdClass\":3:{s:11:\"description\";s:139:\"Optional:
+  A list of location types for this line item.  To fetch this list, add the query
+  string \"?$include=LineLocationTypes\" to your URL.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:46:\"#/definitions/TransactionLineLocationTypeModel\";}}s:10:\"parameters\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"Contains
+  a list of extra parameters that were set when the transaction was created.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}}s:7:\"example\";O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:13:\"transactionId\";i:123456789;s:10:\"lineNumber\";s:1:\"1\";s:18:\"boundaryOverrideId\";i:0;s:17:\"customerUsageType\";s:0:\"\";s:11:\"description\";s:4:\"Yarn\";s:20:\"destinationAddressId\";i:12345;s:15:\"originAddressId\";i:123456789;s:14:\"discountAmount\";d:100;s:14:\"discountTypeId\";i:0;s:12:\"exemptAmount\";d:0;s:12:\"exemptCertId\";i:0;s:8:\"exemptNo\";s:0:\"\";s:13:\"isItemTaxable\";b:1;s:6:\"isSSTP\";b:0;s:8:\"itemCode\";s:6:\"116292\";s:10:\"lineAmount\";d:1000;s:8:\"quantity\";d:1;s:4:\"ref1\";s:20:\"Note:
+  Deliver to Bob\";s:13:\"reportingDate\";s:10:\"2017-05-16\";s:10:\"revAccount\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:13:\"taxCalculated\";d:62.5;s:7:\"taxCode\";s:8:\"PS081282\";s:7:\"taxDate\";s:10:\"2017-05-16\";s:9:\"taxEngine\";s:0:\"\";s:15:\"taxOverrideType\";s:4:\"None\";s:17:\"taxOverrideAmount\";d:0;s:17:\"taxOverrideReason\";s:0:\"\";s:11:\"taxIncluded\";b:0;s:7:\"details\";a:1:{i:0;O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:17:\"transactionLineId\";i:123456789;s:13:\"transactionId\";i:123456789;s:9:\"addressId\";i:12345;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:9:\"stateFIPS\";s:2:\"06\";s:12:\"exemptAmount\";d:0;s:14:\"exemptReasonId\";i:4;s:7:\"inState\";b:0;s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:14:\"jurisdictionId\";i:5000531;s:13:\"signatureCode\";s:4:\"AGAM\";s:15:\"stateAssignedNo\";s:0:\"\";s:9:\"jurisType\";s:3:\"STA\";s:16:\"nonTaxableAmount\";d:0;s:16:\"nonTaxableRuleId\";i:0;s:14:\"nonTaxableType\";s:8:\"BaseRule\";s:4:\"rate\";d:0.0625;s:10:\"rateRuleId\";i:1321915;s:12:\"rateSourceId\";i:3;s:7:\"serCode\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:7:\"taxType\";s:5:\"Sales\";s:7:\"taxName\";s:12:\"CA
+  STATE TAX\";s:18:\"taxAuthorityTypeId\";i:45;s:11:\"taxRegionId\";i:2127184;s:13:\"taxCalculated\";d:62.5;s:11:\"taxOverride\";d:0;s:8:\"rateType\";s:7:\"General\";}}}}s:23:\"TransactionAddressModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"An
+  address used within this transaction.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"The
+  unique ID number of this address.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:0;}s:13:\"transactionId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:67:\"The
+  unique ID number of the document to which this address belongs.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:0;}s:13:\"boundaryLevel\";O:8:\"stdClass\":8:{s:11:\"description\";s:55:\"The
+  boundary level at which this address was validated.\";s:4:\"enum\";a:3:{i:0;s:7:\"Address\";i:1;s:4:\"Zip9\";i:2;s:4:\"Zip5\";}s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:7:\"Address\";s:11:\"x-enum-type\";s:13:\"BoundaryLevel\";s:18:\"x-enum-description\";s:195:\"Jurisdiction
+  boundary precision level found for address.  This depends on the accuracy of the
+  address\n                as well as the precision level of the state provided jurisdiction
+  boundaries.\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:7:\"Address\";s:24:\"Street
+  address precision\";s:4:\"Zip9\";s:21:\"9-digit zip precision\";s:4:\"Zip5\";s:21:\"5-digit
+  zip precision\";}}s:5:\"line1\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  first line of the address.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:30:\"100
+  Ravine Lane Northeast #220\";}s:5:\"line2\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  second line of the address.\";s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  third line of the address.\";s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  city for the address.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Bainbridge
+  Island\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The region,
+  state, or province for the address.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"WA\";}s:10:\"postalCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"The
+  postal code or zip code for the address.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"98110\";}s:7:\"country\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"The
+  country for the address.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:11:\"taxRegionId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:56:\"The
+  unique ID number of the tax region for this address.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:8:\"latitude\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Latitude
+  for this address (CALC - 13394)\";s:4:\"type\";s:6:\"string\";}s:9:\"longitude\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Longitude
+  for this address (CALC - 13394)\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":9:{s:2:\"id\";i:0;s:13:\"transactionId\";i:0;s:13:\"boundaryLevel\";s:7:\"Address\";s:5:\"line1\";s:30:\"100
+  Ravine Lane Northeast #220\";s:4:\"city\";s:17:\"Bainbridge Island\";s:6:\"region\";s:2:\"WA\";s:10:\"postalCode\";s:5:\"98110\";s:7:\"country\";s:2:\"US\";s:11:\"taxRegionId\";i:0;}}s:28:\"TransactionLocationTypeModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"Information
+  about a location type\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:22:\"documentLocationTypeId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:54:\"Location
+  type ID for this location type in transaction\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123;}s:10:\"documentId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:14:\"Transaction
+  ID\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:456;}s:17:\"documentAddressId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:30:\"Address
+  ID for the transaction\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:789;}s:16:\"locationTypeCode\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"Location
+  type code\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:14:\"SingleLocation\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:22:\"documentLocationTypeId\";i:123;s:10:\"documentId\";i:456;s:17:\"documentAddressId\";i:789;s:16:\"locationTypeCode\";s:14:\"SingleLocation\";}}s:18:\"TransactionSummary\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"Summary
+  information about an overall transaction.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":18:{s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Two
+  character ISO-3166 country code.\";s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"Two
+  or three character ISO region, state or province code, if applicable.\";s:4:\"type\";s:6:\"string\";}s:9:\"jurisType\";O:8:\"stdClass\":6:{s:11:\"description\";s:48:\"The
+  type of jurisdiction that collects this tax.\";s:4:\"enum\";a:6:{i:0;s:7:\"Country\";i:1;s:9:\"Composite\";i:2;s:5:\"State\";i:3;s:6:\"County\";i:4;s:4:\"City\";i:5;s:7:\"Special\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:16:\"JurisdictionType\";s:18:\"x-enum-description\";s:17:\"Jurisdiction
+  Type\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:7:\"Country\";s:7:\"Country\";s:9:\"Composite\";s:10:\"Deprecated\";s:5:\"State\";s:5:\"State\";s:6:\"County\";s:6:\"County\";s:4:\"City\";s:4:\"City\";s:7:\"Special\";s:24:\"Special
+  Tax Jurisdiction\";}}s:9:\"jurisCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Jurisdiction
+  Code for the taxing jurisdiction\";s:4:\"type\";s:6:\"string\";}s:9:\"jurisName\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"The
+  name of the jurisdiction that collects this tax.\";s:4:\"type\";s:6:\"string\";}s:16:\"taxAuthorityType\";O:8:\"stdClass\":3:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:63:\"The
+  unique ID of the Tax Authority Type that collects this tax.\";s:4:\"type\";s:7:\"integer\";}s:15:\"stateAssignedNo\";O:8:\"stdClass\":2:{s:11:\"description\";s:69:\"The
+  state assigned number of the jurisdiction that collects this tax.\";s:4:\"type\";s:6:\"string\";}s:7:\"taxType\";O:8:\"stdClass\":6:{s:11:\"description\";s:25:\"The
+  tax type of this tax.\";s:4:\"enum\";a:11:{i:0;s:7:\"Lodging\";i:1;s:6:\"Bottle\";i:2;s:11:\"ConsumerUse\";i:3;s:6:\"Excise\";i:4;s:3:\"Fee\";i:5;s:5:\"Input\";i:6;s:14:\"Nonrecoverable\";i:7;s:6:\"Output\";i:8;s:6:\"Rental\";i:9;s:5:\"Sales\";i:10;s:3:\"Use\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:7:\"TaxType\";s:18:\"x-enum-description\";s:8:\"Tax
+  type\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":11:{s:5:\"Sales\";s:9:\"Sales
+  tax\";s:3:\"Use\";s:7:\"Use tax\";s:11:\"ConsumerUse\";s:16:\"Consumer Use Tax\";s:6:\"Output\";s:18:\"VAT/GST
+  Output tax\";s:5:\"Input\";s:17:\"VAT/GST Input tax\";s:14:\"Nonrecoverable\";s:32:\"VAT/GST
+  Nonrecoverable Input tax\";s:3:\"Fee\";s:65:\"Fee - PIFs (Public Improvement Fees)
+  and RSFs (Retail Sales Fees)\";s:6:\"Rental\";s:10:\"Rental Tax\";s:6:\"Excise\";s:18:\"Medical
+  Excise Tax\";s:7:\"Lodging\";s:22:\"Match Lodging tax type\";s:6:\"Bottle\";s:21:\"Match
+  bottle tax type\";}}s:7:\"taxName\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  name of the tax.\";s:4:\"type\";s:6:\"string\";}s:8:\"taxGroup\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Group
+  code when special grouping is enabled.\";s:4:\"type\";s:6:\"string\";}s:8:\"rateType\";O:8:\"stdClass\":6:{s:11:\"description\";s:75:\"(DEPRECATED)
+  Indicates the tax rate type.  Please use rateTypeCode instead.\";s:4:\"enum\";a:12:{i:0;s:8:\"ReducedA\";i:1;s:8:\"ReducedB\";i:2;s:4:\"Food\";i:3;s:7:\"General\";i:4;s:17:\"IncreasedStandard\";i:5;s:11:\"LinenRental\";i:6;s:7:\"Medical\";i:7;s:7:\"Parking\";i:8;s:12:\"SuperReduced\";i:9;s:8:\"ReducedR\";i:10;s:8:\"Standard\";i:11;s:4:\"Zero\";}s:4:\"type\";s:6:\"string\";s:11:\"x-enum-type\";s:8:\"RateType\";s:18:\"x-enum-description\";s:0:\"\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":0:{}}s:12:\"rateTypeCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:109:\"Indicates
+  the code of the rate type.  Use `/api/v2/definitions/ratetypes` for a full list
+  of rate type codes.\";s:4:\"type\";s:6:\"string\";}s:7:\"taxable\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:39:\"Tax
+  Base - The adjusted taxable amount.\";s:4:\"type\";s:6:\"number\";}s:4:\"rate\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:61:\"Tax
+  Rate - The rate of taxation, as a fraction of the amount.\";s:4:\"type\";s:6:\"number\";}s:3:\"tax\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:46:\"Tax
+  amount - The calculated tax (Base * Rate).\";s:4:\"type\";s:6:\"number\";}s:13:\"taxCalculated\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:84:\"Tax
+  Calculated by Avalara AvaTax.  This may be overriden by a TaxOverride.TaxAmount.\";s:4:\"type\";s:6:\"number\";}s:10:\"nonTaxable\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:51:\"The
+  amount of the transaction that was non-taxable.\";s:4:\"type\";s:6:\"number\";}s:9:\"exemption\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:46:\"The
+  amount of the transaction that was exempt.\";s:4:\"type\";s:6:\"number\";}}s:7:\"example\";O:8:\"stdClass\":0:{}}s:26:\"TransactionLineDetailModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:142:\"An
+  individual tax detail element.  Represents the amount of tax calculated for a particular
+  jurisdiction, for a particular line in an invoice.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":39:{s:2:\"id\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:40:\"The
+  unique ID number of this tax detail.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:17:\"transactionLineId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:57:\"The
+  unique ID number of the line within this transaction.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:13:\"transactionId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:41:\"The
+  unique ID number of this transaction.\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123456789;}s:9:\"addressId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:61:\"The
+  unique ID number of the address used for this tax detail.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:12345;}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:89:\"The
+  two character ISO 3166 country code of the country where this tax detail is assigned.\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:92:\"The
+  two-or-three character ISO region code for the region where this tax detail is assigned.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:10:\"countyFIPS\";O:8:\"stdClass\":2:{s:11:\"description\";s:128:\"For
+  U.S. transactions, the Federal Information Processing Standard (FIPS) code for the
+  county where this tax detail is assigned.\";s:4:\"type\";s:6:\"string\";}s:9:\"stateFIPS\";O:8:\"stdClass\":3:{s:11:\"description\";s:127:\"For
+  U.S. transactions, the Federal Information Processing Standard (FIPS) code for the
+  state where this tax detail is assigned.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"06\";}s:12:\"exemptAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:70:\"The
+  amount of this line that was considered exempt in this tax detail.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:14:\"exemptReasonId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:65:\"The
+  unique ID number of the exemption reason for this tax detail.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:4;}s:7:\"inState\";O:8:\"stdClass\":3:{s:11:\"description\";s:64:\"True
+  if this detail element represented an in-state transaction.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:9:\"jurisCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"The
+  code of the jurisdiction to which this tax detail applies.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"06\";}s:9:\"jurisName\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"The
+  name of the jurisdiction to which this tax detail applies.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"CALIFORNIA\";}s:14:\"jurisdictionId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:74:\"The
+  unique ID number of the jurisdiction to which this tax detail applies.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:5000531;}s:13:\"signatureCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"The
+  Avalara-specified signature code of the jurisdiction to which this tax detail applies.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"AGAM\";}s:15:\"stateAssignedNo\";O:8:\"stdClass\":3:{s:11:\"description\";s:79:\"The
+  state assigned number of the jurisdiction to which this tax detail applies.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:9:\"jurisType\";O:8:\"stdClass\":7:{s:11:\"description\";s:62:\"The
+  type of the jurisdiction to which this tax detail applies.\";s:4:\"enum\";a:5:{i:0;s:3:\"STA\";i:1;s:3:\"CTY\";i:2;s:3:\"CIT\";i:3;s:3:\"STJ\";i:4;s:3:\"CNT\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"STA\";s:11:\"x-enum-type\";s:11:\"JurisTypeId\";s:18:\"x-enum-description\";s:49:\"Types
+  of jurisdiction referenced in a transaction\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":5:{s:3:\"STA\";s:5:\"State\";s:3:\"CTY\";s:6:\"County\";s:3:\"CIT\";s:4:\"City\";s:3:\"STJ\";s:7:\"Special\";s:3:\"CNT\";s:7:\"Country\";}}s:16:\"nonTaxableAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:79:\"The
+  amount of this line item that was considered nontaxable in this tax detail.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:16:\"nonTaxableRuleId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:77:\"The
+  rule according to which portion of this detail was considered nontaxable.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:0;}s:14:\"nonTaxableType\";O:8:\"stdClass\":7:{s:11:\"description\";s:62:\"The
+  type of nontaxability that was applied to this tax detail.\";s:4:\"enum\";a:6:{i:0;s:8:\"RateRule\";i:1;s:16:\"RateOverrideRule\";i:2;s:8:\"BaseRule\";i:3;s:16:\"ExemptEntityRule\";i:4;s:21:\"ProductTaxabilityRule\";i:5;s:9:\"NexusRule\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"BaseRule\";s:11:\"x-enum-type\";s:13:\"TaxRuleTypeId\";s:18:\"x-enum-description\";s:13:\"TaxRuleTypeId\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:8:\"RateRule\";s:8:\"RateRule\";s:16:\"RateOverrideRule\";s:16:\"RateOverrideRule\";s:8:\"BaseRule\";s:8:\"BaseRule\";s:16:\"ExemptEntityRule\";s:16:\"ExemptEntityRule\";s:21:\"ProductTaxabilityRule\";s:21:\"ProductTaxabilityRule\";s:9:\"NexusRule\";s:9:\"NexusRule\";}}s:4:\"rate\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:49:\"The
+  rate at which this tax detail was calculated.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0.0625;}s:10:\"rateRuleId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:83:\"The
+  unique ID number of the rule according to which this tax detail was calculated.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1321915;}s:12:\"rateSourceId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:97:\"The
+  unique ID number of the source of the rate according to which this tax detail was
+  calculated.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:3;}s:7:\"serCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:114:\"For
+  Streamlined Sales Tax customers, the SST Electronic Return code under which this
+  tax detail should be applied.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:8:\"sourcing\";O:8:\"stdClass\":7:{s:11:\"description\";s:90:\"Indicates
+  whether this tax detail applies to the origin or destination of the transaction.\";s:4:\"enum\";a:3:{i:0;s:5:\"Mixed\";i:1;s:11:\"Destination\";i:2;s:6:\"Origin\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"Destination\";s:11:\"x-enum-type\";s:8:\"Sourcing\";s:18:\"x-enum-description\";s:8:\"Sourcing\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":3:{s:6:\"Origin\";s:6:\"Origin\";s:11:\"Destination\";s:11:\"Destination\";s:5:\"Mixed\";s:74:\"Mixed
+  sourcing, for states that do both origin and destination calculation\";}}s:3:\"tax\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:38:\"The
+  amount of tax for this tax detail.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:13:\"taxableAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:38:\"The
+  taxable amount of this tax detail.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1000;}s:7:\"taxType\";O:8:\"stdClass\":7:{s:11:\"description\";s:117:\"The
+  type of tax that was calculated.  Depends on the company's nexus settings as well
+  as the jurisdiction's tax laws.\";s:4:\"enum\";a:11:{i:0;s:7:\"Lodging\";i:1;s:6:\"Bottle\";i:2;s:11:\"ConsumerUse\";i:3;s:6:\"Excise\";i:4;s:3:\"Fee\";i:5;s:5:\"Input\";i:6;s:14:\"Nonrecoverable\";i:7;s:6:\"Output\";i:8;s:6:\"Rental\";i:9;s:5:\"Sales\";i:10;s:3:\"Use\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Sales\";s:11:\"x-enum-type\";s:7:\"TaxType\";s:18:\"x-enum-description\";s:8:\"Tax
+  type\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":11:{s:5:\"Sales\";s:9:\"Sales
+  tax\";s:3:\"Use\";s:7:\"Use tax\";s:11:\"ConsumerUse\";s:16:\"Consumer Use Tax\";s:6:\"Output\";s:18:\"VAT/GST
+  Output tax\";s:5:\"Input\";s:17:\"VAT/GST Input tax\";s:14:\"Nonrecoverable\";s:32:\"VAT/GST
+  Nonrecoverable Input tax\";s:3:\"Fee\";s:65:\"Fee - PIFs (Public Improvement Fees)
+  and RSFs (Retail Sales Fees)\";s:6:\"Rental\";s:10:\"Rental Tax\";s:6:\"Excise\";s:18:\"Medical
+  Excise Tax\";s:7:\"Lodging\";s:22:\"Match Lodging tax type\";s:6:\"Bottle\";s:21:\"Match
+  bottle tax type\";}}s:7:\"taxName\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"The
+  name of the tax against which this tax amount was calculated.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"CA
+  STATE TAX\";}s:18:\"taxAuthorityTypeId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:65:\"The
+  type of the tax authority to which this tax will be remitted.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:45;}s:11:\"taxRegionId\";O:8:\"stdClass\":4:{s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:39:\"The
+  unique ID number of the tax region.\";s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:2127184;}s:13:\"taxCalculated\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:272:\"The
+  amount of tax that was calculated.  This amount may be different if a tax override
+  was used.\r\nIf the customer specified a tax override, this calculated tax value
+  represents the amount of tax that would\r\nhave been charged if Avalara had calculated
+  the tax for the rule.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:62.5;}s:11:\"taxOverride\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:64:\"The
+  amount of tax override that was specified for this tax line.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:0;}s:8:\"rateType\";O:8:\"stdClass\":7:{s:11:\"description\";s:81:\"(DEPRECATED)
+  The rate type for this tax detail.  Please use rateTypeCode instead.\";s:4:\"enum\";a:12:{i:0;s:8:\"ReducedA\";i:1;s:8:\"ReducedB\";i:2;s:4:\"Food\";i:3;s:7:\"General\";i:4;s:17:\"IncreasedStandard\";i:5;s:11:\"LinenRental\";i:6;s:7:\"Medical\";i:7;s:7:\"Parking\";i:8;s:12:\"SuperReduced\";i:9;s:8:\"ReducedR\";i:10;s:8:\"Standard\";i:11;s:4:\"Zero\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"General\";s:11:\"x-enum-type\";s:8:\"RateType\";s:18:\"x-enum-description\";s:0:\"\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":0:{}}s:12:\"rateTypeCode\";O:8:\"stdClass\":4:{s:11:\"description\";s:152:\"Indicates
+  the code of the rate type that was used to calculate this tax detail.  Use `/api/v2/definitions/ratetypes`
+  for a full list of rate type codes.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:12:\"taxableUnits\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:99:\"Number
+  of units in this line item that were calculated to be taxable according to this
+  rate detail.\";s:4:\"type\";s:6:\"number\";}s:15:\"nonTaxableUnits\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:102:\"Number
+  of units in this line item that were calculated to be nontaxable according to this
+  rate detail.\";s:4:\"type\";s:6:\"number\";}s:11:\"exemptUnits\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:98:\"Number
+  of units in this line item that were calculated to be exempt according to this rate
+  detail.\";s:4:\"type\";s:6:\"number\";}s:11:\"unitOfBasis\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"When
+  calculating units, what basis of measurement did we use for calculating the units?\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":33:{s:2:\"id\";i:123456789;s:17:\"transactionLineId\";i:123456789;s:13:\"transactionId\";i:123456789;s:9:\"addressId\";i:12345;s:7:\"country\";s:2:\"US\";s:6:\"region\";s:2:\"CA\";s:9:\"stateFIPS\";s:2:\"06\";s:12:\"exemptAmount\";d:0;s:14:\"exemptReasonId\";i:4;s:7:\"inState\";b:0;s:9:\"jurisCode\";s:2:\"06\";s:9:\"jurisName\";s:10:\"CALIFORNIA\";s:14:\"jurisdictionId\";i:5000531;s:13:\"signatureCode\";s:4:\"AGAM\";s:15:\"stateAssignedNo\";s:0:\"\";s:9:\"jurisType\";s:3:\"STA\";s:16:\"nonTaxableAmount\";d:0;s:16:\"nonTaxableRuleId\";i:0;s:14:\"nonTaxableType\";s:8:\"BaseRule\";s:4:\"rate\";d:0.0625;s:10:\"rateRuleId\";i:1321915;s:12:\"rateSourceId\";i:3;s:7:\"serCode\";s:0:\"\";s:8:\"sourcing\";s:11:\"Destination\";s:3:\"tax\";d:62.5;s:13:\"taxableAmount\";d:1000;s:7:\"taxType\";s:5:\"Sales\";s:7:\"taxName\";s:12:\"CA
+  STATE TAX\";s:18:\"taxAuthorityTypeId\";i:45;s:11:\"taxRegionId\";i:2127184;s:13:\"taxCalculated\";d:62.5;s:11:\"taxOverride\";d:0;s:8:\"rateType\";s:7:\"General\";}}s:32:\"TransactionLineLocationTypeModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:60:\"Represents
+  information about location types stored in a line\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:26:\"documentLineLocationTypeId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:56:\"The
+  unique ID number of this line location address model\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:123;}s:14:\"documentLineId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:90:\"The
+  unique ID number of the document line associated with this line location address
+  model\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:456;}s:17:\"documentAddressId\";O:8:\"stdClass\":5:{s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:42:\"The
+  address ID corresponding to this model\";s:4:\"type\";s:7:\"integer\";s:8:\"readOnly\";b:1;s:7:\"example\";i:789;}s:16:\"locationTypeCode\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"The
+  location type code corresponding to this model\";s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:7:\"example\";s:14:\"SingleLocation\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:26:\"documentLineLocationTypeId\";i:123;s:14:\"documentLineId\";i:456;s:17:\"documentAddressId\";i:789;s:16:\"locationTypeCode\";s:14:\"SingleLocation\";}}s:22:\"CreateTransactionModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:20:\"Create
+  a transaction\";s:8:\"required\";a:2:{i:0;s:4:\"date\";i:1;s:12:\"customerCode\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:4:\"type\";O:8:\"stdClass\":7:{s:11:\"description\";s:94:\"Document
+  Type: if not specified, a document with type of SalesOrder will be created by default\";s:4:\"enum\";a:11:{i:0;s:10:\"SalesOrder\";i:1;s:12:\"SalesInvoice\";i:2;s:13:\"PurchaseOrder\";i:3;s:15:\"PurchaseInvoice\";i:4;s:11:\"ReturnOrder\";i:5;s:13:\"ReturnInvoice\";i:6;s:22:\"InventoryTransferOrder\";i:7;s:24:\"InventoryTransferInvoice\";i:8;s:18:\"ReverseChargeOrder\";i:9;s:20:\"ReverseChargeInvoice\";i:10;s:3:\"Any\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"SalesInvoice\";s:11:\"x-enum-type\";s:12:\"DocumentType\";s:18:\"x-enum-description\";s:14:\"Document
+  Types\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":11:{s:10:\"SalesOrder\";s:109:\"Sales
+  Order, estimate or quote (default).  This is a temporary document type and is not
+  saved in tax history.\";s:12:\"SalesInvoice\";s:13:\"Sales Invoice\";s:13:\"PurchaseOrder\";s:103:\"Purchase
+  order, estimate, or quote.  This is a temporary document type and is not saved in
+  tax history.\";s:15:\"PurchaseInvoice\";s:16:\"Purchase Invoice\";s:11:\"ReturnOrder\";s:87:\"Sales
+  Return Order.  This is a temporary document type and is not saved in tax history.\";s:13:\"ReturnInvoice\";s:20:\"Sales
+  Return Invoice\";s:22:\"InventoryTransferOrder\";s:22:\"InventoryTransferOrder\";s:24:\"InventoryTransferInvoice\";s:24:\"InventoryTransferInvoice\";s:18:\"ReverseChargeOrder\";s:18:\"ReverseChargeOrder\";s:20:\"ReverseChargeInvoice\";s:20:\"ReverseChargeInvoice\";s:3:\"Any\";s:18:\"No
+  particular type\";}}s:4:\"code\";O:8:\"stdClass\":4:{s:11:\"description\";s:234:\"Transaction
+  Code - the internal reference code used by the client application.  This is used
+  for operations such as\r\nGet, Adjust, Settle, and Void.  If you leave the transaction
+  code blank, a GUID will be assigned to each transaction.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:11:\"companyCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:163:\"Company
+  Code - Specify the code of the company creating this transaction here.  If you leave
+  this value null,\r\nyour account's default company will be used instead.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"DEFAULT\";}s:4:\"date\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:64:\"Transaction
+  Date - The date on the invoice, purchase order, etc.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:12:\"customerCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:63:\"Customer
+  Code - The client application customer reference code.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"ABC\";}s:15:\"purchaseOrderNo\";O:8:\"stdClass\":5:{s:11:\"description\";s:148:\"Purchase
+  Order Number for this document\r\nThis is required for single use exemption certificates
+  to match the order and invoice with the certificate.\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"2017-05-16-001\";}s:9:\"addresses\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:28:\"#/definitions/AddressesModel\";s:11:\"description\";s:48:\"Default
+  addresses for all lines in this document\";s:7:\"example\";O:8:\"stdClass\":1:{s:14:\"singleLocation\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}}s:5:\"lines\";O:8:\"stdClass\":4:{s:11:\"description\";s:24:\"Document
+  line items list\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/LineItemModel\";}s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":6:{s:6:\"number\";s:1:\"1\";s:8:\"quantity\";d:1;s:6:\"amount\";d:100;s:7:\"taxCode\";s:8:\"PS081282\";s:8:\"itemCode\";s:5:\"Y0001\";s:11:\"description\";s:4:\"Yarn\";}}}s:6:\"commit\";O:8:\"stdClass\":3:{s:11:\"description\";s:118:\"Causes
+  the document to be committed if true.  This option is only applicable for invoice
+  document \r\ntypes, not orders.\";s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:12:\"currencyCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"3
+  character ISO 4217 currency code.\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"USD\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:11:\"Description\";s:9:\"maxLength\";i:2048;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}}s:7:\"example\";O:8:\"stdClass\":10:{s:4:\"type\";s:12:\"SalesInvoice\";s:11:\"companyCode\";s:7:\"DEFAULT\";s:4:\"date\";s:10:\"2017-05-16\";s:12:\"customerCode\";s:3:\"ABC\";s:15:\"purchaseOrderNo\";s:14:\"2017-05-16-001\";s:9:\"addresses\";O:8:\"stdClass\":1:{s:14:\"singleLocation\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}s:5:\"lines\";a:1:{i:0;O:8:\"stdClass\":6:{s:6:\"number\";s:1:\"1\";s:8:\"quantity\";d:1;s:6:\"amount\";d:100;s:7:\"taxCode\";s:8:\"PS081282\";s:8:\"itemCode\";s:5:\"Y0001\";s:11:\"description\";s:4:\"Yarn\";}}s:6:\"commit\";b:1;s:12:\"currencyCode\";s:3:\"USD\";s:11:\"description\";s:4:\"Yarn\";}}s:14:\"AddressesModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"A
+  series of addresses information in a GetTax call\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"singleLocation\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:33:\"#/definitions/AddressLocationInfo\";s:11:\"description\";s:73:\"If
+  this transaction occurred at a retail point-of-sale location, use this\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:8:\"shipFrom\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}s:6:\"shipTo\";O:8:\"stdClass\":5:{s:5:\"line1\";s:12:\"1100
+  2nd Ave\";s:4:\"city\";s:7:\"Seattle\";s:6:\"region\";s:2:\"WA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"98101\";}}}s:13:\"LineItemModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:41:\"Represents
+  one line item in a transaction\";s:8:\"required\";a:2:{i:0;s:8:\"quantity\";i:1;s:6:\"amount\";}s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"number\";O:8:\"stdClass\":5:{s:11:\"description\";s:32:\"Line
+  number within this document\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"1\";}s:8:\"quantity\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:30:\"Quantity
+  of items in this line\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:1;}s:6:\"amount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:26:\"Total
+  amount for this line\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:100;}s:7:\"taxCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:37:\"Tax
+  Code - System or Custom Tax Code.\";s:9:\"maxLength\";i:25;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"PS081282\";}s:8:\"itemCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:15:\"Item
+  Code (SKU)\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Y0001\";}s:11:\"description\";O:8:\"stdClass\":5:{s:11:\"description\";s:89:\"Item
+  description.  This is required for SST transactions if an unmapped ItemCode is used.\";s:9:\"maxLength\";i:2096;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"Yarn\";}}s:7:\"example\";O:8:\"stdClass\":6:{s:6:\"number\";s:1:\"1\";s:8:\"quantity\";d:1;s:6:\"amount\";d:100;s:7:\"taxCode\";s:8:\"PS081282\";s:8:\"itemCode\";s:5:\"Y0001\";s:11:\"description\";s:4:\"Yarn\";}}s:16:\"TaxOverrideModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"Represents
+  a tax override for a transaction\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"type\";O:8:\"stdClass\":7:{s:11:\"description\";s:35:\"Identifies
+  the type of tax override\";s:4:\"enum\";a:6:{i:0;s:4:\"None\";i:1;s:9:\"TaxAmount\";i:2;s:9:\"Exemption\";i:3;s:7:\"TaxDate\";i:4;s:16:\"AccruedTaxAmount\";i:5;s:13:\"DeriveTaxable\";}s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"TaxAmount\";s:11:\"x-enum-type\";s:15:\"TaxOverrideType\";s:18:\"x-enum-description\";s:19:\"TaxOverride
+  reasons\";s:21:\"x-enum-value-comments\";O:8:\"stdClass\":6:{s:4:\"None\";s:11:\"No
+  override\";s:9:\"TaxAmount\";s:31:\"Tax was overriden by the client\";s:9:\"Exemption\";s:53:\"Entity
+  exemption was ignored (e.g. item was consumed)\";s:7:\"TaxDate\";s:31:\"Only the
+  tax date was overriden\";s:16:\"AccruedTaxAmount\";s:27:\"To support Consumer Use
+  Tax\";s:13:\"DeriveTaxable\";s:45:\"Derive the taxable amount from the tax amount\";}}s:9:\"taxAmount\";O:8:\"stdClass\":4:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:125:\"Indicates
+  a total override of the calculated tax on the document.  AvaTax will distribute\r\nthe
+  override across all the lines.\";s:4:\"type\";s:6:\"number\";s:7:\"example\";d:6.25;}s:7:\"taxDate\";O:8:\"stdClass\":4:{s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:28:\"The
+  override tax date to use\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2017-05-16T00:00:00-07:00\";}s:6:\"reason\";O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"This
+  provides the reason for a tax override for audit purposes.  It is required for types
+  2-4.\";s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Precalculated Tax\";}}s:7:\"example\";O:8:\"stdClass\":4:{s:4:\"type\";s:9:\"TaxAmount\";s:9:\"taxAmount\";d:6.25;s:7:\"taxDate\";s:10:\"2017-05-16\";s:6:\"reason\";s:17:\"Precalculated
+  Tax\";}}s:19:\"AddressLocationInfo\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"Represents
+  an address to resolve.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:12:\"locationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"If
+  you wish to use the address of an existing location for this company, specify the
+  address here.\r\nOtherwise, leave this value empty.\";s:4:\"type\";s:6:\"string\";}s:5:\"line1\";O:8:\"stdClass\":5:{s:11:\"description\";s:5:\"Line1\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"123
+  Main Street\";}s:5:\"line2\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line2\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:5:\"line3\";O:8:\"stdClass\":4:{s:11:\"description\";s:5:\"Line3\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":5:{s:11:\"description\";s:4:\"City\";s:9:\"maxLength\";i:50;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Irvine\";}s:6:\"region\";O:8:\"stdClass\":5:{s:11:\"description\";s:25:\"State
+  / Province / Region\";s:9:\"maxLength\";i:3;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"CA\";}s:7:\"country\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Two
+  character ISO 3166 Country Code\";s:9:\"maxLength\";i:2;s:9:\"minLength\";i:2;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:2:\"US\";}s:10:\"postalCode\";O:8:\"stdClass\":5:{s:11:\"description\";s:22:\"Postal
+  Code / Zip Code\";s:9:\"maxLength\";i:11;s:9:\"minLength\";i:0;s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"92615\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:31:\"Geospatial
+  latitude measurement\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:6:\"format\";s:6:\"double\";s:11:\"description\";s:32:\"Geospatial
+  longitude measurement\";s:4:\"type\";s:6:\"number\";}}s:7:\"example\";O:8:\"stdClass\":5:{s:5:\"line1\";s:15:\"123
+  Main Street\";s:4:\"city\";s:6:\"Irvine\";s:6:\"region\";s:2:\"CA\";s:7:\"country\";s:2:\"US\";s:10:\"postalCode\";s:5:\"92615\";}}}"
+...

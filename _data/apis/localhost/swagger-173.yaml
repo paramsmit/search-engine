@@ -1,0 +1,193 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:67:\"Provides APIs to
+  perform the checkout flow or the ordering process.\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:20:\"Checkout
+  Service API\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:17:\"Bridge2 Solutions\";}s:7:\"license\";O:8:\"stdClass\":0:{}}"
+host: localhost:8080
+basePath: /
+paths:
+  /carts:
+    post:
+      tags:
+      - carts
+      summary: Creates a cart to be referenced by a future order.
+      operationId: createCartUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: cart
+        description: A cart containing products and a shipping address.
+        required: true
+        schema:
+          $ref: '#/definitions/Cart'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/PricedCart'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+  /orders:
+    post:
+      tags:
+      - orders
+      summary: Creates an order from the submitted cart.
+      operationId: createOrderUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: cart
+        description: A cart containing products and a shipping address.
+        required: true
+        schema:
+          $ref: '#/definitions/Cart'
+      - name: x-b2s-cart-id
+        in: header
+        description: The id of a previously submitted cart.
+        required: false
+        type: integer
+        format: int64
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Order'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+  /orders/updates:
+    get:
+      tags:
+      - orders
+      summary: Retrieves all order status updates greater than the provided identifier
+        up to the result limit.
+      operationId: getOrderUpdatesUsingGET
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sinceId
+        in: query
+        description: The id of a last update that the requestor has processed.
+        required: true
+        type: integer
+        format: int64
+      - name: resultLimit
+        in: query
+        description: The maximum number of updates to return.
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OrderUpdate'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+definitions: !php/object "O:8:\"stdClass\":12:{s:10:\"PricedCart\";O:8:\"stdClass\":3:{s:8:\"required\";a:4:{i:0;s:6:\"cartId\";i:1;s:15:\"pricedCartItems\";i:2;s:15:\"shippingAddress\";i:3;s:9:\"totalCost\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"cartId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:36:\"The
+  identifier for the created Cart.\";}s:15:\"pricedCartItems\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:48:\"The
+  List of items in the Cart with their prices.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PricedCartItem\";}}s:15:\"shippingAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  delivery location of the requested products.\";s:4:\"$ref\";s:29:\"#/definitions/ShippingAddress\";}s:9:\"totalCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:164:\"The
+  total cost for items in this Cart. The value is expressed as an ISO-4217 compliant
+  three character currency code followed by a decimal number. Example: USD 5.25\";}}s:11:\"description\";s:50:\"A
+  cart that has been priced and is ready to order.\";}s:5:\"Order\";O:8:\"stdClass\":3:{s:8:\"required\";a:3:{i:0;s:7:\"orderId\";i:1;s:10:\"orderLines\";i:2;s:9:\"totalCost\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"orderId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"The
+  identifier for the created Order.\";}s:10:\"orderLines\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:24:\"The
+  List of order lines.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OrderLine\";}}s:9:\"totalCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:156:\"The
+  total cost for this Order. The value is expressed as an ISO-4217 compliant three
+  character currency code followed by a decimal number. Example: USD 5.25\";}}s:11:\"description\";s:30:\"An
+  order that has been placed.\";}s:11:\"OrderUpdate\";O:8:\"stdClass\":3:{s:8:\"required\";a:5:{i:0;s:18:\"affectedOrderLines\";i:1;s:7:\"orderId\";i:2;s:15:\"shipmentDetails\";i:3;s:8:\"updateId\";i:4;s:10:\"updateType\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:18:\"affectedOrderLines\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:40:\"The
+  order lines affected by this update.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:5:\"notes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Notes
+  related to this change.\";}s:7:\"orderId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:44:\"The
+  unique id of the order that was updated.\";}s:15:\"shipmentDetails\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  detail related to any shipment changes.\";s:4:\"$ref\";s:29:\"#/definitions/ShipmentDetails\";}s:8:\"updateId\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:29:\"The
+  unique id of this update.\";}s:10:\"updateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  type of update that occurred.\";s:4:\"enum\";a:9:{i:0;s:12:\"CONFIRMATION\";i:1;s:18:\"INFORMATION_CHANGE\";i:2;s:16:\"SHIPMENT_CREATED\";i:3;s:8:\"REJECTED\";i:4;s:5:\"ERROR\";i:5;s:19:\"NO_LONGER_AVAILABLE\";i:6;s:8:\"CANCELED\";i:7;s:11:\"BACKORDERED\";i:8;s:15:\"PAYMENT_FAILURE\";}}}s:11:\"description\";s:59:\"Information
+  related to an update that happened on an order.\";}s:9:\"OrderLine\";O:8:\"stdClass\":3:{s:8:\"required\";a:8:{i:0;s:14:\"deliveryMethod\";i:1;s:14:\"individualCost\";i:2;s:10:\"lineNumber\";i:3;s:7:\"product\";i:4;s:8:\"quantity\";i:5;s:15:\"shipmentDetails\";i:6;s:6:\"status\";i:7;s:9:\"totalCost\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:14:\"deliveryMethod\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  requested delivery method of these products.\";s:4:\"enum\";a:5:{i:0;s:17:\"DOMESTIC_SHIPPING\";i:1;s:10:\"ELECTRONIC\";i:2;s:8:\"IN_STORE\";i:3;s:22:\"INTERNATIONAL_SHIPPING\";i:4;s:18:\"RESERVE_FOR_PICKUP\";}}s:14:\"individualCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:180:\"The
+  cost for an individual product in this order line. The value is expressed as an
+  ISO-4217 compliant three character currency code followed by a decimal number. Example:
+  USD 5.25\";}s:10:\"lineNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:72:\"The
+  number identifying this line item as part of a larger order or cart.\";}s:7:\"product\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  requested product.\";s:4:\"$ref\";s:21:\"#/definitions/Product\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:39:\"The
+  requested quantity of this product.\";}s:15:\"shipmentDetails\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  shipment details for this order line.\";s:4:\"$ref\";s:29:\"#/definitions/ShipmentDetails\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Order
+  line status\";s:4:\"enum\";a:9:{i:0;s:12:\"BACK_ORDERED\";i:1;s:9:\"CANCELLED\";i:2;s:9:\"CONFIRMED\";i:3;s:7:\"CREATED\";i:4;s:9:\"DELIVERED\";i:5;s:5:\"ERROR\";i:6;s:8:\"REJECTED\";i:7;s:7:\"SHIPPED\";i:8;s:7:\"UNKNOWN\";}}s:9:\"totalCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:187:\"The
+  total cost for all products contained in this order line. The value is expressed
+  as an ISO-4217 compliant three character currency code followed by a decimal number.
+  Example: USD 5.25\";}}s:11:\"description\";s:32:\"A line item from a larger order.\";}s:15:\"ShipmentDetails\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"carrier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  carrier from which the item will be shipped.\";}s:16:\"deliveryDatetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:41:\"The
+  date when the item will be delivered.\";}s:25:\"estimatedShipmentDatetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:49:\"The
+  estimated date when the item will be shipped.\";}s:16:\"shipmentDatetime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:39:\"The
+  date when the item will be shipped.\";}s:14:\"trackingNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"The
+  tracking number of this shipment.\";}s:11:\"trackingURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  tracking url of this shipment.\";}}s:11:\"description\";s:25:\"Details about a shipment.\";}s:15:\"ShippingAddress\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:12:\"addressLine1\";i:1;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:12:\"addressLine1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"Address
+  line 1. May not contain a PO Box if not supported by the merchant.\";}s:12:\"addressLine2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"Address
+  line 2. May not contain a PO Box if not supported by the merchant.\";}s:12:\"addressLine3\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"Address
+  line 1. May not contain a PO Box if not supported by the merchant.\";}s:12:\"businessName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"If
+  a business name is not specified, a 'shipping description' can be substituted.\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Required
+  for US orders.\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"ISO
+  3166 alpha-2 country code or UN M.49 numeric-3 area code.\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Recipient
+  first name.\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Recipient
+  last name.\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Recipient
+  phone number.\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:93:\"Required
+  for US orders: must be a valid two-character state, territory, or armed forces code.\";}s:3:\"zip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:117:\"Required
+  for US orders: must be a 5 character or 9 character zip code (with optional separator
+  character xxxxx-xxxx).\";}}s:11:\"description\";s:48:\"Postal address the product
+  should be shipped to.\";}s:7:\"Product\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:8:\"merchant\";i:1;s:24:\"merchantPriceInformation\";i:2;s:4:\"name\";i:3;s:11:\"productType\";i:4;s:4:\"psid\";i:5;s:3:\"sku\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:27:\"destinationPriceInformation\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Pricing
+  information related to the requested shipping destination and method.\";s:4:\"$ref\";s:41:\"#/definitions/DestinationPriceInformation\";}s:8:\"merchant\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"The
+  merchant from which the product is sourced.\";s:4:\"enum\";a:1:{i:0;s:5:\"APPLE\";}}s:24:\"merchantPriceInformation\";O:8:\"stdClass\":2:{s:11:\"description\";s:135:\"Pricing
+  information for the product. Note that this does not include shipping costs since
+  shipping is relative to the shipping address.\";s:4:\"$ref\";s:38:\"#/definitions/MerchantPriceInformation\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"The
+  product name.\";}s:11:\"productType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"The
+  product's type.\";s:4:\"enum\";a:2:{i:0;s:11:\"MERCHANDISE\";i:1;s:9:\"GIFT_CARD\";}}s:4:\"psid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:77:\"The
+  unique identifier for the product within a Bridge2 Solutions environment.\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  product's stock keeping unit.\";}}}s:8:\"CartItem\";O:8:\"stdClass\":3:{s:8:\"required\";a:4:{i:0;s:14:\"deliveryMethod\";i:1;s:10:\"lineNumber\";i:2;s:7:\"product\";i:3;s:8:\"quantity\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"deliveryMethod\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  requested delivery method of these products.\";s:4:\"enum\";a:5:{i:0;s:17:\"DOMESTIC_SHIPPING\";i:1;s:10:\"ELECTRONIC\";i:2;s:8:\"IN_STORE\";i:3;s:22:\"INTERNATIONAL_SHIPPING\";i:4;s:18:\"RESERVE_FOR_PICKUP\";}}s:10:\"lineNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:72:\"The
+  number identifying this line item as part of a larger order or cart.\";}s:7:\"product\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  requested product.\";s:4:\"$ref\";s:21:\"#/definitions/Product\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:39:\"The
+  requested quantity of this product.\";}}s:11:\"description\";s:18:\"An item in a
+  cart.\";}s:14:\"PricedCartItem\";O:8:\"stdClass\":3:{s:8:\"required\";a:6:{i:0;s:14:\"deliveryMethod\";i:1;s:14:\"individualCost\";i:2;s:10:\"lineNumber\";i:3;s:7:\"product\";i:4;s:8:\"quantity\";i:5;s:9:\"totalCost\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"deliveryMethod\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  requested delivery method of these products.\";s:4:\"enum\";a:5:{i:0;s:17:\"DOMESTIC_SHIPPING\";i:1;s:10:\"ELECTRONIC\";i:2;s:8:\"IN_STORE\";i:3;s:22:\"INTERNATIONAL_SHIPPING\";i:4;s:18:\"RESERVE_FOR_PICKUP\";}}s:14:\"individualCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:174:\"The
+  cost for an individual product in this item. The value is expressed as an ISO-4217
+  compliant three character currency code followed by a decimal number. Example: USD
+  5.25\";}s:10:\"lineNumber\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:72:\"The
+  number identifying this line item as part of a larger order or cart.\";}s:7:\"product\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  requested product.\";s:4:\"$ref\";s:21:\"#/definitions/Product\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:39:\"The
+  requested quantity of this product.\";}s:9:\"totalCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:181:\"The
+  total cost for all products contained in this item. The value is expressed as an
+  ISO-4217 compliant three character currency code followed by a decimal number. Example:
+  USD 5.25\";}}s:11:\"description\";s:28:\"A cart item with its prices.\";}s:27:\"DestinationPriceInformation\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:12:\"shippingCost\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"fees\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:213:\"The
+  sum of all the applicable fees related to shipping the product to this destination.
+  The value is expressed as an ISO-4217 compliant three character currency code followed
+  by a decimal number. Example: USD 5.25\";}s:12:\"shippingCost\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:175:\"The
+  cost to ship the product to this destination. The value is expressed as an ISO-4217
+  compliant three character currency code followed by a decimal number. Example: USD
+  5.25\";}}s:11:\"description\";s:63:\"Pricing information related to a specific shipping
+  destination.\";}s:24:\"MerchantPriceInformation\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:9:\"basePrice\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"basePrice\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:179:\"The
+  price of the product excluding any taxes or fees. The value is expressed as an ISO-4217
+  compliant three character currency code followed by a decimal number. Example: USD
+  5.25\";}s:4:\"msrp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:211:\"The
+  manufacturer's suggested retail price of the product excluding any taxes or fees.
+  The value is expressed as an ISO-4217 compliant three character currency code followed
+  by a decimal number. Example: USD 5.25\";}}s:11:\"description\";s:135:\"Pricing
+  information for the product. Note that this does not include shipping costs since
+  shipping is relative to the shipping address.\";}s:4:\"Cart\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:9:\"cartItems\";i:1;s:15:\"shippingAddress\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"cartItems\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:28:\"A
+  List of items in the Cart.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/CartItem\";}}s:15:\"shippingAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  delivery location of the requested products.\";s:4:\"$ref\";s:29:\"#/definitions/ShippingAddress\";}}s:11:\"description\";s:34:\"A
+  cart that is ready to be priced.\";}}"
+...

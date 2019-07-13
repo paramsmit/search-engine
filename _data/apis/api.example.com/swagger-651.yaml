@@ -1,0 +1,315 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:13:\"transit.proto\";s:7:\"version\";s:3:\"1.0\";}"
+paths:
+  /api/v1/ack/{sub.prefix}/{sub.group}/{sub.id}:
+    get:
+      summary: Ack acknowledges the successful receipt and processing of a message
+        id.nAcknowledging a message causes you to receive a new message.
+      operationId: Ack
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Acked'
+      parameters:
+      - name: sub.prefix
+        in: path
+        required: true
+        type: string
+      - name: sub.group
+        in: path
+        required: true
+        type: string
+      - name: sub.id
+        in: path
+        required: true
+        type: integer
+        format: uint64
+      - name: ack
+        description: Ack indicates whether this message should be acked or not.
+        in: query
+        required: false
+        type: boolean
+        format: boolean
+      - name: close
+        description: Close causes the subscription to be terminated without receiving
+          a new message.
+        in: query
+        required: false
+        type: boolean
+        format: boolean
+      tags:
+      - Transit
+  /api/v1/ping/{id}:
+    get:
+      summary: Ping tests server is alive.
+      operationId: Ping
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Pong'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: integer
+        format: uint64
+      - name: leader
+        description: Leader is the current cluster leader to whom all commands other
+          than Ping must be sent.
+        in: query
+        required: false
+        type: string
+      - name: leading
+        description: Leading is true if the pinged server is the leader.
+        in: query
+        required: false
+        type: boolean
+        format: boolean
+      tags:
+      - Transit
+      security:
+        auth: []
+  /api/v1/publish:
+    post:
+      summary: Publish takes a message entry and returns the published message id.
+      operationId: Publish
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/Published'
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Publication'
+      tags:
+      - Transit
+      security:
+        auth: []
+  /api/v1/subscribe/{prefix}/{group}:
+    get:
+      summary: Subscribe takes topic and group details and returns a subscription
+        stream.
+      operationId: Subscribe
+      responses:
+        200:
+          description: (streaming responses)
+          schema:
+            $ref: '#/definitions/Notification'
+      parameters:
+      - name: prefix
+        in: path
+        required: true
+        type: string
+      - name: group
+        in: path
+        required: true
+        type: string
+      - name: allotments
+        description: Allotments contains a list of strings to match against `Entry.Lot`.nIf
+          the entry matches one of your Allotments, you will receive the message.nEntries
+          are shared amongst all subscribers that specify the matching Lot.
+        in: query
+        required: false
+        type: array
+        items:
+          type: string
+      - name: delay
+        description: Delay specifies a minimum number of milliseconds before an entry
+          becomes deliverable to you.
+        in: query
+        required: false
+        type: integer
+        format: uint64
+      - name: max_age
+        description: MaxAge specifies a maximum number of milliseconds after which
+          you're not interested in a message any more.
+        in: query
+        required: false
+        type: integer
+        format: uint64
+      - name: no_data
+        description: NoData indicates that you're not interested in the content of
+          the message, and not to send it.nSpecify this option to save bandwidth if
+          you only care about knowing a topic happend not what it's about.
+        in: query
+        required: false
+        type: boolean
+        format: boolean
+      - name: distribution
+        description: 'Distribution specifies what additional messages you want to
+          receive other than your Allotted messages.nn - Default: Default uses the
+          default strategy of the group.n - Arbitrary: Arbitrary distribution means
+          that any processor may get any message.n - Requested: Requested distribution
+          limits messages to processors that have requested type of the specific lot.n
+          - Assigned: Assigned distribution will assign unrequested lots to processors
+          based on load (Arbitrary u2227 Requested).'
+        in: query
+        required: false
+        type: string
+        enum:
+        - Default
+        - Arbitrary
+        - Requested
+        - Assigned
+        default: Default
+      - name: delivery
+        description: 'Delivery specifies how you want duplicate entries in the queue
+          to be dealt with (queue-wide option).nn - Unspecified: Unspecified uses
+          the current strategy (default = Concurrent).n - Concurrent: Concurrent messages
+          are not treated specially.n - Drop: Drop means if there''s currently one
+          waiting, don''t bother with this one and drop it.n - Replace: Replace means
+          if there''s currently one waiting, replace it with this one.n - Ignore:
+          Ignore means if there''s currently one waiting, delete it and place this
+          one at the back of the queue.n - Serial: A Serial message will not begin
+          processing a duplicate identity message at the same time as another.'
+        in: query
+        required: false
+        type: string
+        enum:
+        - Unspecified
+        - Concurrent
+        - Drop
+        - Replace
+        - Ignore
+        - Serial
+        default: Unspecified
+      tags:
+      - Transit
+      security:
+        auth: []
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":20:{s:5:\"Acked\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"success\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";s:11:\"description\";s:99:\"Success
+  is set to true if the entry was acked successfully and false if not found or already
+  acked.\";}}s:11:\"description\";s:42:\"Acked is the result of an Acking of a Sub.\";}s:3:\"Box\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"prefix\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"group\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"states\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}s:12:\"distribution\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/DistributionStrategy\";}s:8:\"delivery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/DeliveryStrategy\";}}}s:7:\"BoxItem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"entry\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Entry\";}s:8:\"inserted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"uint64\";}s:7:\"concern\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Concern\";}s:8:\"notified\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";}s:7:\"expired\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";}}}s:7:\"Command\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"operation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"compare\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"versus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Concern\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:4:\"None\";i:1;s:8:\"Received\";i:2;s:9:\"Delivered\";i:3;s:9:\"Confirmed\";i:4;s:9:\"Processed\";}s:7:\"default\";s:4:\"None\";s:11:\"description\";s:711:\"Concern
+  is the level of write concern you wish to achieve when publishing.\n\n - None: None
+  indicates you just want to be delivered and don't care about it at all, you won't
+  get back an ID.\n - Received: Received waits for the message to be received by the
+  server and gets the ID back.\n - Delivered: Delivered waits for the message to be
+  delivered to the server and inserted into all inboxes.\n - Confirmed: Confirmed
+  means that the message has been delivered and is confirmed in the queues of existing
+  slave servers.\nThis is not currently implemented and is the same as Delivered currently.\n
+  - Processed: Processed requires that the server has delivered the entry to all subscribers
+  and they in turn have ACKed it.\";}s:16:\"DeliveryStrategy\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:11:\"Unspecified\";i:1;s:10:\"Concurrent\";i:2;s:4:\"Drop\";i:3;s:7:\"Replace\";i:4;s:6:\"Ignore\";i:5;s:6:\"Serial\";}s:7:\"default\";s:11:\"Unspecified\";s:11:\"description\";s:544:\"
+  - Unspecified: Unspecified uses the current strategy (default = Concurrent).\n -
+  Concurrent: Concurrent messages are not treated specially.\n - Drop: Drop means
+  if there's currently one waiting, don't bother with this one and drop it.\n - Replace:
+  Replace means if there's currently one waiting, replace it with this one.\n - Ignore:
+  Ignore means if there's currently one waiting, delete it and place this one at the
+  back of the queue.\n - Serial: A Serial message will not begin processing a duplicate
+  identity message at the same time as another.\";}s:20:\"DistributionStrategy\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:7:\"Default\";i:1;s:9:\"Arbitrary\";i:2;s:9:\"Requested\";i:3;s:8:\"Assigned\";}s:7:\"default\";s:7:\"Default\";s:11:\"description\";s:374:\"
+  - Default: Default uses the default strategy of the group.\n - Arbitrary: Arbitrary
+  distribution means that any processor may get any message.\n - Requested: Requested
+  distribution limits messages to processors that have requested type of the specific
+  lot.\n - Assigned: Assigned distribution will assign unrequested lots to processors
+  based on load (Arbitrary \u2227 Requested).\";}s:5:\"Entry\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:129:\"ID
+  is the global ID that is assigned to the entry.\nThis will be assigned by the server
+  and any value you specify will be ignored.\";}s:5:\"topic\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:294:\"Topic
+  is a dot-separated hierarchical list of keywords that may be matched by subscription
+  prefixes.\nFor example \"account.balance.deposit\" may be subscribed via \"account\"
+  if someone wants to see all\naccount actions, or \"account.balance\" if they are
+  only interested in balance affecting actions.\";}s:3:\"lot\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:224:\"Lot
+  defines a batch of items that belong together and can be subscribed to by using
+  `Subscription.Allotments`.\nFor example if the Lot is a branch ID, you could have
+  a process that subscribes to messages for several branches.\";}s:8:\"identity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:178:\"Identity
+  is a string that identifies this message as unique to the specific topic.\nA delivery
+  strategy may be defined for a queue that indicates how to deal with duplicate items.\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/protobufAny\";s:11:\"description\";s:83:\"Message
+  contains the item that you want to send to subscribers detailing the entry.\";}s:10:\"not_before\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:109:\"NotBefore
+  indicates that the message will only be deliverable on or after the given milliseconds
+  since epoch.\";}s:9:\"not_after\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:109:\"NotAfter
+  indicates that the message will be removed from all queues after the given milliseconds
+  since epoch.\";}s:4:\"meta\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:186:\"Meta
+  contains additional custom metadata (other than message) that will be delivered
+  with the message.\nNote: Meta is delivered even if `Subscription.NoData` is specified
+  by a subscriber.\";}}s:11:\"description\";s:54:\"Entry represents a published entry
+  in the message bus.\";}s:12:\"Notification\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"sub\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:17:\"#/definitions/Sub\";s:11:\"description\";s:97:\"Contains
+  the subscription detail to pass to Ack when you're finished processing the notification.\";}s:5:\"entry\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:19:\"#/definitions/Entry\";s:11:\"description\";s:46:\"Entry
+  is the item you're being notified about.\";}}s:11:\"description\";s:78:\"Notification
+  is given to subscribers when a new message is available for them.\";}s:4:\"Pong\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:73:\"ID
+  is an incrementing ID indicating the most recently allocated Entry ID.\";}s:6:\"leader\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:87:\"Leader
+  is the current cluster leader to whom all commands other than Ping must be sent.\";}s:7:\"leading\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";s:11:\"description\";s:51:\"Leading
+  is true if the pinged server is the leader.\";}}s:11:\"description\";s:80:\"Pong
+  is used by Ping to check the server is alive and who the current leader is.\";}s:11:\"Publication\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"entry\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:19:\"#/definitions/Entry\";s:11:\"description\";s:52:\"Entry
+  is the entry that is being added to the queue.\";}s:7:\"concern\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Concern\";s:11:\"description\";s:46:\"Concern
+  is the write concern of the publisher.\";}s:7:\"timeout\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:319:\"Timeout
+  is how many milliseconds the publisher is willing to wait for it's write concern.\nIf
+  the timeout expires, the publisher will get back a Published with the reached write
+  concern.\nIf timeout is zero, the thread will wait forever until the desired state
+  is reached, the client disconnects\nor the server shuts down.\";}}s:11:\"description\";s:41:\"Publication
+  is sent to a call to Publish.\";}s:9:\"Published\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:58:\"ID
+  is the internally assigned ID for your submitted Entry.\";}s:7:\"concern\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Concern\";s:11:\"description\";s:174:\"Concern
+  is the reached write concern level at the time of the published message being created.\nNote:
+  The returned write concern may not be the same as your requested concern.\";}}s:11:\"description\";s:47:\"Publication
+  is returned from a call to Publish.\";}s:8:\"Snapshot\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"boxes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Box\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/BoxItem\";}}}}s:6:\"String\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"StringMap\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"values\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:3:\"Sub\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"prefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"Prefix
+  is the topic prefix that the subscriber subscribed to.\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Group
+  is the group that the message was delivered to.\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:38:\"ID
+  is the ID from the delivered entry.\";}}s:11:\"description\";s:143:\"Sub is provided
+  to a subscriber in the notification and defines which entry in which inbox should
+  be marked as\ndelivered when the Sub is Acked.\";}s:12:\"Subscription\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"prefix\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:134:\"Prefix
+  is the topic prefix you wish to subscribe to.\nPrefix must match a complete segment
+  prefix to allow you to receive the messages.\";}s:5:\"group\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"Group
+  is your group name all subscribers with the same group name will share the processing
+  of the messages.\";}s:10:\"allotments\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:216:\"Allotments
+  contains a list of strings to match against `Entry.Lot`.\nIf the entry matches one
+  of your Allotments, you will receive the message.\nEntries are shared amongst all
+  subscribers that specify the matching Lot.\";}s:5:\"delay\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:92:\"Delay
+  specifies a minimum number of milliseconds before an entry becomes deliverable to
+  you.\";}s:7:\"max_age\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"uint64\";s:11:\"description\";s:106:\"MaxAge
+  specifies a maximum number of milliseconds after which you're not interested in
+  a message any more.\";}s:7:\"no_data\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";s:11:\"description\";s:200:\"NoData
+  indicates that you're not interested in the content of the message, and not to send
+  it.\nSpecify this option to save bandwidth if you only care about knowing a topic
+  happend not what it's about.\";}s:12:\"distribution\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/DistributionStrategy\";s:11:\"description\";s:102:\"Distribution
+  specifies what additional messages you want to receive other than your Allotted
+  messages.\";}s:8:\"delivery\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/DeliveryStrategy\";s:11:\"description\";s:100:\"Delivery
+  specifies how you want duplicate entries in the queue to be dealt with (queue-wide
+  option).\";}}s:11:\"description\";s:99:\"Subscription indicates what a process wishes
+  to subscribe to and how it wants the queue configured.\";}s:7:\"Success\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"succeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Update\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"entry\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Entry\";}s:5:\"inbox\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Subscription\";}}}s:11:\"protobufAny\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"type_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:961:\"A
+  URL/resource name whose content describes the type of the\nserialized protocol buffer
+  message.\n\nFor URLs which use the scheme `http`, `https`, or no scheme, the\nfollowing
+  restrictions and interpretations apply:\n\n* If no scheme is provided, `https` is
+  assumed.\n* The last segment of the URL's path must represent the fully\n  qualified
+  name of the type (as in `path/google.protobuf.Duration`).\n  The name should be
+  in a canonical form (e.g., leading \".\" is\n  not accepted).\n* An HTTP GET on
+  the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce
+  an error.\n* Applications are allowed to cache lookup results based on the\n  URL,
+  or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary
+  compatibility needs to be preserved\n  on changes to types. (Use versioned type
+  names to manage\n  breaking changes.)\n\nSchemes other than `http`, `https` (or
+  the empty scheme) might be\nused with implementation specific semantics.\";}s:5:\"value\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"byte\";s:11:\"description\";s:71:\"Must
+  be a valid serialized protocol buffer of the above specified type.\";}}s:11:\"description\";s:2069:\"`Any`
+  contains an arbitrary serialized protocol buffer message along with a\nURL that
+  describes the type of the serialized message.\n\nProtobuf library provides support
+  to pack/unpack Any values in the form\nof utility functions or additional generated
+  methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo
+  foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo))
+  {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo
+  foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n
+  \     foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message
+  in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n
+  \   if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4:
+  Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n
+  \    ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err
+  != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will
+  by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods
+  only use the fully qualified type name after the last '/'\nin the type URL, for
+  example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe
+  JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized,
+  embedded message, with an\nadditional field `@type` which contains the type URL.
+  Example:\n\n    package google.profile;\n    message Person {\n      string first_name
+  = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n
+  \     \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded
+  message type is well-known and has a custom JSON\nrepresentation, that representation
+  will be embedded adding a field\n`value` which holds the custom JSON in addition
+  to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n
+  \     \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\":
+  \"1.212s\"\n    }\";}}"
+...

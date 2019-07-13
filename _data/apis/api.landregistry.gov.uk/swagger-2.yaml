@@ -1,0 +1,157 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:8:\"Deed API\";s:11:\"description\";s:22:\"Land
+  Registry Deed API\";s:7:\"version\";s:5:\"2.3.1\";}"
+host: api.landregistry.gov.uk
+basePath: /v1
+paths:
+  /deed/:
+    post:
+      summary: Deed
+      operationId: addDeed
+      description: 'The post Deed endpoint creates a new deed based on the JSON provided.n
+        The reponse will return a URL that can retrieve the created deed. n > REQUIRED:
+        Land Registry system requests Conveyancer to confirm that the Borrowers identity
+        has been established in accordance with Section 111 of the Network Access
+        Agreement.'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Deed_Application'
+      responses:
+        201:
+          description: A URL to the GET endpoint for the deed returned on successful
+            creation.n
+          schema:
+            type: string
+        400:
+          description: Bad Request due to invalid schema. Response will include 1
+            or more schema errorsn
+          schema:
+            $ref: '#/definitions/Error'
+  /deed/{deed_reference}:
+    get:
+      summary: Deed
+      description: The Deed endpoint returns details of a specific deed based on the
+        unique deed reference.nThe response includes the Title Number, Property information,
+        Borrower(s) information and deed information.n
+      produces:
+      - application/json
+      - application/pdf
+      parameters:
+      - name: deed_reference
+        in: path
+        description: Unique reference of the deed.
+        required: true
+        type: string
+      - name: Accept
+        in: header
+        description: Pass application/json for the deed as JSON or application/pdf
+          to get a pdf
+        required: true
+        type: string
+      tags:
+      - Deed
+      responses:
+        200:
+          description: A specific deed is returned in Operative Deed Format (application/json
+            header). If the application/pdf header is given instead. This will return
+            a PDF Document of the requested Deed.n
+          schema:
+            $ref: '#/definitions/Operative_Deed'
+        404:
+          description: Deed not found
+          schema:
+            $ref: '#/definitions/Error'
+  /deed/retrieve-signed:
+    get:
+      summary: Retrieves ALL-SIGNED deed(s).
+      description: The Retrieve Signed endpoint checks the service for all deeds that
+        have been completely signed by the borrowers or borrower. Only the deeds associated
+        with the conveyancer are returned.nThe response is a json array output containing
+        the deed references e.g. 93e806ab-f1bc-4671-be3e-4cc68b21b77a.n
+      produces:
+      - application/json
+      tags:
+      - Retrieve all signed deeds
+      responses:
+        200:
+          description: ALL-SIGNED deeds are returned.
+          schema:
+            type: string
+        404:
+          description: No deed found.
+          schema:
+            type: string
+  /deed/{deed_reference}/make-effective:
+    post:
+      summary: Make Effective
+      description: The Make Effective endpoint triggers the service to make a deed
+        effective, dating it with the timestamp of when this call is made.nThe response
+        includes the Title Number, Property information, Borrower(s) information and
+        deed information, as well as the timestamp that is saved onto the deed.n
+      produces:
+      - application/json
+      parameters:
+      - name: deed_reference
+        in: path
+        description: Unique reference of the deed.
+        required: true
+        type: string
+      tags:
+      - Make Effective
+      responses:
+        200:
+          description: A specific deed is returned.
+          schema:
+            $ref: '#/definitions/Operative_Deed'
+        400:
+          description: One or more errors have been detected. A list of which should
+            accompany this response.n This is most likely to occur if the deed has
+            already been made effective, or if not all borrowers have signed the deed.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Deed not found
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":10:{s:8:\"Borrower\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:7:\"surname\";i:1;s:8:\"forename\";i:2;s:2:\"id\";i:3;s:5:\"token\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"forename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:11:\"middle_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:7:\"surname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:5:\"token\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Borrower
+  token for accessing Borrower Frontend.\";s:7:\"pattern\";s:18:\"^([a-zA-Z0-9]{8})$\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"Unique
+  borrower ID.\";s:7:\"pattern\";s:8:\"^[0-9]+$\";}s:9:\"signature\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Date
+  and time the signature was applied.\";s:4:\"type\";s:6:\"string\";}}}s:21:\"PrivateIndividualName\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:5:{i:0;s:7:\"surname\";i:1;s:8:\"forename\";i:2;s:3:\"dob\";i:3;s:12:\"phone_number\";i:4;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"forename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:11:\"middle_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:7:\"surname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";}s:3:\"dob\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:57:\"^(0[1-9]|[12][0-9]|3[01])[\\/\\-](0[1-9]|1[012])[/\\-]\\d{4}$\";}s:6:\"gender\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"Male\";i:1;s:6:\"Female\";i:2;s:13:\"Not
+  Specified\";}}s:12:\"phone_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:13:\"^(07[\\d]{9})$\";}s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:55:\"[A-Z]{1,2}[0-9R][0-9A-Z]?
+  [0-9](?:A-Z-245|[^CIKMOV]){2}\";}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:48:\"Unique
+  Borrower ID used in Modify Deed case only\";}}}s:12:\"ChargeClause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"cre_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"AdditionalProvisions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"minItems\";i:0;s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:25:\"additional_provision_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:6:\"Lender\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"OpBorrowers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"minItems\";i:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Borrower\";}}s:9:\"Borrowers\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:8:\"minItems\";i:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/PrivateIndividualName\";}}s:14:\"Operative_Deed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"deed\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:101:\"Unique
+  deed, consisting of property, borrower and charge information as well as clauses
+  for the deed.\";s:10:\"properties\";O:8:\"stdClass\":12:{s:12:\"title_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Unique
+  Land Registry identifier for the registered estate.\";}s:6:\"md_ref\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:165:\"Land
+  Registry assigned number for a Mortgage Deed (MD). If you wish to use an existing
+  MD reference please prefix it with e- to comply with our system (eg e-MD12345)\";}s:9:\"borrowers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OpBorrowers\";}s:13:\"charge_clause\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ChargeClause\";}s:21:\"additional_provisions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/AdditionalProvisions\";}s:6:\"lender\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Lender\";}s:16:\"effective_clause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Text
+  to display the make effective clause\";}s:16:\"property_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:138:\"The
+  address of property that the deed relates. This should be supplied in a comma separated
+  format e.g. 30 wakefield rd, plymouth, PL6 3WA\";}s:9:\"reference\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:50;s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";s:11:\"description\";s:97:\"A
+  conveyancer reference.  Can be displayed on the deed if the mortgage document template
+  permits.\";}s:22:\"date_of_mortgage_offer\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:50;s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";s:11:\"description\";s:111:\"Date
+  that the mortgage offer was made.  Can be displayed on the deed if the mortgage
+  document template permits.\";}s:11:\"deed_status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Current
+  state of the deed\";}s:14:\"effective_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"An
+  effective date is shown if the deed is made effective\";}}}}}s:16:\"Deed_Application\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:12:\"title_number\";i:1;s:9:\"borrowers\";i:2;s:6:\"md_ref\";i:3;s:16:\"identity_checked\";i:4;s:16:\"property_address\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:12:\"title_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:44:\"^([A-Z]{0,3}[1-9][0-9]{0,5}|[0-9]{1,6}[ZT])$\";}s:9:\"borrowers\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Borrowers\";}s:6:\"md_ref\";O:8:\"stdClass\":2:{s:7:\"pattern\";s:37:\"^e-MD([0-9]{5}|([0-9]{3,4}[A-Z]{1}))$\";s:4:\"type\";s:6:\"string\";}s:16:\"identity_checked\";O:8:\"stdClass\":2:{s:7:\"pattern\";s:5:\"^[Y]$\";s:4:\"type\";s:6:\"string\";}s:16:\"property_address\";O:8:\"stdClass\":3:{s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";s:4:\"type\";s:6:\"string\";s:11:\"description\";s:138:\"The
+  address of property that the deed relates. This should be supplied in a comma separated
+  format e.g. 30 wakefield rd, plymouth, PL6 3WA\";}s:9:\"reference\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:50;s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";s:11:\"description\";s:97:\"A
+  conveyancer reference.  Can be displayed on the deed if the mortgage document template
+  permits.\";}s:22:\"date_of_mortgage_offer\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:50;s:7:\"pattern\";s:11:\"^(?!\\s*$).+\";s:11:\"description\";s:111:\"Date
+  that the mortgage offer was made.  Can be displayed on the deed if the mortgage
+  document template permits.\";}s:13:\"deed_effector\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:119:\"Name
+  of the legal deed effector. To be used where the legal deed effector name is different
+  to that of the conveyancer.\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

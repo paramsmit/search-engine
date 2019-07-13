@@ -1,0 +1,448 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:41:\"Yet
+  Another Node.js Blogg Application API\";s:11:\"description\";s:41:\"Yet Another
+  Node.js Blogg Application API\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:3:\"MIT\";s:3:\"url\";s:35:\"https://opensource.org/licenses/MIT\";}}"
+host: localhost:3000
+basePath: /api/v1
+paths:
+  /user/signup:
+    post:
+      tags:
+      - Users
+      description: Create new user in system
+      parameters:
+      - name: user
+        in: body
+        description: User that we want to create
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        201:
+          description: New user is created
+          schema:
+            $ref: '#/definitions/SuccessUserResponse'
+        40x:
+          description: When user creation is failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /user/login:
+    post:
+      tags:
+      - Users
+      description: Login the user
+      parameters:
+      - name: user
+        in: body
+        description: User that we want to login
+        schema:
+          properties:
+            email:
+              type: string
+              example: manovagyanik1@gmail.com
+            password:
+              type: string
+              example: pass1234
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Logged in success full
+          schema:
+            $ref: '#/definitions/SuccessUserResponse'
+        40x:
+          description: Logged in failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /user:
+    get:
+      tags:
+      - Users
+      description: List of users
+      parameters:
+      - name: page
+        in: query
+        description: page number, Default to Zero
+      - name: email
+        in: query
+        description: single email or list of emails separated by comma and no space
+      - name: role
+        in: query
+        description: single role or list of roles separated by comma and no space
+      - name: status
+        in: query
+        description: single status or list of status separated by comma an no space
+      - name: sex
+        in: query
+        description: single sex or list of sex separated by comma an no space
+      produces:
+      - application/json
+      responses:
+        200:
+          description: List of user with page size of 50
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/DetailedUser'
+        4xx:
+          description: Fetching failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /user/{userId}:
+    parameters:
+    - name: userId
+      in: path
+      required: true
+      description: ID of user that we want to find
+      type: string
+    get:
+      tags:
+      - Users
+      summary: Get user with given ID
+      responses:
+        200:
+          description: User is found
+          schema:
+            properties:
+              success:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/definitions/DetailedUser'
+        4xx:
+          description: User is not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      summary: Update user with give ID
+      tags:
+      - Users
+      parameters:
+      - name: user
+        in: body
+        description: User with new values of properties
+        schema:
+          $ref: '#/definitions/DetailedUser'
+      responses:
+        200:
+          description: User is Updates
+          schema:
+            properties:
+              success:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/definitions/DetailedUser'
+        4xx:
+          description: error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /user/logout:
+    post:
+      tags:
+      - Users
+      description: Logout user
+      parameters: []
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Email verification sent
+          schema:
+            $ref: '#definitions/SuccessUserResponse'
+        4xx:
+          description: Verification Failed
+          schema:
+            $ref: '#definitions/ErrorResponse'
+  /user/verify_email:
+    get:
+      tags:
+      - Users
+      description: Verify the email
+      parameters:
+      - name: email
+        in: query
+        description: Email
+      - name: emailToken
+        in: query
+        description: Email Token sended via email
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Email verified
+          schema:
+            $ref: '#definitions/SuccessUserResponse'
+        4xx:
+          description: Verification Failed
+          schema:
+            $ref: '#definitions/ErrorResponse'
+  /user/details:
+    get:
+      tags:
+      - Users
+      description: Get details of logged in user
+      produces:
+      - application/json
+      responses:
+        200:
+          description: User details
+          schema:
+            $ref: '#definitions/DetailedUser'
+        4xx:
+          description: User not logged in
+          schema:
+            $ref: '#definitions/ErrorResponse'
+  /user/email_confirmation:
+    get:
+      tags:
+      - Users
+      description: Request server to send email for Verification
+      parameters:
+      - name: email
+        in: query
+        description: Email
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Email verification sent
+          schema:
+            $ref: '#definitions/SuccessUserResponse'
+        4xx:
+          description: Verification Failed
+          schema:
+            $ref: '#definitions/ErrorResponse'
+  /user/password_reset:
+    get:
+      tags:
+      - Users
+      description: Request for password reset Token to reset password
+      parameters:
+      - name: email
+        in: query
+        description: Email
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Email verified
+          schema:
+            $ref: '#definitions/SuccessUserResponse'
+        4xx:
+          description: Verification Failed
+          schema:
+            $ref: '#definitions/ErrorResponse'
+    post:
+      tags:
+      - Users
+      definitions: Reset the password
+      parameters:
+      - name: user
+        in: body
+        schema:
+          properties:
+            password:
+              type: string
+              example: pass1234
+              description: new password
+            passwordToken:
+              type: string
+              example: "12349583"
+              description: Password reset token sent to your mail
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Email verified
+          schema:
+            $ref: '#definitions/SuccessUserResponse'
+        4xx:
+          description: Verification Failed
+          schema:
+            $ref: '#definitions/ErrorResponse'
+  /house:
+    post:
+      tags:
+      - House
+      description: Create a new House with provided details
+      parameters:
+      - name: house
+        in: body
+        description: House that we want to create
+        schema:
+          $ref: '#/definitions/House'
+      produces:
+      - application/json
+      responses:
+        201:
+          description: New house is created
+          schema:
+            $ref: '#/definitions/SuccessUserResponse'
+        4xx:
+          description: When house creation is failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /house/{houseId}:
+    parameters:
+    - name: houseId
+      in: path
+      required: true
+      description: ID of house that we want to find
+      type: string
+    get:
+      tags:
+      - House
+      summary: Get house details of the house with ID
+      responses:
+        200:
+          description: House is found
+          schema:
+            properties:
+              success:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/definitions/House'
+        4xx:
+          description: House is not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      summary: Update house with given ID
+      tags:
+      - House
+      parameters:
+      - name: house
+        in: body
+        description: House with updates values
+        schema:
+          $ref: '#/definitions/House'
+  /house/search:
+    post:
+      tags:
+      - House
+      description: Search house based on parameters
+      parameters:
+      - name: house
+        in: body
+        description: Search parameters
+        schema:
+          $ref: '#definitions/House Search'
+      - name: page
+        in: query
+        description: Page number , defaults to ZERO
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Fetched a list of houses matching search params
+          schema:
+            properties:
+              success:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#definitions/House'
+        4xx:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  uploads/images:
+    description: Upload a single image to server
+    post:
+      tags:
+      - Uploads
+      description: Upload single image to server
+      parameters: []
+      responses:
+        200:
+          description: Image is uploaded successfully
+          schema:
+            properties:
+              success:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success message
+                  data:
+                    type: object
+                    properties:
+                      uploadUrl: string
+                      description: Url to fetch uploaded image
+                      example: http://localhost:3000/uploads/images/abc.jpg
+        4xx:
+          description: Upload error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":6:{s:12:\"DetailedUser\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"uniqueItems\";b:1;}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"sex\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"male\";i:1;s:6:\"female\";i:2;s:5:\"other\";}}s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:5:\"admin\";i:1;s:7:\"realtor\";i:2;s:8:\"consumer\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"active\";i:1;s:8:\"inactive\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"ISO
+  Format date\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:15:\"ISO
+  Format date\";}}}s:5:\"House\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":25:{s:5:\"title\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:42:\"3BHK
+  at posh locality of gurgaon sector 46\";s:11:\"description\";s:35:\"Title with length
+  of range (10, 50)\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:121:\"3BHK
+  at posh locality of gurgaon sector 46 with fully furnished and green surroundings
+  with no interference from landlord\";s:11:\"description\";s:37:\"Title with length
+  of range (50, 1000)\";}s:4:\"rent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";d:1000;s:11:\"description\";s:38:\"Rent
+  in Dollars in range (100, 999000)\";}s:11:\"maintenance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"monthly\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";i:10;s:11:\"description\";s:27:\"Monthly
+  maintenance charges\";}s:7:\"deposit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";i:10;s:11:\"description\";s:15:\"Deposit
+  charges\";}s:9:\"brokerage\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";i:10;s:11:\"description\";s:17:\"brokerage
+  charges\";}s:8:\"annually\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";i:10;s:11:\"description\";s:28:\"annually
+  maintenance charges\";}}}s:9:\"builtArea\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:11:\"description\";s:40:\"Built
+  area of the house minimum 250 sqft\";s:7:\"example\";i:300;}s:10:\"carpetArea\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:11:\"description\";s:76:\"Total
+  area of the house minimum 250 sqft and greater or equal than builtArea\";s:7:\"example\";i:300;}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Valid
+  city name of lenght in range (2,30)\";s:7:\"example\";s:7:\"gurgaon\";}s:8:\"locality\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Valid
+  locality name of lenght in range (2,30)\";s:7:\"example\";s:16:\"gurgaon sector
+  8\";}s:7:\"country\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"Valid
+  country name of lenght in range (2,30)\";s:7:\"example\";s:5:\"india\";}s:7:\"address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:46:\"Valid
+  address name of lenght in range (10,150)\";s:7:\"example\";s:7:\"gurgaon\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:11:\"description\";s:14:\"Valid
+  latitude\";s:7:\"example\";d:-19.09;}s:9:\"longitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:11:\"description\";s:15:\"Valid
+  longitude\";s:7:\"example\";d:-19.09;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:8:{i:0;s:3:\"1rk\";i:1;s:3:\"2rk\";i:2;s:4:\"1bhk\";i:3;s:4:\"2bhk\";i:4;s:4:\"3bhk\";i:5;s:4:\"4bhk\";i:6;s:4:\"5bhk\";i:7;s:5:\"5bhk+\";}}s:12:\"availability\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"yes\";i:1;s:2:\"no\";i:2;s:7:\"archive\";}}s:12:\"availableFor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:3:\"all\";i:1;s:6:\"family\";i:2;s:7:\"couples\";i:3;s:9:\"bachelors\";}}s:13:\"availableFrom\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:25:\"2012-07-14T01:00:00+01:00\";s:11:\"description\";s:14:\"Valid
+  ISO date\";}s:5:\"floor\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;s:11:\"description\";s:33:\"Valid
+  floor within range (0, 150)\";}s:11:\"powerBackup\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"full\";i:1;s:7:\"partial\";i:2;s:2:\"no\";}}s:9:\"amenities\";O:8:\"stdClass\":3:{s:11:\"description\";s:161:\"List
+  of amenity are bathroom,bedroom,study room,ac installed,curtains,chimney,exhaust,fans,lights,tv,wardrobe,bed,dinning
+  table,fridge,sofa,stove,washing machine\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"amenity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"bathroom\";s:11:\"description\";s:21:\"Valid
+  name of amenity\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"double\";s:7:\"example\";i:1;s:11:\"description\";s:45:\"Valid
+  quantity of said amenity greater than 0\";}}}}s:8:\"features\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"List
+  of features\";s:7:\"example\";a:1:{i:0;s:13:\"24x7 security\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:32:\"List
+  of tags, easy for searching\";s:7:\"example\";a:1:{i:0;s:7:\"seaview\";}}s:6:\"images\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"List
+  of image urls\";s:7:\"example\";a:2:{i:0;s:29:\"https://picsum.photos/500/500\";i:1;s:29:\"https://picsum.photos/500/500\";}}s:16:\"furnishingStatus\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:9:\"furnished\";i:1;s:11:\"unfurnished\";i:2;s:13:\"semifurnished\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Valid
+  ISO date , Not required for creating\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"Valid
+  ISO date, Not required for creating\";}}}s:12:\"House Search\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:12:\"searchString\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"gurgaon\";s:11:\"description\";s:56:\"Search
+  string that can be part of city, locality, street\";}s:4:\"rent\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"double\";}s:7:\"example\";a:2:{i:0;i:1;i:1;i:10000;}s:11:\"description\";s:33:\"Search
+  for rent between the range\";}s:9:\"builtArea\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"double\";}s:7:\"example\";a:2:{i:0;d:200;i:1;d:1000;}s:11:\"description\";s:47:\"Search
+  for house with built area in above range\";}s:10:\"carpetArea\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"double\";}s:7:\"example\";a:2:{i:0;d:200;i:1;d:1000;}s:11:\"description\";s:48:\"Search
+  for house with carpet area in above range\";}s:4:\"city\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:5:\"delhi\";i:1;s:7:\"gurgaon\";}s:11:\"description\";s:33:\"Search
+  house in above cities only\";}s:8:\"locality\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:4:\"dlf1\";i:1;s:4:\"dlf2\";}s:11:\"description\";s:35:\"Search
+  house in above locality only\";}s:7:\"country\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:5:\"india\";i:1;s:3:\"usa\";}s:11:\"description\";s:36:\"Search
+  house in above countries only\";}s:8:\"latitude\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"double\";}s:7:\"example\";a:2:{i:0;d:-19;i:1;d:10;}s:11:\"description\";s:46:\"Search
+  for house with latitudes in above range\";}s:9:\"longitude\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"double\";}s:7:\"example\";a:2:{i:0;d:-19;i:1;d:10;}s:11:\"description\";s:46:\"Search
+  for house with longitude in above range\";}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:3:\"1rk\";i:1;s:4:\"1bhk\";}s:11:\"description\";s:32:\"Search
+  house in above types only\";}s:12:\"availability\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:3:\"yes\";i:1;s:2:\"no\";}s:11:\"description\";s:53:\"Search
+  house in above availability only , default yes\";}s:12:\"availableFor\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:3:{i:0;s:3:\"all\";i:1;s:9:\"bachelors\";i:2;s:6:\"couple\";}s:11:\"description\";s:58:\"Search
+  house in above available tenants only , default all\";}s:13:\"availableFrom\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"2008-09-15T15:53:00\";s:11:\"description\";s:14:\"Valid
+  ISO date\";}s:11:\"powerBackup\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:2:{i:0;s:4:\"full\";i:1;s:7:\"partial\";}s:11:\"description\";s:54:\"Search
+  for with only above mentioned power backup type\";}s:16:\"furnishingStatus\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"example\";a:1:{i:0;s:9:\"furnished\";}s:11:\"description\";s:54:\"Search
+  for with only above mentioned power backup type\";}}}s:15:\"SuccessResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"success\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"SuccessUserResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"success\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Success
+  message\";}}}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}"
+...

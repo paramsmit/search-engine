@@ -1,0 +1,339 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:10:\"Swavy
+  Tees\";s:11:\"description\";s:44:\"API documentation for Swavy Tees Online Shop\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"MIT
+  2.0.0\";s:3:\"url\";s:32:\"https://swavy-tees.herokuapp.com\";}}"
+basePath: /
+paths:
+  /api/products:
+    get:
+      tags:
+      - Products
+      summary: Gets all products in the application
+      responses:
+        200:
+          description: Products succesfully retrieved
+        404:
+          description: No product found for now
+        500:
+          description: server error
+  /api/products?:
+    get:
+      tags:
+      - Products
+      summary: Gets products by pages, categories and keywords
+      parameters:
+      - name: page
+        in: query
+        required: false
+        type: number
+        description: get products by pages
+      - name: category
+        in: query
+        required: false
+        type: string
+        description: get products by categories
+      - name: keyword
+        in: query
+        required: false
+        type: string
+        description: search for products by keywords
+      responses:
+        200:
+          description: Products succesfully retrieved
+        404:
+          description: No product found for now
+        500:
+          description: Server error
+  /api/products/product/{id}:
+    get:
+      tags:
+      - Products
+      summary: Get a single product by its id
+      parameters:
+      - name: id
+        in: path
+        description: Id of the product
+      responses:
+        200:
+          description: Product succesfully retrieved
+        404:
+          description: Product not found
+        500:
+          description: Server error.
+  /api/product-categories:
+    get:
+      tags:
+      - Categories
+      summary: Get all product categories
+      responses:
+        200:
+          description: Categories succesfully retrieved
+        500:
+          description: Server error.
+  /api/departments:
+    get:
+      tags:
+      - Departments
+      summary: Get all categories departments
+      responses:
+        200:
+          description: Departments succesfully retrieved
+        500:
+          description: Server error.
+  /api/products/department/{id}:
+    get:
+      tags:
+      - Products
+      summary: Gets all products associated to a specified department
+      parameters:
+      - name: id
+        in: path
+        description: Id of the department
+      responses:
+        200:
+          description: Products succesfully retrieved
+        404:
+          description: Department not found
+        500:
+          description: server error
+  /api/cart/generateId:
+    post:
+      tags:
+      - Cart
+      summary: Generate a unique cart id for a user of none exists
+      responses:
+        200:
+          description: Cart id created
+        500:
+          description: Server error.
+  /api/shopping-cart/{cartId}:
+    get:
+      tags:
+      - Cart
+      summary: Get all products in cart for a user
+      parameters:
+      - name: cartId
+        in: path
+        description: Id of the cart
+      responses:
+        200:
+          description: Cart succesfully retrieved
+        500:
+          description: Server error.
+    delete:
+      tags:
+      - Cart
+      summary: Delete all products in cart for a user
+      responses:
+        200:
+          description: Cart succesfully cleared
+        404:
+          description: Product not found
+        500:
+          description: Server error.
+  /api/shopping-cart/{productId}:
+    post:
+      tags:
+      - Cart
+      summary: Add products to cart for a user
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        type: number
+        description: ID of the product to be added to cart
+      - name: cart
+        in: body
+        description: Add-to-cart data
+        schema:
+          $ref: '#/definitions/add_to_cart'
+      responses:
+        200:
+          description: Cart succesfully retrieved
+        400:
+          description: Bad request
+        404:
+          description: Product not found
+        409:
+          description: conflict error
+        500:
+          description: Server error.
+  /api/shopping-cart/{cartId}/{id}:
+    put:
+      tags:
+      - Cart
+      summary: Update product quantity in the user's cart
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: number
+        description: Unique id of the cart to be updated
+      - name: cartId
+        in: path
+        required: true
+        type: string
+        description: ID of the cart to be updated
+      - name: update product in cart
+        in: body
+        description: Update cart quantity
+        schema:
+          $ref: '#/definitions/update_cart'
+      responses:
+        200:
+          description: Cart succesfully retrieved
+        400:
+          description: Bad request
+        404:
+          description: Cart not found
+        500:
+          description: Server error.
+    delete:
+      tags:
+      - Cart
+      summary: Remove a product from the user's cart
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: number
+        description: ID of the cart to be removed
+      responses:
+        200:
+          description: Cart succesfully retrieved
+        404:
+          description: Cart not found
+        500:
+          description: Server error.
+  /api/users/register:
+    post:
+      tags:
+      - Users
+      summary: Register a new user
+      parameters:
+      - name: customer
+        in: body
+        description: Customer signup data
+        schema:
+          $ref: '#/definitions/customer_signup'
+      responses:
+        201:
+          description: User succesfully registered
+        400:
+          description: Bad request
+        409:
+          description: email conflict error
+        500:
+          description: Server error.
+  /api/users/login:
+    post:
+      tags:
+      - Users
+      summary: Login a registered user
+      parameters:
+      - name: customer login
+        in: body
+        description: Customer signup data
+        schema:
+          $ref: '#/definitions/customer_login'
+      responses:
+        200:
+          description: User succesfully logged in
+        400:
+          description: Bad request
+        500:
+          description: Server error.
+  /api/user:
+    get:
+      tags:
+      - Users
+      summary: Get a user's profile
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: User profile loaded
+        400:
+          description: Bad request
+        401:
+          description: No token provided
+        500:
+          description: Server error.
+    put:
+      tags:
+      - Users
+      summary: Update a user's profile
+      parameters:
+      - name: Update profile
+        in: body
+        description: Customer signup data
+        schema:
+          $ref: '#/definitions/profile_update'
+      security:
+      - Bearer: []
+      responses:
+        201:
+          description: User's profile succesfully updated
+        400:
+          description: Bad request
+        401:
+          description: No token provided
+        500:
+          description: Server error.
+  /api/charge:
+    post:
+      tags:
+      - Orders
+      summary: Make payments on items in cart
+      parameters:
+      - name: stripeToken
+        in: body
+        required: true
+        type: string
+        description: User's token generated from stripe
+      - name: stripeEmail
+        in: body
+        required: true
+        type: string
+        description: User's email address
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Payment successful
+        400:
+          description: Bad request
+        500:
+          description: Payment not successfull.
+  /api/orders:
+    get:
+      tags:
+      - Orders
+      summary: Get all orders made by a logged in user
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Orders successfully retrieved
+        404:
+          description: No order for this user
+        500:
+          description: Server error.
+  /api/regions:
+    get:
+      tags:
+      - Shipping Regions
+      summary: Get all shipping regions and their shipping types
+      responses:
+        200:
+          description: Regions successfully retrieved
+        500:
+          description: Server error.
+produces:
+- application/json
+schemes:
+- https
+- http
+definitions: !php/object "O:8:\"stdClass\":5:{s:15:\"customer_signup\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:15:\"confirmPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}}}s:11:\"add_to_cart\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"colorId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:8:\"required\";b:1;}s:6:\"sizeId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:8:\"required\";b:1;}s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:8:\"required\";b:1;}s:6:\"cartId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}}}s:11:\"update_cart\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:8:\"required\";b:1;}}}s:14:\"customer_login\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:1;}}}s:14:\"profile_update\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:8:\"address1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:8:\"address2\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:8:\"dayPhone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:12:\"eveningPhone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}s:11:\"mobilePhone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"required\";b:0;}}}}"
+...

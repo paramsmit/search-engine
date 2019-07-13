@@ -1,0 +1,1063 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:5:\"title\";s:21:\"NPR One API Reference\";s:11:\"description\";s:452:\"NPR
+  One is a smart application that brings the best of NPR and Member Station programming,
+  newscasts,\npodcasts, and stories together to create a new experience for listening.
+  It provides an editor-curated and\nlocalized mobile listening experience based on
+  the content the listener chooses, likes, shares, and enjoys.\nThe API provides all
+  of the content and customization in a simple, structured way that is easy for application\ndevelopers
+  to implement.\";s:14:\"termsOfService\";s:39:\"http://dev.npr.org/develop/terms-of-use\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:23:\"NPR
+  One Enterprise Team\";s:3:\"url\";s:18:\"http://dev.npr.org\";s:5:\"email\";s:24:\"NPROneEnterprise@npr.org\";}s:7:\"version\";s:9:\"Beryllium\";}"
+host: api.npr.org
+paths:
+  /authorization/v2/token:
+    post:
+      tags:
+      - authorization
+      summary: Create a new OAuth2 access token
+      description: Please be aware that the required parameters are contingent on
+        the `grant_type` that you select.nnFor the `authorization_code` grant type,
+        you are **required** to pass in the `code` and `redirect_uri` parameters.
+        `service`, `username` and `password` parameters will be ignored.nnFor the
+        `client_credentials` grant type, you do not need to pass in any additional
+        parameters beyond the basic requirements. `code`, `redirect_uri`, `service`,
+        `username` and `password` parameters will be ignored.nnFor the `device_code`
+        grant type, you are **required** to pass in the `code` parameter. `redirect_uri`,
+        `service`, `username` and `password` parameters will be ignored.nnFor the
+        `password` grant type, you are **required** to pass in the `username` and
+        `password` parameters. If you are logging in via a social service, you should
+        also pass in the `service` parameter. (In this case, the access token you
+        receive from the social service will serve as both your username and password.)
+        The `code` and `redirect_uri` parameters are ignored.nThird-party developers
+        do not have access to this grant type.nnThe `temporary_user` grant type is
+        a custom grant type created by NPR to suit our needs for functionality such
+        as our &quot;try-before-you-buy&quot; experience. If you are a third-party
+        developer, you will not have access to this grant type unless we have explicitly
+        given you permission within our system.nFor this grant type, you do not need
+        to pass in any additional parameters beyond the basic requirements. `code`,
+        `redirect_uri`, `service`, `username` and `password` parameters will be ignored.nnIf
+        you are unsure of which grant type to select, assume that `authorization_code`
+        is the one you want.
+      operationId: createToken
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - name: grant_type
+        in: formData
+        description: The type of grant the client is requesting
+        required: true
+        type: string
+        enum:
+        - authorization_code
+        - client_credentials
+        - device_code
+        - password
+        - temporary_user
+      - name: client_id
+        in: formData
+        description: The client's ID, required for all grant types.
+        required: true
+        type: string
+      - name: client_secret
+        in: formData
+        description: The client's secret, required for all grant types.
+        required: true
+        type: string
+      - name: code
+        in: formData
+        description: Required for `authorization_code` and `device_code` grant types.
+          The authorization code from a successful call to `/authorization/v2/authorize`,
+          or a device code from a successful call to `/authorization/v2/device`.
+        required: false
+        type: string
+      - name: redirect_uri
+        in: formData
+        description: Required for `authorization_code` grant type. The requested redirect_uri.
+        required: false
+        type: string
+      - name: username
+        in: formData
+        description: Required for `password` grant type. The email address of an NPR
+          user.
+        required: false
+        type: string
+        format: email
+      - name: password
+        in: formData
+        description: Required for `password` grant type. The password that matches
+          the user specified with the username parameter.
+        required: false
+        type: string
+        format: password
+      - name: service
+        in: formData
+        description: If logging in via a social service, this parameter should be
+          set. Only used for the `password` grant type.
+        required: false
+        type: string
+        enum:
+        - facebook
+        - google
+        - microsoft
+        - janrain
+      responses:
+        200:
+          description: A new token was successfully created
+          schema:
+            $ref: '#/definitions/AccessTokenData'
+        400:
+          $ref: '#/responses/Simple400'
+        401:
+          description: The client credentials were invalid (any grant type), the user
+            credentials were invalid (`password` grant type), the user has not yet
+            logged in or has purposely denied the request (`device_code` grant type),
+            or the authorization server denied the request.
+          schema:
+            $ref: '#/definitions/SimpleError'
+        500:
+          $ref: '#/responses/Simple500'
+        503:
+          $ref: '#/responses/Simple503'
+  /authorization/v2/authorize:
+    get:
+      tags:
+      - authorization
+      summary: Show a web-based login/signup form to a user
+      description: If the parameters passed to this endpoint are correct, it will
+        redirect to `npr.org/oauth2/login` for the user to complete the sign-in.nnCurrently
+        acceptable values for `scope` are any combination of the following:n- `identity.readonly`
+        - for read-only access to the Identity Servicen- `identity.write` - for write
+        access to the Identity Servicen- `listening.readonly` - for read-only access
+        to the Listening Servicen- `listening.write` - for write access to the Listening
+        Servicen- `localactivation` - for all access to the Local Activation ServicenIt
+        is generally suggested that you assume that you will need all of the current
+        scopes in order to successfully implement an NPR One application.nnIf the
+        parameters passed in are NOT correct and the client passed in a valid `redirect_uri`
+        parameter, the request will be redirected to `{{YOUR_REDIRECT_URI}}?error={{ERROR_TYPE}}&message={{ERROR_DESCRIPTION}}`.nIf
+        the parameters passed are NOT correct and the client did not pass in a valid
+        `redirect_uri` parameter, this endpoint will return the errors encoded as
+        JSON objects (along with the corresponding HTTP status code -- usually 400).nThe
+        latter is intended for development and debugging purposes -- in a real-world
+        situation, errors returned as JSON objects are irretrievable by the client
+        application, and thus passing in a valid `redirect_uri` is critical even for
+        the purpose of capturing errors.nnIf the user successfully logs in and authorizes
+        the application, the request will be redirected to `{{YOUR_REDIRECT_URI}}?code={{AUTHORIZATION_CODE}}&state={{CSRF_TOKEN}}`nnIf
+        the user DENIES the application, they will be redirected to `{{YOUR_REDIRECT_URI}}?error=denied&message=The%20user%20has%20denied%20the%20login%20and%20access%20request&state={{CSRF_TOKEN}}`.nThis
+        means that if your application flow requires a user to log in in order to
+        proceed, it is up to you to give them the proper messaging explaining that
+        the sign-in must be authorized in order to continue.nnFinally, please do not
+        confuse an authorization code with an access token. Once your app has completed
+        this flow, you will still need to call `POST /authorization/v2/token` in order
+        to swap the code for a valid access token.
+      operationId: getAuthorizationPage
+      produces:
+      - text/html
+      parameters:
+      - name: client_id
+        in: query
+        description: The client's ID
+        required: true
+        type: string
+      - name: redirect_uri
+        in: query
+        description: The client's URL to redirect to if the authentication is approved
+        required: true
+        type: string
+      - name: response_type
+        in: query
+        description: The type of response; currently, only `code` is supported
+        required: true
+        type: string
+        enum:
+        - code
+      - name: scope
+        in: query
+        description: A space-separated list of scope(s) requested by the application
+        required: true
+        type: string
+      - name: state
+        in: query
+        description: A CSRF token generated by the client, to be roundtripped through
+          the request for added security
+        required: true
+        type: string
+      responses:
+        302:
+          description: The correct parameters were passed in and we are redirecting
+            to the authentication page; OR, a valid `redirect_uri` was supplied but
+            there was another error, and the error type and message are embedded in
+            the querystring.
+          headers:
+            Location:
+              description: The sign-in page to redirect to; most clients will process
+                this redirect automatically.
+              type: string
+              format: url
+        400:
+          description: A bad request; generally, one or more parameters passed in
+            were incorrect or missing. This error will only be shown if the client
+            did not pass in a valid `redirect_uri`; otherwise, all errors will be
+            returned as 302s to the supplied `redirect_uri`, with the error type and
+            message embedded in the querystring.
+          schema:
+            $ref: '#/definitions/SimpleError'
+        401:
+          description: The client credentials were invalid (i.e., the `redirect_uri`
+            does not match what we have stored for this client) or the authorization
+            server denied the request. This error will only be shown if the client
+            did not pass in a valid `redirect_uri`; otherwise, all errors will be
+            returned as 302s to the supplied `redirect_uri`, with the error type and
+            message embedded in the querystring.
+          schema:
+            $ref: '#/definitions/SimpleError'
+        500:
+          description: There was an unspecified server error. This error will only
+            be shown if the client did not pass in a valid `redirect_uri`; otherwise,
+            all errors will be returned as 302s to the supplied `redirect_uri`, with
+            the error type and message embedded in the querystring.
+          schema:
+            $ref: '#/definitions/SimpleError'
+        503:
+          description: The system is undergoing maintenance and we are unable to fulfill
+            this request. This error will only be shown if the client did not pass
+            in a valid `redirect_uri`; otherwise, all errors will be returned as 302s
+            to the supplied `redirect_uri`, with the error type and message embedded
+            in the querystring.
+          schema:
+            $ref: '#/definitions/SimpleError'
+  /authorization/v2/device:
+    post:
+      tags:
+      - authorization
+      summary: Initiate an OAuth2 login flow for limited input devices
+      description: This flow should only be used by clients who cannot show a native
+        webview or do not have advanced input controls. It is an alternative to `GET
+        /authorization/v2/authorize`.nnThird-party clients will need to use one or
+        the other of these two endpoints, but they will generally not use both.
+      operationId: generateDeviceCode
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - name: client_id
+        in: formData
+        description: The client's ID
+        required: true
+        type: string
+      - name: client_secret
+        in: formData
+        description: The client's secret key
+        required: true
+        type: string
+      - name: scope
+        in: formData
+        description: A space-separated list of scope(s) requested by the application.
+          Required for all untrusted clients; will be ignored for trusted clients.
+        required: false
+        type: string
+      responses:
+        201:
+          description: We have generated a unique device code and user code. These
+            will only be valid for the amount of time specified in the `expires_in`
+            field; if the user does not complete the login process in that amount
+            of time, the client will need to request a new set of codes.
+          schema:
+            $ref: '#/definitions/DeviceCodeData'
+        400:
+          $ref: '#/responses/Simple400'
+        401:
+          $ref: '#/responses/Simple401'
+        500:
+          $ref: '#/responses/Simple500'
+        503:
+          $ref: '#/responses/Simple503'
+  /authorization/v2/token/revoke:
+    post:
+      tags:
+      - authorization
+      summary: Revokes an existing OAuth2 access token
+      description: Our implementation follows the proposed IETF specification [RFC-7009](https://tools.ietf.org/html/rfc7009).nnIf
+        your client application offers the ability to for a logged-in user to log
+        out, and you have access to a long-livedn`client_credentials` token (i.e.
+        you have generated one that you are storing securely for the lifetime of the
+        entire appninstall), we suggest (but do not require) that you call this endpoint
+        and revoke the access token belonging to thenlogged-in user as part of your
+        logout process. If you do not already have a long-lived `client_credentials`
+        token,nplease don't generate one just for the purposes of calling this endpoint.nnIf
+        you are building a prototype application, we also recommend that you use this
+        endpoint to clean up access tokensnthat you generate during the testing of
+        your app and do not intend to reuse.
+      operationId: revokeToken
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        description: A `client_credentials` access token from the same client application
+          as the token being revoked. Should start with `Bearer`, followed by a space,
+          followed by the token.
+        required: true
+        type: string
+      - name: token
+        in: formData
+        description: The token that the client wants to get revoked.
+        required: true
+        type: string
+      - name: token_type_hint
+        in: formData
+        description: A hint about the type of the token submitted for revocation.
+          Note that at present, our system does not issue refresh tokens, so unless
+          otherwise directed, the value (if passed in) should always be `access_token`.
+        required: false
+        type: string
+        enum:
+        - access_token
+        - refresh_token
+      responses:
+        200:
+          description: The old token was successfully revoked
+          schema:
+            description: An empty JSON object
+            type: object
+        400:
+          $ref: '#/responses/Simple400'
+        401:
+          $ref: '#/responses/Simple401'
+        403:
+          description: The client associated with the access token in the header does
+            not own the access token that this request is attempting to revoke.
+          schema:
+            $ref: '#/definitions/SimpleError'
+        500:
+          $ref: '#/responses/Simple500'
+        503:
+          $ref: '#/responses/Simple503'
+  /identity/v2/user:
+    get:
+      tags:
+      - identity
+      summary: Get the latest state information about the logged-in user
+      description: After a successful login, the client should send a `GET` call approximately
+        once an hour to refresh the user data.
+      operationId: getUser
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          $ref: '#/responses/IdentitySuccess'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - identity.readonly
+  /identity/v2/stations:
+    put:
+      tags:
+      - identity
+      summary: Update the logged-in user's favorite station(s)
+      description: Right now, only the primary station can be changed. Previously
+        selected stations will not be deleted, but the new station will be moved to
+        first in the array.
+      operationId: updateStations
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - name: body
+        in: body
+        description: A JSON-serialized array of station IDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+      responses:
+        201:
+          $ref: '#/responses/IdentitySuccess'
+        400:
+          $ref: '#/responses/400WithDocument'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - identity.write
+  /identity/v2/user/inherit:
+    post:
+      tags:
+      - identity
+      summary: Copy listening data from a temporary user account to the logged-in
+        user's account
+      description: This can and should only be used by clients who have access to
+        the `temporary_user` grant type.nThird-party developers do not have access
+        to this grant type by default, and will not need this endpoint.
+      operationId: inheritFromTempUser
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - name: temp_user
+        in: query
+        description: The temporary user's ID before the user registered or logged
+          in
+        required: true
+        type: integer
+      responses:
+        202:
+          $ref: '#/responses/IdentitySuccess'
+        400:
+          $ref: '#/responses/400WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - identity.write
+  /identity/v2/following:
+    post:
+      tags:
+      - identity
+      summary: Update the following status of the logged-in user for a particular
+        aggregation
+      description: After a successful call, this returns a User document with an updated
+        list of affiliations.
+      operationId: postFollowing
+      consumes:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - name: body
+        in: body
+        description: A JSON-serialized object which contains data about a user affiliation
+          such as the aggregation ID, affiliation rating, aggregation URL, days since
+          last listen, and following status.
+        required: true
+        schema:
+          $ref: '#/definitions/Affiliation'
+      responses:
+        201:
+          $ref: '#/responses/IdentitySuccess'
+        400:
+          $ref: '#/responses/400WithDocument'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - identity.write
+  /listening/v2/channels:
+    get:
+      tags:
+      - listening
+      summary: Get the list of available channels
+      description: These channels allow the user to specify a focus for the content
+        returned in the recommendations endpoint.
+      operationId: getChannels
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: A list of channels
+          schema:
+            $ref: '#/definitions/ChannelsDocument'
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              type: integer
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.readonly
+  /listening/v2/ratings:
+    post:
+      tags:
+      - listening
+      summary: Collect new ratings for media previously recommended to the logged-in
+        user
+      description: This endpoint is the main mechanism for providing feedback from
+        the user to NPR about the recommendations that are obtained from `GET /listening/v2/recommendations`.nnA
+        fully-populated link to this endpoint is returned with each individual recommendation
+        and is located in the AudioItemDocument under the `links['recommendations']`
+        object. The query parameters in this link should not be modified.nBe sure
+        to copy and send back the entire ratings object (RatingData), as new fields
+        may be added to it in the future.nnThis endpoint can return a blank JSON.doc
+        or AudioItemDocument depending on the `recommend=true|false` parameter. The
+        `recommend=true` flag allows this endpoint to both receive ratings and send
+        back recommendations in the same call.
+      operationId: postRating
+      consumes:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/X-Advertising-ID'
+      - $ref: '#/parameters/channel'
+      - name: recommend
+        in: query
+        description: If set to `true`, this call will return a new recommendation
+          object; otherwise it will return a blank document
+        required: false
+        type: boolean
+        default: false
+      - name: body
+        in: body
+        description: A list of RatingData objects which contains data about ratings
+          such as the id of the content, the rating value, elapsed time and more.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/RatingData'
+      responses:
+        200:
+          description: If the `recommend` param was set to `true`, this returns a
+            list of audio items; otherwise, a blank document is returned.
+          schema:
+            $ref: '#/definitions/AudioItemListDocument'
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              type: integer
+        400:
+          $ref: '#/responses/400WithDocument'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.write
+  /listening/v2/recommendations:
+    get:
+      tags:
+      - listening
+      summary: Get a list of media for the logged-in user from NPR's recommendation
+        engine
+      description: This endpoint returns a list of audio recommendations. It is designed
+        to be used for an initial list of recommendations, and then `GET /listening/v2/ratings?recommend=true`
+        should be used for subsequent requests for recommendations.nnA fully-populated
+        link to the ratings endpoint is returned with each individual recommendation
+        and is located in the AudioItemDocument under the `links['recommendations']`
+        object. The query parameters in this link should not be modified.nBe sure
+        to copy and send back the entire ratings object (RatingData), as new fields
+        may be added to it in the future.
+      operationId: getRecommendations
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/X-Advertising-ID'
+      - $ref: '#/parameters/channel'
+      - name: sharedMediaId
+        in: query
+        description: This media was shared directly with the user; if provided, the
+          service will add this recommendation to the top of the list
+        required: false
+        type: string
+      - name: notifiedMediaId
+        in: query
+        description: The user received a push notification about this media; if provided,
+          the service will add this recommendation to the top of the list
+        required: false
+        type: string
+      responses:
+        200:
+          $ref: '#/responses/ListeningSuccess'
+        400:
+          $ref: '#/responses/400WithDocument'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.readonly
+  /listening/v2/history:
+    get:
+      tags:
+      - listening
+      summary: Get recent ratings the logged-in user has submitted
+      description: This endpoint provides the list of recently-rated audio recommendations
+        that the logged-in user has consumed. Some rated recommendations are filtered,
+        such as sponsorship and donation.
+      operationId: getHistory
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          $ref: '#/responses/ListeningSuccess'
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.readonly
+  /listening/v2/aggregation/{aggId}/recommendations:
+    get:
+      tags:
+      - listening
+      summary: Get a set of recommendations for an aggregation
+      description: This endpoint provides a list of recent audio items associated
+        with the aggregation along with metadata about the aggregation.
+      operationId: getAggRecommendations
+      parameters:
+      - name: aggId
+        in: path
+        description: ID of an aggregation such as a program or podcast
+        required: true
+        type: integer
+        format: int64
+      - $ref: '#/parameters/Authorization'
+      - name: startNum
+        in: query
+        description: The result to start with. Allows paging through the episodes
+          of a podcast or program, with the default, `startNum=0`, being the most
+          recent episode
+        required: false
+        type: integer
+        format: int32
+        default: 0
+      responses:
+        200:
+          description: A list of audio items from the specified aggregation
+          schema:
+            $ref: '#/definitions/AggregationAudioItemListDocument'
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              type: integer
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.readonly
+  /listening/v2/search/recommendations:
+    get:
+      tags:
+      - listening
+      summary: Get a list of recent audio and aggregation items associated with search
+        terms
+      description: In the schema shown below, SearchItemDocument is not an actual
+        type of returned object; the object returned by a search will be either an
+        AggregationAudioItemListDocument or an AudioItemDocument.
+      operationId: getSearchRecommendations
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - name: searchTerms
+        in: query
+        description: Search terms to search on; can include URL-encoded punctuation
+        required: true
+        type: string
+      responses:
+        200:
+          description: A list of audio and aggregation items matching the search query
+          schema:
+            $ref: '#/definitions/SearchListDocument'
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              type: integer
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+        503:
+          $ref: '#/responses/503WithDocument'
+      security:
+      - oauth2:
+        - listening.readonly
+  /localactivation/v2/donate_email:
+    get:
+      tags:
+      - localactivation
+      summary: Send a donation email to the logged-in user (only on request)
+      description: This will send a station-specific donation email to the logged-in
+        user.
+      operationId: sendDonationEmail
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: On success only a blank document
+          schema:
+            $ref: '#/definitions/CollectionDocument'
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              type: integer
+        401:
+          $ref: '#/responses/401WithDocument'
+        429:
+          $ref: '#/responses/429WithDocument'
+        500:
+          $ref: '#/responses/500WithDocument'
+      security:
+      - oauth2:
+        - localactivation
+  /sponsorship/v2/ads:
+    get:
+      tags:
+      - sponsorship
+      summary: Request DAAST sponsorship units
+      description: '**Not** for use by NPR One clients (for whom sponsorship is already
+        integrated into the Listening Service), this endpoint is designed to be used
+        by our other client applications to request sponsorship on behalf of a user.
+        Sponsorship units are returned in the form of DAAST XML. It is worth noting
+        that this endpoint attempts to always return XML, even in the case of exceptions.nnThe
+        default behavior of this endpoint is asynchronous; on an initial request,
+        a call to our external sponsorship provider is placed on a queue, which is
+        typically processed within 3 minutes. Once the sponsorship call is received
+        and processed, the returned sponsorship units are placed in a cache on our
+        server for the current user. Subsequent calls to this endpoint will return
+        DAAST sponsorship units from this cache until tracking information is submitted,
+        which removes the ad from the cache and will automatically request additional
+        ads asynchronously if there are fewer than a certain number remaining in the
+        cache.nnFor development purposes, it''s worth noting that there is currently
+        no way to clear a user''s cache without submitting some form of tracking.'
+      operationId: getAds
+      produces:
+      - application/xml
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/X-Advertising-ID'
+      - name: forceResult
+        in: query
+        description: Whether to force a synchronous call to our external sponsorship
+          provider; the default behavior is asynchronous.
+        required: false
+        type: boolean
+      - name: adCount
+        in: query
+        description: How many sponsorship units to request in one call; if left unspecified,
+          the default behavior is to return only 1.
+        required: false
+        type: integer
+        format: int32
+        maximum: 5
+        minimum: 1
+      responses:
+        200:
+          description: Request completed successfully; a DAAST XML document is returned.
+            Note that this response will only be returned if either `force=true` was
+            passed in the querystring, or a call to get sponsorship was previously
+            made, and ads now exist in the cache for this user; otherwise, the 202
+            response is returned.
+          schema:
+            $ref: '#/definitions/DAASTXml'
+        202:
+          description: Request accepted. Check back later for actual ads.
+        400:
+          description: A bad request; generally, one or more parameters passed in
+            were incorrect or missing
+          schema:
+            $ref: '#/definitions/ErrorXmlDocument'
+        500:
+          description: A server error
+          schema:
+            $ref: '#/definitions/ErrorXmlDocument'
+    post:
+      tags:
+      - sponsorship
+      summary: Record tracking data for DAAST sponsorship units
+      description: '**Not** for use by NPR One clients (for whom sponsorship is already
+        integrated into the Listening Service), this endpoint is designed to be used
+        by our other client applications to submit tracking information for sponsorship
+        units obtained from the `GET /sponsorship/v2/ads` endpoint.nnThe tracking
+        information should be submitted in the body of the request in the form of
+        a JSON object following the Collection.Doc+JSON specification.'
+      operationId: receiveAdTracking
+      consumes:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/X-Advertising-ID'
+      - name: body
+        in: body
+        description: A JSON object representing sponsorship tracking data to submit
+          to our external provider.
+        required: true
+        schema:
+          $ref: '#/definitions/UserAdDocument'
+      responses:
+        204:
+          description: Request completed successfully, but there is nothing that we
+            need to return to the caller.
+        400:
+          description: A bad request; generally, one or more parameters passed in
+            were incorrect or missing
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: A server error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+- application/vnd.collection.doc+json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":45:{s:11:\"SimpleError\";O:8:\"stdClass\":3:{s:11:\"description\";s:145:\"A
+  simple representation of an error result from an API call, rarely used; in most
+  cases we still return a Collection.doc+JSON document for errors\";s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"A
+  message describing the error that occurred\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"A
+  short string representing the type of error that occurred\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:5:\"error\";}}}s:15:\"AccessTokenData\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:12:\"access_token\";i:1;s:10:\"token_type\";i:2;s:10:\"expires_in\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"access_token\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  access token to use for all future calls\";s:4:\"type\";s:6:\"string\";}s:10:\"token_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"Identifies
+  the type of token returned. At this time, this field always has the value `Bearer`.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"Bearer\";i:1;s:3:\"MAC\";}}s:10:\"expires_in\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"The
+  remaining lifetime of the access token\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:14:\"DeviceCodeData\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:11:\"device_code\";i:1;s:9:\"user_code\";i:2;s:16:\"verification_uri\";i:3;s:10:\"expires_in\";i:4;s:8:\"interval\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"device_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:95:\"40-character
+  code for the device to input into the /token endpoint, not for display to the user\";s:4:\"type\";s:6:\"string\";}s:9:\"user_code\";O:8:\"stdClass\":2:{s:11:\"description\";s:119:\"6-character
+  alphanumeric code for the user to enter at http://npr.org/device, to be displayed
+  by the client application\";s:4:\"type\";s:6:\"string\";}s:16:\"verification_uri\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"The
+  URL where the user should input their code, to be displayed by the client application\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:21:\"http://npr.org/device\";}s:10:\"expires_in\";O:8:\"stdClass\":4:{s:11:\"description\";s:96:\"The
+  number of seconds for which this set of codes will be valid, after which they will
+  be purged\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:1800;}s:8:\"interval\";O:8:\"stdClass\":4:{s:11:\"description\";s:100:\"The
+  number of seconds the client application should maintain between requests to the
+  /token endpoint\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:5;}}}s:5:\"Error\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"A
+  serialized version of any error encountered when processing this request\";s:8:\"required\";a:1:{i:0;s:4:\"code\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  error code\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"text\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  error description\";s:4:\"type\";s:6:\"string\";}s:5:\"debug\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Additional
+  debug information if debug mode is turned on\";s:4:\"type\";s:6:\"string\";}}}s:18:\"CollectionDocument\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Base
+  Collection.Doc+JSON output\";s:8:\"required\";a:6:{i:0;s:7:\"version\";i:1;s:4:\"href\";i:2;s:10:\"attributes\";i:3;s:5:\"items\";i:4;s:5:\"links\";i:5;s:6:\"errors\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"version\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"The
+  version of the Collection.Doc+JSON spec being used\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"1.0\";}s:4:\"href\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"A
+  URL representation of the resource; should generally be ignored by clients unless
+  noted otherwise\";s:4:\"type\";s:6:\"string\";}s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"A
+  list of encountered errors, ignored on POST, PUT\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}}}s:13:\"ErrorDocument\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"A
+  Collection.doc+JSON representation of an error result from an API call\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Ignore;
+  will be empty for errors\";s:4:\"type\";s:6:\"object\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Ignore;
+  will be empty for errors\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Ignore;
+  will be empty for errors\";s:4:\"type\";s:6:\"object\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"A
+  list of encountered errors, ignored on POST, PUT\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}}}}s:12:\"UserDocument\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Not
+  used, ignored on a PUT\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"A
+  list of links, not used by the Identity Service; ignored on a PUT\";s:4:\"type\";s:6:\"object\";}s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Object;
+  see description of a user object below\";s:4:\"$ref\";s:22:\"#/definitions/UserData\";}}}}}s:8:\"UserData\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"Object;
+  see description of a user object below\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:6:\"cohort\";i:2;s:13:\"organizations\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Some
+  unique identifier for the user\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  user's first name\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  user's last name\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  user's email address\";s:4:\"type\";s:6:\"string\";}s:6:\"cohort\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Experimental
+  groupings for User Experience A/B Testing\";s:4:\"$ref\";s:20:\"#/definitions/Cohort\";}s:13:\"organizations\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"User's
+  chosen NPR Member Station(s)\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}}s:12:\"affiliations\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"Program(s)
+  that the user has positively interacted with\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Affiliation\";}}}}s:6:\"Cohort\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"An
+  experimental grouping for User Experience A/B Testing\";s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"A
+  short ID for this cohort; ignored on a PUT\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"A
+  text string identifying the cohort, useful for metrics; ignored on a PUT\";s:4:\"type\";s:6:\"string\";}s:9:\"directory\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"For
+  internal use only; represents the current configuration file being used by the Listening
+  Service\";s:4:\"type\";s:6:\"string\";}}}s:12:\"Organization\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"A
+  station that a user has an affiliation with\";s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:11:\"displayName\";i:2;s:4:\"call\";i:3;s:4:\"city\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"Some
+  unique identifier for the organization for the user\";s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"A
+  short displayable text field for the end user, strictly text; ignored on PUT\";s:4:\"type\";s:6:\"string\";}s:4:\"call\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Station
+  call letters\";s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"A
+  short description of the station's main market city\";s:4:\"type\";s:6:\"string\";}s:4:\"logo\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Station
+  logo image url\";s:4:\"type\";s:6:\"string\";}}}s:10:\"RatingData\";O:8:\"stdClass\":2:{s:8:\"required\";a:8:{i:0;s:7:\"mediaId\";i:1;s:6:\"origin\";i:2;s:6:\"rating\";i:3;s:7:\"elapsed\";i:4;s:8:\"duration\";i:5;s:9:\"timestamp\";i:6;s:7:\"channel\";i:7;s:6:\"cohort\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:7:\"mediaId\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"The
+  media id as given by the media object\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:18:\"^\\d{3,}:[\\w-]{5,}$\";}s:6:\"origin\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"How
+  the recommendation was generated\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:17:\"^[A-Z0-9_]{2,10}$\";}s:6:\"rating\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"String
+  representing the rating\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:17:\"^[A-Z0-9_]{2,10}$\";}s:7:\"elapsed\";O:8:\"stdClass\":5:{s:11:\"description\";s:80:\"Number
+  of seconds since the start of playback for this media item, as an integer\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:9999;s:7:\"minimum\";i:0;}s:8:\"duration\";O:8:\"stdClass\":5:{s:11:\"description\";s:54:\"Number
+  of seconds this audio piece is expected to last\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:9999;s:7:\"minimum\";i:0;}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"ISO-8601
+  formatted date/time; typically replaced by the client with the actual rating time\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:12:\"affiliations\";O:8:\"stdClass\":3:{s:11:\"description\";s:194:\"An
+  array of IDs & other data about collections or podcasts the user has ratings for;
+  produced by the server and should be sent back as received; used for tracking program
+  and podcast suggestions\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:7:\"channel\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"The
+  channel this media item was pulled from\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"npr\";}s:6:\"cohort\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  primary cohort of the current logged-in user\";s:4:\"type\";s:6:\"string\";}}}s:11:\"Affiliation\";O:8:\"stdClass\":3:{s:11:\"description\";s:71:\"A
+  program (aggregation) that a given user has shown an affiliation with\";s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"href\";i:2;s:9:\"following\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"A
+  unique identifier for the aggregation (program)\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:6:\"rating\";O:8:\"stdClass\":3:{s:11:\"description\";s:115:\"The
+  user's average rating for this affiliation on a scale of 0-1. Absent if user never
+  listened to the aggregation.\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";}s:4:\"href\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"A
+  link to more details about the program from the NPR Story API\";s:4:\"type\";s:6:\"string\";}s:19:\"daysSinceLastListen\";O:8:\"stdClass\":3:{s:11:\"description\";s:129:\"The
+  number of days since a user last listened to a story from this aggregation. Absent
+  if user never listened to the aggregation.\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"following\";O:8:\"stdClass\":3:{s:11:\"description\";s:169:\"Whether
+  or not the user is following the aggregation. When changing affiliation status,
+  the client is expected to toggle this value and then send the entire object back.\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}}}s:32:\"AggregationAudioItemListDocument\";O:8:\"stdClass\":2:{s:11:\"description\";s:105:\"An
+  array of audio recommendations with additional metadata about the aggregation they
+  are associated with\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  metadata which describes the aggregation\";s:4:\"$ref\";s:29:\"#/definitions/AggregationData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"An
+  array of Audio Items (recommendations)\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/AudioItemDocument\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:132:\"An
+  array of links for the aggregation. Look here for images associated with the aggregation
+  or for a more link to get more episodes.\";s:4:\"$ref\";s:30:\"#/definitions/AggregationLinks\";}}}}}s:15:\"AggregationData\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:4:\"type\";i:1;s:11:\"affiliation\";i:2;s:5:\"title\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:90:\"The
+  type of list returned; will always be `aggregation`; useful for parsing search results\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:11:\"aggregation\";s:4:\"enum\";a:1:{i:0;s:11:\"aggregation\";}}s:11:\"affiliation\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"A
+  unique identifier for the aggregation\";s:4:\"type\";s:6:\"string\";}s:15:\"affiliationMeta\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Metadata
+  about the logged-in user's relationship to this aggregation\";s:4:\"$ref\";s:25:\"#/definitions/Affiliation\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  title of this aggregation\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"A
+  short description or teaser\";s:4:\"type\";s:6:\"string\";}s:7:\"station\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"The
+  producer of this aggregation\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"NPR\";}}}s:16:\"AggregationLinks\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"web\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"One
+  or more links to a web page for the item\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:4:\"more\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"One
+  or more links to more episodes for the aggregation\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:5:\"image\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"One
+  or more links to an image, along with metadata for display\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/ImageLink\";}}}}s:17:\"AudioItemDocument\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  metadata which comprises the recommendation\";s:4:\"$ref\";s:27:\"#/definitions/AudioItemData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"A
+  list of links. Look here for audio files.\";s:4:\"$ref\";s:28:\"#/definitions/AudioItemLinks\";}}}}}s:13:\"AudioItemData\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:4:\"type\";i:1;s:3:\"uid\";i:2;s:5:\"title\";i:3;s:9:\"skippable\";i:4;s:9:\"rationale\";i:5;s:6:\"rating\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:166:\"Help
+  determine how content is displayed; for more information, see <a href='http://dev.npr.org/design/general-specifications/playing-audio/'>our
+  design guidelines</a>\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:5:\"audio\";s:4:\"enum\";a:10:{i:0;s:5:\"audio\";i:1;s:11:\"sponsorship\";i:2;s:9:\"stationId\";i:3;s:5:\"intro\";i:4;s:6:\"donate\";i:5;s:24:\"featureCardInformational\";i:6;s:23:\"featureCardNotification\";i:7;s:20:\"featureCardPromotion\";i:8;s:23:\"featureCardExternalLink\";i:9;s:23:\"featureCardAsyncRequest\";}}s:3:\"uid\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"The
+  media ID (for use in ratings objects)\";s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:18:\"^\\d{3,}:[\\w-]{5,}$\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  title of this media\";s:4:\"type\";s:6:\"string\";}s:6:\"button\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"The
+  text contents of an action button displayed on the client\";s:4:\"type\";s:6:\"string\";}s:9:\"skippable\";O:8:\"stdClass\":3:{s:11:\"description\";s:58:\"Whether
+  the client should allow this content to be skipped\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}s:9:\"rationale\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"A
+  short summary of why this content was recommended\";s:4:\"type\";s:6:\"string\";}s:4:\"slug\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"A
+  tag or category for this media\";s:4:\"type\";s:6:\"string\";}s:8:\"provider\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"The
+  name of the organization providing this media\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"NPR\";}s:7:\"program\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  program associated with this media\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":5:{s:11:\"description\";s:42:\"The
+  length of the audio content in seconds\";s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:9999;s:7:\"minimum\";i:0;}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"The
+  publication date in ISO-8691 format\";s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"A
+  short description or teaser\";s:4:\"type\";s:6:\"string\";}s:6:\"artist\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  artist associated with the content\";s:4:\"type\";s:6:\"string\";}s:5:\"album\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Album
+  information associated with the media\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  record label associated with the media\";s:4:\"type\";s:6:\"string\";}s:6:\"rating\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"An
+  object which contains all data that should be sent back to NPR when sending a rating\";s:4:\"$ref\";s:24:\"#/definitions/RatingData\";}}}s:21:\"AudioItemListDocument\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:6:\"object\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"An
+  array of Audio Items (recommendations)\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/AudioItemDocument\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:6:\"object\";}}}}}s:15:\"ChannelDocument\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  channel data\";s:4:\"$ref\";s:25:\"#/definitions/ChannelData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:6:\"object\";}}}}}s:11:\"ChannelData\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:8:\"fullName\";i:2;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  actual value that should be sent\";s:4:\"type\";s:6:\"string\";}s:8:\"fullName\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"A
+  short description of what this channel focuses on\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"A
+  longer description of what this channel focuses on\";s:4:\"type\";s:6:\"string\";}}}s:16:\"ChannelsDocument\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  default channel data\";s:4:\"$ref\";s:26:\"#/definitions/ChannelsData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"The
+  list of individual channels\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ChannelDocument\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:6:\"object\";}}}}}s:12:\"ChannelsData\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"defaultChannel\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"The
+  default channel NPR recommends\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"npr\";}}}s:12:\"AbstractLink\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:4:\"href\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"href\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  link to be followed\";s:4:\"type\";s:6:\"string\";}}}s:9:\"AudioLink\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"A
+  link to audio files for the item\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AbstractLink\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:12:\"content-type\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"content-type\";O:8:\"stdClass\":4:{s:11:\"description\";s:207:\"The
+  MIME type of the response of this link; note that the enumerated list of possible
+  values is not exhaustive and other MIME types could occur. The list should be treated
+  as examples, rather than absolutes.\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:9:\"audio/aac\";s:4:\"enum\";a:5:{i:0;s:9:\"audio/mp3\";i:1;s:9:\"audio/aac\";i:2;s:9:\"audio/3gp\";i:3;s:29:\"application/vnd.apple.mpegurl\";i:4;s:14:\"audio/x-ms-wax\";}}}}}}s:9:\"ImageLink\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"An
+  image, along with metadata for display\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AbstractLink\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:12:\"content-type\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"content-type\";O:8:\"stdClass\":4:{s:11:\"description\";s:207:\"The
+  MIME type of the response of this link; note that the enumerated list of possible
+  values is not exhaustive and other MIME types could occur. The list should be treated
+  as examples, rather than absolutes.\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:10:\"image/jpeg\";s:4:\"enum\";a:3:{i:0;s:10:\"image/jpeg\";i:1;s:9:\"image/png\";i:2;s:9:\"image/gif\";}}s:5:\"image\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"A
+  unique identifier for the image\";s:4:\"type\";s:6:\"string\";}s:3:\"rel\";O:8:\"stdClass\":4:{s:11:\"description\";s:205:\"The
+  crop type or intended display style/size; note that the enumerated list of possible
+  values is not exhaustive and other values could occur. The list should be treated
+  as examples, rather than absolutes.\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:11:\"logo_square\";s:4:\"enum\";a:7:{i:0;s:11:\"logo_square\";i:1;s:4:\"icon\";i:2;s:4:\"wide\";i:3;s:8:\"standard\";i:4;s:6:\"square\";i:5;s:11:\"enlargement\";i:6;s:6:\"custom\";}}s:8:\"producer\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"The
+  producer of the image; should be used for properly attributing the image when it
+  exists\";s:4:\"type\";s:6:\"string\";}s:8:\"provider\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"The
+  provider of the image; should be used for properly attributing the image when it
+  exists\";s:4:\"type\";s:6:\"string\";}}}}}s:9:\"OtherLink\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"An
+  individual link from a list of links\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/AbstractLink\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:12:\"content-type\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"content-type\";O:8:\"stdClass\":4:{s:11:\"description\";s:207:\"The
+  MIME type of the response of this link; note that the enumerated list of possible
+  values is not exhaustive and other MIME types could occur. The list should be treated
+  as examples, rather than absolutes.\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:16:\"application/json\";s:4:\"enum\";a:3:{i:0;s:16:\"application/json\";i:1;s:15:\"application/xml\";i:2;s:9:\"text/html\";}}}}}}s:14:\"AudioItemLinks\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"audio\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"One
+  or more links to audio files for the item\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/AudioLink\";}}s:5:\"image\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"One
+  or more links to an image, along with metadata for display\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/ImageLink\";}}s:3:\"web\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"One
+  or more links to a web page for the item\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:7:\"onramps\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"One
+  or more shareable links for the item\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:2:\"up\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"One
+  or more links to more details about the program or podcast with which this item
+  is associated\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:15:\"recommendations\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"This
+  is the URL that should be POSTed with the ratings JSON when this audio starts to
+  play\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}s:6:\"action\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"One
+  or more links to be trigged by user actions, usually when a button is clicked\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/OtherLink\";}}}}s:18:\"SearchListDocument\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"An
+  array of aggregation or audio recommendations\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  metadata for the search itself\";s:4:\"$ref\";s:28:\"#/definitions/SearchMetaData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"A
+  list of aggregation or audio items (recommendations)\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/SearchItemDocument\";}}s:5:\"links\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:6:\"object\";}}}}}s:14:\"SearchMetaData\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"query\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"query\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"The
+  search terms used in the original request\";s:4:\"type\";s:6:\"string\";}}}s:18:\"SearchItemDocument\";O:8:\"stdClass\":3:{s:11:\"description\";s:92:\"A
+  search result, which is either an AggregationAudioItemListDocument or an AudioItemDocument\";s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:102:\"The
+  type of search result, which is either an AggregationAudioItemListDocument or an
+  AudioItemDocument\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"audio\";i:1;s:11:\"aggregation\";}}s:11:\"ifTypeAudio\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"NOT
+  A TRUE PROPERTY. This is the schema of the SearchItemDocument for `type='audio'`\";s:4:\"$ref\";s:31:\"#/definitions/AudioItemDocument\";}s:17:\"ifTypeAggregation\";O:8:\"stdClass\":2:{s:11:\"description\";s:90:\"NOT
+  A TRUE PROPERTY. This is the schema of the SearchItemDocument for `type='aggregation'`\";s:4:\"$ref\";s:46:\"#/definitions/AggregationAudioItemListDocument\";}}}s:14:\"AdTrackingData\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"All
+  the information needed for the Sponsorship Service to send back tracking information
+  to our external sponsorship provider\";s:8:\"required\";a:2:{i:0;s:4:\"adId\";i:1;s:5:\"event\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"adId\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"The
+  DAAST Ad node `id` attribute value, (e.g. AdswizzAd12345)\";s:4:\"type\";s:6:\"string\";}s:5:\"event\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"The
+  user-interaction event to submit tracking for\";s:4:\"type\";s:6:\"string\";s:7:\"default\";s:5:\"start\";s:4:\"enum\";a:5:{i:0;s:5:\"start\";i:1;s:13:\"firstQuartile\";i:2;s:8:\"midpoint\";i:3;s:13:\"thirdQuartile\";i:4;s:8:\"complete\";}}}}s:10:\"UserAdData\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"All
+  information relevant to a user who has requested sponsorship or submitted tracking
+  information\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"userAgent\";O:8:\"stdClass\":2:{s:11:\"description\";s:275:\"An
+  identifying string for the browser making the request. The server will attempt to
+  grab this from the headers, so it probably does not need to be passed in the body
+  unless you get back an error message stating that we were unable to determine a
+  User-Agent from the request.\";s:4:\"type\";s:6:\"string\";}s:9:\"ipAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:271:\"The
+  TCP/IP address of the client making the request. The server will attempt to grab
+  this from the headers, so it probably does not need to be passed in the body unless
+  you get back an error message stating that we were unable to determine an IP address
+  from the request.\";s:4:\"type\";s:6:\"string\";}s:10:\"listenerId\";O:8:\"stdClass\":2:{s:11:\"description\";s:156:\"A
+  client-designated unique identifier for the logged-in user, only used if neither
+  an NPR.org public user ID nor an `X-Advertising-ID` header are available.\";s:4:\"type\";s:6:\"string\";}}}s:18:\"AdTrackingDocument\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"All
+  the information needed for the Sponsorship Service to send back tracking information
+  to our external sponsorship provider\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"All
+  the information needed for the Sponsorship Service to send back tracking information
+  to our external sponsorship provider\";s:4:\"$ref\";s:28:\"#/definitions/AdTrackingData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Not
+  used\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:4:\"null\";}}}}}}s:8:\"DAASTXml\";O:8:\"stdClass\":5:{s:11:\"description\";s:145:\"Please
+  visit <a href='http://www.iab.net/DAAST' target='_blank'>http://www.iab.net/DAAST</a>
+  for more information on the DAAST XML specification.\";s:8:\"required\";a:1:{i:0;s:7:\"version\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"1.0\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:2:\"Ad\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/AdXml\";}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"DAAST\";}}s:5:\"AdXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:6:\"InLine\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/InLineXml\";}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":2:{s:4:\"name\";s:2:\"Ad\";s:9:\"namespace\";s:41:\"http://www.w3.org/2001/XMLSchema-instance\";}}s:9:\"InLineXml\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"AdSystem\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"AdTitle\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"Description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"Category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"Impression\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ImpressionXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:0;}}s:9:\"Creatives\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CreativeXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}s:10:\"Extensions\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}}s:4:\"type\";s:6:\"object\";}s:13:\"ImpressionXml\";O:8:\"stdClass\":4:{s:8:\"required\";a:1:{i:0;s:2:\"id\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}}s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:10:\"Impression\";}}s:11:\"CreativeXml\";O:8:\"stdClass\":4:{s:8:\"required\";a:1:{i:0;s:8:\"sequence\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:8:\"sequence\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:1;s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:6:\"Linear\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/LinearXml\";}s:12:\"CompanionAds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CompanionXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Creative\";}}s:9:\"LinearXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"Duration\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"TrackingEvents\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/TrackingXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}s:10:\"MediaFiles\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/MediaFileXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:6:\"Linear\";}}s:11:\"TrackingXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"event\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:5:\"start\";s:4:\"enum\";a:6:{i:0;s:5:\"start\";i:1;s:13:\"firstQuartile\";i:2;s:8:\"midpoint\";i:3;s:13:\"thirdQuartile\";i:4;s:8:\"complete\";i:5;s:12:\"creativeView\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}}s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Tracking\";}}s:12:\"MediaFileXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"bitrate\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:320000;s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:8:\"delivery\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:11:\"progressive\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}}s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:9:\"MediaFile\";}}s:12:\"CompanionXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"height\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:5:\"width\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:14:\"StaticResource\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/StaticResourceXml\";}s:14:\"TrackingEvents\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/TrackingXml\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:1;}}s:21:\"CompanionClickThrough\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:9:\"Companion\";}}s:17:\"StaticResourceXml\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"creativeType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:10:\"image/jpeg\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}}s:4:\"type\";s:6:\"string\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:14:\"StaticResource\";}}s:16:\"ErrorXmlDocument\";O:8:\"stdClass\":5:{s:11:\"description\";s:54:\"One
+  or more errors represented in a DAAST XML document\";s:8:\"required\";a:2:{i:0;s:7:\"version\";i:1;s:5:\"error\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"version\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:3:\"1.0\";s:3:\"xml\";O:8:\"stdClass\":1:{s:9:\"attribute\";b:1;}}s:5:\"error\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"An
+  individual error, presented in XML format\";s:4:\"type\";s:6:\"string\";}s:3:\"xml\";O:8:\"stdClass\":1:{s:7:\"wrapped\";b:0;}}}s:4:\"type\";s:6:\"object\";s:3:\"xml\";O:8:\"stdClass\":1:{s:4:\"name\";s:5:\"DAAST\";}}s:14:\"UserAdDocument\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"All
+  information relevant to a user who has requested sponsorship or submitted tracking
+  information\";s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CollectionDocument\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"attributes\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"All
+  information relevant to a user who has requested sponsorship or submitted tracking
+  information\";s:4:\"$ref\";s:24:\"#/definitions/UserAdData\";}s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"All
+  the information needed for the Sponsorship Service to send back tracking information
+  to our external sponsorship provider\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/AdTrackingDocument\";}}}}}}}"
+...

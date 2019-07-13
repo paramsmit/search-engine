@@ -1,0 +1,622 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:18:\"PayPal
+  InvoicesAPI\";s:3:\"url\";s:57:\"https://developer.paypal.com/docs/api/invoicing/#invoices\";}s:11:\"description\";s:133:\"Use
+  the Invoicing API to create, send, and manage invoices. You can also use the Invoicing
+  API or webhooks to track invoice payments.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:32:\"Creative
+  Commons Attribution 3.0\";s:3:\"url\";s:43:\"http://creativecommons.org/licenses/by/3.0/\";}s:14:\"termsOfService\";s:56:\"https://www.paypal.com/us/webapps/mpp/ua/xdeveloper-full\";s:5:\"title\";s:18:\"PayPal
+  InvoicesAPI\";s:7:\"version\";s:2:\"v1\";}"
+host: api.sandbox.paypal.com
+basePath: /v1/invoicing
+paths:
+  /search:
+    post:
+      description: Lists invoices that match search criteria. If you pass multiple
+        criteria, the response lists invoices that  match all criteria. A successful
+        request returns the HTTP 200 OK status code and a JSON response body that  lists
+        the invoices that match the search criteria.
+      operationId: searchInvoices
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: search
+        in: body
+        description: Object containing desired search criteria.
+        required: true
+        schema:
+          $ref: '#/definitions/Search'
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceList'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices:
+    post:
+      description: Creates a draft invoice. To move the invoice from a draft to payable
+        state, you must send the invoice.  In the JSON request body, include invoice
+        details including merchant information. The invoice object must  include an
+        items array.
+      operationId: createDraftInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoiceObject
+        in: body
+        description: Object containing invoice information
+        required: true
+        schema:
+          $ref: '#/definitions/Invoice'
+      responses:
+        201:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceDetails'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+    get:
+      description: Lists merchant invoices. To filter the invoices that appear in
+        the response, you can specify one or more  optional query parameters. A successful
+        request returns the HTTP 200 OK status code and a JSON response body  that
+        lists invoices with details.
+      operationId: listInvoices
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: page
+        in: query
+        description: The zero-relative start index of the entire list of merchant
+          invoices that are returned in the response.  So, the combination of page=0
+          and page_size=20 returns the first 20 invoices.The combination of page=20
+          and  page_size=20 returns the next 20 invoices.
+        type: integer
+        format: int64
+      - name: page_size
+        in: query
+        description: The number of invoices to return in the response.
+        type: integer
+        format: int64
+      - name: total_count_required
+        in: query
+        description: Indicates whether the to show the total count in the response.
+        type: boolean
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceList'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}:
+    get:
+      description: Shows details for an invoice, by ID. A successful request returns
+        the HTTP 200 OK status code and a JSON  response body that shows invoice details.
+      operationId: detailInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceDetails'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+    put:
+      description: Fully updates an invoice, by ID. In the JSON request body, include
+        a complete invoice object. This call does  not support partial updates. A
+        successful request returns the HTTP 200 OK status code and a JSON response  body
+        that shows invoice details.
+      operationId: updateInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: invoiceObject
+        in: body
+        description: Object containing invoice information
+        required: true
+        schema:
+          $ref: '#/definitions/Invoice'
+      - name: notify_merchant
+        in: query
+        description: Indicates whether to send the invoice update notification to
+          the merchant.
+        type: boolean
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceDetails'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+    delete:
+      description: Deletes draft invoices. You can cancel invoices that you have already
+        sent. After you delete a draft invoice,  you can no longer use it or show
+        its details. However, you can reuse its invoice number. A successful request  returns
+        the HTTP 204 No Content status code with no JSON response body.
+      operationId: deleteDraftInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      responses:
+        204:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/send:
+    post:
+      description: Sends an invoice, by ID, to a customer. To suppress the merchant's
+        email notification, set the notify_merchant  query parameter to false. A successful
+        request returns the HTTP 202 Accepted status code with no JSON response  body.
+      operationId: sendInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: notify_merchant
+        in: query
+        description: Indicates whether to send the invoice update notification to
+          the merchant.
+        type: boolean
+      responses:
+        202:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/remind:
+    post:
+      description: Sends a reminder to the payer about an invoice, by ID. In the JSON
+        request body, include a notification object  that defines the subject of the
+        reminder and other details.  A successful request returns the HTTP 202 Accepted  status
+        code with no JSON response body.
+      operationId: sendInvoiceReminder
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: notification
+        in: body
+        description: Object containing notification information
+        required: true
+        schema:
+          $ref: '#/definitions/Notification'
+      responses:
+        202:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/cancel:
+    post:
+      description: 'Cancels a sent invoice, by ID, and, optionally, sends a notification
+        about the cancellation to the payer,  merchant, and CC: emails. A successful
+        request returns the HTTP 204 No Content status code with no JSON response  body.'
+      operationId: cancelInvoice
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: cancel_notification
+        in: body
+        description: Object containing cancel_notification information
+        required: true
+        schema:
+          $ref: '#/definitions/CancelNotification'
+      responses:
+        204:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/record-payment:
+    post:
+      description: Marks the status of an invoice, by ID, as paid. A successful request
+        returns the HTTP 200 OK status code  with no JSON response body.
+      operationId: markAsPaid
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: payment_detail
+        in: body
+        description: Object containing payment information
+        required: true
+        schema:
+          $ref: '#/definitions/PaymentDetail'
+      responses:
+        200:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/record-refund:
+    post:
+      description: Marks the status of an invoice, by ID, as refunded. A successful
+        request returns the HTTP 200 OK status code  with no JSON response body.
+      operationId: markAsRefunded
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: refund_detail
+        in: body
+        description: Object containing refund information
+        required: true
+        schema:
+          $ref: '#/definitions/RefundDetail'
+      responses:
+        200:
+          description: Client request successful
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/{invoice_id}/qr-code:
+    get:
+      description: Generates a QR code for an invoice, by ID. The QR code is a PNG
+        image in Base64-encoded format that corresponds  to the invoice ID. You can
+        generate a QR code for an invoice and add it to a paper or PDF invoice. When  customers
+        use their mobile devices to scan the QR code, they are redirected to the PayPal
+        mobile payment flow  where they can view the invoice and pay online with PayPal
+        or a credit card. Before you generate a QR code, you must (1) Create an invoice.
+        (2) Send an invoice to move it to the 'payable' state.
+      operationId: generateQR
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: invoice_id
+        in: path
+        description: ID of the invoice.
+        required: true
+        type: string
+      - name: width
+        in: query
+        description: The width, in pixels, of the QR code image. Value is from 150
+          to 500.
+        type: integer
+        format: int64
+      - name: height
+        in: query
+        description: The height, in pixels, of the QR code image. Value is from 150
+          to 500.
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/QR'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+  /invoices/next-invoice-number:
+    post:
+      description: Generates the next invoice number that is available to the merchant.
+        The next invoice number uses the prefix  and suffix from the last invoice
+        number and increments the number by one. For example, the next invoice number  after
+        INVOICE-1234 is INVOICE-1235. A successful request returns the HTTP 200 OK
+        status code and a JSON response  body that shows the next invoice number.
+      operationId: nextInvoiceNumber
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      responses:
+        200:
+          description: Client request successful
+          schema:
+            $ref: '#/definitions/InvoiceNumber'
+      security:
+      - Oauth2c:
+        - https://uri.paypal.com/services/invoicing
+      tags:
+      - invoices
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":27:{s:13:\"InvoiceNumber\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:128:\"The
+  invoice number. If you omitted this value from the request, the default is the auto-incremented
+  number from the last number.\";}}s:4:\"type\";s:6:\"object\";}s:2:\"QR\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"QR
+  code as a PNG image in base-64-encoded format\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Search\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":20:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  initial letters of the email address.\";}s:20:\"recipient_first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  initial letters of the recipient's first name.\";}s:19:\"recipient_last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"The
+  initial letters of the recipient's last name.\";}s:23:\"recipient_business_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  initial letters of the recipient's business name.\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Any
+  part of the invoice number.\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:109:\"The
+  invoice status. To search by status, specify this value as an array. For example,
+  \"status\": [\"REFUNDED\"].\";}s:18:\"lower_total_amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  lower limit of the total amount.\";}s:18:\"upper_total_amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"The
+  upper limit of total amount.\";}s:18:\"start_invoice_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:92:\"The
+  start date for the invoice, in Internet date and time format. For example, yyyy-MM-dd
+  z.\";}s:16:\"end_invoice_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:90:\"The
+  end date for the invoice, in Internet date and time format. For example, yyyy-MM-dd
+  z.\";}s:14:\"start_due_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:96:\"The
+  start due date for the invoice, in Internet date and time format. For example, yyyy-MM-dd
+  z.\";}s:12:\"end_due_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"The
+  end due date for the invoice, in Internet date and time format. For example, yyyy-MM-dd
+  z.\";}s:18:\"start_payment_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:100:\"The
+  start payment date for the invoice, in Internet date and time format. For example,
+  yyyy-MM-dd z.\";}s:16:\"end_payment_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:98:\"The
+  end payment date for the invoice, in Internet date and time format. For example,
+  yyyy-MM-dd z.\";}s:19:\"start_creation_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:101:\"The
+  start creation date for the invoice, in Internet date and time format. For example,
+  yyyy-MM-dd z.\";}s:17:\"end_creation_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:99:\"The
+  end creation date for the invoice, in Internet date and time format. For example,
+  yyyy-MM-dd z.\";}s:4:\"page\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:246:\"The
+  zero-relative start index of the entire list of merchant invoices to return in the
+  response. So, a  combination of page=0 and page_size=20 returns the first 20 invoices.
+  A combination of page=20 and  page_size=20 returns the next 20 invoices.\";}s:9:\"page_size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:37:\"The
+  page size for the search results.\";}s:20:\"total_count_required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:53:\"Indicates
+  whether the response shows the total count.\";}s:8:\"archived\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:217:\"Indicates
+  whether to list merchant-archived invoices in the response. If true, response lists
+  only  merchant-archived invoices. If false, response lists only unarchived invoices.
+  If null, response lists all  invoices.\";}}s:4:\"type\";s:6:\"object\";}s:11:\"InvoiceList\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"total_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:60:\"The
+  total number of invoices that match the search criteria.\";}s:8:\"invoices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:20:\"The
+  invoice details.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Invoice\";}}s:5:\"links\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"HATEOAS
+  links related to this call.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:4:\"type\";s:6:\"object\";}s:18:\"CancelNotification\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"subject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"The
+  subject of the notification. If left blank we include a generic subject.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"A
+  note to the payer\";}s:16:\"send_to_merchant\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:59:\"Indicates
+  whether to send the notification to the merchant.\";}s:13:\"send_to_payer\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:56:\"Indicates
+  whether to send the notification to the payer.\";}s:9:\"cc_emails\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:268:\"An
+  array of one or more CC: emails. If you omit this parameter from the JSON request
+  body, a notification  is sent to all CC: email addresses that are part of the invoice.
+  Otherwise, specify this parameter to limit  the email addresses to which a notification
+  is sent.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:6:\"object\";}s:12:\"Notification\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"subject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  subject of the notification. Default is a generic subject.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"A
+  note to the payer.\";}s:16:\"send_to_merchant\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:62:\"Indicates
+  whether to send a copy of the email to the merchant.\";}s:9:\"cc_emails\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:176:\"An
+  array of one or more CC: emails to which notifications are sent. If you omit this
+  parameter, a notification  is sent to all CC: email addresses that are part of the
+  invoice.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:6:\"object\";}s:4:\"Link\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"href\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"The
+  URL of the related HATEOAS link that you can use for subsequent calls.\";}s:3:\"rel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:280:\"The
+  link relationship. Describes how this link relates to the previous call. For example,
+  use a self link to  show details for the current call. Use a parent_payment link
+  to show details for the parent payment. The rel  value can also be a related call,
+  such as execute or refund.\";}s:6:\"method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  HTTP method required to make the related call.\";}}s:4:\"type\";s:6:\"object\";}s:14:\"FileAttachment\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  name of the attached file.\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"The
+  URL of the attached file. Use this URL to download the file.\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Metadata\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":9:{s:12:\"created_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"The
+  date and time when the resource was created, in Internet date and time format.\";}s:10:\"created_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:59:\"The
+  email address of the account that created the resource.\";}s:14:\"cancelled_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"The
+  date and time when the resource was canceled, in Internet date and time format.\";}s:12:\"cancelled_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  actor who canceled the resource.\";}s:17:\"last_updated_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:86:\"The
+  date and time when the resource was last edited, in Internet date and time format.\";}s:15:\"first_sent_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"The
+  date and time when the resource was first sent, in Internet date and time format.\";}s:14:\"last_sent_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:84:\"The
+  date and time when the resource was last sent, in Internet date and time format.\";}s:12:\"last_sent_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"The
+  email address of the account that last sent the resource.\";}s:14:\"payer_view_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  URL for the payer's view of the invoice.\";}}s:4:\"type\";s:6:\"object\";}s:14:\"PaymentSummary\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"paypal\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:5:\"other\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:12:\"RefundDetail\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:239:\"The
+  PayPal refund type. Indicates whether the refund was paid through PayPal or externally
+  in the invoicing  flow. The record refund method supports the EXTERNAL refund type.
+  The PAYPAL refund type is supported for  backward compatibility.\";}s:14:\"transaction_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"The
+  ID of the PayPal refund transaction. Required for the PAYPAL refund type\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:102:\"The
+  date when the invoice was refunded, in Internet date and time format. For example,
+  2014-02-27 PST.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"A
+  note associated with the refund.\";}s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:13:\"PaymentDetail\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:163:\"The
+  payment type in an invoicing flow. The record refund method supports the EXTERNAL
+  refund type. The PAYPAL  refund type is supported for backward compatibility.\";}s:14:\"transaction_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:78:\"The
+  ID for a PayPal payment transaction. Required for the PAYPAL payment type.\";}s:16:\"transaction_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"The
+  transaction type.\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:96:\"The
+  date when the invoice was paid, in Internet date and time format. For example, yyyy-MM-dd
+  z.\";}s:6:\"method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"The
+  payment mode or method.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Note
+  associated with the payment\";}s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:14:\"InvoiceDetails\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":32:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"ID
+  of the invoice.\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"The
+  invoice number. If you omit this value, the default is the auto-incremented number
+  from the last number.\";}s:3:\"uri\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"URI
+  of the invoice.\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:118:\"The
+  invoice status. When you search for invoices, specify this value as an array. For
+  example, \"status\": [\"REFUNDED\"].\";}s:13:\"merchant_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/MerchantInfo\";}s:12:\"billing_info\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:50:\"The
+  billing information for the invoice recipient.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BillingInfo\";}}s:13:\"shipping_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShippingInfo\";}s:7:\"cc_info\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:28:\"The
+  participant information.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Participant\";}}s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:34:\"The
+  invoice line item information.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/InvoiceItem\";}}s:12:\"invoice_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:106:\"The
+  invoice date as specificed by the sender, in Internet date and time format. For
+  example, yyyy-MM-dd z.\";}s:12:\"payment_term\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PaymentTerm\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  reference data, such as PO number.\";}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}s:13:\"shipping_cost\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShippingCost\";}s:6:\"custom\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Custom\";}s:21:\"allow_partial_payment\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:142:\"Indicates
+  whether the invoice allows a partial payment. If false, invoice must be paid in
+  full. If true,  the invoice allows partial payments.\";}s:18:\"minimum_amount_due\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:29:\"tax_calculated_after_discount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:168:\"Indicates
+  whether the tax is calculated before or after a discount. If false, the tax is calculated
+  before  a discount. If true, the tax is calculated after a discount.\";}s:5:\"terms\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  general terms of the invoice.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"A
+  note to the invoice recipient. The note also appears on the invoice notification
+  email.\";}s:13:\"merchant_memo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"A
+  private bookkeeping memo for the merchant.\";}s:8:\"logo_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"The
+  full URL to an external logo image. The logo must not be larger than 250 pixels
+  wide by 90 pixels high.  The logo must be stored on a secure server.\";}s:12:\"total_amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:8:\"payments\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:20:\"The
+  payment details.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PaymentDetail\";}}s:7:\"refunds\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"The
+  invoicing refund details.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/RefundDetail\";}}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}s:11:\"paid_amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PaymentSummary\";}s:15:\"refunded_amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PaymentSummary\";}s:11:\"attachments\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"The
+  file that is attached to an invoice or template.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FileAttachment\";}}s:9:\"allow_tip\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:237:\"Indicates
+  whether the invoice enables the customer to enter a tip amount during payment. If
+  true, the invoice  shows a tip amount field so that the customer can enter a tip
+  amount. If false, the invoice does not show a  tip amount field.\";}s:11:\"template_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:114:\"The
+  template ID. This value is used to determine the layout of the invoice, such as
+  which fields to show and hide.\";}s:5:\"links\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:35:\"HATEOAS
+  links related to this call.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}}s:4:\"type\";s:6:\"object\";}s:6:\"Custom\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"The
+  custom amount label.\";}s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:12:\"ShippingCost\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:3:\"tax\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tax\";}}s:4:\"type\";s:6:\"object\";}s:11:\"PaymentTerm\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"term_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  term when the invoice payment is due.\";}s:8:\"due_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:102:\"The
+  date when the invoice payment is due, in Internet date and time format. For example,
+  yyyy-MM-dd z.\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Discount\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"percent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:95:\"The
+  discount as a percentage value. Value is from 0 to 100. Supports up to five decimal
+  places.\";}s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:3:\"Tax\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"The
+  tax name.\";}s:7:\"percent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:73:\"The
+  tax rate. Value is from 0 to 100. Supports up to five decimal places.\";}s:6:\"amount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Amount\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"The
+  three-letter ISO 4217 alphabetic currency code.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:260:\"The
+  currency value. Might be an integer for currencies like JPY that are not typically
+  fractional or a decimal  fraction for currencies like TND that are subdivided into
+  thousandths. For the required number of decimal  places for a currency code, see
+  ISO 4217.\";}}s:4:\"type\";s:6:\"object\";}s:11:\"InvoiceItem\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Item
+  name\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Item
+  description\";}s:8:\"quantity\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:85:\"The
+  item quantity. Value is from -10000 to 10000. Supports up to five decimal places.\";}s:10:\"unit_price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:3:\"tax\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tax\";}s:4:\"date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"The
+  date when the item or service was provided, in Internet date and time format. For
+  example, yyyy-MM-dd z.\";}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}s:15:\"unit_of_measure\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:111:\"The
+  unit of measure for the invoiced item. For AMOUNT the unit_price and quantity are
+  not shown on the invoice.\";}}s:4:\"type\";s:6:\"object\";}s:11:\"Participant\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"The
+  email address of the person who receives a copy of the invoice.\";}}s:4:\"type\";s:6:\"object\";}s:12:\"ShippingInfo\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:56:\"The
+  first name of the recipient at the shipping address.\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:55:\"The
+  last name of the recipient at the shipping address.\";}s:13:\"business_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:59:\"The
+  business name of the recipient at the shipping address.\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}}s:4:\"type\";s:6:\"object\";}s:11:\"BillingInfo\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:122:\"The
+  invoice recipient email address. If you omit this value, the invoice is payable
+  and a  notification email is not sent.\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PhoneFaxNumber\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  invoice recipient's first name.\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"The
+  invoice recipient's last name.\";}s:13:\"business_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  invoice recipient's business name.\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:266:\"The
+  language in which the invoice recipient's email appears. Used only when the recipient
+  does not have a  PayPal account. If you omit the language and the recipient does
+  not have a PayPal account, the email is sent  in the language of the merchant's
+  PayPal account.\";}s:15:\"additional_info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:47:\"Any
+  additional information about the recipient.\";}}s:4:\"type\";s:6:\"object\";}s:14:\"PhoneFaxNumber\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:62:\"The
+  country code portion of the phone number, in E.164 format.\";}s:15:\"national_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  in-country phone number, in E.164 format.\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Address\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:5:\"line1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"line2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"country_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"The
+  two-character ISO 3166-1 code that identifies the country or region.\";}s:11:\"postal_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:114:\"A
+  phone number. Must be represented in its canonical international format, as defined
+  by the E.164 numbering plan.\";}}s:4:\"type\";s:6:\"object\";}s:12:\"MerchantInfo\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":10:{s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:207:\"The
+  merchant email address. This email must be listed in the merchant's PayPal profile.
+  If you omit this  value, notifications are sent from and to the primary email address
+  but do not appear on the invoice.\";}s:13:\"business_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  merchant's business name.\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"The
+  merchant's first name.\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"The
+  merchant's last name.\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PhoneFaxNumber\";}s:3:\"fax\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PhoneFaxNumber\";}s:7:\"website\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"The
+  merchant's website.\";}s:6:\"tax_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  merchant's tax ID.\";}s:15:\"additional_info\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:51:\"Any
+  additional information, such as business hours.\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Invoice\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":23:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"The
+  ID of the invoice.\";}s:6:\"number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:108:\"The
+  invoice number. If you omit this value, the default is the auto-incremented number
+  from the last number.\";}s:13:\"merchant_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/MerchantInfo\";}s:12:\"billing_info\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:50:\"The
+  billing information for the invoice recipient.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/BillingInfo\";}}s:13:\"shipping_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShippingInfo\";}s:7:\"cc_info\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:28:\"The
+  participant information.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Participant\";}}s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:34:\"The
+  invoice line item information.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/InvoiceItem\";}}s:12:\"invoice_date\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:106:\"The
+  invoice date as specificed by the sender, in Internet date and time format. For
+  example, yyyy-MM-dd z.\";}s:12:\"payment_term\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PaymentTerm\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  reference data, such as PO number.\";}s:8:\"discount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Discount\";}s:13:\"shipping_cost\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ShippingCost\";}s:6:\"custom\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Custom\";}s:21:\"allow_partial_payment\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:142:\"Indicates
+  whether the invoice allows a partial payment. If false, invoice must be paid in
+  full. If true,  the invoice allows partial payments.\";}s:18:\"minimum_amount_due\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Amount\";}s:29:\"tax_calculated_after_discount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:168:\"Indicates
+  whether the tax is calculated before or after a discount. If false, the tax is calculated
+  before  a discount. If true, the tax is calculated after a discount.\";}s:13:\"tax_inclusive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:46:\"Indicates
+  whether the unit price includes tax.\";}s:5:\"terms\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"The
+  general terms of the invoice.\";}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"A
+  note to the invoice recipient. The note also appears on the invoice notification
+  email.\";}s:13:\"merchant_memo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"A
+  private bookkeeping memo for the merchant.\";}s:8:\"logo_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:152:\"The
+  full URL to an external logo image. The logo must not be larger than 250 pixels
+  wide by 90 pixels high.  The logo must be stored on a secure server.\";}s:9:\"allow_tip\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:237:\"Indicates
+  whether the invoice enables the customer to enter a tip amount during payment. If
+  true, the  invoice shows a tip amount field so that the customer can enter a tip
+  amount. If false, the invoice does  not show a tip amount field.\";}s:11:\"template_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:114:\"The
+  template ID. This value is used to determine the layout of the invoice, such as
+  which fields to show and hide.\";}}s:4:\"type\";s:6:\"object\";}}"
+...

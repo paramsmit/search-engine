@@ -1,0 +1,131 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:23:\"Anomaly
+  Detector Client\";s:11:\"description\";s:372:\"The Anomaly Detector API detects
+  anomalies automatically in time series data. It supports two functionalities, one
+  is for detecting the whole series with model trained by the timeseries, another
+  is detecting last point with model trained by points before. By using this service,
+  business customers can discover incidents and establish a logic flow for root cause
+  analysis.\";}"
+paths:
+  /timeseries/entire/detect:
+    post:
+      summary: Detect anomalies for the entire series in batch.
+      description: This operation generates a model using an entire series, each point
+        is detected with the same model. With this method, points before and after
+        a certain point are used to determine whether it is an anomaly. The entire
+        detection can give user an overall status of the time series.
+      operationId: EntireDetect
+      parameters:
+      - name: body
+        in: body
+        description: Time series points and period if needed. Advanced model parameters
+          can also be set in the request.
+        required: true
+        schema:
+          $ref: '#/definitions/Request'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/EntireDetectResponse'
+        default:
+          description: Error response.
+          schema:
+            $ref: '#/definitions/APIError'
+      x-ms-examples:
+        Find anomalies for the entire series in batch example:
+          $ref: ./examples/EntireDetect.json
+  /timeseries/last/detect:
+    post:
+      summary: Detect anomaly status of the latest point in time series.
+      description: This operation generates a model using points before the latest
+        one. With this method, only historical points are used to determine whether
+        the target point is an anomaly. The latest point detecting operation matches
+        the scenario of real-time monitoring of business metrics.
+      operationId: LastDetect
+      parameters:
+      - name: body
+        in: body
+        description: Time series points and period if needed. Advanced model parameters
+          can also be set in the request.
+        required: true
+        schema:
+          $ref: '#/definitions/Request'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/LastDetectResponse'
+        default:
+          description: Error response.
+          schema:
+            $ref: '#/definitions/APIError'
+      x-ms-examples:
+        Detect anomaly status of the latest point in time series example:
+          $ref: ./examples/LastDetect.json
+definitions: !php/object "O:8:\"stdClass\":5:{s:8:\"APIError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:38:\"Error
+  information returned by the API.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"The
+  error code.\";s:4:\"enum\";a:6:{i:0;s:21:\"InvalidCustomInterval\";i:1;s:11:\"BadArgument\";i:2;s:18:\"InvalidGranularity\";i:3;s:13:\"InvalidPeriod\";i:4;s:20:\"InvalidModelArgument\";i:5;s:13:\"InvalidSeries\";}s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:25:\"AnomalyDetectorErrorCodes\";s:13:\"modelAsString\";b:1;}}s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"A
+  message explaining the error reported by the service.\";s:4:\"type\";s:6:\"string\";}}}s:7:\"Request\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"granularity\";i:1;s:6:\"series\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"series\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:261:\"Time
+  series data points. Points should be sorted by timestamp in ascending order to match
+  the anomaly detection result. If the data is not sorted correctly or there is duplicated
+  timestamp, the API will not work. In such case, an error message will be returned.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Point\";}}s:11:\"granularity\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:132:\"Can
+  only be one of yearly, monthly, weekly, daily, hourly or minutely. Granularity is
+  used for verify whether input series is valid.\";s:9:\"x-ms-enum\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"Granularity\";s:13:\"modelAsString\";b:0;}s:4:\"enum\";a:6:{i:0;s:6:\"yearly\";i:1;s:7:\"monthly\";i:2;s:6:\"weekly\";i:3;s:5:\"daily\";i:4;s:6:\"hourly\";i:5;s:8:\"minutely\";}}s:14:\"customInterval\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:169:\"Custom
+  Interval is used to set non-standard time interval, for example, if the series is
+  5 minutes, request can be set as {\"granularity\":\"minutely\", \"customInterval\":5}.\";}s:6:\"period\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:142:\"Optional
+  argument, periodic value of a time series. If the value is null or does not present,
+  the API will determine the period automatically.\";}s:15:\"maxAnomalyRatio\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:80:\"Optional
+  argument, advanced model parameter, max anomaly ratio in a time series.\";}s:11:\"sensitivity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:163:\"Optional
+  argument, advanced model parameter, between 0-99, the lower the value is, the larger
+  the margin value will be which means less anomalies will be accepted.\";}}}s:5:\"Point\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"timestamp\";i:1;s:5:\"value\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:43:\"Timestamp
+  of a data point (ISO8601 format).\";}s:5:\"value\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:47:\"The
+  measurement of that point, should be float.\";}}}s:20:\"EntireDetectResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:7:{i:0;s:14:\"expectedValues\";i:1;s:9:\"isAnomaly\";i:2;s:17:\"isNegativeAnomaly\";i:3;s:17:\"isPositiveAnomaly\";i:4;s:12:\"lowerMargins\";i:5;s:6:\"period\";i:6;s:12:\"upperMargins\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"period\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:84:\"Frequency
+  extracted from the series, zero means no recurrent pattern has been found.\";}s:14:\"expectedValues\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:119:\"ExpectedValues
+  contain expected value for each input point. The index of the array is consistent
+  with the input series.\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:10:\"x-nullable\";b:0;}}s:12:\"upperMargins\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:392:\"UpperMargins
+  contain upper margin of each input point. UpperMargin is used to calculate upperBoundary,
+  which equals to expectedValue + (100 - marginScale)*upperMargin. Anomalies in response
+  can be filtered by upperBoundary and lowerBoundary. By adjusting marginScale value,
+  less significant anomalies can be filtered in client side. The index of the array
+  is consistent with the input series.\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:10:\"x-nullable\";b:0;}}s:12:\"lowerMargins\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:300:\"LowerMargins
+  contain lower margin of each input point. LowerMargin is used to calculate lowerBoundary,
+  which equals to expectedValue - (100 - marginScale)*lowerMargin. Points between
+  the boundary can be marked as normal ones in client side. The index of the array
+  is consistent with the input series.\";s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:10:\"x-nullable\";b:0;}}s:9:\"isAnomaly\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:188:\"IsAnomaly
+  contains anomaly properties for each input point. True means an anomaly either negative
+  or positive has been detected. The index of the array is consistent with the input
+  series.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:10:\"x-nullable\";b:0;}}s:17:\"isNegativeAnomaly\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:308:\"IsNegativeAnomaly
+  contains anomaly status in negative direction for each input point. True means a
+  negative anomaly has been detected. A negative anomaly means the point is detected
+  as an anomaly and its real value is smaller than the expected one. The index of
+  the array is consistent with the input series.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:10:\"x-nullable\";b:0;}}s:17:\"isPositiveAnomaly\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:306:\"IsPositiveAnomaly
+  contain anomaly status in positive direction for each input point. True means a
+  positive anomaly has been detected. A positive anomaly means the point is detected
+  as an anomaly and its real value is larger than the expected one. The index of the
+  array is consistent with the input series.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:10:\"x-nullable\";b:0;}}}}s:18:\"LastDetectResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:8:{i:0;s:13:\"expectedValue\";i:1;s:9:\"isAnomaly\";i:2;s:17:\"isNegativeAnomaly\";i:3;s:17:\"isPositiveAnomaly\";i:4;s:11:\"lowerMargin\";i:5;s:6:\"period\";i:6;s:11:\"upperMargin\";i:7;s:15:\"suggestedWindow\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"period\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:84:\"Frequency
+  extracted from the series, zero means no recurrent pattern has been found.\";}s:15:\"suggestedWindow\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:68:\"Suggested
+  input series points needed for detecting the latest point.\";}s:13:\"expectedValue\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:35:\"Expected
+  value of the latest point.\";}s:11:\"upperMargin\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:336:\"Upper
+  margin of the latest point. UpperMargin is used to calculate upperBoundary, which
+  equals to expectedValue + (100 - marginScale)*upperMargin. If the value of latest
+  point is between upperBoundary and lowerBoundary, it should be treated as normal
+  value. By adjusting marginScale value, anomaly status of latest point can be changed.\";}s:11:\"lowerMargin\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:147:\"Lower
+  margin of the latest point. LowerMargin is used to calculate lowerBoundary, which
+  equals to expectedValue - (100 - marginScale)*lowerMargin. \";}s:9:\"isAnomaly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:129:\"Anomaly
+  status of the latest point, true means the latest point is an anomaly either in
+  negative direction or positive direction.\";}s:17:\"isNegativeAnomaly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:152:\"Anomaly
+  status in negative direction of the latest point. True means the latest point is
+  an anomaly and its real value is smaller than the expected one.\";}s:17:\"isPositiveAnomaly\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:151:\"Anomaly
+  status in positive direction of the latest point. True means the latest point is
+  an anomaly and its real value is larger than the expected one.\";}}}}"
+...

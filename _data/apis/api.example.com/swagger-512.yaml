@@ -1,0 +1,215 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"REANA Job Controller
+  API\";s:5:\"title\";s:20:\"reana-job-controller\";s:7:\"version\";s:5:\"0.5.1\";}"
+paths:
+  /apispec: []
+  /job_cache:
+    get:
+      description: This resource takes a job specification and the workflow json,
+        and checks if the job to be created, already exists in the cache.
+      operationId: check_if_cached
+      parameters:
+      - description: Required. Specification of the job.
+        in: query
+        name: job_spec
+        required: true
+        type: string
+      - description: Required. Specification of the workflow.
+        in: query
+        name: workflow_json
+        required: true
+        type: string
+      - description: Required. Path to workflow workspace.
+        in: query
+        name: workflow_workspace
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Request succeeded. Returns boolean depicting if job is in cache.
+          examples:
+            application/json:
+              cached: true
+              result_path: /reana/default/0000/xe2123d/archive/asd213
+        400:
+          description: Request failed. The incoming data specification seems malformed.
+        500:
+          description: Request failed. Internal controller error.
+      summary: Returns boolean depicting if job is in cache.
+  /jobs:
+    get:
+      description: This resource is not expecting parameters and it will return a
+        list representing all active jobs in JSON format.
+      operationId: get_jobs
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Request succeeded. The response contains the list of all active
+            jobs.
+          examples:
+            application/json:
+              jobs:
+                1612a779-f3fa-4344-8819-3d12fa9b9d90:
+                  cmd: date
+                  cvmfs_mounts:
+                  - atlas.cern.ch
+                  - atlas-condb.cern.ch
+                  docker_img: busybox
+                  experiment: atlas
+                  job_id: 1612a779-f3fa-4344-8819-3d12fa9b9d90
+                  max_restart_count: 3
+                  restart_count: 0
+                  status: succeeded
+                2e4bbc1d-db5e-4ee0-9701-6e2b1ba55c20:
+                  cmd: date
+                  cvmfs_mounts:
+                  - atlas.cern.ch
+                  - atlas-condb.cern.ch
+                  docker_img: busybox
+                  experiment: atlas
+                  job_id: 2e4bbc1d-db5e-4ee0-9701-6e2b1ba55c20
+                  max_restart_count: 3
+                  restart_count: 0
+                  status: started
+          schema:
+            items:
+              $ref: '#/definitions/Job'
+            type: array
+      summary: Returns list of all active jobs.
+    post:
+      consumes:
+      - application/json
+      description: This resource is expecting JSON data with all the necessary information
+        of a new job.
+      operationId: create_job
+      parameters:
+      - description: Information needed to instantiate a Job
+        in: body
+        name: job
+        required: true
+        schema:
+          $ref: '#/definitions/JobRequest'
+      produces:
+      - application/json
+      responses:
+        201:
+          description: Request succeeded. The job has been launched.
+          examples:
+            application/json:
+              job_id: cdcf48b1-c2f3-4693-8230-b066e088c6ac
+          schema:
+            properties:
+              job_id:
+                type: string
+            type: object
+        400:
+          description: Request failed. The incoming data specification seems malformed.
+        500:
+          description: Request failed. Internal controller error. The job could probably
+            not have been allocated.
+      summary: Creates a new job.
+  /jobs/{job_id}:
+    get:
+      description: This resource is expecting the job's UUID as a path parameter.
+        Its information will be served in JSON format.
+      operationId: get_job
+      parameters:
+      - description: Required. ID of the job.
+        in: path
+        name: job_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Request succeeded. The response contains details about the
+            given job ID.
+          examples:
+            application/json:
+              job:
+                cmd: date
+                cvmfs_mounts:
+                - atlas.cern.ch
+                - atlas-condb.cern.ch
+                docker_img: busybox
+                experiment: atlas
+                job_id: cdcf48b1-c2f3-4693-8230-b066e088c6ac
+                max_restart_count: 3
+                restart_count: 0
+                status: started
+          schema:
+            $ref: '#/definitions/Job'
+        404:
+          description: Request failed. The given job ID does not seem to exist.
+          examples:
+            application/json:
+              message: The job cdcf48b1-c2f3-4693-8230-b066e088444c doesn't exist
+      summary: Returns details about a given job.
+  /jobs/{job_id}/:
+    delete:
+      consumes:
+      - application/json
+      description: This resource expects the `job_id` of the job to be deleted.
+      operationId: delete_job
+      parameters:
+      - description: Required. ID of the job to be deleted.
+        in: path
+        name: job_id
+        required: true
+        type: string
+      - description: Job execution backend.
+        in: query
+        name: backend
+        required: false
+        type: string
+      produces:
+      - application/json
+      responses:
+        204:
+          description: Request accepted. A request to delete the job has been sent
+            to then  computing backend.
+        404:
+          description: Request failed. The given job ID does not seem to exist.
+          examples:
+            application/json:
+              message: The job cdcf48b1-c2f3-4693-8230-b066e088444c doesn't exist
+        502:
+          description: Request failed. Something went wrong while calling the computing
+            backend.
+          examples:
+            application/json:
+              message: 'Connection to computing backend failed: [reason]'
+      summary: Deletes a given job.
+  /jobs/{job_id}/logs:
+    get:
+      description: This resource is expecting the job's UUID as a path parameter.
+        Its information will be served in JSON format.
+      operationId: get_logs
+      parameters:
+      - description: Required. ID of the job.
+        in: path
+        name: job_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Request succeeded. The response contains the logs for the given
+            job.
+          examples:
+            application/json:
+              log: Tue May 16 13:52:00 CEST 2017n
+        404:
+          description: Request failed. The given job ID does not seem to exist.
+          examples:
+            application/json:
+              message: The job cdcf48b1-c2f3-4693-8230-b066e088444c doesn't exist
+      summary: Returns the logs for a given job.
+definitions: !php/object "O:8:\"stdClass\":2:{s:3:\"Job\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":8:{s:3:\"cmd\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"cvmfs_mounts\";O:8:\"stdClass\":2:{s:7:\"default\";s:0:\"\";s:4:\"type\";s:6:\"string\";}s:10:\"docker_img\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"experiment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"job_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"max_restart_count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:13:\"restart_count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:3:\"cmd\";i:1;s:10:\"docker_img\";i:2;s:10:\"experiment\";i:3;s:6:\"job_id\";i:4;s:17:\"max_restart_count\";i:5;s:13:\"restart_count\";i:6;s:6:\"status\";}s:4:\"type\";s:6:\"object\";}s:10:\"JobRequest\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":12:{s:7:\"backend\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"cmd\";O:8:\"stdClass\":2:{s:7:\"default\";s:0:\"\";s:4:\"type\";s:6:\"string\";}s:12:\"cvmfs_mounts\";O:8:\"stdClass\":2:{s:7:\"default\";s:0:\"\";s:4:\"type\";s:6:\"string\";}s:10:\"docker_img\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"env_vars\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:10:\"experiment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"job_id\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"uuid\";s:4:\"type\";s:6:\"string\";}s:8:\"job_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"prettified_cmd\";O:8:\"stdClass\":2:{s:7:\"default\";s:0:\"\";s:4:\"type\";s:6:\"string\";}s:18:\"shared_file_system\";O:8:\"stdClass\":2:{s:7:\"default\";b:1;s:4:\"type\";s:7:\"boolean\";}s:13:\"workflow_uuid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"workflow_workspace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:5:{i:0;s:10:\"docker_img\";i:1;s:10:\"experiment\";i:2;s:8:\"job_name\";i:3;s:13:\"workflow_uuid\";i:4;s:18:\"workflow_workspace\";}s:4:\"type\";s:6:\"object\";}}"
+...
