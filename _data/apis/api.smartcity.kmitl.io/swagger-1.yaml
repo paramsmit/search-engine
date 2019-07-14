@@ -1,0 +1,346 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:0:\"\";s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:13:\"Data
+  Exchange\";}"
+host: api.smartcity.kmitl.io
+basePath: /api/v1
+paths:
+  /users:
+    post:
+      tags:
+      - users
+      summary: Add a new user
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/User_req'
+      consumes:
+      - application/json
+      responses:
+        201:
+          description: Created
+        400:
+          description: Invalid input
+  /users/login:
+    get:
+      tags:
+      - users
+      summary: login
+      consumes:
+      - application/json
+      responses:
+        200:
+          description: OK
+        400:
+          description: Invalid input
+        401:
+          description: Unauthorized
+      security:
+      - basic_auth: []
+      - user_token: []
+  /users/{userName}/token:
+    put:
+      tags:
+      - users
+      summary: Generate access token
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: operation success
+          schema:
+            type: string
+            example: token
+        404:
+          description: Not Found
+      security:
+      - basic_auth: []
+    get:
+      tags:
+      - users
+      summary: Get user's access token
+      parameters:
+      - name: userName
+        in: path
+        type: string
+        required: true
+      responses:
+        200:
+          description: access token
+          schema:
+            type: string
+            example: token
+        404:
+          description: Not Found
+      security:
+      - basic_auth: []
+  /users/{userName}/picture:
+    put:
+      tags:
+      - users
+      summary: update user profile picture
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        type: string
+      - in: formData
+        name: picture
+        type: file
+        description: Profile image in jpg format only.
+      responses:
+        200:
+          description: OK
+        404:
+          description: Not Found
+      security:
+      - basic_auth: []
+      - user_token: []
+  /collections:
+    get:
+      tags:
+      - collections
+      summary: Get all collection Metadata
+      parameters:
+      - name: collectionId
+        in: query
+        required: false
+        type: string
+      - name: collectionName
+        in: query
+        required: false
+        type: string
+      - name: type
+        in: query
+        required: false
+        type: string
+      - name: open
+        in: query
+        required: false
+        type: boolean
+      - name: owner
+        in: query
+        required: false
+        type: string
+      responses:
+        200:
+          description: operation success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Collection'
+    post:
+      tags:
+      - collections
+      summary: Create new collection
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/Collection_req'
+        required: true
+      responses:
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        404:
+          description: Bad Request
+      security:
+      - user_token: []
+  /collections/{collectionId}:
+    get:
+      summary: Get data from collection
+      description: Get data from collection
+      tags:
+      - collections
+      parameters:
+      - in: path
+        name: collectionId
+        type: string
+        required: true
+      responses:
+        200:
+          description: operation success
+          schema:
+            $ref: '#/definitions/Data'
+        400:
+          description: Invalid input
+        401:
+          description: Unauthorizated
+        404:
+          description: Not  Found
+      security:
+      - ticket: []
+    post:
+      summary: Insert data to collection
+      description: Insert data to collection
+      tags:
+      - collections
+      parameters:
+      - in: path
+        name: collectionId
+        type: string
+        required: true
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/Data'
+        required: true
+      responses:
+        200:
+          description: operation success
+        401:
+          description: Unauthorizated
+        404:
+          description: Not  Found
+      security:
+      - ticket: []
+    delete:
+      summary: Delete collection
+      description: Delete collection
+      tags:
+      - collections
+      parameters:
+      - in: path
+        name: collectionId
+        required: true
+        type: string
+      responses:
+        200:
+          description: operation success
+        401:
+          description: Unauthorizated
+        404:
+          description: Not  Found
+      security:
+      - user_token: []
+  /collections/{collectionId}/meta:
+    get:
+      tags:
+      - collections
+      summary: Get collection Metadata by Id
+      parameters:
+      - name: collectionId
+        in: path
+        type: string
+        required: true
+      responses:
+        200:
+          description: operation success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Collection'
+        404:
+          description: Not Found
+  /tickets:
+    post:
+      summary: Generate ticket
+      description: Generate ticket
+      tags:
+      - tickets
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/Ticket_req'
+      responses:
+        200:
+          description: operation success
+          schema:
+            type: string
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      security:
+      - user_token: []
+  /credits/{userId}:
+    get:
+      summary: Get user's credit balance
+      description: Get user's credit balance
+      tags:
+      - credits
+      parameters:
+      - in: path
+        name: userId
+        type: string
+        required: true
+      responses:
+        200:
+          description: operation successful
+          schema:
+            $ref: '#/definitions/Credit'
+        400:
+          description: Bad Request
+        404:
+          description: userId not found
+  /accesscontrol:
+    put:
+      summary: Change a user role
+      description: Change a user role
+      tags:
+      - access control
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/Access_control_req'
+      responses:
+        200:
+          description: operation success
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      security:
+      - user_token: []
+  /accesscontrol/{collectionId}:
+    get:
+      summary: get role for collection
+      tags:
+      - access control
+      parameters:
+      - in: path
+        name: collectionId
+        type: string
+        required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            description: role of user
+        401:
+          description: UNauthorized
+      security:
+      - user_token: []
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":7:{s:8:\"User_req\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"userName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"Collection\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:12:\"collectionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"collectionName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"encryptionLevel\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:196:\"0
+  - the data is not encrypted(High optimization and Indexing), 1 - the data is medium
+  encrypted (Medium optimization and Indexing) , 2 - the data is strong encrypted
+  (No optimization and Indexing)\";s:7:\"default\";i:0;}s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"isOpen\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:14:\"Collection_req\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"collectionName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"endPoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"location
+  of data\";s:7:\"example\";s:15:\"local or remote\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"url
+  for request (remote only)\";}s:7:\"headers\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:33:\"headers
+  for request (remote only)\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"headers_0\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"headers_1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"header_...\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"queryString\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:38:\"query
+  string for request (remote only)\";s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"queryString_1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"queryString_2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"queryString_...\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"encryptionLevel\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:196:\"0
+  - the data is not encrypted(High optimization and Indexing), 1 - the data is medium
+  encrypted (Medium optimization and Indexing) , 2 - the data is strong encrypted
+  (No optimization and Indexing)\";s:7:\"default\";i:0;}s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"isOpen\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:4:\"Data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"field0\";O:8:\"stdClass\":2:{s:11:\"description\";s:5:\"data0\";s:7:\"example\";s:5:\"data0\";}s:6:\"field1\";O:8:\"stdClass\":2:{s:11:\"description\";s:5:\"data1\";s:7:\"example\";s:5:\"data1\";}s:8:\"field...\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"data...\";s:7:\"example\";s:7:\"data...\";}}}s:6:\"Credit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"credits\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:10:\"Ticket_req\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"collectionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"collectionId\";}s:6:\"expire\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:29:\"in
+  days (default is 180 days)\";s:7:\"default\";i:180;}}}s:18:\"Access_control_req\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"userName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"userName\";}s:12:\"collectionId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"collectionId\";}s:4:\"role\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"CONTRIBUTOR
+  or READ\";}}}}"
+...

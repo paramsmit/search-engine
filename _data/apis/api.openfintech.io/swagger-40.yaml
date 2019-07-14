@@ -1,0 +1,892 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:13:\"openfintechio\";}s:11:\"description\";s:6087:\"#
+  Introduction\n[OpenFinTech.io](https://openfintech.io) is an open database that
+  comprises of standardized primary data for FinTech industry.<br>\nIt contains such
+  information as geolocation data (countries, cities, regions), organizations, currencies
+  (national, digital, virtual, crypto), banks, digital exchangers, payment providers
+  (PSP), payment methods, etc.<br>\nIt is created for communication of cross-integrated
+  micro-services on \"one language\". This is achieved through standardization of
+  entity identifiers that are used to exchange information among different services.<br>\n\n###
+  UML\nUML Domain Model diagram you can find [here](https://api.openfintech.io/public_domain_model.png).<br>\n\n###
+  Persistence\nEntities are updated not more than 1 time per day.<br>\n\n### Terms
+  and Conditions\nThis *OpenFinTech.io* is made available under the [Open Database
+  License](http://opendatacommons.org/licenses/odbl/1.0/).<br>\nAny rights in individual
+  contents of the database are licensed under the [Database Contents License](http://opendatacommons.org/licenses/dbcl/1.0/).<br>\n\n###
+  Contacts\nFor any questions, please email - info@openfintech.io<br>\nOr you can
+  contact us at <a href=\"https://gitter.im/paymaxicom/openfintech.io\">Gitter</a><br>\n\nPowered
+  by [Paymaxi](https://www.paymaxi.com)\n\n# Get Started\n\nIf you use [POSTMAN](https://www.getpostman.com)
+  or similar program which can operate with swagger`s files - just [download](https://docs.openfintech.io)
+  our spec and [import it](https://www.getpostman.com/docs/importing_swagger). Also
+  you can try live [API demo](https://api.openfintech.io).\n\n## Overview\n\nThe OpenFinTech
+  API is organized around [REST](https://en.wikipedia.org/wiki/Representational_state_transfer).
+  Our API has predictable, resource-oriented URLs, and uses HTTP response codes to
+  indicate API errors.<br>\nAPI is based on [JSON API](http://jsonapi.org) standard.
+  JSON is returned by all API responses, including errors, although our API libraries
+  convert responses to appropriate language-specific objects.<br>\nJSON API requires
+  use of the JSON API media type (`application/vnd.api+json`) for exchanging data.<br>\n###
+  Additional Request Headers\n#### ACCEPT HEADER\nYour requests should always include
+  the header:\n```curl\nAccept: application/vnd.api+json\n```\n\n## Authentication\n\nTo
+  use OpenFinTech API no needed authorization.\n\n## Versioning\n\nWhen we make changes
+  to the API, we release new, dated versions. The current version is **2017-08-24**.
+  Read our [API upgrades guide]() to see our API changelog and to learn more about
+  backwards compatibility.\n\n## Pagination\n\nOpenFinTech APIs to retrieve lists
+  of banks, currencies and other resources - paginated to **100** items by default.
+  The pagination information will be included in the list API response under the node
+  name `meta` - contains information about listed objects [`total` - contains information
+  about total count of listed objects, `pages` - count of pages], `links` - contain
+  links to navigate between pages [`first` - link to first page, `prev` - link to
+  previous page, `next` - link to next page, `last` - link to last page].<br>\nBy
+  default first page will be listed. For navigating through pages, use the page parameter
+  (e.g. `page[number]`, `page[size]`).<br>\nThe `page[size]` parameter can be used
+  to set the number of records that you want to receive in the response.<br>\nThe
+  `page[number]` parameter can be used to set needed page number.<br>\nExample of
+  response:\n```json\n{\n  \"meta\": {\n    \"total\": 419,\n    \"pages\": 42\n  },\n
+  \ \"links\": {\n    \"first\": \"/v1/{path}?page[number]=1&page[size]=10\",\n    \"prev\":
+  \"/v1/{path}?page[number]=39&page[size]=10\",\n    \"next\": \"/v1/{path}?page[number]=41&page[size]=10\",\n
+  \   \"last\": \"/v1/{path}?page[number]=42&page[size]=10\"\n  }\n```\n\n### Sorting\n\nOpenFinTech\\`s
+  API supported query parameter to sort result collection [e.g. `?sort=code`]. Information
+  about available parameters may be found in the endpoint description. Positive parameter
+  [e.g. `?sort=code`] points to ascending sorting, negative  [e.g. `?sort=-code`]
+  - to descending sorting. Also, supported multiple sorting parameters [e.g. `?sort=code,
+  -name, id`, etc.]\n```curl\nhttps://api.openfintech.io/v1/countries?sort=name,-area\n```\n\n###
+  Filtering\n\nFiltering provided by unique query key `filter[*filtering_condition*]`.
+  Information about available parameters may be found in the endpoint description.\n```curl\nhttps://api.openfintech.io/v1/countries?filter[region]=europe\n```\n\n##
+  Images\n\nOpenFinTech provides two types of images: icons and logos. To get one
+  of those types you should to use next url pattern:\n``` curl\nhttps://api.openfintech.io/v1/{path}/{id}/{icon/logo}\n```\nAlso,
+  images can be resized by adding next parameters: `h={height}&w={width}`. For example,
+  you want to get organization icon with width equals to 20 pixels:\n``` curl\nhttps://api.openfintech.io/v1/organizations/{id}/icon?w=20&h=20\n```\nIf
+  argument height or width is missing API returns original image with real sizes.\n\n##
+  Errors\n\nAPI uses conventional HTTP response codes to indicate the success or failure
+  of an API request. In general, codes in the `2xx` range indicate success, codes
+  in the `4xx` range indicate an error that failed given the information provided
+  (e.g., a required parameter was omitted, etc.), and codes in the `5xx` range indicate
+  an error with OpenFinTech's servers (these are rare).\n\n| Code | Description |\n|------|-------------|\n|
+  200 - OK\t| Everything worked as expected. |\n| 400 - Bad Request |\tThe request
+  was unacceptable, often due to missing a required parameter. |\n| 401 - Unauthorized
+  |\tNo valid API key provided. |\n| 402 - Request Failed\t| The parameters were valid
+  but the request failed. |\n| 404 - Not Found |\tThe requested resource doesn't exist.
+  |\n| 409 - Conflict\t| The request conflicts with another request (perhaps due to
+  using the same idempotent key). |\n| 429 - Too Many Requests |\tToo many requests
+  hit the API too quickly. We recommend an exponential backoff of your requests. |\n|
+  500, 502, 503, 504 - Server Errors |\tSomething went wrong on OpenFinTech's end.
+  (These are rare.) |\n\";s:5:\"title\";s:14:\"OpenFinTech.io\";s:7:\"version\";s:10:\"2017-08-24\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"financial\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:84:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_openfintech_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:40:\"https://docs.openfintech.io/swagger.yaml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:14:\"openfintech.io\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"openfintech\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.openfintech.io
+basePath: /v1/
+paths:
+  /banks:
+    get:
+      description: Returns list of banks. Each object contains general information
+        about bank such as name and status, also information about bank details and
+        related link to main organization.n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Filtering by banks code.
+        in: query
+        name: filter[sort_code]
+        type: string
+      - $ref: '#/parameters/filter[code]'
+      - $ref: '#/parameters/second_filter[status]'
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| code | -code |n| status | -status |n| sort_code | -sort_code |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - status
+          - -status
+          - code
+          - -code
+          - sort_code
+          - -sort_code
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of banks.
+          schema:
+            $ref: '#/definitions/BanksResponse'
+      summary: List of banks
+      tags:
+      - Banks
+      operationId: banks.get
+  /banks/{id}:
+    get:
+      description: Returns bank with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Bank information.
+          schema:
+            $ref: '#/definitions/BankResponse'
+        404:
+          description: Bank ID is not valid.
+      summary: Bank by ID
+      tags:
+      - Banks
+      operationId: banks.id.get
+  /countries:
+    get:
+      description: Returns all available countries.n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - collectionFormat: csv
+        description: Filtration by region.
+        in: query
+        items:
+          enum:
+          - africa
+          - americas
+          - asia
+          - europe
+          - oceania
+          - polar
+          type: string
+        name: filter[region]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Filtration by sub region.
+        in: query
+        items:
+          enum:
+          - northern_africa
+          - southern_africa
+          - western_africa
+          - eastern_africa
+          - middle_africa
+          - northern_america
+          - south_america
+          - central_america
+          - caribbean
+          - southern_asia
+          - western_asia
+          - eastern_asia
+          - south_eastern_asia
+          - central_asia
+          - northern_europe
+          - southern_europe
+          - western_europe
+          - eastern_europe
+          - polynesia
+          - australia_and_new_zealand
+          - micronesia
+          - melanesia
+          type: string
+        name: filter[sub_region]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| area | -area |n| population | -population |n| region | -region |n| sub_region
+          | -sub_region |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - area
+          - -area
+          - population
+          - -population
+          - region
+          - -region
+          - sub_region
+          - -sub_region
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of countries.
+          schema:
+            $ref: '#/definitions/CountriesResponse'
+      summary: List of countries
+      tags:
+      - Countries
+      operationId: countries.get
+  /countries/{id}:
+    get:
+      description: Returns country with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Country informatiion.
+          schema:
+            $ref: '#/definitions/CountryResponse'
+        404:
+          description: Country ID is not valid.
+      summary: Country by ID
+      tags:
+      - Countries
+      operationId: countries.id.get
+  /currencies:
+    get:
+      description: Returns all available currencies.n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Full text search with name, code, type, code_iso_alpha3, code_jsons_alpha,
+          code_estandards_alpha, category.
+        in: query
+        name: filter[search]
+        type: string
+      - description: Filtering by ISO code.
+        in: query
+        name: filter[code_iso_alpha3]
+        type: string
+      - description: Filtering by ISO number.
+        in: query
+        name: filter[code_iso_numeric3]
+        type: integer
+      - description: Filtering by estandards code.
+        in: query
+        name: filter[code_estandards_alpha]
+        type: string
+      - collectionFormat: csv
+        description: Filtration by currency type.
+        in: query
+        items:
+          enum:
+          - national
+          - digital
+          - virtual
+          - metal
+          - energy
+          - crypto
+          - code
+          - technical
+          type: string
+        name: filter[currency_type]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Filtration by category.
+        in: query
+        items:
+          enum:
+          - electronic
+          - online_bankings
+          - money_transfers
+          - crypto_exchangers
+          - crypto_currencies
+          - vouchers
+          - cards
+          - cash
+          - games
+          - psps
+          - others
+          type: string
+        name: filter[category]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| type | -type |n| category | -category |n| code | -code |n| code_iso_alpha3
+          | -code_iso_alpha3 |n| code_iso_numeric3 | -code_iso_numeric3 |n| code_estandards_alpha
+          | -code_estandards_alpha |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - type
+          - -type
+          - category
+          - -category
+          - code
+          - -code
+          - code_iso_alpha3
+          - -code_iso_alpha3
+          - code_iso_numeric3
+          - -code_iso_numeric3
+          - code_estandards_alpha
+          - -code_estandards_alpha
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of currencies.
+          schema:
+            $ref: '#/definitions/CurrenciesResponse'
+      summary: List of currencies
+      tags:
+      - Currencies
+      operationId: currencies.get
+  /currencies/{id}:
+    get:
+      description: Returns currency with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Currency information.
+          schema:
+            $ref: '#/definitions/CurrencyResponse'
+        404:
+          description: Currency ID is not valid.
+      summary: Currency by ID
+      tags:
+      - Currencies
+      operationId: currencies.id.get
+  /deposit-methods:
+    get:
+      description: Returns list of deposit methods. Each object contains information
+        about deposit method such as name and category, also related link to deposit
+        method issuer (which processing it).n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Full text search with id, name, code, category.
+        in: query
+        name: filter[search]
+        type: string
+      - $ref: '#/parameters/filter[name]'
+      - $ref: '#/parameters/filter[code]'
+      - description: Filtering by processor_name.
+        in: query
+        name: filter[processor_name]
+        type: string
+      - collectionFormat: csv
+        description: Filtering by category.
+        in: query
+        items:
+          enum:
+          - card
+          - alternative
+          - wallet
+          - credit_cards
+          - debit_cards
+          - prepaid_cards
+          - check
+          - invoice
+          - bank_transaction
+          - direct_debits
+          - mobile_carrier_billing
+          - cash_on_delivery
+          type: string
+        name: filter[category]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| code | -code |n| processor_name | -processor_name |n| category | -category
+          |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - code
+          - -code
+          - processor_name
+          - -processor_name
+          - category
+          - -category
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of deposit methods.
+          schema:
+            $ref: '#/definitions/DepositMethodsResponse'
+      summary: List of deposit methods
+      tags:
+      - Deposit methods
+      operationId: deposit_methods.get
+  /deposit-methods/{id}:
+    get:
+      description: Returns deposit method with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Deposit method information.
+          schema:
+            $ref: '#/definitions/DepositMethodResponse'
+        404:
+          description: deposit method ID is not valid.
+      summary: Deposit method by ID
+      tags:
+      - Deposit methods
+      operationId: deposit_methods.id.get
+  /exchangers:
+    get:
+      description: Returns list of exchange markets. Each object contains general
+        information about exchanger such as name and status, also information about
+        rates export and related link to main organization.<br>nRates export standards
+        is represented by:n* [estandards](http://estandards.info)n* [jsons](http://jsons.info)n*
+        ratex - our internal standardn
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - $ref: '#/parameters/filter[name]'
+      - $ref: '#/parameters/filter[status]'
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| status | -status |n| wmid | -wmid |n| rate_type | -rate_type |n| rates_export_standard
+          | <nobr>-rates_export_standard</nobr> |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - status
+          - -status
+          - wmid
+          - -wmid
+          - rate_type
+          - -rate_type
+          - rates_export_standard
+          - -rates_export_standard
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of exchangers.
+          schema:
+            $ref: '#/definitions/ExchangersResponse'
+      summary: List of exchangers
+      tags:
+      - Exchangers
+      operationId: exchangers.get
+  /exchangers/{id}:
+    get:
+      description: Returns exchanger with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Exchanger information.
+          schema:
+            $ref: '#/definitions/ExchangerResponse'
+        404:
+          description: Exchanger ID is not valid.
+      summary: Exchanger by ID
+      tags:
+      - Exchangers
+      operationId: exchangers.id.get
+  /merchant-industries:
+    get:
+      description: Returns all available merchant fields of activity.n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - $ref: '#/parameters/filter[name]'
+      responses:
+        200:
+          description: List of Merchant industries.
+          schema:
+            $ref: '#/definitions/MerchantIndustriesResponse'
+      summary: List of merchant industries
+      tags:
+      - Merchant industries
+      operationId: merchant_industries.get
+  /merchant-industries/{id}:
+    get:
+      description: Returns merchant industry with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Merchant industry.
+          schema:
+            $ref: '#/definitions/MerchantIndustryResponse'
+        404:
+          description: Merchant industry ID is not valid.
+      summary: Merchant industry by ID
+      tags:
+      - Merchant industries
+      operationId: merchant_industries.id.get
+  /organizations:
+    get:
+      description: This endpoint retrievs the list of organizations present in the
+        system. The data displays general, public information, without reference to
+        the type of activity (for example - name, address, contacts, etc.).n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Full text search with id, name, code.
+        in: query
+        name: filter[search]
+        type: string
+      - $ref: '#/parameters/filter[name]'
+      - $ref: '#/parameters/filter[code]'
+      - $ref: '#/parameters/filter[status]'
+      - description: Filtering by industries.
+        in: query
+        name: filter[industries]
+        type: string
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| code | -code |n| status | -status |n| description | -description |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - code
+          - -code
+          - status
+          - -status
+          - description
+          - -description
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of Organizations.
+          schema:
+            $ref: '#/definitions/OrganizationsResponse'
+      summary: List of organizations
+      tags:
+      - Organizations
+      operationId: organizations.get
+  /organizations/{id}:
+    get:
+      description: Returns organization with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Organization information.
+          schema:
+            $ref: '#/definitions/OrganizationResponse'
+        404:
+          description: Organization ID is not valid.
+      summary: Organization by ID
+      tags:
+      - Organizations
+      operationId: organizations.id.get
+  /payment-methods:
+    get:
+      description: Returns list of payment methods. Each object contains information
+        about payment method such as name and category, also related link to payment
+        method issuer (which processing it).n
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Full text search with id, name, code, category.
+        in: query
+        name: filter[search]
+        type: string
+      - $ref: '#/parameters/filter[name]'
+      - $ref: '#/parameters/filter[code]'
+      - description: Filtering by processor_name.
+        in: query
+        name: filter[processor_name]
+        type: string
+      - collectionFormat: csv
+        description: Filtering by category.
+        in: query
+        items:
+          enum:
+          - card
+          - alternative
+          - wallet
+          - credit_cards
+          - debit_cards
+          - prepaid_cards
+          - check
+          - invoice
+          - bank_transaction
+          - direct_debits
+          - mobile_carrier_billing
+          - cash_on_delivery
+          type: string
+        name: filter[category]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| code | -code |n| processor_name | -processor_name |n| category | -category
+          |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - code
+          - -code
+          - processor_name
+          - -processor_name
+          - category
+          - -category
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of payment methods.
+          schema:
+            $ref: '#/definitions/PaymentMethodsResponse'
+      summary: List of payment methods
+      tags:
+      - Payment methods
+      operationId: payment_methods.get
+  /payment-methods/{id}:
+    get:
+      description: Returns payment method with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Payment method information.
+          schema:
+            $ref: '#/definitions/PaymentMethodResponse'
+        404:
+          description: Payment method ID is not valid.
+      summary: Payment method by ID
+      tags:
+      - Payment methods
+      operationId: payment_methods.id.get
+  /payment-providers:
+    get:
+      description: 'A payment service provider (PSP) offers shops online services
+        for accepting electronic payments by a variety of payment methods.<br> Endpoint
+        returns list of PSPs. Each object contains: name, type, supported features
+        and sales channels, also related link to available payment methods and main
+        organization.n'
+      parameters:
+      - $ref: '#/parameters/page[number]'
+      - $ref: '#/parameters/page[size]'
+      - description: Full text search with id, code, name.
+        in: query
+        name: filter[search]
+        type: string
+      - $ref: '#/parameters/filter[name]'
+      - $ref: '#/parameters/filter[code]'
+      - collectionFormat: csv
+        description: Filtering by types.
+        in: query
+        items:
+          enum:
+          - distributor
+          - aggregator
+          - collector
+          - acquirer
+          type: string
+        name: filter[types]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Filtering by sales channels.
+        in: query
+        items:
+          enum:
+          - e_commerce
+          - in_app
+          - m_commerce
+          - moto
+          - m_pos
+          - pos
+          type: string
+        name: filter[sales_channels]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Filtering by features.
+        in: query
+        items:
+          enum:
+          - e_commerce
+          - installments
+          - partial_captures
+          - mastercard_secure
+          - american_express_safe_key
+          - a_b_testing
+          - payment_transfer
+          - hosted_payment_page
+          - edcc
+          - multi_lingual
+          - fraud_scrubbing
+          - multi_currency
+          - pay_out_of_winnings
+          - refunds
+          - verified_by_visa
+          - tokenization
+          - recurring_payments
+          - avs
+          - pre_authorisation
+          - chargeback_management
+          - discover_protectbuy
+          - level_iii_data
+          - j_secure_by_jcb
+          type: string
+        name: filter[features]
+        type: array
+        uniqueItems: true
+      - collectionFormat: csv
+        description: Sort params:<br>nn| ASC | DESC |n|-----|------|n| name | -name
+          |n| code | -code |n
+        in: query
+        items:
+          enum:
+          - name
+          - -name
+          - code
+          - -code
+          type: string
+        name: sort
+        type: array
+        uniqueItems: true
+      responses:
+        200:
+          description: List of Payment providers.
+          schema:
+            $ref: '#/definitions/PaymentProvidersResponse'
+      summary: List of payment providers
+      tags:
+      - Payment providers
+      operationId: payment_providers.get
+  /payment-providers/{id}:
+    get:
+      description: Returns payment provider with specific ID.n
+      parameters:
+      - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: Payment provider.
+          schema:
+            $ref: '#/definitions/PaymentProviderResponse'
+        404:
+          description: Payment provider ID is not valid.
+      summary: Payment provider by ID
+      tags:
+      - Payment providers
+      operationId: payment_providers.id.get
+produces:
+- application/vnd.api+json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":93:{s:29:\"ActiveInCountriesRelationship\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Active
+  in countries\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:7:\"example\";s:2:\"UA\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:59:\"/v1/deposit-methods/dm_fyBYShF7DuOXzeiR/active_in_countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:4:\"Bank\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/BankAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Bank`s
+  ID\";s:7:\"example\";s:20:\"bnk_ROO9xUfcBUwOIsqI\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/BankRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:5:\"banks\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"BankAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Array
+  of bank attributes\";s:10:\"properties\";O:8:\"stdClass\":9:{s:14:\"account_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bank_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"bic\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Bank`s
+  code\";s:7:\"example\";s:17:\"pat_kb_privatbank\";s:4:\"type\";s:6:\"string\";}s:4:\"iban\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Bank`s
+  name\";s:7:\"example\";s:4:\"Test\";s:4:\"type\";s:6:\"string\";}s:9:\"sort_code\";O:8:\"stdClass\":2:{s:7:\"example\";i:305299;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Status
+  [active, liquidated, problem, deleted]\";s:7:\"example\";s:6:\"active\";s:4:\"type\";s:6:\"string\";}s:5:\"vatin\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"BankOrganization\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/BankOrganizationData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/BankOrganizationLinks\";}}s:4:\"type\";s:6:\"object\";}s:20:\"BankOrganizationData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Organization`s
+  ID\";s:7:\"example\";s:20:\"org_qXJX8D9I5VCQjCOH\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"organizations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"BankOrganizationLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:43:\"/v1/banks/bnk_ROO9xUfcBUwOIsqI/organization\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"BankRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/BankOrganization\";}}s:4:\"type\";s:6:\"object\";}s:12:\"BankResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Bank\";}}s:4:\"type\";s:6:\"object\";}s:13:\"BanksResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Bank\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:17:\"CountriesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Country\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Country\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CountryAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"Country`s
+  ID\";s:7:\"example\";s:2:\"UA\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CountryRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"CountryAttributes\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"area\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"Country\xE2\u20AC\u2122s
+  area (sq km)\";s:7:\"example\";i:603700;s:4:\"type\";s:6:\"string\";}s:13:\"calling_codes\";O:8:\"stdClass\":4:{s:11:\"description\";s:30:\"Array
+  of country`s phone codes\";s:7:\"example\";a:1:{i:0;i:380;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";s:5:\"array\";}s:7:\"capital\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Country\xE2\u20AC\u2122s
+  capital\";s:7:\"example\";s:4:\"Kyiv\";s:4:\"type\";s:6:\"string\";}s:11:\"code_alpha3\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Country`s
+  ISO alpha3 code\";s:7:\"example\";s:3:\"UKR\";s:4:\"type\";s:6:\"string\";}s:9:\"languages\";O:8:\"stdClass\":4:{s:11:\"description\";s:28:\"Array
+  of country`s languages\";s:7:\"example\";a:1:{i:0;s:2:\"uk\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"Country`s
+  name\";s:7:\"example\";s:7:\"Ukraine\";s:4:\"type\";s:6:\"string\";}s:11:\"native_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Country`s
+  nativ name\";s:7:\"example\";s:30:\"\xD0\xA3\xD0\xBA\xD1\u20AC\xD0\xB0\xD1\u2014\xD0\xBD\xD0\xB0\";s:4:\"type\";s:6:\"string\";}s:10:\"population\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Country\xE2\u20AC\u2122s
+  population\";s:7:\"example\";i:42836922;s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"Country\xE2\u20AC\u2122s
+  region:<br>\n\n  * Africa\n  * Americas\n  * Asia\n  * Europe\n  * Oceania\n  *
+  Polar\n\";s:7:\"example\";s:6:\"europe\";s:4:\"type\";s:6:\"string\";}s:10:\"sub_region\";O:8:\"stdClass\":3:{s:11:\"description\";s:446:\"Country\xE2\u20AC\u2122s
+  sub region:<br>\n\n  * Northern Africa\n  * Southern Africa\n  * Western Africa\n
+  \ * Eastern Africa\n  * Middle Africa\n  * Northern America\n  * South America\n
+  \ * Central America\n  * Caribbean\n  * Southern Asia\n  * Western Asia\n  * Eastern
+  Asia\n  * South-Eastern Asia\n  * Central Asia\n  * Northern Europe\n  * Southern
+  Europe\n  * Western Europe\n  * Eastern Europe\n  * Polynesia\n  * Australia and
+  New Zealand\n  * Micronesia\n  * Melanesia\n\";s:7:\"example\";s:14:\"eastern_europe\";s:4:\"type\";s:6:\"string\";}s:9:\"timezones\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"Array
+  of country`s timezones (UTC)\";s:7:\"example\";a:1:{i:0;s:9:\"UTC+02:00\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:17:\"top_level_domains\";O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"Array
+  of country`s domains\";s:7:\"example\";a:1:{i:0;s:3:\".ua\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:20:\"CountryRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"translations\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CountryTranslations\";}}s:4:\"type\";s:6:\"object\";}s:15:\"CountryResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Country\";}}s:4:\"type\";s:6:\"object\";}s:19:\"CountryTranslations\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/CountryTranslationsLinks\";}}s:4:\"type\";s:6:\"object\";}s:24:\"CountryTranslationsLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:29:\"/v1/countries/UA/translations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"CurrenciesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Currency\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CurrencyAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Currency
+  ID\";s:7:\"example\";s:3:\"UAH\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/CurrencyRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"currencies\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"CurrencyAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Array
+  of currencies attributes\";s:10:\"properties\";O:8:\"stdClass\":14:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Currency
+  category\";s:7:\"example\";s:6:\"others\";s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Currency
+  system code\";s:7:\"example\";s:3:\"UAH\";s:4:\"type\";s:6:\"string\";}s:21:\"code_estandards_alpha\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:15:\"code_iso_alpha3\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Currency
+  ISO code\";s:7:\"example\";s:3:\"UAH\";s:4:\"type\";s:6:\"string\";}s:17:\"code_iso_numeric3\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Currency
+  ISO numeric code\";s:7:\"example\";i:980;s:4:\"type\";s:7:\"integer\";}s:15:\"code_json_alpha\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Created
+  date in system (in Unixtime)\";s:7:\"example\";i:1486051665;s:4:\"type\";s:6:\"string\";}s:13:\"currency_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"Type
+  of currencies [national, digital, virtual, metal, energy]\";s:7:\"example\";s:8:\"national\";s:4:\"type\";s:6:\"string\";}s:9:\"decimal_e\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Number
+  of digits after the decimal separator\";s:7:\"example\";i:2;s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/CurrencyAttributesIcon\";}s:6:\"issuer\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Currency`s
+  issuer\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Currency
+  description\";s:7:\"example\";s:7:\"Hryvnia\";s:4:\"type\";s:6:\"string\";}s:13:\"native_symbol\";O:8:\"stdClass\":3:{s:11:\"description\";s:67:\"Currency\xE2\u20AC\u2122s
+  symbol. In general, only for nationals currencies\";s:7:\"example\";s:7:\"\xE2\u201A\xB4\";s:4:\"type\";s:6:\"string\";}s:6:\"symbol\";O:8:\"stdClass\":3:{s:11:\"description\";s:67:\"Currency\xE2\u20AC\u2122s
+  symbol. In general, only for nationals currencies\";s:7:\"example\";s:7:\"\xE2\u201A\xB4\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"CurrencyAttributesIcon\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Links
+  to currency icons\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"16\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"16x16
+  icon\";s:7:\"example\";s:51:\"https://i.openfintech.io/currencies/UAH/icon_16.png\";s:4:\"type\";s:6:\"string\";}s:2:\"32\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"32x32
+  icon\";s:7:\"example\";s:51:\"https://i.openfintech.io/currencies/UAH/icon_32.png\";s:4:\"type\";s:6:\"string\";}s:2:\"64\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"64x64
+  icon\";s:7:\"example\";s:51:\"https://i.openfintech.io/currencies/UAH/icon_64.png\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"CurrencyCountries\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CurrencyCountryLinks\";}}s:4:\"type\";s:6:\"object\";}s:20:\"CurrencyCountryLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:28:\"/v1/currencies/UAH/countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"CurrencyIssuer\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Currency
+  Issuer. 'Only for virtual currency'\n\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CurrencyIssuertData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CurrencyIssuerLinks\";}}s:4:\"type\";s:6:\"object\";}s:19:\"CurrencyIssuerLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:25:\"/v1/currencies/UAH/issuer\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"CurrencyIssuerOrganization\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Issuer.\n\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/CurrencyIssuerOrganizationData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/CurrencyIssuerOrganizationLinks\";}}s:4:\"type\";s:6:\"object\";}s:30:\"CurrencyIssuerOrganizationData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Issuer
+  organization ID\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"currencies\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:31:\"CurrencyIssuerOrganizationLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:38:\"/v1/currencies/UAH/issuer_organization\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"CurrencyIssuertData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"Issuer
+  ID\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"issuer\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"CurrencyParent\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Parent
+  currency. 'Only for virtual currency'\n\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CurrencyParentData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CurrencyParentLinks\";}}s:4:\"type\";s:6:\"object\";}s:18:\"CurrencyParentData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Parent
+  currency ID\";s:7:\"example\";s:3:\"UAH\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"currencies\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"CurrencyParentLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:25:\"/v1/currencies/UAH/parent\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"CurrencyRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"countries\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CurrencyCountries\";}s:6:\"issuer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyIssuer\";}s:19:\"issuer_organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/CurrencyIssuerOrganization\";}s:6:\"parent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyParent\";}}s:4:\"type\";s:6:\"object\";}s:16:\"CurrencyResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Currency\";}}s:4:\"type\";s:6:\"object\";}s:13:\"DepositMethod\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/DepositMethodAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Deposit-methods`s
+  ID\";s:7:\"example\";s:21:\"paym_8NBX4V5fAEmqr3PO\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/DepositMethodRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:15:\"deposit-methods\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"DepositMethodAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Array
+  of Deposit-method attributes\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"category\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"wallet\";s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Deposit-method`s
+  code\";s:7:\"example\";s:14:\"justpayewallet\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Deposit-method`s
+  name\";s:7:\"example\";s:12:\"TOT Just Pay\";s:4:\"type\";s:6:\"string\";}s:14:\"processor_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Deposit-method`s
+  processor\";s:7:\"example\";s:12:\"TOT Just Pay\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"DepositMethodProcessorData\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Processor`s
+  Data.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Processor`s
+  id.\";s:7:\"example\";s:20:\"ppr_zkqg6xJKCIoWjBB9\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Processor`s
+  type.\";s:7:\"example\";s:13:\"organizations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:57:\"/v1/payment-methods/pm_QcW80uZ5XefiQYwp/payment-processor\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:26:\"DepositMethodRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:20:\"actiove_in_countries\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ActiveInCountriesRelationship\";}s:10:\"currencies\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CurrencyParent\";}s:17:\"payment_processor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/DepositMethodProcessorData\";}s:14:\"supported_psps\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/SupportedPspsRelationship\";}}s:4:\"type\";s:6:\"object\";}s:21:\"DepositMethodResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/DepositMethod\";}}s:4:\"type\";s:6:\"object\";}s:22:\"DepositMethodsResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/DepositMethod\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:9:\"Exchanger\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ExchangerAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"Exchanger`s
+  ID\";s:7:\"example\";s:21:\"exch_1oClKBr43J1xxxAa\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/ExchangerRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"exchangers\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"ExchangerAttributes\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"Exchanger`s
+  name\";s:7:\"example\";s:10:\"Xchange.cc\";s:4:\"type\";s:6:\"string\";}s:21:\"rates_export_standard\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"estandard\";s:4:\"type\";s:6:\"string\";}s:16:\"rates_export_url\";O:8:\"stdClass\":2:{s:7:\"example\";s:29:\"https://xchange.cc/valuta.xml\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Exchanger`s
+  status [active, blocked, deleted]\";s:7:\"example\";s:6:\"active\";s:4:\"type\";s:6:\"string\";}s:4:\"wmid\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Exchanger`s
+  WebMoney ID\";s:7:\"example\";i:612345678901;s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:21:\"ExchangerOrganization\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/ExchangerOrganizationData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/ExchangerOrganizationLinks\";}}s:4:\"type\";s:6:\"object\";}s:25:\"ExchangerOrganizationData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Organization
+  ID\";s:7:\"example\";s:20:\"org_Dr5Wi728plQ0RPA5\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"organizations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"ExchangerOrganizationLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:49:\"/v1/exchangers/exch_1oClKBr43J1xxxAa/organization\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"ExchangerRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ExchangerOrganization\";}}s:4:\"type\";s:6:\"object\";}s:17:\"ExchangerResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Exchanger\";}}s:4:\"type\";s:6:\"object\";}s:18:\"ExchangersResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Exchanger\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:26:\"MerchantIndustriesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/MerchantIndustry\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:16:\"MerchantIndustry\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/MerchantIndustryAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"Merchant-industry`s
+  ID\";s:7:\"example\";s:25:\"merchind_Cukwq7LEFXiaRpkZ\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:19:\"merchant-industries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"MerchantIndustryAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Array
+  of Merchant-industry attributes\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Merchant-industry`s
+  name\";s:7:\"example\";s:8:\"Airlines\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:24:\"MerchantIndustryResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/MerchantIndustry\";}}s:4:\"type\";s:6:\"object\";}s:12:\"Organization\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/OrganizationAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Organization`s
+  ID\";s:7:\"example\";s:20:\"org_RysJXOwKaGT5o1SZ\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/OrganizationRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"organizations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"OrganizationActive\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":3:{s:7:\"example\";s:4:\"none\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/OrganizationActiveLinks\";}}s:4:\"type\";s:6:\"object\";}s:23:\"OrganizationActiveLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:58:\"/v1/organizations/org_lK1mIKXO1kHOrTeJ/active_in_countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"OrganizationAddress\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"Organization`s
+  address\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"city\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"Kyiv\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:7:\"example\";s:7:\"Ukraine\";s:4:\"type\";s:6:\"string\";}s:9:\"post_code\";O:8:\"stdClass\":2:{s:7:\"example\";i:2184;s:4:\"type\";s:7:\"integer\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"Country\xE2\u20AC\u2122s
+  region:<br>\n\n  * Africa\n  * Americas\n  * Asia\n  * Europe\n  * Oceania\n  *
+  Polar\n\";s:7:\"example\";s:6:\"Europe\";s:4:\"type\";s:6:\"string\";}s:6:\"street\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"Obolonska
+  nab\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"OrganizationAttributes\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":13:{s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/OrganizationAddress\";}s:4:\"blog\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Organization`s
+  blog\";s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Organization`s
+  code\";s:7:\"example\";s:10:\"interkassa\";s:4:\"type\";s:6:\"string\";}s:8:\"contacts\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/OrganizationContacts\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"Description\";s:7:\"example\";s:25:\"Payment
+  acceptance system\";s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/OrganizationAttributesIcon\";}s:10:\"industries\";O:8:\"stdClass\":4:{s:11:\"description\";s:10:\"Industries\";s:7:\"example\";a:1:{i:0;s:3:\"psp\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"logo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/OrganizationAttributesLogo\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Organization`s
+  name\";s:7:\"example\";s:10:\"Interkassa\";s:4:\"type\";s:6:\"string\";}s:4:\"site\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Organization`s
+  site\";s:7:\"example\";s:26:\"https://www.interkassa.com\";s:4:\"type\";s:6:\"string\";}s:15:\"social_profiles\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrganizationSocial\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"Organization`s
+  status [active, liquidated, deleted]\";s:7:\"example\";s:6:\"active\";s:4:\"type\";s:6:\"string\";}s:4:\"wiki\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Organization`s
+  wiki\";s:7:\"example\";s:32:\"https://www.interkassa.com/wiki/\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"OrganizationAttributesIcon\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Links
+  to organization icons\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"16\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"16x16
+  icon\";s:7:\"example\";s:61:\"https://i.openfintech.io/organizations/Interkassa/icon_16.png\";s:4:\"type\";s:6:\"string\";}s:2:\"32\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"32x32
+  icon\";s:7:\"example\";s:61:\"https://i.openfintech.io/organizations/Interkassa/icon_32.png\";s:4:\"type\";s:6:\"string\";}s:2:\"64\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"64x64
+  icon\";s:7:\"example\";s:61:\"https://i.openfintech.io/organizations/Interkassa/icon_64.png\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"OrganizationAttributesLogo\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Links
+  to organization logos\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"50\";O:8:\"stdClass\":3:{s:11:\"description\";s:10:\"50x50
+  logo\";s:7:\"example\";s:61:\"https://i.openfintech.io/organizations/Interkassa/logo_50.png\";s:4:\"type\";s:6:\"string\";}s:3:\"100\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"100x100
+  logo\";s:7:\"example\";s:62:\"https://i.openfintech.io/organizations/Interkassa/logo_100.png\";s:4:\"type\";s:6:\"string\";}s:3:\"150\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"150x150
+  logo\";s:7:\"example\";s:62:\"https://i.openfintech.io/organizations/Interkassa/logo_150.png\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"OrganizationContacts\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Organization`s
+  contacts\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"email\";O:8:\"stdClass\":2:{s:7:\"example\";s:22:\"support@interkassa.com\";s:4:\"type\";s:6:\"string\";}s:3:\"fax\";O:8:\"stdClass\":2:{s:7:\"example\";i:1234;s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:7:\"example\";i:380445859331;s:4:\"type\";s:6:\"string\";}s:5:\"skype\";O:8:\"stdClass\":2:{s:7:\"example\";s:8:\"skype.ik\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"OrganizationHq\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrganizationHqData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/OrganizationHqLinks\";}}s:4:\"type\";s:6:\"object\";}s:18:\"OrganizationHqData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"HQ
+  location\";s:7:\"example\";s:2:\"UA\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"countries\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"OrganizationHqLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:52:\"/v1/organizations/org_lK1mIKXO1kHOrTeJ/hq_in_country\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"OrganizationRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:19:\"active_in_countries\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrganizationActive\";}s:13:\"hq_in_country\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/OrganizationHq\";}s:19:\"source_register_org\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/OrganizationSource\";}}s:4:\"type\";s:6:\"object\";}s:20:\"OrganizationResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}}s:4:\"type\";s:6:\"object\";}s:18:\"OrganizationSocial\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Social
+  profiles\";s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"facebook\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:11:\"google_plus\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:9:\"linked_in\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:7:\"twitter\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}s:9:\"vkontakte\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"none\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"OrganizationSource\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/OrganizationSourceData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/OrganizationSourceLinks\";}}s:4:\"type\";s:6:\"object\";}s:22:\"OrganizationSourceData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"OrganizationSourceLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:58:\"/v1/organizations/org_lK1mIKXO1kHOrTeJ/source_register_org\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"OrganizationsResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:13:\"PaymentMethod\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/PaymentMethodAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Payment-methods`s
+  ID\";s:7:\"example\";s:21:\"paym_8NBX4V5fAEmqr3PO\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/PaymentMethodRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:15:\"payment-methods\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"PaymentMethodAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Array
+  of Payment-method attributes\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"category\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"wallet\";s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Payment-method`s
+  code\";s:7:\"example\";s:14:\"justpayewallet\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Payment-method`s
+  name\";s:7:\"example\";s:12:\"TOT Just Pay\";s:4:\"type\";s:6:\"string\";}s:14:\"processor_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Payment-method`s
+  processor\";s:7:\"example\";s:12:\"TOT Just Pay\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"PaymentMethodCurrencies\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/PaymentMethodCurrenciesLinks\";}}s:4:\"type\";s:6:\"object\";}s:28:\"PaymentMethodCurrenciesLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:57:\"/v1/payment-methods/pm_QcW80uZ5XefiQYwp/payment-processor\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"PaymentMethodProcessor\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"Payment-method
+  issuer.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/PaymentMethodProcessorData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/PaymentMethodProcessorLinks\";}}s:4:\"type\";s:6:\"object\";}s:26:\"PaymentMethodProcessorData\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Processor`s
+  Data.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"Processor`s
+  id.\";s:7:\"example\";s:20:\"ppr_zkqg6xJKCIoWjBB9\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Processor`s
+  type.\";s:7:\"example\";s:21:\"payment-method-issuer\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:27:\"PaymentMethodProcessorLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:59:\"/v1/payment-methods/paym_8NBX4V5fAEmqr3PO/payment-processor\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"PaymentMethodRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currencies\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/PaymentMethodCurrencies\";}s:17:\"payment-processor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/PaymentMethodProcessor\";}}s:4:\"type\";s:6:\"object\";}s:21:\"PaymentMethodResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PaymentMethod\";}}s:4:\"type\";s:6:\"object\";}s:22:\"PaymentMethodsResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PaymentMethod\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:15:\"PaymentProvider\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:39:\"#/definitions/PaymentProviderAttributes\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"Payment-provider`s
+  ID\";s:7:\"example\";s:20:\"psp_f9VUSVUhsl7Rm0JD\";s:4:\"type\";s:6:\"string\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/SelfLinks\";}s:13:\"relationships\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/PaymentProviderRelationships\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:17:\"payment-providers\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"PaymentProviderAttributes\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Array
+  of Payment-provider attributes\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Payment-provider`s
+  code\";s:7:\"example\";s:10:\"Interkassa\";s:4:\"type\";s:6:\"string\";}s:8:\"features\";O:8:\"stdClass\":3:{s:7:\"example\";s:20:\"[
+  \"multi_currency\" ]\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Payment-provider`s
+  name\";s:7:\"example\";s:10:\"interkassa\";s:4:\"type\";s:6:\"string\";}s:14:\"sales_channels\";O:8:\"stdClass\":3:{s:7:\"example\";s:16:\"[
+  \"e_commerce\" ]\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"types\";O:8:\"stdClass\":3:{s:7:\"example\";s:18:\"[\n
+  \ \"aggregator\"\n]\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:27:\"PaymentProviderOrganization\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/PaymentProviderOrganizationData\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:46:\"#/definitions/PaymentProviderOrganizationLinks\";}}s:4:\"type\";s:6:\"object\";}s:31:\"PaymentProviderOrganizationData\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Organization`s
+  ID\";s:7:\"example\";s:20:\"org_lK1mIKXO1kHOrTeJ\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"organizations\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:32:\"PaymentProviderOrganizationLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:55:\"/v1/payment-providers/psp_f9VUSVUhsl7Rm0JD/organization\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:29:\"PaymentProviderPaymentMethods\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":3:{s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/PaymentProviderPaymentMethodsLinks\";}}s:4:\"type\";s:6:\"object\";}s:34:\"PaymentProviderPaymentMethodsLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:58:\"/v1/payment-providers/psp_f9VUSVUhsl7Rm0JD/payment-methods\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:28:\"PaymentProviderRelationships\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/PaymentProviderOrganization\";}s:15:\"payment-methods\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/PaymentProviderPaymentMethods\";}}s:4:\"type\";s:6:\"object\";}s:23:\"PaymentProviderResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PaymentProvider\";}}s:4:\"type\";s:6:\"object\";}s:24:\"PaymentProvidersResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/PaymentProvider\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ResponseLinks\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ResponseMeta\";}}s:4:\"type\";s:6:\"object\";}s:13:\"ResponseLinks\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"first\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"first
+  page of query\";s:7:\"example\";s:39:\"/v1/{path}?page[number]=1&page[size]=10\";s:4:\"type\";s:6:\"string\";}s:4:\"last\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"last
+  page of query\";s:7:\"example\";s:40:\"/v1/{path}?page[number]=42&page[size]=10\";s:4:\"type\";s:6:\"string\";}s:4:\"next\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"next
+  page in query\";s:7:\"example\";s:40:\"/v1/{path}?page[number]=41&page[size]=10\";s:4:\"type\";s:6:\"string\";}s:4:\"prev\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"previous
+  page in query\";s:7:\"example\";s:40:\"/v1/{path}?page[number]=39&page[size]=10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"first\";i:1;s:4:\"last\";}s:4:\"type\";s:6:\"object\";}s:12:\"ResponseMeta\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"pages\";O:8:\"stdClass\":3:{s:11:\"description\";s:11:\"total
+  pages\";s:7:\"example\";i:42;s:4:\"type\";s:7:\"integer\";}s:5:\"total\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"total
+  objects in query\";s:7:\"example\";i:419;s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:9:\"SelfLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:7:\"example\";s:15:\"/v1/{path}/{id}\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"SupportedPspsRelationship\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"Supported
+  psps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:7:\"example\";s:20:\"psp_xhaKgsBvEUZzWGIP\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:17:\"payment-providers\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"related\";O:8:\"stdClass\":2:{s:7:\"example\";s:54:\"/v1/deposit-methods/dm_fyBYShF7DuOXzeiR/supported_psps\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}}"
+...

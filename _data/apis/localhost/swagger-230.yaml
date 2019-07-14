@@ -1,0 +1,603 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:17:\"Swagger
+  Admin-api\";s:11:\"description\";s:29:\"Admin-api API developer guide\";s:14:\"termsOfService\";s:22:\"http://www.wthapps.com\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:24:\"WTHApps
+  Development Team\";}s:7:\"license\";O:8:\"stdClass\":1:{s:4:\"name\";s:3:\"MIT\";}}"
+host: localhost:4000
+basePath: ""
+paths:
+  /users/sign_in:
+    post:
+      description: sign_in with new session
+      operationId: login
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: user email
+        required: true
+        type: User
+        format: email
+        schema:
+          $ref: '#/definitions/UserLogin'
+      responses:
+        200:
+          description: sign in response
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/sign_out:
+    delete:
+      description: sign_out with current user
+      operationId: sign_out
+      tags:
+      - users
+      responses:
+        200:
+          description: sign_out is successfully
+        401:
+          description: Not authenticated
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users:
+    get:
+      description: get user list
+      operationId: users_list
+      tags:
+      - users
+      parameters:
+      - name: page
+        in: query
+        description: specify page number will be received. Default value is 0
+        optional: true
+        type: integer
+        format: int32
+        minimum: 1
+      - name: size
+        in: query
+        description: Number of records will display on a page. Default value is 15
+        optional: true
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 1000000
+      responses:
+        200:
+          description: Getting data is ok
+    post:
+      description: create new user
+      operationId: users_user
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: user json object
+        required: true
+        schema:
+          $ref: '#/definitions/UserNew'
+      responses:
+        200:
+          description: created successfully
+  /users/password:
+    post:
+      description: change password
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: user json object
+        required: true
+        type: json
+        format: json
+      responses:
+        200:
+          description: created successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      description: update password
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: user json object
+        required: true
+        type: json
+        format: json
+      responses:
+        200:
+          description: created successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/unclock:
+    post:
+      description: unclock user
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: user json object
+        required: true
+        type: json
+        format: json
+      responses:
+        200:
+          description: created successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      description: unclock user
+      tags:
+      - users
+      parameters:
+      - name: unclock_token
+        in: query
+        description: unclock token
+        required: true
+        type: string
+        format: string
+      responses:
+        200:
+          description: created successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/confirmation:
+    post:
+      description: active user
+      tags:
+      - users
+      parameters:
+      - name: user
+        in: body
+        description: confirmation user
+        required: true
+        type: string
+        format: string
+      responses:
+        200:
+          description: confirmed successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      description: active user
+      tags:
+      - users
+      parameters:
+      - name: confirmation_token
+        in: query
+        description: confirmation token
+        required: true
+        type: string
+        format: string
+      responses:
+        200:
+          description: confirmed successfully
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/{id}:
+    get:
+      description: get user list
+      operationId: users
+      tags:
+      - users
+      parameters:
+      - name: id
+        in: path
+        description: user id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: get user successfully
+    put:
+      description: update user information
+      operationId: users
+      tags:
+      - users
+      parameters:
+      - name: id
+        in: path
+        description: user id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: update user successfully
+  /users/{id}/validate:
+    get:
+      description: 'This endpoint is used to verify user is valid or not. There are
+        some valid user cases as: user is not expire Free plan or user is using a
+        paid plan or user is not using a paid plan but previous paid plan is not expired
+        yet'
+      operationId: users
+      tags:
+      - users
+      parameters:
+      - name: id
+        in: path
+        description: user id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: user is valid
+  /users/{id}/payments:
+    post:
+      description: create payment for billing
+      operationId: users_payments
+      tags:
+      - payments
+      parameters:
+      - name: user
+        in: body
+        description: payment json object
+        required: true
+        schema:
+          $ref: '#/definitions/PaymentNew'
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /users/{user_id}/payments:
+    delete:
+      description: delete a payment
+      tags:
+      - payments
+      parameters:
+      - name: user_id
+        in: path
+        description: the user id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /users/{user_id}/apps:
+    get:
+      description: get all user products
+      tags:
+      - products
+      parameters:
+      - name: user_id
+        in: path
+        description: the user id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+        payment_required:
+          description: payment_required
+  /apps/categories:
+    get:
+      description: get all products categories
+      tags:
+      - products
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /products/categories/{id}:
+    get:
+      description: get all products categories
+      tags:
+      - products
+      parameters:
+      - name: id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /products/platforms:
+    get:
+      description: get all products platforms
+      tags:
+      - products
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /products/{product_id}/platforms:
+    get:
+      description: get all products platforms
+      tags:
+      - products
+      parameters:
+      - name: product_id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /products:
+    get:
+      description: get all products
+      tags:
+      - products
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+    post:
+      description: addmin add a product
+      tags:
+      - products
+      parameters:
+      - name: apps
+        in: body
+        description: product json object
+        required: true
+        type: json
+        format: json
+      responses:
+        created:
+          description: successful
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+        conflict:
+          description: duplication
+        expectation_failed:
+          description: failure
+  /products/{id}:
+    get:
+      description: get a product
+      tags:
+      - products
+      parameters:
+      - name: id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+    delete:
+      description: delete a product
+      tags:
+      - products
+      parameters:
+      - name: id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+  /users/{user_id}/apps/{id}:
+    post:
+      description: user add a product
+      tags:
+      - products
+      parameters:
+      - name: user_id
+        in: path
+        description: the user id
+        required: true
+        type: integer
+        format: int32
+      - name: id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        created:
+          description: successful
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+        conflict:
+          description: duplication
+        expectation_failed:
+          description: failure
+        payment_required:
+          description: payment_required
+  /users/{user_id}/products/{id}:
+    delete:
+      description: delete a product
+      tags:
+      - products
+      parameters:
+      - name: user_id
+        in: path
+        description: the user id
+        required: true
+        type: integer
+        format: int32
+      - name: id
+        in: path
+        description: the product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+        payment_required:
+          description: payment_required
+  /feedbacks:
+    post:
+      description: create a feedback
+      tags:
+      - feedbacks
+      parameters:
+      - name: feedback
+        in: body
+        description: record json object
+        required: true
+        type: json
+        format: json
+      responses:
+        created:
+          description: successful
+        ok:
+          description: successful
+        not_found:
+          description: not_found
+        internal_server_error:
+          description: failure
+        expectation_failed:
+          description: failure
+  /admin/apps:
+    get:
+      description: get products list
+      operationId: admin_products_list
+      tags:
+      - Admin
+      parameters:
+      - name: page
+        in: query
+        description: specify page number will be received. Default value is 0
+        optional: true
+        type: integer
+        format: int32
+        minimum: 1
+      - name: size
+        in: query
+        description: Number of records will display on a page. Default value is 15
+        optional: true
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 1000000
+      responses:
+        200:
+          description: Getting data is ok
+  /admin/apps/{id}:
+    get:
+      description: get product by id
+      operationId: products
+      tags:
+      - users
+      parameters:
+      - name: id
+        in: path
+        description: product id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: get product successfully
+  /admin/categories:
+    get:
+      description: get categories list
+      operationId: admin_product_categories
+      tags:
+      - Admin_Category
+  /admin/categories/{id}:
+    get:
+      description: get categories by id
+      operationId: categories
+      tags:
+      - Admin_Category
+      parameters:
+      - name: id
+        in: path
+        description: categories id
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: get categories successfully
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":4:{s:4:\"User\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"UserInput\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}i:1;O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}}}s:9:\"UserLogin\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:10:\"first_name\";i:1;s:9:\"last_name\";i:2;s:5:\"email\";i:3;s:8:\"password\";i:4;s:8:\"accepted\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"string\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"email\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}s:8:\"accepted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:6:\"format\";s:7:\"boolean\";}}}}}s:7:\"UserNew\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":2:{s:8:\"required\";a:9:{i:0;s:10:\"first_name\";i:1;s:9:\"last_name\";i:2;s:5:\"email\";i:3;s:8:\"password\";i:4;s:12:\"birthday_day\";i:5;s:14:\"birthday_month\";i:6;s:13:\"birthday_year\";i:7;s:8:\"accepted\";i:8;s:3:\"sex\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:9:\"firstname\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"default\";s:8:\"lastname\";}s:5:\"email\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:5:\"email\";s:7:\"default\";s:19:\"example@wthapps.com\";}s:8:\"password\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";s:7:\"default\";s:7:\"wthapps\";}s:12:\"birthday_day\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:0;s:7:\"minimum\";i:0;s:7:\"maximun\";i:31;}s:14:\"birthday_month\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:0;s:7:\"minimum\";i:0;s:7:\"maximun\";i:12;}s:13:\"birthday_year\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"default\";i:0;s:7:\"minimum\";i:1900;s:7:\"maximun\";i:2016;}s:3:\"sex\";O:8:\"stdClass\":6:{s:4:\"type\";s:7:\"integer\";s:4:\"enum\";a:4:{i:0;i:0;i:1;i:1;i:2;i:2;i:3;i:3;}s:7:\"default\";i:0;s:7:\"minimum\";i:0;s:7:\"maximun\";i:3;s:16:\"exclusiveMinimum\";b:1;}s:8:\"accepted\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";s:4:\"true\";}}}}}}"
+...

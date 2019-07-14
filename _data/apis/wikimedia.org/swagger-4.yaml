@@ -1,0 +1,2003 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":12:{s:7:\"contact\";O:8:\"stdClass\":2:{s:4:\"name\";s:27:\"the
+  Wikimedia Services team\";s:3:\"url\";s:34:\"http://mediawiki.org/wiki/REST_API\";}s:11:\"description\";s:1414:\"This
+  API provides cacheable and straightforward access to Wikimedia content and data,
+  in machine-readable formats.\n### Global Rules\n- Limit your clients to no more
+  than 200 requests/s to this API.\n  Each API endpoint's documentation may detail
+  more specific usage limits.\n- Set a unique `User-Agent` or `Api-User-Agent` header
+  that\n  allows us to contact you quickly. Email addresses or URLs\n  of contact
+  pages work well.\n\nBy using this API, you agree to Wikimedia's  [Terms of Use](https://wikimediafoundation.org/wiki/Terms_of_Use)
+  and [Privacy Policy](https://wikimediafoundation.org/wiki/Privacy_policy). Unless
+  otherwise specified in the endpoint documentation below, content accessed via this
+  API is licensed under the [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+  \ and [GFDL](https://www.gnu.org/copyleft/fdl.html) licenses, and you irrevocably
+  agree to release modifications or additions made through this API under these licenses.
+  \ See https://www.mediawiki.org/wiki/REST_API for background and details.\n### Endpoint
+  documentation\nPlease consult each endpoint's documentation for details on:\n- Licensing
+  information for the specific type of content\n  and data served via the endpoint.\n-
+  Stability markers to inform you about development status and\n  change policy, according
+  to\n  [our API version policy](https://www.mediawiki.org/wiki/API_versioning).\n-
+  Endpoint specific usage limits.\n\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:45:\"Software
+  available under the Apache 2 license\";s:3:\"url\";s:42:\"http://www.apache.org/licenses/LICENSE-2.0\";}s:14:\"termsOfService\";s:49:\"https://wikimediafoundation.org/wiki/Terms_of_Use\";s:5:\"title\";s:9:\"Wikimedia\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:5:\"media\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:82:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_Wikipedia_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:39:\"https://wikimedia.org/api/rest_v1/?spec\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:13:\"wikimedia.org\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"wikimedia\";s:4:\"type\";s:7:\"openapi\";}}"
+host: wikimedia.org
+basePath: /api/rest_v1
+paths:
+  /media/math/check/{type}:
+    post:
+      description: 'Checks the supplied TeX formula for correctness and returns thennormalised
+        formula representation as well as information aboutnidentifiers. Available
+        types are tex and inline-tex. The responsencontains the `x-resource-location`
+        header which can be used to retrieventhe render of the checked formula in
+        one of the supported renderingnformats. Just append the value of the header
+        to `/media/math/{format}/`nand perform a GET request against that URL.nnStability:
+        [stable](https://www.mediawiki.org/wiki/API_versioning#Stable).n'
+      parameters:
+      - description: The input type of the given formula; can be tex or inline-tex
+        enum:
+        - tex
+        - inline-tex
+        - chem
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: The formula to check
+        in: formData
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Information about the checked formula
+        400:
+          description: Invalid type
+          schema:
+            $ref: '#/definitions/problem'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Check and normalize a TeX formula.
+      tags:
+      - Math
+      x-amples:
+      - request:
+          body:
+            q: E=mc^{2}
+          params:
+            domain: wikimedia.org
+            type: tex
+        response:
+          body:
+            checked: /.+/
+            success: true
+          headers:
+            cache-control: no-cache
+            content-type: /^application/json/
+            x-resource-location: /.+/
+          status: 200
+        title: Mathoid - check test formula
+      x-monitor: true
+      operationId: media.math.check.type.post
+  /media/math/formula/{hash}:
+    get:
+      description: 'Returns the previously-stored formula via `/media/math/check/{type}`
+        fornthe given hash.nnStability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable).n'
+      parameters:
+      - description: The hash string of the previous POST data
+        in: path
+        minLength: 1
+        name: hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Information about the checked formula
+        404:
+          description: Data for the given hash cannot be found
+          schema:
+            $ref: '#/definitions/problem'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get a previously-stored formula
+      tags:
+      - Math
+      x-monitor: false
+      operationId: media.math.formula.hash.get
+  /media/math/render/{format}/{hash}:
+    get:
+      description: 'Given a request hash, renders a TeX formula into its mathematicnrepresentation
+        in the given format. When a request is issued to then`/media/math/check/{format}`
+        POST endpoint, the response contains then`x-resource-location` header denoting
+        the hash ID of the POST data. Oncenobtained, this endpoint has to be used
+        to obtain the actual render.nnStability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable).n'
+      parameters:
+      - description: The output format; can be svg or mml
+        enum:
+        - svg
+        - mml
+        - png
+        in: path
+        name: format
+        required: true
+        type: string
+      - description: The hash string of the previous POST data
+        in: path
+        minLength: 1
+        name: hash
+        required: true
+        type: string
+      produces:
+      - image/svg+xml
+      - application/mathml+xml
+      - image/png
+      responses:
+        200:
+          description: The rendered formula
+        404:
+          description: Unknown format or hash ID
+          schema:
+            $ref: '#/definitions/problem'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get rendered formula in the given format.
+      tags:
+      - Math
+      x-monitor: false
+      operationId: media.math.render.format.hash.get
+  /metrics/bytes-difference/absolute/aggregate/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of absolute bytesndifference sums. You can filter by editors-type (all-editor-types,
+        anonymous, group-bot,nname-bot, user) and page-type (all-page-types, content,
+        non-content). You can choosenbetween daily and monthly granularity as well.nn-
+        Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org. If you're interested
+          in the aggregation of all projects, usenall-projects.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/absolute-bytes-difference'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get the sum of absolute value of text bytes difference between current
+        edit andnprevious one.n
+      tags:
+      - Bytes difference data
+      x-monitor: false
+      operationId: metrics.bytes_difference.absolute.aggregate.project.editor_type.page_type.granularity.start.end.get
+  /metrics/bytes-difference/net/aggregate/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of bytes difference netnsums. You can filter by editors-type (all-editor-types,
+        anonymous, group-bot, name-bot,nuser) and page-type (all-page-types, content
+        or non-content). You can choose betweenndaily and monthly granularity as well.nn-
+        Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org. If you're interested
+          in the aggregation of all projects, usenall-projects.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/net-bytes-difference'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get the sum of net text bytes difference between current edit and previous
+        one.
+      tags:
+      - Bytes difference data
+      x-monitor: false
+      operationId: metrics.bytes_difference.net.aggregate.project.editor_type.page_type.granularity.start.end.get
+  /metrics/edited-pages/aggregate/{project}/{editor-type}/{page-type}/{activity-level}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of its edited-pages counts.nYou can filter by editor-type (all-editor-types,
+        anonymous, group-bot, name-bot, user),npage-type (all-page-types, content
+        or non-content) or activity-level (1..4-edits,n5..24-edits, 25..99-edits,
+        100..-edits). You can choose between daily and monthlyngranularity as well.nn-
+        Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff.  For projects like commons without language codes,
+          use commons.wikimedia.nFor projects like www.mediawiki.org, you can use
+          that full string, or just usenmediawiki or mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edited-pages
+          in contentnnamespaces) or non-content (edited-pages in non-content namespaces).
+          If you areninterested in edited-pages regardless of their page-type, use
+          all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: If you want to filter by activity-level, use one of 1..4-edits,
+          5..24-edits,n25..99-edits or 100..-edits. If you are interested in edited-pages
+          regardlessnof their activity level, use all-activity-levels.n
+        enum:
+        - all-activity-levels
+        - 1..4-edits
+        - 5..24-edits
+        - 25..99-edits
+        - 100..-edits
+        in: path
+        name: activity-level
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, supported values
+          arendaily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/edited-pages'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get edited-pages counts for a project.
+      tags:
+      - Edited pages data
+      x-monitor: false
+      operationId: metrics.edited_pages.aggregate.project.editor_type.page_type.activity_level.granularity.start.end.get
+  /metrics/edited-pages/new/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of its new pages counts.nYou can filter by editor type (all-editor-types,
+        anonymous, group-bot, name-bot, user)nor page-type (all-page-types, content
+        or non-content). You can choose between daily andnmonthly granularity as well.nThe
+        new pages value is computed as follow:n  [number of created pages] - [number
+        of deleted pages] + [number of restored pages]nfor the chosen filters.nn-
+        Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff.  For projects like commons without language codes,
+          use commons.wikimedia.nFor projects like www.mediawiki.org, you can use
+          that full string, or just usenmediawiki or mediawiki.org. If you're interested
+          in the aggregation of allnprojects, use all-projects.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belongingnto the bot group but having bot-like names) or user (registered
+          account not in botngroup nor having bot-like name). If you are interested
+          in edits regardless ofntheir editor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (new pages
+          in contentnnamespaces) or non-content (new pages in non-content namespaces).
+          If you areninterested in new-articles regardless of their page-type, use
+          all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, supported values
+          arendaily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/new-pages'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get new pages counts for a project.
+      tags:
+      - Edited pages data
+      x-monitor: false
+      operationId: metrics.edited_pages.new.project.editor_type.page_type.granularity.start.end.get
+  /metrics/edited-pages/top-by-absolute-bytes-difference/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 edited-pagesnby absolute bytes-difference. You can filter by
+        editor-type (all-editor-types, anonymous,ngroup-bot, name-bot, user) or page-type
+        (all-page-types, content or non-content). You cannchoose between daily and
+        monthly granularity as well.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-edited-pages-by-abs-bytes-diff'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 edited-pages by absolute bytes-difference.
+      tags:
+      - Edited pages data
+      x-monitor: false
+      operationId: metrics.edited_pages.top_by_absolute_bytes_difference.project.editor_type.page_type.granularity.start.end.get
+  /metrics/edited-pages/top-by-edits/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 edited-pagesnby edits count. You can filter by editor-type
+        (all-editor-types, anonymous, group-bot,nname-bot, user) or page-type (all-page-types,
+        content or non-content). You can choosenbetween daily and monthly granularity
+        as well.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-edited-pages-by-edits'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 edited-pages by edits count.
+      tags:
+      - Edited pages data
+      x-monitor: false
+      operationId: metrics.edited_pages.top_by_edits.project.editor_type.page_type.granularity.start.end.get
+  /metrics/edited-pages/top-by-net-bytes-difference/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 edited-pagesnby net bytes-difference. You can filter by editor-type
+        (all-editor-types, anonymous,ngroup-bot, name-bot, user) or page-type (all-page-types,
+        content or non-content). You cannchoose between daily and monthly granularity
+        as well.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-edited-pages-by-net-bytes-diff'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 edited-pages by net bytes-difference.
+      tags:
+      - Edited pages data
+      x-monitor: false
+      operationId: metrics.edited_pages.top_by_net_bytes_difference.project.editor_type.page_type.granularity.start.end.get
+  /metrics/editors/aggregate/{project}/{editor-type}/{page-type}/{activity-level}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of its editors counts.nYou can filter by editory-type (all-editor-types, anonymous,
+        group-bot, name-bot, user),npage-type (all-page-types, content or non-content)
+        or activity-level (1..4-edits,n5..24-edits, 25..99-edits or 100..-edits).
+        You can choose between daily and monthlyngranularity as well.nn- Stability:
+        [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff.  For projects like commons without language codes,
+          use commons.wikimedia.nFor projects like www.mediawiki.org, you can use
+          that full string, or just usenmediawiki or mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belongingnto the bot group but having bot-like names) or user (registered
+          account not in botngroup nor having bot-like name). If you are interested
+          in edits regardlessnof their editor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          made in contentnnamespaces) or non-content (edits made in non-content namespaces).
+          If you areninterested in editors regardless of their page-type, use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: If you want to filter by activity-level, use one of 1..4-edits,
+          5..24-edits,n25..99-edits or 100..-edits. If you are interested in editors
+          regardlessnof their activity-level, use all-activity-levels.n
+        enum:
+        - all-activity-levels
+        - 1..4-edits
+        - 5..24-edits
+        - 25..99-edits
+        - 100..-edits
+        in: path
+        name: activity-level
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, supported values
+          arendaily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/editors'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get editors counts for a project.
+      tags:
+      - Editors data
+      x-monitor: false
+      operationId: metrics.editors.aggregate.project.editor_type.page_type.activity_level.granularity.start.end.get
+  /metrics/editors/top-by-absolute-bytes-difference/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 editors bynabsolute bytes-difference. You can filter by editor-type
+        (all-editor-types, anonymous,ngroup-bot, name-bot, user) or page-type (all-page-types,
+        content or non-content). You cannchoose between daily and monthly granularity
+        as well. The user_id returned is either thenmediawiki user_id if user is registered,
+        or his/her IP if the user is anonymous.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-editors-by-abs-bytes-diff'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 editors by absolute bytes-difference.
+      tags:
+      - Editors data
+      x-monitor: false
+      operationId: metrics.editors.top_by_absolute_bytes_difference.project.editor_type.page_type.granularity.start.end.get
+  /metrics/editors/top-by-edits/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 editors bynedits count. You can filter by editor-type (all-editor-types,
+        anonymous, group-bot,nname-bot, user) or page-type (all-page-types, content
+        or non-content). You can choosenbetween daily and monthly granularity as well.
+        The user_id returned is either thenmediawiki user_id if user is registered,
+        or his/her IP if the user is anonymous.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-editors-by-edits'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 editors by edits count.
+      tags:
+      - Editors data
+      x-monitor: false
+      operationId: metrics.editors.top_by_edits.project.editor_type.page_type.granularity.start.end.get
+  /metrics/editors/top-by-net-bytes-difference/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of the top 100 editors bynnet bytes-difference. You can filter by editor-type
+        (all-editor-types, anonymous, group-bot,nname-bot, user) or page-type (all-page-types,
+        content or non-content). You can choosenbetween daily and monthly granularity
+        as well. The user_id returned is either the mediawikinuser_id if user is registered,
+        or his/her IP if the user is anonymous.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia. Fornprojects like www.mediawiki.org, you can use
+          that full string, or just use mediawikinor mediawiki.org.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belonging tonthe bot group but having bot-like names) or user (registered
+          account not in bot groupnnor having bot-like name). If you are interested
+          in edits regardless of theirneditor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: Time unit for the response data. As of today, supported values
+          are daily and monthlyn
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/top-editors-by-net-bytes-diff'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get top 100 editors by net bytes-difference.
+      tags:
+      - Editors data
+      x-monitor: false
+      operationId: metrics.editors.top_by_net_bytes_difference.project.editor_type.page_type.granularity.start.end.get
+  /metrics/edits/aggregate/{project}/{editor-type}/{page-type}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of edits counts.nYou can filter by editors-type (all-editor-types, anonymous,
+        bot, registered) andnpage-type (all-page-types, content or non-content). You
+        can choose between daily andnmonthly granularity as well.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff.  For projects like commons without language codes,
+          use commons.wikimedia.nFor projects like www.mediawiki.org, you can use
+          that full string, or just usenmediawiki or mediawiki.org. If you're interested
+          in the aggregation ofnall projects, use all-projects.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by editor-type, use one of anonymous, group-bot
+          (registerednaccounts belonging to the bot group), name-bot (registered accounts
+          not belongingnto the bot group but having bot-like names) or user (registered
+          account not in botngroup nor having bot-like name). If you are interested
+          in edits regardlessnof their editor-type, use all-editor-types.n
+        enum:
+        - all-editor-types
+        - anonymous
+        - group-bot
+        - name-bot
+        - user
+        in: path
+        name: editor-type
+        required: true
+        type: string
+      - description: If you want to filter by page-type, use one of content (edits
+          on pages in contentnnamespaces) or non-content (edits on pages in non-content
+          namespaces). If you areninterested in edits regardless of their page-type,
+          use all-page-types.n
+        enum:
+        - all-page-types
+        - content
+        - non-content
+        in: path
+        name: page-type
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, supported values
+          arendaily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/edits'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get edits counts for a project.
+      tags:
+      - Edits data
+      x-monitor: false
+      operationId: metrics.edits.aggregate.project.editor_type.page_type.granularity.start.end.get
+  /metrics/legacy/pagecounts/aggregate/{project}/{access-site}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a project and a date range, returns a timeseries of pagecounts.nYou
+        can filter by access site (mobile or desktop) and you can choose between monthly,ndaily
+        and hourly granularity as well.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff. For projects like commons without language codes,
+          use commons.wikimedia.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by access site, use one of desktop-site
+          or mobile-site. If you are interested in pagecounts regardless of access
+          site use all-sites.
+        enum:
+        - all-sites
+        - desktop-site
+        - mobile-site
+        in: path
+        name: access-site
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, the supported
+          granularities fornthis endpoint are hourly, daily and monthly.n
+        enum:
+        - hourly
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The timestamp of the first hour/day/month to include, in YYYYMMDDHH
+          format.
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The timestamp of the last hour/day/month to include, in YYYYMMDDHH
+          format.nIn hourly and daily granularities this value is inclusive, in the
+          monthly granularitynthis value is exclusive.n
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/pagecounts-project'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      tags:
+      - Legacy data
+      x-monitor: false
+      operationId: metrics.legacy.pagecounts.aggregate.project.access_site.granularity.start.end.get
+  /metrics/pageviews/aggregate/{project}/{access}/{agent}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a date range, returns a timeseries of pageview counts. You
+        can filter by project,naccess method and/or agent type. You can choose between
+        daily and hourly granularitynas well.nn- Stability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: If you want to filter by project, use the domain of any Wikimedia
+          project,nfor example 'en.wikipedia.org', 'www.mediawiki.org' or 'commons.wikimedia.org'.nIf
+          you are interested in all pageviews regardless of project, use all-projects.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by access method, use one of desktop, mobile-app
+          or mobile-web.nIf you are interested in pageviews regardless of access method,
+          use all-access.n
+        enum:
+        - all-access
+        - desktop
+        - mobile-app
+        - mobile-web
+        in: path
+        name: access
+        required: true
+        type: string
+      - description: If you want to filter by agent type, use one of user or spider.
+          If you are interestednin pageviews regardless of agent type, use all-agents.n
+        enum:
+        - all-agents
+        - user
+        - spider
+        in: path
+        name: agent
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, the supported
+          granularities for thisnendpoint are hourly, daily, and monthly.n
+        enum:
+        - hourly
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The timestamp of the first hour/day/month to include, in YYYYMMDDHH
+          format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The timestamp of the last hour/day/month to include, in YYYYMMDDHH
+          format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/pageview-project'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get pageview counts for a project.
+      tags:
+      - Pageviews data
+      x-amples:
+      - request:
+          params:
+            access: all-access
+            agent: all-agents
+            domain: wikimedia.org
+            end: 1970010100
+            granularity: hourly
+            project: en.wikipedia
+            start: 1970010100
+        response:
+          body:
+            items:
+            - access: all-access
+              agent: all-agents
+              granularity: hourly
+              project: en.wikipedia
+              timestamp: 1970010100
+              views: 0
+          headers:
+            content-type: application/json
+          status: 200
+        title: Get aggregate page views
+      x-monitor: true
+      operationId: metrics.pageviews.aggregate.project.access.agent.granularity.start.end.get
+  /metrics/pageviews/per-article/{project}/{access}/{agent}/{article}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki article and a date range, returns a daily timeseries
+        of its pageviewncounts. You can also filter by access method and/or agent
+        type.nn- Stability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: If you want to filter by project, use the domain of any Wikimedia
+          project,nfor example 'en.wikipedia.org', 'www.mediawiki.org' or 'commons.wikimedia.org'.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by access method, use one of desktop, mobile-appnor
+          mobile-web. If you are interested in pageviews regardless of access method,nuse
+          all-access.n
+        enum:
+        - all-access
+        - desktop
+        - mobile-app
+        - mobile-web
+        in: path
+        name: access
+        required: true
+        type: string
+      - description: If you want to filter by agent type, use one of user, bot or
+          spider. If you areninterested in pageviews regardless of agent type, use
+          all-agents.n
+        enum:
+        - all-agents
+        - user
+        - spider
+        - bot
+        in: path
+        name: agent
+        required: true
+        type: string
+      - description: '''The title of any article in the specified project. Any spaces
+          should be replacednwith underscores. It also should be URI-encoded, so that
+          non-URI-safe characters liken%, / or ? are accepted. Example: Are_You_the_One%3F''.n'
+        in: path
+        name: article
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, the only supported
+          granularity fornthis endpoint is daily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD or YYYYMMDDHH
+          format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD or YYYYMMDDHH
+          format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/pageview-article'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get pageview counts for a page.
+      tags:
+      - Pageviews data
+      x-monitor: false
+      operationId: metrics.pageviews.per_article.project.access.agent.article.granularity.start.end.get
+  /metrics/pageviews/top-by-country/{project}/{access}/{year}/{month}:
+    get:
+      description: 'Lists the pageviews to this project, split by country of origin
+        for a given month.nBecause of privacy reasons, pageviews are given in a bucketed
+        format, and countriesnwith less than 100 views do not get reported.nStability:
+        [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: If you want to filter by project, use the domain of any Wikimedia
+          project,nfor example 'en.wikipedia.org', 'www.mediawiki.org' or 'commons.wikimedia.org'.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by access method, use one of desktop, mobile-app
+          or mobile-web.nIf you are interested in pageviews regardless of access method,
+          use all-access.n
+        enum:
+        - all-access
+        - desktop
+        - mobile-app
+        - mobile-web
+        in: path
+        name: access
+        required: true
+        type: string
+      - description: The year of the date for which to retrieve top countries, in
+          YYYY format.
+        in: path
+        name: year
+        required: true
+        type: string
+      - description: The month of the date for which to retrieve top countries, in
+          MM format.n
+        in: path
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of top countries by pageviews in the project
+          schema:
+            $ref: '#/definitions/by-country'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get pageviews by country and access method.
+      tags:
+      - Pageviews data
+      x-monitor: false
+      operationId: metrics.pageviews.top_by_country.project.access.year.month.get
+  /metrics/pageviews/top/{project}/{access}/{year}/{month}/{day}:
+    get:
+      description: 'Lists the 1000 most viewed articles for a given project and timespan
+        (month or day).nYou can filter by access method.nn- Stability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: If you want to filter by project, use the domain of any Wikimedia
+          project,nfor example 'en.wikipedia.org', 'www.mediawiki.org' or 'commons.wikimedia.org'.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by access method, use one of desktop, mobile-app
+          or mobile-web.nIf you are interested in pageviews regardless of access method,
+          use all-access.n
+        enum:
+        - all-access
+        - desktop
+        - mobile-app
+        - mobile-web
+        in: path
+        name: access
+        required: true
+        type: string
+      - description: The year of the date for which to retrieve top articles, in YYYY
+          format.
+        in: path
+        name: year
+        required: true
+        type: string
+      - description: The month of the date for which to retrieve top articles, in
+          MM format. If you wantnto get the top articles of a whole month, the day
+          parameter should be all-days.n
+        in: path
+        name: month
+        required: true
+        type: string
+      - description: The day of the date for which to retrieve top articles, in DD
+          format.
+        in: path
+        name: day
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of top articles in the project
+          schema:
+            $ref: '#/definitions/pageview-tops'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get the most viewed articles for a project.
+      tags:
+      - Pageviews data
+      x-monitor: false
+      operationId: metrics.pageviews.top.project.access.year.month.day.get
+  /metrics/registered-users/new/{project}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a Mediawiki project and a date range, returns a timeseries
+        of its newly registerednusers counts. You can choose between daily and monthly
+        granularity. The newly registerednusers value is computed with self-created
+        users only, not auto-login created ones.nn- Stability: [experimental](https://www.mediawiki.org/wiki/API_versioning#Experimental)n-
+        Rate limit: 25 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: The name of any Wikimedia project formatted like {language code}.{project
+          name},nfor example en.wikipedia. You may pass en.wikipedia.org and the .org
+          will be strippednoff.  For projects like commons without language codes,
+          use commons.wikimedia.nFor projects like www.mediawiki.org, you can use
+          that full string, or just usenmediawiki or mediawiki.org. If you're interested
+          in the aggregation ofnall projects, use all.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, supported values
+          arendaily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The date of the first day to include, in YYYYMMDD format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The date of the last day to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/new-registered-users'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get newly registered users counts for a project.
+      tags:
+      - Registered users data
+      x-monitor: false
+      operationId: metrics.registered_users.new.project.granularity.start.end.get
+  /metrics/unique-devices/{project}/{access-site}/{granularity}/{start}/{end}:
+    get:
+      description: 'Given a project and a date range, returns a timeseries of unique
+        devices counts.nYou need to specify a project, and can filter by accessed
+        site (mobile or desktop).nYou can choose between daily and hourly granularity
+        as well.nn- Stability: [stable](https://www.mediawiki.org/wiki/API_versioning#Stable)n-
+        Rate limit: 100 req/sn- License: Data accessible via this endpoint is available
+        under then  [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/).n'
+      parameters:
+      - description: If you want to filter by project, use the domain of any Wikimedia
+          project,nfor example 'en.wikipedia.org', 'www.mediawiki.org' or 'commons.wikimedia.org'.n
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: If you want to filter by accessed site, use one of desktop-site
+          or mobile-site.nIf you are interested in unique devices regardless of accessed
+          site, use or all-sites.n
+        enum:
+        - all-sites
+        - desktop-site
+        - mobile-site
+        in: path
+        name: access-site
+        required: true
+        type: string
+      - description: The time unit for the response data. As of today, the supported
+          granularitiesnfor this endpoint are daily and monthly.n
+        enum:
+        - daily
+        - monthly
+        in: path
+        name: granularity
+        required: true
+        type: string
+      - description: The timestamp of the first day/month to include, in YYYYMMDD
+          format
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The timestamp of the last day/month to include, in YYYYMMDD format
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The list of values
+          schema:
+            $ref: '#/definitions/unique-devices'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Get unique devices count per project
+      tags:
+      - Unique devices data
+      x-monitor: false
+      operationId: metrics.unique_devices.project.access_site.granularity.start.end.get
+  /transform/html/from/{from_lang}/to/{to_lang}:
+    parameters: []
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 'Fetches the machine translation for the posted content from the
+        sourcento the destination language.nnStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The source language code
+        in: path
+        name: from_lang
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to_lang
+        required: true
+        type: string
+      - description: The HTML content to translate
+        in: formData
+        name: html
+        required: true
+        type: string
+        x-textarea: true
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The translated content
+          schema:
+            $ref: '#/definitions/cx_mt'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Machine-translate content
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.html.from.from_lang.to.to_lang.post
+  /transform/html/from/{from_lang}/to/{to_lang}/{provider}:
+    parameters: []
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 'Fetches the machine translation for the posted content from the
+        sourcento the destination language.nnStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The source language code
+        in: path
+        name: from_lang
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to_lang
+        required: true
+        type: string
+      - description: The machine translation provider id
+        enum:
+        - Apertium
+        - Yandex
+        - Youdao
+        in: path
+        name: provider
+        required: true
+        type: string
+      - description: The HTML content to translate
+        in: formData
+        name: html
+        required: true
+        type: string
+        x-textarea: true
+      produces:
+      - application/json
+      responses:
+        200:
+          description: The translated content
+          schema:
+            $ref: '#/definitions/cx_mt'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Machine-translate content
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.html.from.from_lang.to.to_lang.provider.post
+  /transform/list/languagepairs/:
+    get:
+      description: 'Fetches the list of language pairs the back-end service can translatennStability:
+        [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the list of source and target languages supported by the API
+          schema:
+            $ref: '#/definitions/cx_languagepairs'
+      summary: Lists the language pairs supported by the back-end
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.list.languagepairs.get
+  /transform/list/pair/{from}/{to}/:
+    get:
+      description: 'Fetches the list of tools that are available for the given pair
+        of languages.nnStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The source language code
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the list of tools available for the language pair
+          schema:
+            $ref: '#/definitions/cx_list_tools'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Lists the tools available for a language pair
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.list.pair.from.to.get
+  /transform/list/tool/{tool}:
+    get:
+      description: 'Fetches the list of tools and all of the language pairs it can
+        translatennStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The tool category to list tools and language pairs for
+        enum:
+        - mt
+        - dictionary
+        in: path
+        name: tool
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the list of language pairs available for a given translation
+            tool
+          schema:
+            $ref: '#/definitions/cx_list_pairs_for_tool'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Lists the tools and language pairs available for the given tool category
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.list.tool.tool.get
+    parameters: []
+  /transform/list/tool/{tool}/{from}:
+    get:
+      description: 'Fetches the list of tools and all of the language pairs it can
+        translatennStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The tool category to list tools and language pairs for
+        enum:
+        - mt
+        - dictionary
+        in: path
+        name: tool
+        required: true
+        type: string
+      - description: The source language code
+        in: path
+        name: from
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the list of language pairs available for a given translation
+            tool
+          schema:
+            $ref: '#/definitions/cx_list_pairs_for_tool'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Lists the tools and language pairs available for the given tool category
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.list.tool.tool.from.get
+    parameters: []
+  /transform/list/tool/{tool}/{from}/{to}:
+    get:
+      description: 'Fetches the list of tools and all of the language pairs it can
+        translatennStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The tool category to list tools and language pairs for
+        enum:
+        - mt
+        - dictionary
+        in: path
+        name: tool
+        required: true
+        type: string
+      - description: The source language code
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the list of language pairs available for a given translation
+            tool
+          schema:
+            $ref: '#/definitions/cx_list_pairs_for_tool'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Lists the tools and language pairs available for the given tool category
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.list.tool.tool.from.to.get
+    parameters: []
+  /transform/word/from/{from_lang}/to/{to_lang}/{word}:
+    get:
+      description: 'Fetches the dictionary meaning of a word from a language and displaysnit
+        in the target language.nnStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The source language code
+        in: path
+        name: from_lang
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to_lang
+        required: true
+        type: string
+      - description: The word to lookup
+        in: path
+        name: word
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the dictionary translation for the given word
+          schema:
+            $ref: '#/definitions/cx_dict'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Fetch the dictionary meaning of a word
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.word.from.from_lang.to.to_lang.word.get
+    parameters: []
+  /transform/word/from/{from_lang}/to/{to_lang}/{word}/{provider}:
+    get:
+      description: 'Fetches the dictionary meaning of a word from a language and displaysnit
+        in the target language.nnStability: [unstable](https://www.mediawiki.org/wiki/API_versioning#Unstable)n'
+      parameters:
+      - description: The source language code
+        in: path
+        name: from_lang
+        required: true
+        type: string
+      - description: The target language code
+        in: path
+        name: to_lang
+        required: true
+        type: string
+      - description: The word to lookup
+        in: path
+        name: word
+        required: true
+        type: string
+      - description: The dictionary provider id
+        enum:
+        - JsonDict
+        - Dictd
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: the dictionary translation for the given word
+          schema:
+            $ref: '#/definitions/cx_dict'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/problem'
+      summary: Fetch the dictionary meaning of a word
+      tags:
+      - Transform
+      x-monitor: false
+      operationId: transform.word.from.from_lang.to.to_lang.word.provider.get
+    parameters: []
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":29:{s:25:\"absolute-bytes-difference\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"abs_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:10:\"by-country\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"countries\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"rank\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"views\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}}s:4:\"type\";s:5:\"array\";}s:5:\"month\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"year\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:7:\"cx_dict\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"source\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"the
+  original word to look up\";s:4:\"type\";s:6:\"string\";}s:12:\"translations\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"the
+  translations found\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"info\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"extra
+  information about the phrase\";s:4:\"type\";s:6:\"string\";}s:6:\"phrase\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"the
+  translated phrase\";s:4:\"type\";s:6:\"string\";}s:7:\"sources\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"the
+  source dictionary used for the translation\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:16:\"cx_languagepairs\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"source\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"the
+  list of available source languages\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"one
+  source language\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:6:\"target\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"the
+  list of available destination languages\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"one
+  destination language\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:22:\"cx_list_pairs_for_tool\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:13:\"cx_list_tools\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"tools\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"the
+  list of tools available for the given language pair\";s:5:\"items\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"the
+  tool available\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:5:\"cx_mt\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"contents\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"the
+  translated content\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"edited-pages\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"activity-level\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"edited_pages\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:7:\"editors\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"activity-level\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"editors\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:5:\"edits\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"edits\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:7:\"listing\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  result format for listings\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:5:\"items\";}}s:20:\"net-bytes-difference\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"net_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:9:\"new-pages\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"new_pages\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:20:\"new-registered-users\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:20:\"new_registered_users\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:13:\"originalimage\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"height\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Original
+  image height\";s:4:\"type\";s:7:\"integer\";}s:6:\"source\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Original
+  image URI\";s:4:\"type\";s:6:\"string\";}s:5:\"width\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Original
+  image width\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:3:{i:0;s:6:\"source\";i:1;s:5:\"width\";i:2;s:6:\"height\";}s:4:\"type\";s:6:\"object\";}s:18:\"pagecounts-project\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"access-site\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:16:\"pageview-article\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"agent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"article\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"views\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}}s:4:\"type\";s:5:\"array\";}}}s:16:\"pageview-project\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"agent\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"views\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}}s:4:\"type\";s:5:\"array\";}}}s:13:\"pageview-tops\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"articles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"article\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"rank\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"views\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}}s:4:\"type\";s:5:\"array\";}s:3:\"day\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"month\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"year\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:7:\"problem\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"instance\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"type\";}}s:7:\"summary\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":12:{s:11:\"coordinates\";O:8:\"stdClass\":4:{s:11:\"description\";s:27:\"The
+  coordinates of the item\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"lat\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"The
+  latitude\";s:4:\"type\";s:6:\"number\";}s:3:\"lon\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"The
+  longitude\";s:4:\"type\";s:6:\"number\";}}s:8:\"required\";a:2:{i:0;s:3:\"lat\";i:1;s:3:\"lon\";}s:4:\"type\";s:6:\"object\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"Wikidata
+  description for the page\";s:7:\"example\";s:13:\"American poet\";s:4:\"type\";s:6:\"string\";}s:3:\"dir\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"The
+  page language direction code\";s:7:\"example\";s:3:\"ltr\";s:4:\"type\";s:6:\"string\";}s:12:\"displaytitle\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"The
+  page title how it should be shown to the user\";s:4:\"type\";s:6:\"string\";}s:7:\"extract\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"First
+  several sentences of an article in plain text\";s:4:\"type\";s:6:\"string\";}s:12:\"extract_html\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"First
+  several sentences of an article in simple HTML format\";s:4:\"type\";s:6:\"string\";}s:4:\"lang\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"The
+  page language code\";s:7:\"example\";s:2:\"en\";s:4:\"type\";s:6:\"string\";}s:13:\"originalimage\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/originalimage\";}s:6:\"pageid\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"The
+  page ID\";s:4:\"type\";s:7:\"integer\";}s:9:\"thumbnail\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/thumbnail\";}s:9:\"timestamp\";O:8:\"stdClass\":3:{s:11:\"description\";s:104:\"The
+  time when the page was last editted in the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+  format\";s:7:\"example\";s:24:\"1970-01-01T00:00:00.000Z\";s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  page title\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:5:\"title\";i:1;s:7:\"extract\";i:2;s:4:\"lang\";i:3;s:3:\"dir\";}s:4:\"type\";s:6:\"object\";}s:9:\"thumbnail\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"height\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Thumnail
+  height\";s:4:\"type\";s:7:\"integer\";}s:6:\"source\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Thumbnail
+  image URI\";s:4:\"type\";s:6:\"string\";}s:5:\"width\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Thumbnail
+  width\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:3:{i:0;s:6:\"source\";i:1;s:5:\"width\";i:2;s:6:\"height\";}s:4:\"type\";s:6:\"object\";}s:34:\"top-edited-pages-by-abs-bytes-diff\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"abs_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"page_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:25:\"top-edited-pages-by-edits\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"edits\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"page_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:34:\"top-edited-pages-by-net-bytes-diff\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"net_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"page_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:29:\"top-editors-by-abs-bytes-diff\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"abs_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:20:\"top-editors-by-edits\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"edits\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:29:\"top-editors-by-net-bytes-diff\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"editor-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"page-type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"top\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"net_bytes_diff\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"user_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:4:\"type\";s:5:\"array\";}}}s:14:\"unique-devices\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"access-site\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"devices\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"granularity\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"project\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"timestamp\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:5:\"array\";}}}}"
+...

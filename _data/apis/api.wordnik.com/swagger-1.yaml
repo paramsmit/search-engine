@@ -1,0 +1,1112 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":9:{s:11:\"description\";s:77:\"Wordnik is the
+  world's biggest online English dictionary, by number of words\n\";s:5:\"title\";s:7:\"Wordnik\";s:7:\"version\";s:3:\"4.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:4:\"text\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:79:\"https://api.apis.guru/v2/cache/logo/https_wordnik.com_img_logo-wordnik-home.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":4:{s:9:\"converter\";O:8:\"stdClass\":2:{s:3:\"url\";s:45:\"https://github.com/lucybot/api-spec-converter\";s:7:\"version\";s:5:\"2.6.2\";}s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:46:\"http://developer.wordnik.com/v4/resources.json\";s:7:\"version\";s:3:\"1.1\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:11:\"wordnik.com\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"wordnik\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.wordnik.com
+basePath: /v4
+paths:
+  /account.json/apiTokenStatus:
+    get:
+      operationId: getApiTokenStatus
+      parameters:
+      - description: Wordnik authentication token
+        in: header
+        name: api_key
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/ApiTokenStatus'
+      summary: Returns usage statistics for the API account.
+      tags:
+      - account
+  /account.json/authenticate/{username}:
+    get:
+      operationId: authenticate
+      parameters:
+      - description: A confirmed Wordnik username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: The user's password
+        in: query
+        name: password
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/AuthenticationToken'
+      summary: Authenticates a User
+      tags:
+      - account
+    post:
+      operationId: authenticatePost
+      parameters:
+      - description: A confirmed Wordnik username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: The user's password
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/AuthenticationToken'
+      summary: Authenticates a user
+      tags:
+      - account
+  /account.json/user:
+    get:
+      description: Requires a valid auth_token to be set.
+      operationId: getLoggedInUser
+      parameters:
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/User'
+      summary: Returns the logged-in User
+      tags:
+      - account
+  /account.json/wordLists:
+    get:
+      operationId: getWordListsForLoggedInUser
+      parameters:
+      - description: auth_token of logged-in user
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      - default: 0
+        description: Results to skip
+        format: int32
+        in: query
+        name: skip
+        required: false
+        type: integer
+      - default: 50
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/WordList'
+            type: array
+      summary: Fetches WordList objects for the logged-in user.
+      tags:
+      - account
+  /word.json/{word}:
+    get:
+      operationId: getWord
+      parameters:
+      - description: String value of WordObject to return
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - default: "true"
+        description: Return suggestions (for correct spelling, case variants, etc.)
+        in: query
+        name: includeSuggestions
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordObject'
+      summary: Given a word as a string, returns the WordObject that represents it
+      tags:
+      - word
+  /word.json/{word}/audio:
+    get:
+      description: The metadata includes a time-expiring fileUrl which allows reading
+        the audio file directly from the API.  Currently only audio pronunciations
+        from the American Heritage Dictionary in mp3 format are supported.
+      operationId: getAudio
+      parameters:
+      - description: Word to get audio for.
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: Use the canonical form of the word
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - default: 50
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/AudioFile'
+            type: array
+      summary: Fetches audio metadata for a word.
+      tags:
+      - word
+  /word.json/{word}/definitions:
+    get:
+      operationId: getDefinitions
+      parameters:
+      - description: Word to return definitions for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: 200
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: CSV list of part-of-speech types
+        in: query
+        name: partOfSpeech
+        required: false
+        type: string
+      - default: "false"
+        description: Return related words with definitions
+        in: query
+        name: includeRelated
+        required: false
+        type: string
+      - description: 'Source dictionary to return definitions from.  If ''all'' is
+          received, results are returned from all sources. If multiple values are
+          received (e.g. ''century,wiktionary''), results are returned from the first
+          specified dictionary that has definitions. If left blank, results are returned
+          from the first dictionary that has definitions. By default, dictionaries
+          are searched in this order: ahd, wiktionary, webster, century, wordnet'
+        in: query
+        items:
+          type: string
+        name: sourceDictionaries
+        required: false
+        type: array
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - default: "false"
+        description: Return a closed set of XML tags in response
+        in: query
+        name: includeTags
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/Definition'
+            type: array
+      summary: Return definitions for a word
+      tags:
+      - word
+  /word.json/{word}/etymologies:
+    get:
+      operationId: getEtymologies
+      parameters:
+      - description: Word to return
+        in: path
+        name: word
+        required: true
+        type: string
+      - description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Fetches etymology data
+      tags:
+      - word
+  /word.json/{word}/examples:
+    get:
+      operationId: getExamples
+      parameters:
+      - description: Word to return examples for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: Show duplicate examples from different sources
+        in: query
+        name: includeDuplicates
+        required: false
+        type: string
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - default: 0
+        description: Results to skip
+        format: int32
+        in: query
+        name: skip
+        required: false
+        type: integer
+      - default: 5
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/ExampleSearchResults'
+      summary: Returns examples for a word
+      tags:
+      - word
+  /word.json/{word}/frequency:
+    get:
+      operationId: getWordFrequency
+      parameters:
+      - description: Word to return
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - default: 1800
+        description: Starting Year
+        format: int32
+        in: query
+        name: startYear
+        required: false
+        type: integer
+      - default: 2012
+        description: Ending Year
+        format: int32
+        in: query
+        name: endYear
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/FrequencySummary'
+      summary: Returns word usage over time
+      tags:
+      - word
+  /word.json/{word}/hyphenation:
+    get:
+      operationId: getHyphenation
+      parameters:
+      - description: Word to get syllables for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return a correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - description: 'Get from a single dictionary. Valid options: ahd, century, wiktionary,
+          webster, and wordnet.'
+        in: query
+        name: sourceDictionary
+        required: false
+        type: string
+      - default: 50
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/Syllable'
+            type: array
+      summary: Returns syllable information for a word
+      tags:
+      - word
+  /word.json/{word}/phrases:
+    get:
+      operationId: getPhrases
+      parameters:
+      - description: Word to fetch phrases for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: 5
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: Minimum WLMI for the phrase
+        format: int32
+        in: query
+        name: wlmi
+        required: false
+        type: integer
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/Bigram'
+            type: array
+      summary: Fetches bi-gram phrases for a word
+      tags:
+      - word
+  /word.json/{word}/pronunciations:
+    get:
+      operationId: getTextPronunciations
+      parameters:
+      - description: Word to get pronunciations for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return a correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - description: Get from a single dictionary
+        in: query
+        name: sourceDictionary
+        required: false
+        type: string
+      - description: Text pronunciation type
+        in: query
+        name: typeFormat
+        required: false
+        type: string
+      - default: 50
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/TextPron'
+            type: array
+      summary: Returns text pronunciations for a given word
+      tags:
+      - word
+  /word.json/{word}/relatedWords:
+    get:
+      operationId: getRelatedWords
+      parameters:
+      - description: Word to fetch relationships for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      - description: Limits the total results per type of relationship type
+        in: query
+        name: relationshipTypes
+        required: false
+        type: string
+      - default: 10
+        description: Restrict to the supplied relationship types
+        format: int32
+        in: query
+        name: limitPerRelationshipType
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/Related'
+            type: array
+      summary: Given a word as a string, returns relationships from the Word Graph
+      tags:
+      - word
+  /word.json/{word}/topExample:
+    get:
+      operationId: getTopExample
+      parameters:
+      - description: Word to fetch examples for
+        in: path
+        name: word
+        required: true
+        type: string
+      - default: "false"
+        description: If true will try to return the correct word root ('cats' -> 'cat').
+          If false returns exactly what was requested.
+        in: query
+        name: useCanonical
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/Example'
+      summary: Returns a top example for a word
+      tags:
+      - word
+  /wordList.json/{permalink}:
+    delete:
+      operationId: deleteWordList
+      parameters:
+      - description: ID of WordList to delete
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+      summary: Deletes an existing WordList
+      tags:
+      - wordList
+    get:
+      operationId: getWordListByPermalink
+      parameters:
+      - description: permalink of WordList to fetch
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordList'
+      summary: Fetches a WordList by ID
+      tags:
+      - wordList
+    put:
+      operationId: updateWordList
+      parameters:
+      - description: permalink of WordList to update
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - description: Updated WordList
+        in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/WordList'
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+      summary: Updates an existing WordList
+      tags:
+      - wordList
+  /wordList.json/{permalink}/deleteWords:
+    post:
+      operationId: deleteWordsFromWordList
+      parameters:
+      - description: permalink of WordList to use
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - description: Words to remove from WordList
+        in: body
+        name: body
+        required: false
+        schema:
+          items:
+            $ref: '#/definitions/StringValue'
+          type: array
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+      summary: Removes words from a WordList
+      tags:
+      - wordList
+  /wordList.json/{permalink}/words:
+    get:
+      operationId: getWordListWords
+      parameters:
+      - description: ID of WordList to use
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - default: createDate
+        description: Field to sort by
+        in: query
+        name: sortBy
+        required: false
+        type: string
+      - default: desc
+        description: Direction to sort
+        in: query
+        name: sortOrder
+        required: false
+        type: string
+      - default: 0
+        description: Results to skip
+        format: int32
+        in: query
+        name: skip
+        required: false
+        type: integer
+      - default: 100
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/WordListWord'
+            type: array
+      summary: Fetches words in a WordList
+      tags:
+      - wordList
+    post:
+      operationId: addWordsToWordList
+      parameters:
+      - description: permalink of WordList to user
+        in: path
+        name: permalink
+        required: true
+        type: string
+      - description: Array of words to add to WordList
+        in: body
+        name: body
+        required: false
+        schema:
+          items:
+            $ref: '#/definitions/StringValue'
+          type: array
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+      summary: Adds words to a WordList
+      tags:
+      - wordList
+  /wordLists.json:
+    post:
+      operationId: createWordList
+      parameters:
+      - description: WordList to create
+        in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/WordList'
+      - description: The auth token of the logged-in user, obtained by calling /account.{format}/authenticate/{username}
+          (described above)
+        in: header
+        name: auth_token
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordList'
+      summary: Creates a WordList.
+      tags:
+      - wordLists
+  /words.json/randomWord:
+    get:
+      operationId: getRandomWord
+      parameters:
+      - default: "true"
+        description: Only return words with dictionary definitions
+        in: query
+        name: hasDictionaryDef
+        required: false
+        type: string
+      - description: CSV part-of-speech values to include
+        in: query
+        name: includePartOfSpeech
+        required: false
+        type: string
+      - description: CSV part-of-speech values to exclude
+        in: query
+        name: excludePartOfSpeech
+        required: false
+        type: string
+      - default: 0
+        description: Minimum corpus frequency for terms
+        format: int32
+        in: query
+        name: minCorpusCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum corpus frequency for terms
+        format: int32
+        in: query
+        name: maxCorpusCount
+        required: false
+        type: integer
+      - default: 1
+        description: Minimum dictionary count
+        format: int32
+        in: query
+        name: minDictionaryCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum dictionary count
+        format: int32
+        in: query
+        name: maxDictionaryCount
+        required: false
+        type: integer
+      - default: 5
+        description: Minimum word length
+        format: int32
+        in: query
+        name: minLength
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum word length
+        format: int32
+        in: query
+        name: maxLength
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordObject'
+      summary: Returns a single random WordObject
+      tags:
+      - words
+  /words.json/randomWords:
+    get:
+      operationId: getRandomWords
+      parameters:
+      - default: "true"
+        description: Only return words with dictionary definitions
+        in: query
+        name: hasDictionaryDef
+        required: false
+        type: string
+      - description: CSV part-of-speech values to include
+        in: query
+        name: includePartOfSpeech
+        required: false
+        type: string
+      - description: CSV part-of-speech values to exclude
+        in: query
+        name: excludePartOfSpeech
+        required: false
+        type: string
+      - default: 0
+        description: Minimum corpus frequency for terms
+        format: int32
+        in: query
+        name: minCorpusCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum corpus frequency for terms
+        format: int32
+        in: query
+        name: maxCorpusCount
+        required: false
+        type: integer
+      - default: 1
+        description: Minimum dictionary count
+        format: int32
+        in: query
+        name: minDictionaryCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum dictionary count
+        format: int32
+        in: query
+        name: maxDictionaryCount
+        required: false
+        type: integer
+      - default: 5
+        description: Minimum word length
+        format: int32
+        in: query
+        name: minLength
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum word length
+        format: int32
+        in: query
+        name: maxLength
+        required: false
+        type: integer
+      - description: Attribute to sort by
+        in: query
+        name: sortBy
+        required: false
+        type: string
+      - description: Sort direction
+        in: query
+        name: sortOrder
+        required: false
+        type: string
+      - default: 10
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/WordObject'
+            type: array
+      summary: Returns an array of random WordObjects
+      tags:
+      - words
+  /words.json/reverseDictionary:
+    get:
+      operationId: reverseDictionary
+      parameters:
+      - description: Search term
+        in: query
+        name: query
+        required: true
+        type: string
+      - description: Restricts words and finds closest sense
+        in: query
+        name: findSenseForWord
+        required: false
+        type: string
+      - description: Only include these comma-delimited source dictionaries
+        in: query
+        name: includeSourceDictionaries
+        required: false
+        type: string
+      - description: Exclude these comma-delimited source dictionaries
+        in: query
+        name: excludeSourceDictionaries
+        required: false
+        type: string
+      - description: Only include these comma-delimited parts of speech
+        in: query
+        name: includePartOfSpeech
+        required: false
+        type: string
+      - description: Exclude these comma-delimited parts of speech
+        in: query
+        name: excludePartOfSpeech
+        required: false
+        type: string
+      - default: 5
+        description: Minimum corpus frequency for terms
+        format: int32
+        in: query
+        name: minCorpusCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum corpus frequency for terms
+        format: int32
+        in: query
+        name: maxCorpusCount
+        required: false
+        type: integer
+      - default: 1
+        description: Minimum word length
+        format: int32
+        in: query
+        name: minLength
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum word length
+        format: int32
+        in: query
+        name: maxLength
+        required: false
+        type: integer
+      - description: Expand terms
+        in: query
+        name: expandTerms
+        required: false
+        type: string
+      - default: "false"
+        description: Return a closed set of XML tags in response
+        in: query
+        name: includeTags
+        required: false
+        type: string
+      - description: Attribute to sort by
+        in: query
+        name: sortBy
+        required: false
+        type: string
+      - description: Sort direction
+        in: query
+        name: sortOrder
+        required: false
+        type: string
+      - default: "0"
+        description: Results to skip
+        in: query
+        name: skip
+        required: false
+        type: string
+      - default: 10
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/DefinitionSearchResults'
+      summary: Reverse dictionary search
+      tags:
+      - words
+  /words.json/search/{query}:
+    get:
+      operationId: searchWords
+      parameters:
+      - description: Search query
+        in: path
+        name: query
+        required: true
+        type: string
+      - default: "true"
+        description: Search case sensitive
+        in: query
+        name: caseSensitive
+        required: false
+        type: string
+      - description: Only include these comma-delimited parts of speech
+        in: query
+        name: includePartOfSpeech
+        required: false
+        type: string
+      - description: Exclude these comma-delimited parts of speech
+        in: query
+        name: excludePartOfSpeech
+        required: false
+        type: string
+      - default: 5
+        description: Minimum corpus frequency for terms
+        format: int32
+        in: query
+        name: minCorpusCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum corpus frequency for terms
+        format: int32
+        in: query
+        name: maxCorpusCount
+        required: false
+        type: integer
+      - default: 1
+        description: Minimum number of dictionary entries for words returned
+        format: int32
+        in: query
+        name: minDictionaryCount
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum dictionary definition count
+        format: int32
+        in: query
+        name: maxDictionaryCount
+        required: false
+        type: integer
+      - default: 1
+        description: Minimum word length
+        format: int32
+        in: query
+        name: minLength
+        required: false
+        type: integer
+      - default: -1
+        description: Maximum word length
+        format: int32
+        in: query
+        name: maxLength
+        required: false
+        type: integer
+      - default: 0
+        description: Results to skip
+        format: int32
+        in: query
+        name: skip
+        required: false
+        type: integer
+      - default: 10
+        description: Maximum number of results to return
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordSearchResults'
+      summary: Searches words
+      tags:
+      - words
+  /words.json/wordOfTheDay:
+    get:
+      operationId: getWordOfTheDay
+      parameters:
+      - description: Fetches by date in yyyy-MM-dd
+        in: query
+        name: date
+        required: false
+        type: string
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/WordOfTheDay'
+      summary: Returns a specific WordOfTheDay
+      tags:
+      - words
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":36:{s:14:\"ApiTokenStatus\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:15:\"expiresInMillis\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:14:\"remainingCalls\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:14:\"resetsInMillis\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"totalRequests\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"valid\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:9:\"AudioFile\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":14:{s:15:\"attributionText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"attributionUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"audioType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"commentCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:7:\"fileUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"voteAverage\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";}s:9:\"voteCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:19:\"voteWeightedAverage\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:9:\"AudioType\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"AuthenticationToken\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:13:\"userSignature\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"Bigram\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"gram1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"gram2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"mi\";O:8:\"stdClass\":2:{s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:4:\"wlmi\";O:8:\"stdClass\":2:{s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}}}s:8:\"Category\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:8:\"Citation\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cite\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"ContentProvider\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"Definition\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":16:{s:15:\"attributionText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"attributionUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"citations\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Citation\";}s:4:\"type\";s:5:\"array\";}s:11:\"exampleUses\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ExampleUsage\";}s:4:\"type\";s:5:\"array\";}s:12:\"extendedText\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"labels\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Label\";}s:4:\"type\";s:5:\"array\";}s:5:\"notes\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Note\";}s:4:\"type\";s:5:\"array\";}s:12:\"partOfSpeech\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"relatedWords\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Related\";}s:4:\"type\";s:5:\"array\";}s:5:\"score\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";}s:9:\"seqString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"sequence\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"sourceDictionary\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"textProns\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/TextPron\";}s:4:\"type\";s:5:\"array\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:23:\"DefinitionSearchResults\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"results\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Definition\";}s:4:\"type\";s:5:\"array\";}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}s:7:\"Example\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:10:\"documentId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"exampleId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"provider\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ContentProvider\";}s:6:\"rating\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";}s:5:\"score\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ScoredWord\";}s:8:\"sentence\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Sentence\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"year\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}s:20:\"ExampleSearchResults\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"examples\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Example\";}s:4:\"type\";s:5:\"array\";}s:6:\"facets\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Facet\";}s:4:\"type\";s:5:\"array\";}}}s:12:\"ExampleUsage\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Facet\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"facetValues\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/FacetValue\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"FacetValue\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Frequency\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"year\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}s:16:\"FrequencySummary\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"frequency\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Frequency\";}s:4:\"type\";s:5:\"array\";}s:15:\"frequencyString\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:16:\"unknownYearCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Label\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"Note\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"appliesTo\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"noteType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pos\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"PartOfSpeech\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:13:\"allCategories\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:4:\"type\";s:5:\"array\";}s:5:\"roots\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Root\";}s:4:\"type\";s:5:\"array\";}s:11:\"storageAbbr\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}}s:7:\"Related\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"gram\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"label1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"label2\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"label3\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"label4\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"relationshipType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"words\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}}s:4:\"Root\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"categories\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Category\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:10:\"ScoredWord\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":11:{s:13:\"baseWordScore\";O:8:\"stdClass\":2:{s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:12:\"docTermCount\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"lemma\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"partOfSpeech\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"position\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"score\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"float\";s:4:\"type\";s:6:\"number\";}s:10:\"sentenceId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"stopword\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"wordType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Sentence\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"display\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"documentMetadataId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:14:\"hasScoredWords\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:6:\"rating\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"scoredWords\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ScoredWord\";}s:4:\"type\";s:5:\"array\";}}}s:16:\"SimpleDefinition\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"note\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"partOfSpeech\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"SimpleExample\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"StringValue\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Syllable\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"seq\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"text\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"TextPron\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"raw\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"rawType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"seq\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}s:4:\"User\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"faceBookId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:8:\"userName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"WordList\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"createdAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:14:\"lastActivityAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"numberWordsInList\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"permalink\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"WordListWord\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"createdAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:20:\"numberCommentsOnWord\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"numberLists\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:6:\"userId\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:10:\"WordObject\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:13:\"canonicalForm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:12:\"originalWord\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"suggestions\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:6:\"vulgar\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:12:\"WordOfTheDay\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"contentProvider\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ContentProvider\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:9:\"createdBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"definitions\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/SimpleDefinition\";}s:4:\"type\";s:5:\"array\";}s:8:\"examples\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/SimpleExample\";}s:4:\"type\";s:5:\"array\";}s:9:\"htmlExtra\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"note\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"parentId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"publishDate\";O:8:\"stdClass\":2:{s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:16:\"WordSearchResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"lexicality\";O:8:\"stdClass\":2:{s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:4:\"word\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:17:\"WordSearchResults\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"searchResults\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/WordSearchResult\";}s:4:\"type\";s:5:\"array\";}s:12:\"totalResults\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}}"
+...

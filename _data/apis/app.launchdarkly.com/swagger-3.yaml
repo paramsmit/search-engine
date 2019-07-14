@@ -1,0 +1,873 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":4:{s:5:\"email\";s:24:\"support@launchdarkly.com\";s:4:\"name\";s:20:\"LaunchDarkly
+  Support\";s:3:\"url\";s:32:\"https://support.launchdarkly.com\";s:9:\"x-twitter\";s:12:\"launchdarkly\";}s:11:\"description\";s:56:\"Build
+  custom integrations with the LaunchDarkly REST API\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:14:\"termsOfService\";s:30:\"https://launchdarkly.com/terms\";s:5:\"title\";s:12:\"LaunchDarkly\";s:7:\"version\";s:5:\"2.0.5\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:15:\"developer_tools\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:85:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_launchdarkly_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:54:\"https://launchdarkly.github.io/ld-openapi/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:16:\"launchdarkly.com\";}"
+host: app.launchdarkly.com
+basePath: /api/v2
+paths:
+  /:
+    get:
+      description: You can issue a GET request to the root resource to find all of
+        the resource categories supported by the API.
+      operationId: getRoot
+      responses:
+        200:
+          $ref: '#/responses/Root200'
+        401:
+          $ref: '#/responses/Standard401'
+      tags:
+      - Root
+  /auditlog:
+    get:
+      operationId: getAuditLogEntries
+      parameters:
+      - $ref: '#/parameters/Before'
+      - $ref: '#/parameters/After'
+      - $ref: '#/parameters/Q'
+      - $ref: '#/parameters/AuditLimit'
+      - $ref: '#/parameters/Spec'
+      responses:
+        200:
+          description: Audit log entries response.
+          schema:
+            $ref: '#/definitions/AuditLogEntries'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get a list of all audit log entries. The query parameters allow you
+        to restrict the returned results by date ranges, resource specifiers, or a
+        full-text search query.
+      tags:
+      - Audit log
+  /auditlog/{resourceId}:
+    get:
+      operationId: getAuditLogEntry
+      parameters:
+      - $ref: '#/parameters/ResourceId'
+      responses:
+        200:
+          description: Audit log entry response.
+          schema:
+            $ref: '#/definitions/AuditLogEntry'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Use this endpoint to fetch a single audit log entry by its resouce
+        ID.
+      tags:
+      - Audit log
+  /flag-statuses/{projectKey}/{environmentKey}:
+    get:
+      operationId: getFeatureFlagStatuses
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      responses:
+        200:
+          description: List of feature flag statuses.
+          schema:
+            $ref: '#/definitions/FeatureFlagStatuses'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get a list of statuses for all feature flags. The status includes the
+        last time the feature flag was requested, as well as the state of the flag.
+      tags:
+      - Feature flags
+  /flag-statuses/{projectKey}/{environmentKey}/{featureFlagKey}:
+    get:
+      operationId: getFeatureFlagStatus
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      responses:
+        200:
+          description: Status of the requested feature flag.
+          schema:
+            $ref: '#/definitions/FeatureFlagStatus'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get the status for a particular feature flag.
+      tags:
+      - Feature flags
+  /flags/{projectKey}:
+    get:
+      operationId: getFeatureFlags
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKeyQuery'
+      - $ref: '#/parameters/Tag'
+      responses:
+        200:
+          description: Flags response.
+          schema:
+            $ref: '#/definitions/FeatureFlags'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get a list of all features in the given project.
+      tags:
+      - Feature flags
+    post:
+      operationId: postFeatureFlag
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/FeatureFlagPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Creates a new feature flag.
+      tags:
+      - Feature flags
+  /flags/{projectKey}/{featureFlagKey}:
+    delete:
+      operationId: deleteFeatureFlag
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a feature flag in all environments. Be careful-- only delete
+        feature flags that are no longer being used by your application.
+      tags:
+      - Feature flags
+    get:
+      operationId: getFeatureFlag
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      - $ref: '#/parameters/EnvironmentKeyQuery'
+      responses:
+        200:
+          description: Flag response.
+          schema:
+            $ref: '#/definitions/FeatureFlag'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Get a single feature flag by key.
+      tags:
+      - Feature flags
+    patch:
+      operationId: patchFeatureFlag
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      - $ref: '#/parameters/PatchWithComment'
+      responses:
+        200:
+          $ref: '#/responses/FeatureFlags200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Perform a partial update to a feature.
+      tags:
+      - Feature flags
+  /members:
+    get:
+      operationId: getMembers
+      responses:
+        200:
+          description: Projects response.
+          schema:
+            $ref: '#/definitions/Members'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Returns a list of all members in the account.
+      tags:
+      - Team members
+    post:
+      operationId: postMembers
+      parameters:
+      - $ref: '#/parameters/MembersPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Invite new members.
+      tags:
+      - Team members
+  /members/{memberId}:
+    delete:
+      operationId: deleteMember
+      parameters:
+      - $ref: '#/parameters/MemberId'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a team member by ID.
+      tags:
+      - Team members
+    get:
+      operationId: getMember
+      parameters:
+      - $ref: '#/parameters/MemberId'
+      responses:
+        200:
+          $ref: '#/responses/Member200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get a single team member by ID.
+      tags:
+      - Team members
+    patch:
+      operationId: patchMember
+      parameters:
+      - $ref: '#/parameters/MemberId'
+      - $ref: '#/parameters/PatchRequest'
+      responses:
+        200:
+          $ref: '#/responses/Member200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Modify a team member by ID.
+      tags:
+      - Team members
+  /projects:
+    get:
+      operationId: getProjects
+      responses:
+        200:
+          description: Projects response
+          schema:
+            $ref: '#/definitions/Projects'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Returns a list of all projects in the account.
+      tags:
+      - Projects
+    post:
+      operationId: postProject
+      parameters:
+      - $ref: '#/parameters/ProjectPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Create a new project with the given key and name.
+      tags:
+      - Projects
+  /projects/{projectKey}:
+    delete:
+      operationId: deleteProject
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a project by key. Caution-- deleting a project will delete all
+        associated environments and feature flags. You cannot delete the last project
+        in an account.
+      tags:
+      - Projects
+    get:
+      operationId: getProject
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      responses:
+        200:
+          $ref: '#/responses/Projects200'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Fetch a single project by key.
+      tags:
+      - Projects
+    patch:
+      operationId: patchProject
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/PatchRequest'
+      responses:
+        200:
+          $ref: '#/responses/Projects200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Modify a project by ID.
+      tags:
+      - Projects
+  /projects/{projectKey}/environments:
+    post:
+      operationId: postEnvironment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Create a new environment in a specified project with a given name,
+        key, and swatch color.
+      tags:
+      - Environments
+  /projects/{projectKey}/environments/{environmentKey}:
+    delete:
+      operationId: deleteEnvironment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete an environment in a specific project.
+      tags:
+      - Environments
+    get:
+      operationId: getEnvironment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      responses:
+        200:
+          description: Environment response.
+          schema:
+            $ref: '#/definitions/Environment'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Get an environment given a project and key.
+      tags:
+      - Environments
+    patch:
+      operationId: patchEnvironment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/PatchRequest'
+      responses:
+        200:
+          description: Environment response.
+          schema:
+            $ref: '#/definitions/Environment'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Modify an environment by ID.
+      tags:
+      - Environments
+  /roles:
+    get:
+      operationId: getCustomRoles
+      responses:
+        200:
+          description: Custom roles response.
+          schema:
+            $ref: '#/definitions/CustomRoles'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Return a complete list of custom roles.
+      tags:
+      - Custom roles
+    post:
+      operationId: postCustomRole
+      parameters:
+      - $ref: '#/parameters/CustomRolePostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Create a new custom role.
+      tags:
+      - Custom roles
+  /roles/{customRoleKey}:
+    delete:
+      operationId: deleteCustomRole
+      parameters:
+      - $ref: '#/parameters/CustomRoleKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a custom role by key.
+      tags:
+      - Custom roles
+    get:
+      operationId: getCustomRole
+      parameters:
+      - $ref: '#/parameters/CustomRoleKey'
+      responses:
+        200:
+          $ref: '#/responses/CustomRole200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get one custom role by key.
+      tags:
+      - Custom roles
+    patch:
+      operationId: patchCustomRole
+      parameters:
+      - $ref: '#/parameters/CustomRoleKey'
+      - $ref: '#/parameters/PatchRequest'
+      responses:
+        200:
+          $ref: '#/responses/CustomRole200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Modify a custom role by key.
+      tags:
+      - Custom roles
+  /segments/{projectKey}/{environmentKey}:
+    get:
+      operationId: getUserSegments
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/Tag'
+      responses:
+        200:
+          description: Segments response.
+          schema:
+            $ref: '#/definitions/UserSegments'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Get a list of all user segments in the given project.
+      tags:
+      - User segments
+    post:
+      operationId: postUserSegment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserSegmentPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Creates a new user segment.
+      tags:
+      - User segments
+  /segments/{projectKey}/{environmentKey}/{userSegmentKey}:
+    delete:
+      operationId: deleteUserSegment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserSegmentKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a user segment.
+      tags:
+      - User segments
+    get:
+      operationId: getUserSegment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserSegmentKey'
+      responses:
+        200:
+          description: User segment response.
+          schema:
+            $ref: '#/definitions/UserSegment'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Get a single user segment by key.
+      tags:
+      - User segments
+    patch:
+      operationId: patchUserSegment
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserSegmentKey'
+      - $ref: '#/parameters/PatchOnly'
+      responses:
+        200:
+          $ref: '#/responses/UserSegment200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Perform a partial update to a user segment.
+      tags:
+      - User segments
+  /user-search/{projectKey}/{environmentKey}:
+    get:
+      operationId: getSearchUsers
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/Query'
+      - $ref: '#/parameters/Limit'
+      - $ref: '#/parameters/Offset'
+      - $ref: '#/parameters/After'
+      responses:
+        200:
+          description: Users response.
+          schema:
+            $ref: '#/definitions/Users'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Search users in LaunchDarkly based on their last active date, or a
+        search query. It should not be used to enumerate all users in LaunchDarkly--
+        use the List users API resource.
+      tags:
+      - Users
+  /users/{projectKey}/{environmentKey}:
+    get:
+      operationId: getUsers
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/Limit'
+      - $ref: '#/parameters/HMAC'
+      - $ref: '#/parameters/ScrollId'
+      responses:
+        200:
+          description: Users response.
+          schema:
+            $ref: '#/definitions/Users'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: List all users in the environment. Includes the total count of users.
+        In each page, there will be up to 'limit' users returned (default 20). This
+        is useful for exporting all users in the system for further analysis. Paginated
+        collections will include a next link containing a URL with the next set of
+        elements in the collection.
+      tags:
+      - Users
+  /users/{projectKey}/{environmentKey}/{userKey}:
+    delete:
+      operationId: deleteUser
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserKey'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a user by ID.
+      tags:
+      - Users
+    get:
+      operationId: getUser
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserKey'
+      responses:
+        200:
+          description: User response.
+          schema:
+            $ref: '#/definitions/User'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Get a user by key.
+      tags:
+      - Users
+  /users/{projectKey}/{environmentKey}/{userKey}/flags:
+    get:
+      operationId: getUserFlagSettings
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserKey'
+      responses:
+        200:
+          description: User flags settings response.
+          schema:
+            $ref: '#/definitions/UserFlagSettings'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Fetch a single flag setting for a user by key.
+      tags:
+      - User settings
+  /users/{projectKey}/{environmentKey}/{userKey}/flags/{featureFlagKey}:
+    get:
+      operationId: getUserFlagSetting
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      responses:
+        200:
+          description: User flag setting response.
+          schema:
+            $ref: '#/definitions/UserFlagSetting'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Fetch a single flag setting for a user by key.
+      tags:
+      - User settings
+    put:
+      operationId: putFlagSetting
+      parameters:
+      - $ref: '#/parameters/ProjectKey'
+      - $ref: '#/parameters/EnvironmentKey'
+      - $ref: '#/parameters/UserKey'
+      - $ref: '#/parameters/FeatureFlagKey'
+      - $ref: '#/parameters/UserSettingsPutRequest'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Specifically enable or disable a feature flag for a user based on their
+        key.
+      tags:
+      - User settings
+  /webhooks:
+    get:
+      operationId: getWebhooks
+      responses:
+        200:
+          description: Webhooks response.
+          schema:
+            $ref: '#/definitions/Webhooks'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Fetch a list of all webhooks.
+      tags:
+      - Webhooks
+    post:
+      operationId: postWebhook
+      parameters:
+      - $ref: '#/parameters/WebhookPostRequest'
+      responses:
+        201:
+          $ref: '#/responses/Standard201'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+      summary: Create a webhook.
+      tags:
+      - Webhooks
+  /webhooks/{resourceId}:
+    delete:
+      operationId: deleteWebhook
+      parameters:
+      - $ref: '#/parameters/ResourceId'
+      responses:
+        204:
+          $ref: '#/responses/Standard204'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Delete a webhook by ID.
+      tags:
+      - Webhooks
+    get:
+      operationId: getWebhook
+      parameters:
+      - $ref: '#/parameters/ResourceId'
+      responses:
+        200:
+          $ref: '#/responses/Webhooks200'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+      summary: Get a webhook by ID.
+      tags:
+      - Webhooks
+    patch:
+      operationId: patchWebhook
+      parameters:
+      - $ref: '#/parameters/ResourceId'
+      - $ref: '#/parameters/PatchRequest'
+      responses:
+        200:
+          $ref: '#/responses/Webhooks200'
+        400:
+          $ref: '#/responses/Standard400'
+        401:
+          $ref: '#/responses/Standard401'
+        404:
+          $ref: '#/responses/Standard404'
+        409:
+          $ref: '#/responses/Standard409'
+      summary: Modify a webhook by ID.
+      tags:
+      - Webhooks
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":45:{s:6:\"Action\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"An
+  action to perform on a resource.\";s:7:\"example\";s:8:\"updateOn\";s:4:\"type\";s:6:\"string\";}s:7:\"Actions\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}s:4:\"type\";s:5:\"array\";}s:15:\"AuditLogEntries\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/AuditLogEntry\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:13:\"AuditLogEntry\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:7:\"example\";s:24:\"This
+  is a comment string\";s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":3:{s:7:\"example\";i:1472243938774;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"description\";O:8:\"stdClass\":2:{s:7:\"example\";s:37:\"Changed
+  the name from Test to Testing\";s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":2:{s:7:\"example\";s:11:\"environment\";s:4:\"type\";s:6:\"string\";}s:6:\"member\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Member\";}s:4:\"name\";O:8:\"stdClass\":2:{s:7:\"example\";s:7:\"Testing\";s:4:\"type\";s:6:\"string\";}s:16:\"shortDescription\";O:8:\"stdClass\":2:{s:7:\"example\";s:2:\"\"\"\";s:4:\"type\";s:6:\"string\";}s:6:\"target\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"name\";O:8:\"stdClass\":2:{s:7:\"example\";s:7:\"Testing\";s:4:\"type\";s:6:\"string\";}s:9:\"resources\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:7:\"example\";s:20:\"proj/alexis:env/test\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:5:\"title\";O:8:\"stdClass\":2:{s:7:\"example\";s:128:\"[Reese
+  Applebaum](mailto:refapp@launchdarkly.com) changed the name of [Testing](https://app.launchdarkly.com/settings#/projects)\";s:4:\"type\";s:6:\"string\";}s:9:\"titleVerb\";O:8:\"stdClass\":2:{s:7:\"example\";s:19:\"changed
+  the name of\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Clause\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"attribute\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"groups\";s:4:\"type\";s:6:\"string\";}s:6:\"negate\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:2:\"op\";O:8:\"stdClass\":2:{s:7:\"example\";s:2:\"in\";s:4:\"type\";s:6:\"string\";}s:6:\"values\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"Top
+  Customers\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:10:\"CustomRole\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Description
+  of the custom role.\";s:7:\"example\";s:37:\"Description of revenue team role here\";s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/CustomRoleKeyOrId\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Name
+  of the custom role.\";s:7:\"example\";s:12:\"revenue team\";s:4:\"type\";s:6:\"string\";}s:6:\"policy\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Policy\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:17:\"CustomRoleKeyOrId\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"The
+  20-hexdigit id or the key for a custom role.\";s:7:\"example\";s:12:\"revenue-team\";s:4:\"type\";s:6:\"string\";}s:11:\"CustomRoles\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/CustomRole\";}}s:4:\"type\";s:6:\"object\";}s:11:\"Environment\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":10:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:6:\"apiKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"The
+  SDK key for backend LaunchDarkly SDKs.\";s:7:\"example\";s:3:\"XXX\";s:4:\"type\";s:6:\"string\";}s:5:\"color\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  swatch color for the environment.\";s:7:\"example\";s:6:\"417505\";s:4:\"type\";s:6:\"string\";}s:18:\"defaultTrackEvents\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"Set
+  to true to send detailed event information for new flags.\";s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}s:10:\"defaultTtl\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"The
+  default TTL.\";s:7:\"example\";i:0;s:4:\"type\";s:6:\"number\";}s:3:\"key\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"The
+  key for the environment.\";s:7:\"example\";s:10:\"production\";s:4:\"type\";s:6:\"string\";}s:9:\"mobileKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"The
+  SDK key for mobile LaunchDarkly SDKs.\";s:7:\"example\";s:3:\"XXX\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"The
+  name of the environment.\";s:7:\"example\";s:10:\"Production\";s:4:\"type\";s:6:\"string\";}s:10:\"secureMode\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Determines
+  if this environment is in safe mode.\";s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:11:\"Fallthrough\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"rollout\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Rollout\";}s:9:\"variation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:11:\"FeatureFlag\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":13:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:11:\"_maintainer\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Member\";}s:12:\"creationDate\";O:8:\"stdClass\":4:{s:11:\"description\";s:76:\"A
+  unix epoch time in milliseconds specifying the creation time of this flag.\";s:7:\"example\";i:1443652232590;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:6:\"number\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Description
+  of the feature flag.\";s:7:\"example\";s:60:\"This flag controls whether test feature
+  is turned on or not.\";s:4:\"type\";s:6:\"string\";}s:12:\"environments\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FeatureFlagConfig\";}s:4:\"type\";s:6:\"object\";}s:16:\"includeInSnippet\";O:8:\"stdClass\":2:{s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}s:3:\"key\";O:8:\"stdClass\":2:{s:7:\"example\";s:12:\"test-feature\";s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"Whether
+  the feature flag is a boolean flag or multivariate.\";s:7:\"example\";s:7:\"boolean\";s:4:\"type\";s:6:\"string\";}s:12:\"maintainerId\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"The
+  ID of the member that should maintain this flag.\";s:7:\"example\";s:24:\"561c579cd8fd5c2704000001\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Name
+  of the feature flag.\";s:7:\"example\";s:12:\"Test Feature\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"An
+  array of tags for this feature flag.\";s:7:\"example\";s:2:\"[]\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"temporary\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"Whether
+  or not this flag is temporary.\";s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}s:10:\"variations\";O:8:\"stdClass\":4:{s:11:\"description\";s:37:\"The
+  variations for this feature flag.\";s:7:\"example\";s:38:\"[ { \"value\": \"a\"
+  }, { \"value\": \"b\" } ]\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Variation\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:17:\"FeatureFlagConfig\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":12:{s:8:\"archived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"fallthrough\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Fallthrough\";}s:12:\"lastModified\";O:8:\"stdClass\":3:{s:7:\"example\";i:1469326565348;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:12:\"offVariation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:2:\"on\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:13:\"prerequisites\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Prerequisite\";}s:4:\"type\";s:5:\"array\";}s:5:\"rules\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Rule\";}s:4:\"type\";s:5:\"array\";}s:4:\"salt\";O:8:\"stdClass\":2:{s:7:\"example\";s:20:\"YWx0ZXJuYXRlLnBhZ2U=\";s:4:\"type\";s:6:\"string\";}s:3:\"sel\";O:8:\"stdClass\":2:{s:7:\"example\";s:32:\"45501b9314dc4641841af774cb038b96\";s:4:\"type\";s:6:\"string\";}s:7:\"targets\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Target\";}s:4:\"type\";s:5:\"array\";}s:11:\"trackEvents\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"Set
+  to true to send detailed event information for this flag.\";s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}s:7:\"version\";O:8:\"stdClass\":2:{s:7:\"example\";i:65;s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:17:\"FeatureFlagStatus\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:7:\"default\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:13:\"lastRequested\";O:8:\"stdClass\":2:{s:7:\"example\";s:24:\"2016-08-16T21:10:11.886Z\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:498:\"|
+  Name     | Description |\n| --------:| ----------- |\n| new      | the feature flag
+  was created within the last 7 days, and has not been requested yet |\n| active   |
+  the feature flag was requested by your servers or clients within the last 7 days
+  |\n| inactive | the feature flag was created more than 7 days ago, and hasn't been
+  requested by your servers or clients within the past 7 days |\n| launched | one
+  variation of the feature flag has been rolled out to all your users for at least
+  7 days |\n\";s:4:\"enum\";a:4:{i:0;s:3:\"new\";i:1;s:6:\"active\";i:2;s:8:\"inactive\";i:3;s:8:\"launched\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"FeatureFlagStatuses\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/FeatureFlagStatus\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:12:\"FeatureFlags\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/FeatureFlag\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:2:\"Id\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"The
+  unique resource id.\";s:7:\"example\";s:24:\"5a580a01b4ff89217bdf9dc1\";s:4:\"type\";s:6:\"string\";}s:4:\"Link\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"href\";O:8:\"stdClass\":2:{s:7:\"example\";s:16:\"/api/v2/endpoint\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:16:\"application/json\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Links\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"next\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"self\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}}s:4:\"type\";s:6:\"object\";}s:6:\"Member\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:14:\"_pendingInvite\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"customRoles\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"type\";s:5:\"array\";}s:5:\"email\";O:8:\"stdClass\":2:{s:7:\"example\";s:21:\"user@launchdarkly.com\";s:4:\"type\";s:6:\"string\";}s:6:\"isBeta\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"role\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Role\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Members\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Member\";}}s:4:\"type\";s:6:\"object\";}s:14:\"PatchOperation\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"op\";O:8:\"stdClass\":2:{s:7:\"example\";s:7:\"replace\";s:4:\"type\";s:6:\"string\";}s:4:\"path\";O:8:\"stdClass\":2:{s:7:\"example\";s:3:\"/on\";s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:3:{i:0;s:2:\"op\";i:1;s:4:\"path\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:6:\"Policy\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"actions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Actions\";}s:6:\"effect\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Effect
+  of the policy - allow or deny.\";s:7:\"example\";s:4:\"deny\";s:4:\"type\";s:6:\"string\";}s:9:\"resources\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Resources\";}}s:4:\"type\";s:6:\"object\";}s:12:\"Prerequisite\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"variation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Project\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:12:\"environments\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Environment\";}s:4:\"type\";s:5:\"array\";}s:3:\"key\";O:8:\"stdClass\":2:{s:7:\"example\";s:8:\"zentasks\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:7:\"example\";s:8:\"Zentasks\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Projects\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Project\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Resource\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"A
+  resource specifier string\";s:7:\"example\";s:25:\"proj/*:env/*:flag/my-flag\";s:4:\"type\";s:6:\"string\";}s:9:\"Resources\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Resource\";}s:4:\"type\";s:5:\"array\";}s:4:\"Role\";O:8:\"stdClass\":2:{s:4:\"enum\";a:4:{i:0;s:6:\"writer\";i:1;s:6:\"reader\";i:2;s:5:\"admin\";i:3;s:5:\"owner\";}s:4:\"type\";s:6:\"string\";}s:7:\"Rollout\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"variations\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/WeightedVariation\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:4:\"Rule\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"clauses\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Clause\";}s:4:\"type\";s:5:\"array\";}s:7:\"rollout\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Rollout\";}s:9:\"variation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:9:\"Statement\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"actions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Actions\";}s:6:\"effect\";O:8:\"stdClass\":2:{s:4:\"enum\";a:2:{i:0;s:5:\"allow\";i:1;s:4:\"deny\";}s:4:\"type\";s:6:\"string\";}s:10:\"notactions\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Actions\";s:11:\"description\";s:109:\"Targeted
+  actions will be those actions NOT in this list. The \"actions\" field must be empty
+  to use this field.\";}s:12:\"notresources\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:23:\"#/definitions/Resources\";s:11:\"description\";s:115:\"Targeted
+  resource will be those resources NOT in this list. The \"resources`\" field must
+  be empty to use this field.\";}s:9:\"resources\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Resources\";}}s:4:\"type\";s:6:\"object\";}s:10:\"Statements\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Statement\";}s:4:\"type\";s:5:\"array\";}s:6:\"Target\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"values\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:7:\"example\";s:67:\"\"1461797806427-7-115540266\",
+  \"00142875-a39d-4028-a3b7-987ccd151649\"\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"variation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:4:\"User\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"anonymous\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"avatar\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"custom\";O:8:\"stdClass\":2:{s:7:\"example\";O:8:\"stdClass\":1:{s:7:\"company\";s:11:\"example.com\";}s:4:\"type\";s:6:\"object\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"ip\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"a00bea\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"Bob
+  Loblaw\";s:4:\"type\";s:6:\"string\";}s:9:\"secondary\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"UserFlagSetting\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:6:\"_value\";O:8:\"stdClass\":3:{s:11:\"description\";s:199:\"The
+  most important attribute in the response. The _value is the current setting for
+  the user. For a boolean feature toggle, this will be true, false, or null if there
+  is no defined fallthrough value.\";s:7:\"example\";b:1;s:4:\"type\";s:7:\"boolean\";}s:7:\"setting\";O:8:\"stdClass\":2:{s:11:\"description\";s:295:\"The
+  setting attribute indicates whether you've explicitly targeted this user to receive
+  a particular variation. For example, if you have explicitly turned off a feature
+  toggle for a user, setting will be false. A setting of null means that you haven't
+  assigned that user to a specific variation.\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:16:\"UserFlagSettings\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:7:\"example\";O:8:\"stdClass\":2:{s:14:\"alternate.page\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"href\";s:64:\"/api/v2/users/lacuna/production/Abbie_Braun/flags/alternate.page\";s:4:\"type\";s:16:\"application/json\";}}s:6:\"_value\";s:6:\"false,\";}s:10:\"sort.order\";O:8:\"stdClass\":1:{s:6:\"_links\";O:8:\"stdClass\":2:{s:6:\"_value\";b:1;s:4:\"self\";O:8:\"stdClass\":2:{s:4:\"href\";s:60:\"/api/v2/users/lacuna/production/Abbie_Braun/flags/sort.order\";s:4:\"type\";s:16:\"application/json\";}}}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:10:\"UserRecord\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"avatar\";O:8:\"stdClass\":2:{s:7:\"example\";s:64:\"https://s3.amazonaws.com/uifaces/faces/twitter/shylockjoy/73.jpg\";s:4:\"type\";s:6:\"string\";}s:13:\"environmentId\";O:8:\"stdClass\":2:{s:7:\"example\";s:24:\"54ac2d97de674204ddd61096\";s:4:\"type\";s:6:\"string\";}s:8:\"lastPing\";O:8:\"stdClass\":3:{s:7:\"example\";s:24:\"2015-03-03T02:37:22.492Z\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:6:\"string\";}s:7:\"ownerId\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:4:\"type\";s:6:\"object\";}s:11:\"UserSegment\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":10:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:12:\"creationDate\";O:8:\"stdClass\":4:{s:11:\"description\";s:76:\"A
+  unix epoch time in milliseconds specifying the creation time of this flag.\";s:7:\"example\";i:1443652232590;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:6:\"number\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Description
+  of the user segment.\";s:7:\"example\";s:47:\"Users in this segment can access beta
+  features.\";s:4:\"type\";s:6:\"string\";}s:8:\"excluded\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"An
+  array of user keys that should not be included in this segment, unless they are
+  also listed in \"included\".\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"included\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"An
+  array of user keys that are included in this segment.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:3:\"key\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Unique
+  identifier for the user segment.\";s:7:\"example\";s:12:\"beta-testers\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Name
+  of the user segment.\";s:7:\"example\";s:12:\"Beta Testers\";s:4:\"type\";s:6:\"string\";}s:5:\"rules\";O:8:\"stdClass\":3:{s:11:\"description\";s:71:\"An
+  array of rules that can cause a user to be included in this segment.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/UserSegmentRule\";}s:4:\"type\";s:5:\"array\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"An
+  array of tags for this user segment.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:3:{i:0;s:3:\"key\";i:1;s:4:\"name\";i:2;s:12:\"creationDate\";}s:4:\"type\";s:6:\"object\";}s:15:\"UserSegmentRule\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"bucketBy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"clauses\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Clause\";}s:4:\"type\";s:5:\"array\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:12:\"UserSegments\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/UserSegment\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Users\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/UserRecord\";}s:4:\"type\";s:5:\"array\";}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:7:\"example\";i:3;s:4:\"type\";s:6:\"number\";}}s:4:\"type\";s:6:\"object\";}s:9:\"Variation\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"description\";O:8:\"stdClass\":2:{s:7:\"example\";s:18:\"The
+  true variation\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"True\";s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:1:{i:0;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:7:\"Webhook\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:3:\"_id\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:16:\"#/definitions/Id\";}s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"name\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  name of the webhook.\";s:7:\"example\";s:12:\"Example hook\";s:4:\"type\";s:6:\"string\";}s:2:\"on\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Whether
+  this webhook is enabled or not.\";s:7:\"example\";b:1;s:4:\"type\";s:7:\"boolean\";}s:6:\"secret\";O:8:\"stdClass\":3:{s:11:\"description\";s:178:\"If
+  defined, the webhooks post request will include a X-LD-Signature header whose value
+  will contain an HMAC SHA256 hex digest of the webhook payload, using the secret
+  as the key.\";s:7:\"example\";s:7:\"frobozz\";s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Tags
+  assigned to this webhook.\";s:5:\"items\";O:8:\"stdClass\":2:{s:7:\"example\";s:2:\"[]\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  URL of the remote webhook.\";s:7:\"example\";s:27:\"https://example.com/example\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Webhooks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:5:\"items\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Webhook\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:17:\"WeightedVariation\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"variation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"weight\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}}"
+...

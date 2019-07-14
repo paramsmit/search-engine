@@ -1,0 +1,674 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:94:\"This API is a set
+  of functions that provides consumer and supplier with all ecosystem services\";s:7:\"version\";s:5:\"1.0.3\";s:5:\"title\";s:43:\"Internet
+  of Things Analytical Ecosystem API\";s:7:\"contact\";O:8:\"stdClass\":0:{}}"
+host: localhost:5000
+basePath: /
+paths:
+  /bill/:
+    get:
+      tags:
+      - Billing
+      - Consumer API
+      - Supplier API
+      summary: Receive a billing report
+      description: Receive billing report
+      operationId: bill_rcv
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      responses:
+        200:
+          description: Billing Report
+          schema:
+            $ref: '#/definitions/BillingReport'
+  /bill/result/{resultsetId}:
+    get:
+      tags:
+      - Billing
+      - Consumer API
+      summary: Receive a billing summary for result set
+      description: Receive a billing summary for result set
+      operationId: bill_result_id_rcv
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: resultsetId
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: Billing result set summary
+          schema:
+            $ref: '#/definitions/BillingReport'
+  /bill/algorithm/{algorithmId}:
+    get:
+      tags:
+      - Billing
+      - Supplier API
+      summary: Receive a billing summary for algorith
+      description: Receive a billing summary for algorithm
+      operationId: bill_algorithm_id_rcv
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmId
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: Billing algorithm summary
+          schema:
+            $ref: '#/definitions/BillingReport'
+  /user/:
+    post:
+      tags:
+      - User
+      - Admin
+      summary: Create a new user
+      description: This can only be done by admin.
+      operationId: create_user
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - in: body
+        name: body
+        description: User object to be created
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+  /user/signup:
+    post:
+      tags:
+      - User
+      - Consumer API
+      - Supplier API
+      summary: Create a new user by self sign-up.
+      description: This can only be done by a user authenticated in Google Identity
+        Platform. User data is decoded form id_token. Additional information supposed
+        to be added through '/user/{userID} PUT'
+      operationId: self_sign_up
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      responses:
+        200:
+          description: OK
+  /user/{userID}:
+    get:
+      tags:
+      - User
+      - Admin
+      - Consumer API
+      - Supplier API
+      summary: Get user by user ID
+      description: Get user info - requres authorization
+      operationId: get_user_by_id
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: userID
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: success
+          schema:
+            $ref: '#/definitions/User'
+        400:
+          description: Invalid username
+        404:
+          description: User not found
+    put:
+      tags:
+      - User
+      - Admin
+      - Consumer API
+      - Supplier API
+      summary: Update user
+      description: This can only be done by the authorized user.
+      operationId: update_user
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: userID
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Updated user object
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        400:
+          description: Invalid user supplied
+        404:
+          description: User not found
+    delete:
+      tags:
+      - User
+      - Admin
+      summary: Delete user
+      description: This can only be done by the Administrator.
+      operationId: deleteUser
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: userID
+        in: path
+        description: The name that needs to be deleted
+        required: true
+        type: string
+      responses:
+        400:
+          description: Invalid username supplied
+        404:
+          description: User not found
+  /datasets:
+    get:
+      tags:
+      - Consumer API
+      - Dataset
+      summary: Returns information about the stored Datasets
+      description: The Datasets endpoint returns information about the stored Datasets.
+        The response includes the display name and other details about each dataset.
+        It also allows full-text search of tags.
+      operationId: getDatasets
+      consumes: []
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: tags
+        in: query
+        description: Comma separated Tags for search query.
+        required: false
+        type: string
+        x-example: sum two items, sum multiple items
+      responses:
+        200:
+          description: An array of datasets
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Datasets'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to post new datasets
+    post:
+      tags:
+      - Dataset
+      - Consumer API
+      summary: Add a Dataset
+      description: Add a Dataset
+      operationId: postDataset
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DatasetBody'
+      responses:
+        200:
+          description: OK - returns datasetID
+          schema:
+            $ref: '#/definitions/Datasets'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to post new datasets
+  /datasets/{datasetID}:
+    get:
+      tags:
+      - Dataset
+      - Consumer API
+      summary: Returns a given dataset
+      description: Returns a given dataset
+      operationId: getDatasetsDataset
+      consumes: []
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: datasetID
+        in: path
+        description: ID of a dattaset
+        required: true
+        type: string
+      responses:
+        200:
+          description: Data of the dataset
+          schema:
+            $ref: '#/definitions/Dataset'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to read that datasets
+        404:
+          description: The given datasetID was not found in collection
+    delete:
+      tags:
+      - Dataset
+      - Consumer API
+      summary: Deletes a given dataset
+      description: Deletes a given dataset
+      operationId: deleteDatasetsDataset
+      consumes: []
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: datasetID
+        in: path
+        description: ID of a dattaset
+        required: true
+        type: string
+      responses:
+        200:
+          description: Deletion completed
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to delete that dataset
+        404:
+          description: The given datasetID was not found in collection
+    put:
+      tags:
+      - Dataset
+      - Consumer API
+      summary: Add etities to dataset
+      description: Add etities to dataset
+      operationId: addDatasetsData
+      consumes:
+      - application/json
+      produces: []
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: datasetID
+        in: path
+        description: ID of a dataset
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Dataset'
+      responses:
+        200:
+          description: OK
+        400:
+          description: Malformed data
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to post data at all or not an owner of a given
+            dataset
+        404:
+          description: algorithmID not found
+  /algorithms/:
+    get:
+      tags:
+      - Consumer API
+      - Algorithms
+      summary: All available Algorithms descriptions.
+      description: The Algorithms endpoint returns information about the available
+        algorithms. The response includes the display name and other details about
+        each algorithm. It also allows full-text search of tags.
+      operationId: getAlgorithms
+      consumes: []
+      produces:
+      - application/json
+      parameters:
+      - name: tags
+        in: query
+        description: Comma separated Tags for search query No whitespace characters
+          allowed in searched tags. No wildcard or substring searches.
+        required: false
+        type: string
+        x-example: algorithm1, algorithm2
+      responses:
+        200:
+          description: An array of algorithms
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Algorithms'
+    post:
+      tags:
+      - Algorithms
+      - Supplier API
+      summary: Add a new Algorithm
+      description: Add a new Algorithm
+      operationId: postAlgorithms
+      consumes:
+      - application/json
+      produces: []
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          $ref: '#/definitions/AlgorithmBody'
+      responses:
+        200:
+          description: OK
+        400:
+          description: Malformed data
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to post new algorithms
+        409:
+          description: AlgorithmID already exists.
+          schema:
+            $ref: '#/definitions/Error'
+  /algorithms/{algorithmID}:
+    get:
+      tags:
+      - Algorithms
+      - Consumer API
+      summary: Detailed description of an Algorithm.
+      description: The Algorithm Details endpoint returns detailed description of
+        a given algorithm.
+      operationId: getAlgorithmsAlgorithm
+      consumes: []
+      produces:
+      - application/json
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      responses:
+        200:
+          description: Details of the algorithm
+          schema:
+            $ref: '#/definitions/AlgorithmDetails'
+        404:
+          description: The given algorithmID was not found in collection
+    post:
+      tags:
+      - Algorithms
+      - Dataset
+      - Consumer API
+      summary: Run an algorithm with a Data Set
+      description: Run an algorithm with a Data Set
+      operationId: executeAlgorithm
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: ID of a dataset
+        required: true
+        schema:
+          $ref: '#/definitions/DatasetID'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResultSetID'
+        400:
+          description: Malformed data
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to run algorithms
+        404:
+          description: The given algorithmID was not found in collection
+    put:
+      tags:
+      - Algorithms
+      - Supplier API
+      summary: Update existing Algorithm
+      description: Replace existing Algorithm
+      operationId: updateAlgorithm
+      consumes:
+      - application/json
+      produces: []
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/AlgorithmBody'
+      responses:
+        200:
+          description: OK
+        400:
+          description: Malformed data
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not authorized to replace algorithms at all or not an owner
+            of a given algorithm
+        404:
+          description: algorithmID not found
+    delete:
+      tags:
+      - Algorithms
+      - Supplier API
+      summary: Delete an algorithm
+      description: Delete an algorithm
+      operationId: deleteAlgorithm
+      consumes: []
+      produces: []
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: No authentication. Need to login.
+        403:
+          description: Not an owner of the algorithm
+        404:
+          description: algorithmID not found
+  /algorithms/{algorithmID}/test:
+    get:
+      tags:
+      - Algorithms
+      - Supplier API
+      summary: Tests syntax of the algorithm
+      description: Tests syntax of the algorithm
+      operationId: testAlgorithm
+      consumes: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      responses:
+        200:
+          description: Test OK
+        400:
+          description: Test failed
+        404:
+          description: The given algorithmID was not found in collection
+  /algorithms/{algorithmID}/{resultsetID}:
+    get:
+      tags:
+      - Algorithms
+      - Consumer API
+      summary: The Result Set endpoint returns result set data for a given algorithm
+        and ID.
+      description: The Result Set endpoint returns result set data for a given algorithm
+        and ID.
+      operationId: getAlgorithmsAlgorithmResultsetID
+      consumes: []
+      produces:
+      - application/json
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      - name: resultsetID
+        in: path
+        description: ID of the result-set
+        required: true
+        type: string
+      responses:
+        102:
+          description: The job is in progress
+        200:
+          description: A resulting set of data.
+          schema:
+            $ref: '#/definitions/ResultSet'
+        401:
+          description: Not authenticated. Need to login.
+        403:
+          description: Not the proper owner of that result-set
+        404:
+          description: Wrong resultsetID or algorithmID
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+      - Algorithms
+      - Consumer API
+      summary: Confirm Result-Set receive and request deletion.
+      description: Confirm Result-Set receive and request deletion.
+      operationId: deleteResultSet
+      consumes: []
+      produces: []
+      security:
+      - GoogleIdToken: []
+      parameters:
+      - name: algorithmID
+        in: path
+        description: ID of an algorithm
+        required: true
+        type: string
+      - name: resultsetID
+        in: path
+        description: ID of the result-set
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Not authenticated. Need to login.
+        403:
+          description: Not the proper owner of that result-set
+        404:
+          description: Wrong resultsetID or algorithmID
+          schema:
+            $ref: '#/definitions/Error'
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":13:{s:13:\"AlgorithmBody\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"algorithmBLOB\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"algorithmBLOB\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"The
+  main algorithm program, definitions, data etc.\";}s:20:\"algorithmDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"detailed
+  description of the algorithm.\";}s:11:\"algorithmId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Unique
+  identifier representing a specific algorithm.\";}s:16:\"algorithmSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Brief
+  summary of the algorithm.\";}s:18:\"datasetDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"detailed
+  description of that algorithm data set.\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Display
+  name of the algorithm.\";}s:7:\"linkURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"detailed
+  url of the algorithm.\";}}s:11:\"description\";s:44:\"All the data to needed to
+  store an algorithm\";}s:16:\"AlgorithmDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:20:\"algorithmDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"detailed
+  description of the algorithm.\";}s:11:\"algorithmId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Unique
+  identifier representing a specific algorithm.\";}s:16:\"algorithmSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Brief
+  summary of the algorithm.\";}s:18:\"datasetDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"detailed
+  description of that algorithm data set.\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Display
+  name of the algorithm.\";}s:7:\"linkURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"detailed
+  url of the algorithm.\";}}}s:10:\"Algorithms\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"algorithmId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:52:\"Unique
+  identifier representing a specific algorithm.\";}s:16:\"algorithmSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Brief
+  summary of the algorithm.\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Display
+  name of the algorithm.\";}s:7:\"linkURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"detailed
+  url of the algorithm.\";}}}s:8:\"Datasets\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"datasetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  identifier representing a specific dataset.\";}s:14:\"datasetSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Users
+  description of a dataset\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Display
+  name of the dataset\";}s:7:\"linkURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"detailed
+  url of the dataset.\";}}}s:11:\"DatasetBody\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:11:\"datasetBLOB\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"datasetBLOB\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Dataset
+  initial parameters or output values\";}s:18:\"datasetDescription\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"detailed
+  description of the dataset.\";}s:9:\"datasetId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  identifier representing a specific dataset.\";}s:14:\"datasetSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Brief
+  summary of the dataset.\";}s:11:\"displayName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Display
+  name of the dataset.\";}s:7:\"linkURL\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"detailed
+  url of the dataset.\";}}s:11:\"description\";s:41:\"All the data to needed to store
+  a dataset\";}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"ResultSet\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"resultSet\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Resultant
+  set of data.\";}}}s:7:\"Dataset\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"dataset\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Data
+  entity to be added to dataset.\";}}}s:9:\"DatasetID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"datasetID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  identifier representing a specific dataset.\";}}}s:11:\"ResultSetID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"resultsetID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:67:\"ID
+  of a result dataset to be received from requested algorithm run.\";}}}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"userID\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:125:\"ID
+  from sub field extracted from id_token as described in [Google Identity Platform](https://developers.google.com/identity/)\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"userStatus\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:11:\"User
+  Status\";}}}s:6:\"Period\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:21:\"Time
+  span of e report\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"begin\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:40:\"Date
+  of the beginning of a report period\";}s:3:\"end\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:34:\"Date
+  of the end of a report period\";}}}s:13:\"BillingReport\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:36:\"Report
+  containng billing information\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"reportData\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Complete
+  data of the billing report\";}}}}"
+...

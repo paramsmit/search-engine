@@ -1,0 +1,220 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Move your app forward
+  with the Uber API\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:8:\"Uber API\";}"
+host: api.uber.com
+basePath: /v1
+paths:
+  /estimates/price:
+    put:
+      responses:
+        204:
+          schema: ~
+    get:
+      tags:
+      - Estimates
+      summary: Price Estimates
+      description: The Price Estimates endpoint returns an estimated price rangenfor
+        each product offered at a given location. The price estimate isnprovided as
+        a formatted string with the full price range and the localizedncurrency symbol.<br><br>The
+        response also includes low and high estimates,nand the [ISO 4217](http://en.wikipedia.org/wiki/ISO_4217)
+        currency code fornsituations requiring currency conversion. When surge is
+        active for a particularnproduct, its surge_multiplier will be greater than
+        1, but the price estimatenalready factors in this multiplier.n
+      parameters:
+      - name: start_latitude
+        in: query
+        description: Latitude component of start location.
+        required: true
+        type: number
+        format: double
+      - name: start_longitude
+        in: query
+        description: Longitude component of start location.
+        required: true
+        type: number
+        format: double
+      - name: end_latitude
+        in: query
+        description: Latitude component of end location.
+        required: true
+        type: number
+        format: double
+      - name: end_longitude
+        in: query
+        description: Longitude component of end location.
+        required: true
+        type: number
+        format: double
+      responses:
+        200:
+          description: An array of price estimates by product
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PriceEstimate'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /estimates/time:
+    get:
+      tags:
+      - Estimates
+      summary: Time Estimates
+      description: The Time Estimates endpoint returns ETAs for all products offered
+        at a given location, with the responses expressed as integers in seconds.
+        We recommend that this endpoint be called every minute to provide the most
+        accurate, up-to-date ETAs.
+      parameters:
+      - name: start_latitude
+        in: query
+        description: Latitude component of start location.
+        required: true
+        type: number
+        format: double
+      - name: start_longitude
+        in: query
+        description: Longitude component of start location.
+        required: true
+        type: number
+        format: double
+      - name: customer_uuid
+        in: query
+        description: Unique customer identifier to be used for experience customization.
+        required: false
+        type: string
+        format: uuid
+      - name: product_id
+        in: query
+        description: Unique identifier representing a specific product for a given
+          latitude & longitude.
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of products
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /history:
+    get:
+      tags:
+      - User
+      summary: User Activity
+      description: The User Activity endpoint returns data about a user's lifetime
+        activity with Uber. The response will include pickup locations and times,
+        dropoff locations and times, the distance of past requests, and information
+        about which products were requested.<br><br>The history array in the response
+        will have a maximum length based on the limit parameter. The response value
+        count may exceed limit, therefore subsequent API requests may be necessary.
+      parameters:
+      - name: offset
+        in: query
+        description: Offset the list of returned results by this amount. Default is
+          zero.
+        required: false
+        type: integer
+        format: int32
+      - name: limit
+        in: query
+        description: Number of items to retrieve. Default is 5, maximum is 100.
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: History information for the given user
+          schema:
+            $ref: '#/definitions/Activities'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /me:
+    get:
+      tags:
+      - User
+      summary: User Profile
+      description: The User Profile endpoint returns information about the Uber user
+        that has authorized with the application.
+      parameters: []
+      responses:
+        200:
+          description: Profile information for a user
+          schema:
+            $ref: '#/definitions/Profile'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /products:
+    get:
+      tags:
+      - Products
+      summary: Product Types
+      description: The Products endpoint returns information about the *Uber* productsnoffered
+        at a given location. The response includes the display namenand other details
+        about each product, and lists the products in thenproper display order.n
+      parameters:
+      - name: latitude
+        in: query
+        description: Latitude component of location.
+        required: true
+        type: number
+        format: double
+      - name: longitude
+        in: query
+        description: Longitude component of location.
+        required: true
+        type: number
+        format: double
+      responses:
+        200:
+          description: An array of products
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":6:{s:7:\"Product\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"product_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:179:\"Unique
+  identifier representing a specific product for a given latitude & longitude. For
+  example, uberX in San Francisco will have a different product_id than uberX in Los
+  Angeles.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Description
+  of product.\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Display
+  name of product.\";}s:8:\"capacity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Capacity
+  of product. For example, 4 people.\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Image
+  URL representing the product.\";}}}s:13:\"PriceEstimate\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"product_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:178:\"Unique
+  identifier representing a specific product for a given latitude & longitude. For
+  example, uberX in San Francisco will have a different product_id than uberX in Los
+  Angeles\";}s:13:\"currency_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:64:\"[ISO
+  4217](http://en.wikipedia.org/wiki/ISO_4217) currency code.\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Display
+  name of product.\";}s:8:\"estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:147:\"Formatted
+  string of estimate in local currency of the start location. Estimate could be a
+  range, a single number (flat rate) or \"Metered\" for TAXI.\";}s:12:\"low_estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:35:\"Lower
+  bound of the estimated price.\";}s:13:\"high_estimate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:35:\"Upper
+  bound of the estimated price.\";}s:16:\"surge_multiplier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:137:\"Expected
+  surge multiplier. Surge is active if surge_multiplier is greater than 1. Price estimate
+  already factors in the surge multiplier.\";}}}s:7:\"Profile\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"First
+  name of the Uber user.\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Last
+  name of the Uber user.\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Email
+  address of the Uber user\";}s:7:\"picture\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Image
+  URL of the Uber user.\";}s:10:\"promo_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Promo
+  code of the Uber user.\";}}}s:8:\"Activity\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Unique
+  identifier for the activity\";}}}s:10:\"Activities\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"offset\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:23:\"Position
+  in pagination.\";}s:5:\"limit\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:38:\"Number
+  of items to retrieve (100 max).\";}s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:32:\"Total
+  number of items available.\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Activity\";}}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

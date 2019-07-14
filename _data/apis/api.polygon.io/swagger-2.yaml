@@ -1,0 +1,500 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:10:\"polygon_io\";}s:11:\"description\";s:22:\"The
+  future of fintech.\";s:5:\"title\";s:7:\"Polygon\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"financial\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:83:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_polygon_io_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:36:\"https://polygon.io/docs/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:10:\"polygon.io\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:7:\"polygon\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.polygon.io
+paths:
+  /v1/companies:
+    get:
+      description: Get a list of the traded companies that polygon.io streams. Company
+        includes some details about the company which we hope to add more to soon.n
+      parameters:
+      - description: Which field to sort by. For desc place a `-` in front of the
+          field name. eg `?sort=-marketcap`
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: How many items to be on each page during pagination
+        in: query
+        name: perpage
+        required: false
+        type: number
+      - default: 1
+        description: Which page of results to return
+        in: query
+        name: page
+        required: false
+        type: number
+      responses:
+        200:
+          description: An array of companies
+          schema:
+            items:
+              $ref: '#/definitions/Company'
+            type: array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Available Companies
+      tags:
+      - Stocks
+      operationId: v1.companies.get
+  /v1/currencies:
+    get:
+      description: Get a list of the currencies that polygon.io streams.n
+      responses:
+        200:
+          description: An array of currencies
+          schema:
+            items:
+              type: string
+            type: array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Available Currencies
+      tags:
+      - Currencies
+      operationId: v1.currencies.get
+  /v1/historic/agg/{size}/{symbol}/{date}:
+    get:
+      description: Get historic aggregations for a symbol.n
+      parameters:
+      - description: Size of the aggregation. `second` or `minute`
+        enum:
+        - second
+        - minute
+        in: path
+        name: size
+        required: true
+        type: string
+      - description: Symbol of the company to retrieve
+        in: path
+        name: symbol
+        required: true
+        type: string
+      - description: Date/Day of the historic ticks to retreive
+        format: date
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Timestamp offset, used for pagination
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - default: 100
+        description: 'Limit the size of response, max: 10000'
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: An array of aggregates
+          schema:
+            properties:
+              day:
+                description: Date that was evaluated from the request
+                format: date
+                type: string
+              msLatency:
+                description: Milliseconds of latency for the query results
+                type: integer
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+              ticks:
+                items:
+                  $ref: '#/definitions/Aggregate'
+                type: array
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Historic Aggregates
+      tags:
+      - Stocks
+      operationId: v1.historic.agg.size.symbol.date.get
+  /v1/historic/forex/{from}/{to}/{date}:
+    get:
+      description: Get historic ticks for a currency pair. Example for **USD/JPY**
+        the from would be **USD** and to would be **JPY**. The date formatted like
+        **2017-6-22**n
+      parameters:
+      - description: From Symbol of the currency pair
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: To Symbol of the currency pair
+        in: path
+        name: to
+        required: true
+        type: string
+      - description: Date/Day of the historic ticks to retreive
+        format: date
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Timestamp offset, used for pagination
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - default: 100
+        description: 'Limit the size of response, max: 10000'
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: An array of forex ticks
+          schema:
+            properties:
+              day:
+                description: Date that was evaluated from the request
+                format: date
+                type: string
+              msLatency:
+                description: Milliseconds of latency for the query results
+                type: integer
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+              ticks:
+                items:
+                  $ref: '#/definitions/Forex'
+                type: array
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Historic Forex Ticks
+      tags:
+      - Currencies
+      operationId: v1.historic.forex.from.to.date.get
+  /v1/historic/quotes/{symbol}/{date}:
+    get:
+      description: Get historic quotes for a symbol.n
+      parameters:
+      - description: Symbol of the company to retrieve
+        in: path
+        name: symbol
+        required: true
+        type: string
+      - description: Date/Day of the historic ticks to retreive
+        format: date
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Timestamp offset, used for pagination
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - default: 100
+        description: 'Limit the size of response, max: 10000'
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: An array of quotes
+          schema:
+            properties:
+              day:
+                description: Date that was evaluated from the request
+                format: date
+                type: string
+              msLatency:
+                description: Milliseconds of latency for the query results
+                type: integer
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+              ticks:
+                items:
+                  $ref: '#/definitions/Quote'
+                type: array
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Historic Quotes
+      tags:
+      - Stocks
+      operationId: v1.historic.quotes.symbol.date.get
+  /v1/historic/trades/{symbol}/{date}:
+    get:
+      description: Get historic trades for a symbol.n
+      parameters:
+      - description: Symbol of the company to retrieve
+        in: path
+        name: symbol
+        required: true
+        type: string
+      - description: Date/Day of the historic ticks to retreive
+        format: date
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Timestamp offset, used for pagination
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - default: 100
+        description: 'Limit the size of response, max: 10000'
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: An array of trades
+          schema:
+            properties:
+              day:
+                description: Date that was evaluated from the request
+                format: date
+                type: string
+              msLatency:
+                description: Milliseconds of latency for the query results
+                type: integer
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+              ticks:
+                items:
+                  $ref: '#/definitions/Trade'
+                type: array
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Historic Trades
+      tags:
+      - Stocks
+      operationId: v1.historic.trades.symbol.date.get
+  /v1/last/currencies/{from}/{to}:
+    get:
+      description: Get Last Trade Tick for a Currency Pair.n
+      parameters:
+      - description: From Symbol of the pair
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: To Symbol of the pair
+        in: path
+        name: to
+        required: true
+        type: string
+      responses:
+        200:
+          description: Last tick for this currency pair
+          schema:
+            properties:
+              last:
+                $ref: '#/definitions/LastForexTrade'
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol Pair that was evaluated from the request
+                type: string
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Last Trade for a Currency Pair
+      tags:
+      - Currencies
+      operationId: v1.last.currencies.from.to.get
+  /v1/last/stocks/{symbol}:
+    get:
+      description: Get the last trade for a given stock.n
+      parameters:
+      - description: Symbol of the stock to get
+        in: path
+        name: symbol
+        required: true
+        type: string
+      responses:
+        200:
+          description: Last trade for this stock
+          schema:
+            properties:
+              last:
+                $ref: '#/definitions/LastTrade'
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Last Trade for a Symbol
+      tags:
+      - Stocks
+      operationId: v1.last.stocks.symbol.get
+  /v1/last_quote/currencies/{from}/{to}:
+    get:
+      description: Get Last Quote Tick for a Currency Pair.n
+      parameters:
+      - description: From Symbol of the pair
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: To Symbol of the pair
+        in: path
+        name: to
+        required: true
+        type: string
+      responses:
+        200:
+          description: Last quote tick for this currency pair
+          schema:
+            properties:
+              last:
+                $ref: '#/definitions/LastForexQuote'
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol Pair that was evaluated from the request
+                type: string
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Last Quote for a Currency Pair
+      tags:
+      - Currencies
+      operationId: v1.last_quote.currencies.from.to.get
+  /v1/last_quote/stocks/{symbol}:
+    get:
+      description: Get the last quote tick for a given stock.n
+      parameters:
+      - description: Symbol of the stock to get
+        in: path
+        name: symbol
+        required: true
+        type: string
+      responses:
+        200:
+          description: Last quote tick for this stock
+          schema:
+            properties:
+              last:
+                $ref: '#/definitions/LastQuote'
+              status:
+                description: Status of this requests response
+                type: string
+              symbol:
+                description: Symbol that was evaluated from the request
+                type: string
+            type: object
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Last Quote for a Symbol
+      tags:
+      - Stocks
+      operationId: v1.last_quote.stocks.symbol.get
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":10:{s:9:\"Aggregate\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:1:\"c\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"Close
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"h\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"High
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"k\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"Transactions
+  ( 1 transaction contains X shares exchanged )\";s:4:\"type\";s:7:\"integer\";}s:1:\"l\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"Low
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"o\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Open
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"t\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Timestamp
+  of this aggregation\";s:4:\"type\";s:7:\"integer\";}s:1:\"v\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"Total
+  Volume of all trades ( total shares exchanged )\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Company\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Country
+  in which this country is based.\";s:4:\"type\";s:6:\"string\";}s:8:\"exchange\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Exchange
+  this company is traded on.\";s:4:\"type\";s:6:\"string\";}s:8:\"industry\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Industry
+  this country operated/produces in.\";s:4:\"type\";s:6:\"string\";}s:9:\"marketcap\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Market
+  cap as of the last updated timestamp.\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Name
+  of the company.\";s:4:\"type\";s:6:\"string\";}s:6:\"sector\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Sector
+  that this company is traded in.\";s:4:\"type\";s:6:\"string\";}s:6:\"symbol\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  actual exchange symbol this company is traded under.\";s:4:\"type\";s:6:\"string\";}s:7:\"updated\";O:8:\"stdClass\":3:{s:11:\"description\";s:42:\"Last
+  time this company record was updated.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Error\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Forex\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:1:\"a\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"Ask
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"b\";O:8:\"stdClass\":2:{s:11:\"description\";s:9:\"Bid
+  price\";s:4:\"type\";s:7:\"integer\";}s:1:\"t\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:14:\"LastForexQuote\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"askprice\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Ask
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:8:\"bidprice\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Bid
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:14:\"LastForexTrade\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"exchange\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"Exchange
+  this trade happened on\";s:4:\"type\";s:7:\"integer\";}s:5:\"price\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Price
+  of the trade\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:9:\"LastQuote\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"askexchange\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Exchange
+  the ask happened on\";s:4:\"type\";s:7:\"integer\";}s:8:\"askprice\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Ask
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:7:\"asksize\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Ask
+  Size\";s:4:\"type\";s:7:\"integer\";}s:11:\"bidexchange\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Exchange
+  the bid happened on\";s:4:\"type\";s:7:\"integer\";}s:8:\"bidprice\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Bid
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:7:\"bidsize\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Bid
+  Size\";s:4:\"type\";s:7:\"integer\";}s:4:\"cond\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Condition
+  of the quote\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:9:\"LastTrade\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"cond1\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Condition
+  1 of the trade\";s:4:\"type\";s:7:\"integer\";}s:5:\"cond2\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Condition
+  2 of the trade\";s:4:\"type\";s:7:\"integer\";}s:5:\"cond3\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Condition
+  3 of the trade\";s:4:\"type\";s:7:\"integer\";}s:5:\"cond4\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Condition
+  4 of the trade\";s:4:\"type\";s:7:\"integer\";}s:8:\"exchange\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"Exchange
+  this trade happened on\";s:4:\"type\";s:7:\"integer\";}s:5:\"price\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Price
+  of the trade\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:4:\"size\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Size
+  of this trade\";s:4:\"type\";s:7:\"integer\";}s:9:\"timestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Quote\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"aE\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Ask
+  Exchange\";s:4:\"type\";s:6:\"string\";}s:2:\"aP\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Ask
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:2:\"aS\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Ask
+  Size\";s:4:\"type\";s:7:\"integer\";}s:2:\"bE\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Bid
+  Exchange\";s:4:\"type\";s:6:\"string\";}s:2:\"bP\";O:8:\"stdClass\":3:{s:11:\"description\";s:9:\"Bid
+  Price\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:2:\"bS\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Bid
+  Size\";s:4:\"type\";s:7:\"integer\";}s:1:\"c\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Condition
+  of this quote\";s:4:\"type\";s:7:\"integer\";}s:1:\"t\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Trade\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"c1\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Condition
+  1 of this trade\";s:4:\"type\";s:7:\"integer\";}s:2:\"c2\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Condition
+  2 of this trade\";s:4:\"type\";s:7:\"integer\";}s:2:\"c3\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Condition
+  3 of this trade\";s:4:\"type\";s:7:\"integer\";}s:2:\"c4\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Condition
+  4 of this trade\";s:4:\"type\";s:7:\"integer\";}s:1:\"e\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  exchange this trade happened on\";s:4:\"type\";s:6:\"string\";}s:1:\"p\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Price
+  of this trade\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:1:\"s\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Size
+  of the trade\";s:4:\"type\";s:7:\"integer\";}s:1:\"t\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Timestamp
+  of this trade\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}}"
+...

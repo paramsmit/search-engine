@@ -1,0 +1,186 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:27:\"This is a Hospital
+  server.\n\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:12:\"Hospital API\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:9:\"HAnt
+  team\";s:5:\"email\";s:25:\"ioana.tanase@info.uaic.ro\";s:3:\"url\";s:44:\"http://students.info.uaic.ro/~ovidiu.vultur/\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: spital.ro
+basePath: /v1
+paths:
+  /plan:
+    get:
+      tags:
+      - hospital
+      summary: Query a hospital
+      description: Returns the plan of this hospital.
+      operationId: hospitalPlan
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      responses:
+        200:
+          description: Succesful operation
+          schema:
+            $ref: '#/definitions/Plan'
+        404:
+          description: Plan not found
+      security:
+      - hospital_auth:
+        - write_hospitals
+        - read_hospitals
+    put:
+      tags:
+      - hospital
+      summary: Updates an existing hospital
+      description: Updates a hospital with the given information.
+      operationId: updateHospital
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: body
+        name: plan
+        description: Plan object that needs to be updated.
+        required: true
+        schema:
+          $ref: '#/definitions/Plan'
+      responses:
+        200:
+          description: Successful operation
+        400:
+          description: Invalid ID supplied
+        405:
+          description: Validation exception
+      security:
+      - hospital_auth:
+        - write_hospitals
+        - read_hospitals
+        - write_patients
+  /patients:
+    get:
+      tags:
+      - patient
+      summary: Finds all patients in a hospital
+      description: Returns the patiens from the hospital.
+      operationId: getHospitalById
+      produces:
+      - application/json
+      - application/xml
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Patient'
+      security:
+      - api_key: []
+      - hospital_auth:
+        - read_hospitals
+  /patients/{patientId}:
+    get:
+      tags:
+      - patient
+      summary: Find patient by ID
+      description: Returns a patient
+      operationId: getPatientById
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: path
+        name: patientId
+        description: ID of patient that needs to be fetched
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Patient'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Patient not found
+      security:
+      - api_key: []
+      - hospital_auth:
+        - read_hospitals
+    put:
+      tags:
+      - patient
+      summary: Updates a patient in the hospital with form data
+      description: ""
+      operationId: updatePatient
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: path
+        name: patientId
+        description: ID of patient that needs to be updated
+        required: true
+        type: string
+      - in: formData
+        name: name
+        description: Updated name of the patient
+        required: true
+        type: string
+      - in: formData
+        name: status
+        description: Updated status of the patient
+        required: true
+        type: string
+      - in: formData
+        name: disease
+        type: string
+        description: Updated disease of the patient
+        required: true
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Patient not found
+        405:
+          description: Invalid input
+      security:
+      - hospital_auth:
+        - write_patients
+    delete:
+      tags:
+      - patient
+      summary: Deletes a patient
+      description: ""
+      operationId: deletePatient
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: path
+        name: patientId
+        description: Patient id to delete
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: Successful operation
+        404:
+          description: Invalid patient value
+      security:
+      - hospital_auth:
+        - write_patients
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":6:{s:4:\"Room\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Patient\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:9:\"photoUrls\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Room\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"disease\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"photoUrls\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"tags\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/Tag\";}}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"patient
+  status\";}}}s:8:\"Hospital\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:7:\"api_key\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"plan\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Plan\";}s:11:\"coordinates\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Coords\";}}}s:4:\"Plan\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"graph\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:6:\"Coords\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"long\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"lat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:3:\"Tag\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

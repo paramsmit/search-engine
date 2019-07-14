@@ -1,0 +1,986 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:15:\"support@pims.io\";}s:11:\"description\";s:7005:\"\nHereafter
+  is the documentation of the private API of [Pims: Pointages Intelligents pour le
+  Monde du Spectacle](https://pims.io). This API is designed for 3rd-party softwares,
+  editors and partners. Its main purpose is to give access the core data of a Pims
+  customer (i.e. events, ticket counts and promotions).\n\n## Authentication\nThe
+  API uses [basic access authentication](https://en.wikipedia.org/wiki/Basic_access_authentication),
+  meaning you will need a username and password to get authorized.\n\nAs each customer
+  in Pims has its own domain (e.g. caramba.pims.io, gdp.pims.io...), each credentials
+  will be valid for one domain/customer only. If you need dedicated credentials for
+  one domain, please contact us. (In any case, we will need an explicit agreement
+  from the customer before we create these credentials.)\n\n<div class=\"info\">\nTo
+  make your life easy, you can try all endpoints with the public credentials below,
+  pointing to our [demo domain](https://demo.pims.io):\n  <ul>\n    <li>Base path:
+  `https://demo.pims.io/api`</li>\n    <li>Username: `demo`</li>\n    <li>Password:
+  `q83792db2GCvgYVdKpU3yG3R`</li>\n  </ul>\n</div>\n\n## Response format\nThe API
+  returns JSON and matches the [HAL specification](http://stateless.co/hal_specification.html).
+  The `Content-Type` of each response will be `application/hal+json`, unless an error
+  occurs.\n\nPlease note that this documentation describes all responses \u201Cas
+  if\u201D they were plain JSON. The specificities of HAL are ignored on purpose,
+  in order to remain compact and avoid repetition.\n<div style=\"-webkit-column-count:
+  2; -moz-column-count: 2; column-count: 2; -webkit-column-rule: 1px dotted #e0e0e0;
+  -moz-column-rule: 1px dotted #e0e0e0; column-rule: 1px dotted #e0e0e0;\">\n\t<div
+  style=\"display: inline-block; width:100%;\">\n\t\t<strong>So when you read in the
+  doc:</strong>\n<pre><code class=\"lang-json\">{\n\t<span class=\"token string\">\"id\"</span>:
+  <span class=\"token number\">123</span>,\n\t<span class=\"token string\">\"property1\"</span>:
+  <span class=\"token string\">\"Lorem ipsum\"</span>,\n\t<span class=\"token string\">\"object\"</span>:
+  {\n\t\t<span class=\"token string\">\"id\"</span>: <span class=\"token number\">456</span>,\n\t\t<span
+  class=\"token string\">\"property2\"</span>: <span class=\"token number\">7.89</span>\n\t}\n}</code></pre>\n\t</div>\n\t<div
+  style=\"display: inline-block; width:100%;\">\n\t\t<strong>... you'll get in the
+  Real World\xAE:</strong>\n<pre><code class=\"lang-json\">{\n\t<span class=\"token
+  string\">\"id\"</span>: <span class=\"token number\">123</span>,\n\t<span class=\"token
+  string\">\"property2\"</span>: <span class=\"token string\">\"Lorem ipsum\"</span>,\n\t<span
+  class=\"token string\">\"_embedded\"</span>: {\n\t\t<span class=\"token string\">\"object\"</span>:
+  {\n\t\t\t<span class=\"token string\">\"id\"</span>: <span class=\"token number\">456</span>,\n\t\t\t<span
+  class=\"token string\">\"property2\"</span>: <span class=\"token number\">7.89</span>,\n\t\t\t<span
+  class=\"token string\">\"_links\"</span>: {\n\t\t\t\t<span class=\"token string\">\"self\"</span>:
+  {\n\t\t\t\t\t<span class=\"token string\">\"href\"</span>: <span class=\"token string\">\"https://api.mydomain.com/other-item/456\"</span>\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\t<span
+  class=\"token string\">\"_links\"</span>: {\n\t\t<span class=\"token string\">\"self\"</span>:
+  {\n\t\t\t<span class=\"token string\">\"href\"</span>: <span class=\"token string\">\"https://api.mydomain.com/item/123\"</span>\n\t\t}\n\t}\n}</code></pre>\n\t</div>\n</div>\n\n###
+  Errors\nErrors return JSON too and tries to match the [Problem Details for HTTP
+  APIs specification](https://tools.ietf.org/html/rfc7807). If it does not match this
+  spec, that's either a bug or a compatibility issue. Please contact us to solve the
+  problem.\n\nThe `Content-Type` of errors will be `application/problem+json`.\n\n##
+  Versioning\nThe API is fully versionned, using an URL-versioning scheme: `https://demo.pims.io/api/v1/events`,
+  `https://demo.pims.io/api/v2/events`,...\n\nThe version part of the URL is optional,
+  and will be completed with the last stable version if omitted.\n\n## Pagination\nAll
+  responses corresponding to a collection of resources (e.g. `/venues` or `/series/:id/events`)
+  are paginated. When so, you will only get the first 25 resources you asked for.\n\nIf
+  you need to get more resources in one call, you can use the `page_size` query parameter.
+  E.g. `/venues?page_size=50` to get the 50 first venues.\n\nAlso note that with HAL,
+  the navigation in paginated responses is a piece of cake, as you can see below:\n```json\n{\n\t\"_links\":
+  {\n\t\t\"self\": {\n\t\t\t\"href\": \"https://demo.pims.io/api/v1/events?page=1\"\n\t\t},\n\t\t\"first\":
+  {\n\t\t\t\"href\": \"https://demo.pims.io/api/v1/events\"\n\t\t},\n\t\t\"last\":
+  {\n\t\t\t\"href\": \"https://demo.pims.io/api/v1/events?page=14\"\n\t\t},\n\t\t\"next\":
+  {\n\t\t\t\"href\": \"https://demo.pims.io/api/v1/events?page=2\"\n\t\t}\n\t},\n\t\"_embedded\":
+  {\n \t\t... // data content goes here\n\t},\n\t\"page_count\": 14,\n\t\"page_size\":
+  25,\n\t\"total_items\": 331,\n\t\"page\": 1\n}\n```\n\n## Filtering and sorting\nEvery
+  textual filter (e.g. `/events?label=U2`) and/or sort (e.g. `/events?sort=label`)
+  performed with the API uses UTF8_UNICODE_CI collation, meaning it is:\n- Case insensitive:
+  \u201CChlo\xE9\u201D will be considered the same as \u201CCHLO\xC9\u201D;\n- Diacritic
+  insensitive: \u201CChlo\xE9\u201D will be considered the same as \u201CChloe\u201D.\n\nWhen
+  performing a sort, it will always be *ascending* by default. To make it *descending*,
+  just use a minus sign (`-`) in front of the parameter value (e.g. `/events?sort=-label`).\n\n##
+  I18n\nIn responses, some labels can be translated (e.g. promotion types, event input
+  types, etc.). These translatable labels are clearly indicated in the documentation
+  below.\n\nBy default, they will be displayed in English, but you can change this
+  behaviour via the `Accept-Language` header. E.g., use `fr` as a value for French.\n\n##
+  PHP SDK\nWe provide a simple yet convenient SDK for the PHP language, see [the Github
+  page of the project](https://github.com/pimssas/pims-api-client-php).\n\n## And
+  now?\nGeneraly, you will start by [fetching one or more events](#tag/Events). An
+  <span class=\"definition\">event</span> can be anything that occurs in one venue
+  at one given date and time: a concert, a play, a match, a conference, etc. Additionnally,
+  you can explore the [series](#tag/Series): a <span class=\"definition\">series</span>
+  is just a group of events (e.g. a tour or a festival).\n\nOnce you retrieved the
+  events you were interested in, you can look for the sales (<span class=\"definition\">ticket
+  counts</span>):\n- Get a quick overview with [`/events/:id/ticket-counts`](#operation/fetchAllTicketCounts)\n-
+  Or get a full insight by calling these endpoints:\n    1. [`/events/:id/categories`](#operation/fetchAllEventsCategories)\n
+  \   2. [`/events/:id/channels`](#operation/fetchAllEventsChannels)\n    3. [`/events/:id/ticket-counts/detailed`](#operation/fetchAllDetailedTicketCounts)\n\nEventually,
+  you may also want to [fetch the promotions](#tag/Promotions). A <span class=\"definition\">promotion</span>
+  can be any leverage on the sales: ads, marketing campaigns, buzz or news around
+  the event, etc. A promotion can be linked to any combination of events and/or series.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:32:\"Creative
+  Commons CC BY-NC-ND 2.0\";s:3:\"url\";s:50:\"https://creativecommons.org/licenses/by-nc-nd/2.0/\";}s:5:\"title\";s:4:\"Pims\";s:7:\"version\";s:3:\"1.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"ecommerce\";}s:6:\"x-logo\";O:8:\"stdClass\":2:{s:15:\"backgroundColor\";s:7:\"#FF9800\";s:3:\"url\";s:102:\"https://api.apis.guru/v2/cache/logo/https_s3.eu-central-1.amazonaws.com_cdn.pims.io_api_logo_white.svg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:36:\"https://cdn.pims.io/api/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:7:\"pims.io\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:4:\"pims\";s:4:\"type\";s:7:\"openapi\";}}"
+host: demo.pims.io
+basePath: /api/v1
+paths:
+  /events:
+    get:
+      operationId: fetchAllEvents
+      parameters:
+      - $ref: '#/parameters/query_events_label'
+      - $ref: '#/parameters/query_events_from-datetime'
+      - $ref: '#/parameters/query_events_to-datetime'
+      - $ref: '#/parameters/query_events_city'
+      - $ref: '#/parameters/query_events_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-events'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all events
+      tags:
+      - Events
+  /events/{event_id}:
+    get:
+      operationId: fetchOneEvent
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives one event
+          schema:
+            $ref: '#/definitions/EventsEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one event by ID
+      tags:
+      - Events
+  /events/{event_id}/capacities:
+    get:
+      operationId: fetchAllEventsCapacities
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - default: date
+        description: Sort the capacities in the corresponding order.
+        enum:
+        - date
+        - -date
+        in: query
+        name: sort
+        type: string
+      - $ref: '#/parameters/query_page-size'
+      responses:
+        200:
+          description: Successful operation, gives an array of event capacities
+          schema:
+            items:
+              $ref: '#/definitions/EventsCapacitiesEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all capacities for one event
+      tags:
+      - Event capacities
+  /events/{event_id}/capacities/{capacity_id}:
+    get:
+      operationId: fetchOneEventCapacity
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - description: ID of the targeted capacity.
+        format: int32
+        in: path
+        name: capacity_id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Successful operation, gives one event capacity
+          schema:
+            $ref: '#/definitions/EventsCapacitiesEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one capacity by ID
+      tags:
+      - Event capacities
+  /events/{event_id}/categories:
+    get:
+      operationId: fetchAllEventsCategories
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_page-size'
+      responses:
+        200:
+          description: Successful operation, gives an array of events categories
+          schema:
+            items:
+              $ref: '#/definitions/EventsCategoriesEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all categories for one event
+      tags:
+      - Event ticket settings
+  /events/{event_id}/categories/{category_id}:
+    get:
+      operationId: fetchOneEventCategory
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - description: ID of the targeted event category.
+        format: int32
+        in: path
+        name: category_id
+        required: true
+        type: number
+      responses:
+        200:
+          description: Successful operation, gives one event category
+          schema:
+            $ref: '#/definitions/EventsCategoriesEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one event category by ID
+      tags:
+      - Event ticket settings
+  /events/{event_id}/channels:
+    get:
+      operationId: fetchAllEventsChannels
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_page-size'
+      responses:
+        200:
+          description: Successful operation, gives an array of events channels
+          schema:
+            items:
+              $ref: '#/definitions/EventsChannelsEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all channels for one event
+      tags:
+      - Event ticket settings
+  /events/{event_id}/channels/{channel_id}:
+    get:
+      operationId: fetchOneEventChannel
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - description: ID of the targeted event channel.
+        format: int32
+        in: path
+        name: channel_id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Successful operation, gives one event channel
+          schema:
+            $ref: '#/definitions/EventsChannelsEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one event channel by ID
+      tags:
+      - Event ticket settings
+  /events/{event_id}/promotions:
+    get:
+      operationId: fetchAllEventsPromotions
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_promotions_label'
+      - $ref: '#/parameters/query_promotions_from-date'
+      - $ref: '#/parameters/query_promotions_to-date'
+      - $ref: '#/parameters/query_promotions_type'
+      - $ref: '#/parameters/query_promotions_family'
+      - $ref: '#/parameters/query_promotions_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-promotions'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all promotions for one event
+      tags:
+      - Promotions
+  /events/{event_id}/ticket-counts:
+    get:
+      operationId: fetchAllTicketCounts
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_ticket-counts_from-date'
+      - $ref: '#/parameters/query_ticket-counts_to-date'
+      - $ref: '#/parameters/query_ticket-counts_sort'
+      - $ref: '#/parameters/query_page-size'
+      responses:
+        200:
+          description: Successful operation, gives an array of ticket counts
+          schema:
+            items:
+              $ref: '#/definitions/TicketCountsEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all ticket counts for one event
+      tags:
+      - Ticket counts
+  /events/{event_id}/ticket-counts/detailed:
+    get:
+      operationId: fetchAllDetailedTicketCounts
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_ticket-counts_from-date'
+      - $ref: '#/parameters/query_ticket-counts_to-date'
+      - $ref: '#/parameters/query_ticket-counts_sort'
+      - $ref: '#/parameters/query_page-size'
+      responses:
+        200:
+          description: Successful operation, gives an array of detailed ticket counts
+          schema:
+            items:
+              $ref: '#/definitions/TicketCountsDetailedEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all detailed ticket counts for one event
+      tags:
+      - Ticket counts
+  /events/{event_id}/ticket-counts/detailed/{ticket_count_id}:
+    get:
+      operationId: fetchOneDetailedTicketCoun
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - description: ID of the targeted ticket count.
+        format: int32
+        in: path
+        name: ticket_count_id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Successful operation, gives one detailed ticket count
+          schema:
+            $ref: '#/definitions/TicketCountsDetailedEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one detailed ticket count by ID
+      tags:
+      - Ticket counts
+  /events/{event_id}/ticket-counts/{ticket_count_id}:
+    get:
+      operationId: fetchOneTicketCount
+      parameters:
+      - description: ID of the targeted event.
+        format: int32
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      - description: ID of the targeted ticket count.
+        format: int32
+        in: path
+        name: ticket_count_id
+        required: true
+        type: integer
+      responses:
+        200:
+          description: Successful operation, gives one ticket count
+          schema:
+            $ref: '#/definitions/TicketCountsEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one ticket count by ID
+      tags:
+      - Ticket counts
+  /promotions:
+    get:
+      operationId: fetchAllPromotions
+      parameters:
+      - $ref: '#/parameters/query_promotions_label'
+      - $ref: '#/parameters/query_promotions_from-date'
+      - $ref: '#/parameters/query_promotions_to-date'
+      - $ref: '#/parameters/query_promotions_type'
+      - $ref: '#/parameters/query_promotions_family'
+      - $ref: '#/parameters/query_promotions_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-promotions'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all promotions
+      tags:
+      - Promotions
+  /promotions/{promotion_id}:
+    get:
+      operationId: fetchOnePromotion
+      parameters:
+      - description: ID of the targeted promotion.
+        format: int32
+        in: path
+        name: promotion_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives one promotion
+          schema:
+            $ref: '#/definitions/PromotionsEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one promotion by ID
+      tags:
+      - Promotions
+  /series:
+    get:
+      operationId: fetchAllSeries
+      parameters:
+      - description: Find only the venues whose label contains this value.
+        in: query
+        name: label
+        type: string
+      - description: Find only the series starting after this date.
+        format: date
+        in: query
+        name: from_date
+        type: string
+      - description: Find only the series ending before this date.
+        format: date
+        in: query
+        name: to_date
+        type: string
+      - description: Find only the series whose type is equal to this value.
+        enum:
+        - TOU
+        - LGS
+        in: query
+        name: type
+        type: string
+      - default: first_date
+        description: Sort the series in the corresponding order.
+        enum:
+        - label
+        - -label
+        - first_date
+        - -first_date
+        - last_date
+        - -last_date
+        in: query
+        name: sort
+        type: string
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives an array of series
+          schema:
+            items:
+              $ref: '#/definitions/SeriesEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all series
+      tags:
+      - Series
+  /series/{series_id}:
+    get:
+      operationId: fetchOneSeries
+      parameters:
+      - description: ID of the targeted series.
+        format: int32
+        in: path
+        name: series_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives one series
+          schema:
+            $ref: '#/definitions/SeriesEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one series by ID
+      tags:
+      - Series
+  /series/{series_id}/events:
+    get:
+      operationId: fetchAllSeriesEvents
+      parameters:
+      - description: ID of the targeted series.
+        format: int32
+        in: path
+        name: series_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_events_from-datetime'
+      - $ref: '#/parameters/query_events_to-datetime'
+      - $ref: '#/parameters/query_events_city'
+      - $ref: '#/parameters/query_events_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-events'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all events for one series
+      tags:
+      - Events
+  /series/{series_id}/promotions:
+    get:
+      operationId: fetchAllSeriesPromotions
+      parameters:
+      - description: ID of the targeted series.
+        format: int32
+        in: path
+        name: series_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_promotions_label'
+      - $ref: '#/parameters/query_promotions_from-date'
+      - $ref: '#/parameters/query_promotions_to-date'
+      - $ref: '#/parameters/query_promotions_type'
+      - $ref: '#/parameters/query_promotions_family'
+      - $ref: '#/parameters/query_promotions_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-promotions'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all promotions for one series
+      tags:
+      - Promotions
+  /venues:
+    get:
+      operationId: fetchAllVenues
+      parameters:
+      - description: Find only the venues whose label contains this value.
+        in: query
+        name: label
+        type: string
+      - description: Find only the venues whose city contains this value.
+        in: query
+        name: city
+        type: string
+      - description: Find only the venues whose country_code is equal to this value.
+        in: query
+        name: country_code
+        type: string
+      - description: Find only the venues whose type is equal to this value.
+        enum:
+        - SAL
+        - FES
+        in: query
+        name: type
+        type: string
+      - default: label
+        description: Sort the venues in the corresponding order.
+        enum:
+        - label
+        - -label
+        - city
+        - -city
+        - country
+        - -country
+        in: query
+        name: sort
+        type: string
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives an array of venues
+          schema:
+            items:
+              $ref: '#/definitions/VenuesEntity'
+            type: array
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all venues
+      tags:
+      - Venues
+  /venues/{venue_id}:
+    get:
+      operationId: fetchOneVenue
+      parameters:
+      - description: ID of the targeted venue.
+        format: int32
+        in: path
+        name: venue_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          description: Successful operation, gives one venue
+          schema:
+            $ref: '#/definitions/VenuesEntity'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: '#/responses/500'
+      summary: Get one venue by ID
+      tags:
+      - Venues
+  /venues/{venue_id}/events:
+    get:
+      operationId: fetchAllVenuesEvents
+      parameters:
+      - description: ID of the targeted venue.
+        format: int32
+        in: path
+        name: venue_id
+        required: true
+        type: integer
+      - $ref: '#/parameters/query_events_from-datetime'
+      - $ref: '#/parameters/query_events_to-datetime'
+      - $ref: '#/parameters/query_events_city'
+      - $ref: '#/parameters/query_events_sort'
+      - $ref: '#/parameters/query_page-size'
+      - $ref: '#/parameters/header_Accept-Language'
+      responses:
+        200:
+          $ref: '#/responses/200-events'
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: '#/responses/500'
+      summary: Find all events for one venue
+      tags:
+      - Events
+produces:
+- application/hal+json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":14:{s:8:\"Error401\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Description
+  of the error.\";s:7:\"example\";s:12:\"Unauthorized\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Status
+  code of the error.\";s:7:\"example\";i:401;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Message
+  corresponding to the status code.\";s:7:\"example\";s:12:\"Unauthorized\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Link
+  to RFC 2616 about status codes definitions.\";s:7:\"example\";s:46:\"https://tools.ietf.org/html/rfc2616#section-10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"type\";i:1;s:5:\"title\";i:2;s:6:\"status\";i:3;s:6:\"detail\";}s:4:\"type\";s:6:\"object\";}s:8:\"Error403\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Description
+  of the error.\";s:7:\"example\";s:9:\"Forbidden\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Status
+  code of the error.\";s:7:\"example\";i:403;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Message
+  corresponding to the status code.\";s:7:\"example\";s:9:\"Forbidden\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Link
+  to RFC 2616 about status codes definitions.\";s:7:\"example\";s:46:\"https://tools.ietf.org/html/rfc2616#section-10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"type\";i:1;s:5:\"title\";i:2;s:6:\"status\";i:3;s:6:\"detail\";}s:4:\"type\";s:6:\"object\";}s:8:\"Error404\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Description
+  of the error.\";s:7:\"example\";s:17:\"Entity not found.\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Status
+  code of the error.\";s:7:\"example\";i:404;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Message
+  corresponding to the status code.\";s:7:\"example\";s:9:\"Not Found\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Link
+  to RFC 2616 about status codes definitions.\";s:7:\"example\";s:46:\"https://tools.ietf.org/html/rfc2616#section-10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"type\";i:1;s:5:\"title\";i:2;s:6:\"status\";i:3;s:6:\"detail\";}s:4:\"type\";s:6:\"object\";}s:8:\"Error422\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Description
+  of the error.\";s:7:\"example\";s:44:\"Unknown date format, should be 'Y-m-d?H:i:s'\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Status
+  code of the error.\";s:7:\"example\";i:422;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Message
+  corresponding to the status code.\";s:7:\"example\";s:20:\"Unprocessable Entity\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Link
+  to RFC 2616 about status codes definitions.\";s:7:\"example\";s:46:\"https://tools.ietf.org/html/rfc2616#section-10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"type\";i:1;s:5:\"title\";i:2;s:6:\"status\";i:3;s:6:\"detail\";}s:4:\"type\";s:6:\"object\";}s:8:\"Error500\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"detail\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Description
+  of the error.\";s:7:\"example\";s:21:\"Internal Server Error\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Status
+  code of the error.\";s:7:\"example\";i:500;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"title\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Message
+  corresponding to the status code.\";s:7:\"example\";s:21:\"Internal Server Error\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Link
+  to RFC 2616 about status codes definitions.\";s:7:\"example\";s:46:\"https://tools.ietf.org/html/rfc2616#section-10\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"type\";i:1;s:5:\"title\";i:2;s:6:\"status\";i:3;s:6:\"detail\";}s:4:\"type\";s:6:\"object\";}s:22:\"EventsCapacitiesEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"Array
+  of categories with their detailed capacities.\";s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"comps\";O:8:\"stdClass\":4:{s:11:\"description\";s:32:\"Number
+  of comps in the category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:5:\"holds\";O:8:\"stdClass\":4:{s:11:\"description\";s:169:\"Number
+  of *holds* in the category. <span class=\"definition\">Holds</span> are seats/places
+  that are not in sale at the date of the capacity, but will eventually be later.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Unique
+  ID of the event category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"kills\";O:8:\"stdClass\":4:{s:11:\"description\";s:134:\"Number
+  of *kills* in the category. <span class=\"definition\">Kills</span> are seats/places
+  that will not be sold for technical reasons.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:17:\"sellable_capacity\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"Number
+  of sellable seats/places in the category. This is calculated by the formula: `total_capacity
+  - kills - comps - holds`.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:14:\"total_capacity\";O:8:\"stdClass\":3:{s:11:\"description\";s:45:\"Total
+  number of seats/places in the category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:14:\"total_capacity\";i:2;s:5:\"kills\";i:3;s:5:\"comps\";i:4;s:5:\"holds\";i:5;s:17:\"sellable_capacity\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Date
+  from which the capacity is active.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Unique
+  ID of the event capacity.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"date\";i:2;s:10:\"categories\";}s:5:\"title\";s:14:\"Event
+  capacity\";s:4:\"type\";s:6:\"object\";}s:22:\"EventsCategoriesEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"category_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Unique
+  ID of the category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Unique
+  ID of the event category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"Full
+  label of the category.\";s:4:\"type\";s:6:\"string\";}s:12:\"price_ranges\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"Array
+  of price ranges.\";s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"base_price\";O:8:\"stdClass\":4:{s:11:\"description\";s:81:\"Base
+  price of the price range (i.e. including VAT but excluding all commissions).\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Currency
+  of the prices.\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"ID
+  of the price range.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Full
+  label of the price range.\";s:4:\"type\";s:6:\"string\";}s:12:\"public_price\";O:8:\"stdClass\":5:{s:11:\"description\";s:73:\"Public
+  price of the price range (i.e. including VAT and all commissions).\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:11:\"short_label\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"Short
+  label of the price range (generally less than 5 characters).\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:5:\"label\";i:2;s:11:\"short_label\";i:3;s:10:\"base_price\";i:4;s:12:\"public_price\";i:5;s:8:\"currency\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:11:\"short_label\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"Short
+  label of the category (generally less than 5 characters).\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:11:\"category_id\";i:2;s:5:\"label\";i:3;s:11:\"short_label\";}s:5:\"title\";s:14:\"Event
+  category\";s:4:\"type\";s:6:\"object\";}s:20:\"EventsChannelsEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"Unique
+  ID of the event channel.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Full
+  label of the channel.\";s:4:\"type\";s:6:\"string\";}s:11:\"short_label\";O:8:\"stdClass\":3:{s:11:\"description\";s:62:\"Short
+  label of the channel (generally less than 5 characters).\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"label\";i:2;s:11:\"short_label\";}s:5:\"title\";s:13:\"Event
+  channel\";s:4:\"type\";s:6:\"object\";}s:12:\"EventsEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":18:{s:10:\"break_even\";O:8:\"stdClass\":5:{s:11:\"description\";s:38:\"Value
+  of the break-even for the event.\";s:7:\"example\";i:1727;s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:17:\"cancellation_date\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"Date
+  the event was canceled.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:8:\"contract\";O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"Contract
+  of the series.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"partner\";O:8:\"stdClass\":5:{s:11:\"description\";s:17:\"Contract
+  partner.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"Unique
+  ID identifying the contract partner.\";s:7:\"example\";i:12;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Label
+  of the contract partner.\";s:7:\"example\";s:6:\"K Prod\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";s:10:\"x-nullable\";b:1;}s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:14:\"Contract
+  type.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:37:\"String
+  identifying the contract type.\";s:4:\"enum\";a:5:{i:0;s:3:\"PRO\";i:1;s:3:\"COP\";i:2;s:3:\"PLO\";i:3;s:3:\"COR\";i:4;s:3:\"CES\";}s:7:\"example\";s:3:\"COP\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:95:\"Label
+  of the contract type. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:6:\"Coprod\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:7:\"partner\";}s:4:\"type\";s:6:\"object\";}s:16:\"costing_capacity\";O:8:\"stdClass\":5:{s:11:\"description\";s:30:\"Costing
+  capacity of the event.\";s:7:\"example\";i:2074;s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:18:\"creation_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:68:\"Timestamp
+  for when the venue was created in the customer's database.\";s:7:\"example\";i:1496903403;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Currency
+  of the prices.\";s:4:\"type\";s:6:\"string\";}s:8:\"datetime\";O:8:\"stdClass\":4:{s:11:\"description\";s:62:\"Datetime
+  of the event (relative to the timezone of the venue).\";s:7:\"example\";s:19:\"2018-01-11T20:00:00\";s:6:\"format\";s:8:\"datetime\";s:4:\"type\";s:6:\"string\";}s:4:\"free\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Whether
+  this event is free or not.\";s:4:\"type\";s:7:\"boolean\";}s:18:\"general_sales_date\";O:8:\"stdClass\":4:{s:11:\"description\";s:77:\"Date
+  the event went on general sales (relative to the timezone of the venue).\";s:7:\"example\";s:10:\"2017-06-15\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"Unique
+  ID of the event.\";s:7:\"example\";i:2142;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:10:\"input_type\";O:8:\"stdClass\":4:{s:11:\"description\";s:24:\"Input
+  type of the event.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:47:\"String
+  identifying the input type of the event.\";s:4:\"enum\";a:2:{i:0;s:3:\"DET\";i:1;s:3:\"GLO\";}s:7:\"example\";s:3:\"DET\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:92:\"Label
+  of the input type. This value is translated according to the 'Accept-Language' header.\";s:7:\"example\";s:14:\"Detailed
+  sales\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Label
+  of the event.\";s:7:\"example\";s:11:\"Alan Wilson\";s:4:\"type\";s:6:\"string\";}s:21:\"last_update_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:73:\"Timestamp
+  for when the venue was last updated in the customer's database.\";s:7:\"example\";i:1516500001;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:12:\"max_capacity\";O:8:\"stdClass\":5:{s:11:\"description\";s:57:\"Maximum
+  capacity for the venue in which the event occurs.\";s:7:\"example\";i:2100;s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:13:\"presales_date\";O:8:\"stdClass\":4:{s:11:\"description\";s:72:\"Date
+  the event went on presales (relative to the timezone of the venue).\";s:7:\"example\";s:10:\"2017-06-14\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:9:\"series_id\";O:8:\"stdClass\":5:{s:11:\"description\";s:38:\"ID
+  of the series the event belongs to.\";s:7:\"example\";i:263;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:13:\"sold_out_date\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"Date
+  the event was sold out.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:5:\"venue\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/VenuesEntity\";}}s:8:\"required\";a:10:{i:0;s:2:\"id\";i:1;s:9:\"series_id\";i:2;s:5:\"label\";i:3;s:8:\"datetime\";i:4;s:5:\"venue\";i:5;s:10:\"input_type\";i:6;s:8:\"contract\";i:7;s:4:\"free\";i:8;s:18:\"creation_timestamp\";i:9;s:21:\"last_update_timestamp\";}s:5:\"title\";s:5:\"Event\";s:4:\"type\";s:6:\"object\";}s:16:\"PromotionsEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":10:{s:10:\"applied_to\";O:8:\"stdClass\":3:{s:11:\"description\";s:155:\"List
+  of events and/or series where the promotion is applied. A promotion can be applied
+  on several events, and its costs can be split between those events.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"event_id\";O:8:\"stdClass\":5:{s:11:\"description\";s:138:\"ID
+  of the event the promotion applies to. This property is exclusive with 'series_id':
+  if defined, then 'series_id' will not be displayed.\";s:7:\"example\";i:2142;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:8:\"quantity\";O:8:\"stdClass\":5:{s:11:\"description\";s:61:\"Quantity
+  share of the promotion devoted to this event/series.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:9:\"series_id\";O:8:\"stdClass\":5:{s:11:\"description\";s:137:\"ID
+  of the series the promotion applies to. This property is exclusive with 'event_id':
+  if defined, then 'event_id' will not be displayed.\";s:7:\"example\";i:263;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:9:\"unit_cost\";O:8:\"stdClass\":5:{s:11:\"description\";s:137:\"Unit
+  cost share of the promotion devoted to this event/series. The total cost of the
+  share can be calculated with: quantity \xD7 unit_cost.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:18:\"valorized_quantity\";O:8:\"stdClass\":5:{s:11:\"description\";s:71:\"Valorized
+  quantity share of the promotion devoted to this event/series.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:19:\"valorized_unit_cost\";O:8:\"stdClass\":5:{s:11:\"description\";s:177:\"Valorized
+  unit cost share of the promotion devoted to this event/series. The total valorized
+  cost of the share can be calculated with: valorized_quantity \xD7 valorized_unit_cost.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:8:\"comments\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Comments
+  on the promotion.\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:4:\"cost\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"Cost
+  of the promotion.\";s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:119:\"Currency
+  of the unit_cost (<a href='https://en.wikipedia.org/wiki/ISO_4217#Active_codes'>ISO
+  4212 alphabetic code</a>).\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:8:\"exchange\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"What
+  was offered in exchange of the promotion.\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:8:\"quantity\";O:8:\"stdClass\":5:{s:11:\"description\";s:42:\"Quantity
+  of the promotion (see unit_cost).\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:5:\"state\";O:8:\"stdClass\":5:{s:11:\"description\";s:28:\"State
+  of the promotion cost.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"String
+  identifying the state of the promotion cost.\";s:4:\"enum\";a:4:{i:0;s:3:\"PRE\";i:1;s:3:\"ENG\";i:2;s:3:\"FAC\";i:3;s:3:\"PAY\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:109:\"Label
+  of the state of the promotion cost. This value is translated according to the 'Accept-Language'
+  header.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";s:10:\"x-nullable\";b:1;}s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:27:\"Type
+  of the promotion cost.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"String
+  identifying the type of the promotion cost.\";s:4:\"enum\";a:3:{i:0;s:3:\"PAY\";i:1;s:3:\"ECH\";i:2;s:3:\"GRA\";}s:7:\"example\";s:3:\"GRA\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:108:\"Label
+  of the type of the promotion cost. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:4:\"Free\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}s:9:\"unit_cost\";O:8:\"stdClass\":5:{s:11:\"description\";s:106:\"Unit
+  cost of the promotion. The total cost of the promotion can be calculated with: quantity
+  \xD7 unit_cost.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:18:\"valorized_quantity\";O:8:\"stdClass\":5:{s:11:\"description\";s:62:\"Valorized
+  quantity of the promotion (see valorized_unit_cost).\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:19:\"valorized_unit_cost\";O:8:\"stdClass\":5:{s:11:\"description\";s:146:\"Valorized
+  unit cost of the promotion. The total valorized cost of the promotion can be calculated
+  with: valorized_quantity \xD7 valorized_unit_cost.\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:4:\"type\";s:6:\"object\";}s:8:\"end_date\";O:8:\"stdClass\":5:{s:11:\"description\";s:69:\"Date
+  the promotion ends. (If null, has the same value as start_date.)\";s:7:\"example\";s:10:\"2018-01-31\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:4:\"file\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"File
+  associated to the promotion.\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:27:\"Unique
+  ID of the promotion.\";s:7:\"example\";i:2404;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Label
+  of the promotion.\";s:7:\"example\";s:25:\"1/2 page Club et Concerts\";s:4:\"type\";s:6:\"string\";}s:10:\"start_date\";O:8:\"stdClass\":5:{s:11:\"description\";s:26:\"Date
+  the promotion begins.\";s:7:\"example\";s:10:\"2018-01-02\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:8:\"supplier\";O:8:\"stdClass\":5:{s:11:\"description\";s:26:\"Supplier
+  of the promotion.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Unique
+  ID of the supplier.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Name
+  of the supplier.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";s:10:\"x-nullable\";b:1;}s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"Type
+  of the promotion.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"family\";O:8:\"stdClass\":4:{s:11:\"description\";s:37:\"Family
+  the promotion type belongs to.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"String
+  identifying the promotion family.\";s:7:\"example\";s:3:\"PRE\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:98:\"Label
+  of the promotion family. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:5:\"Press\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"String
+  identifying the promotion type.\";s:7:\"example\";s:3:\"PPR\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:96:\"Label
+  of the promotion type. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:9:\"Media ads\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"label\";i:2;s:6:\"family\";}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:9:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:5:\"label\";i:3;s:8:\"supplier\";i:4;s:10:\"start_date\";i:5;s:8:\"end_date\";i:6;s:4:\"cost\";i:7;s:8:\"comments\";i:8;s:10:\"applied_to\";}s:5:\"title\";s:9:\"Promotion\";s:4:\"type\";s:6:\"object\";}s:12:\"SeriesEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"contract\";O:8:\"stdClass\":5:{s:11:\"description\";s:23:\"Contract
+  of the series.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"partner\";O:8:\"stdClass\":5:{s:11:\"description\";s:17:\"Contract
+  partner.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Unique
+  ID identifying the contract partner.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Label
+  of the contract partner.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";s:10:\"x-nullable\";b:1;}s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:14:\"Contract
+  type.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:37:\"String
+  identifying the contract type.\";s:4:\"enum\";a:5:{i:0;s:3:\"PRO\";i:1;s:3:\"COP\";i:2;s:3:\"PLO\";i:3;s:3:\"COR\";i:4;s:3:\"CES\";}s:7:\"example\";s:3:\"PRO\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:95:\"Label
+  of the contract type. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:10:\"Production\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:1:{i:0;s:4:\"type\";}s:4:\"type\";s:6:\"object\";s:10:\"x-nullable\";b:1;}s:16:\"costing_capacity\";O:8:\"stdClass\":6:{s:11:\"description\";s:30:\"Value
+  of the costing capacity.\";s:7:\"example\";i:1465;s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";s:10:\"x-nullable\";b:1;}s:18:\"creation_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:69:\"Timestamp
+  for when the series was created in the customer's database.\";s:7:\"example\";i:1503655564;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"first_date\";O:8:\"stdClass\":4:{s:11:\"description\";s:38:\"Date
+  of the first event in the series.\";s:7:\"example\";s:10:\"2018-05-22\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:24:\"Unique
+  ID of the series.\";s:7:\"example\";i:263;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Label
+  of the series.\";s:7:\"example\";s:33:\"Tintin et Milou Live - Paris 2018\";s:4:\"type\";s:6:\"string\";}s:9:\"last_date\";O:8:\"stdClass\":4:{s:11:\"description\";s:37:\"Date
+  of the last event in the series.\";s:7:\"example\";s:10:\"2018-06-03\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:21:\"last_update_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:74:\"Timestamp
+  for when the series was last updated in the customer's database.\";s:7:\"example\";i:1516500001;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"Type
+  of the series\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"String
+  identifying the series type.\";s:4:\"enum\";a:2:{i:0;s:3:\"TOU\";i:1;s:3:\"LGS\";}s:7:\"example\";s:3:\"LGS\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"Label
+  of the series type. This value is translated according to the 'Accept-Language'
+  header.\";s:7:\"example\";s:11:\"Long series\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}s:5:\"venue\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:26:\"#/definitions/VenuesEntity\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:5:\"label\";i:3;s:10:\"first_date\";i:4;s:9:\"last_date\";i:5;s:18:\"creation_timestamp\";i:6;s:21:\"last_update_timestamp\";}s:5:\"title\";s:6:\"Series\";s:4:\"type\";s:6:\"object\";}s:26:\"TicketCountsDetailedEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"channels\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Array
+  of channels where the sales were made.\";s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"categories\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Array
+  of categories which where sold.\";s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"ID
+  of the category.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"price_ranges\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Array
+  of price ranges which where sold.\";s:5:\"items\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"count\";O:8:\"stdClass\":4:{s:11:\"description\";s:94:\"Detailed
+  ticket count (= number of sold tickets for the current channel/category/price range).\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"ID
+  the price range.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"count\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:12:\"price_ranges\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"ID
+  of the channel.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:10:\"categories\";}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:7:\"comment\";O:8:\"stdClass\":4:{s:11:\"description\";s:29:\"Comment
+  for the ticket count.\";s:7:\"example\";s:8:\"No sales\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Date
+  of the ticket count.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:5:\"final\";O:8:\"stdClass\":2:{s:11:\"description\";s:164:\"Whether
+  this ticket count is the last and final one of its event or not. If it is, it means
+  that no further ticket counts will be added for the event it belongs to.\";s:4:\"type\";s:7:\"boolean\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Unique
+  ID of the ticket count.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"date\";i:2;s:7:\"comment\";i:3;s:5:\"final\";i:4;s:8:\"channels\";}s:5:\"title\";s:21:\"Detailed
+  ticket count\";s:4:\"type\";s:6:\"object\";}s:18:\"TicketCountsEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"comment\";O:8:\"stdClass\":4:{s:11:\"description\";s:29:\"Comment
+  for the ticket count.\";s:7:\"example\";s:8:\"No sales\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:5:\"count\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"Ticket
+  count (i.e. number of sold tickets).\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:115:\"Currency
+  of the gross (<a href='https://en.wikipedia.org/wiki/ISO_4217#Active_codes'>ISO
+  4212 alphabetic code</a>).\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"Date
+  of the ticket count.\";s:6:\"format\";s:4:\"date\";s:4:\"type\";s:6:\"string\";}s:5:\"final\";O:8:\"stdClass\":2:{s:11:\"description\";s:164:\"Whether
+  this ticket count is the last and final one of its event or not. If it is, it means
+  that no further ticket counts will be added for the event it belongs to.\";s:4:\"type\";s:7:\"boolean\";}s:5:\"gross\";O:8:\"stdClass\":5:{s:11:\"description\";s:86:\"Gross
+  (i.e. income for the sold tickets, including VAT but excluding all commissions).\";s:6:\"format\";s:5:\"float\";s:7:\"minimum\";i:0;s:4:\"type\";s:6:\"number\";s:10:\"x-nullable\";b:1;}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Unique
+  ID of the ticket count.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"date\";i:2;s:7:\"comment\";i:3;s:5:\"final\";i:4;s:5:\"count\";}s:5:\"title\";s:12:\"Ticket
+  count\";s:4:\"type\";s:6:\"object\";}s:12:\"VenuesEntity\";O:8:\"stdClass\":4:{s:10:\"properties\";O:8:\"stdClass\":12:{s:18:\"alternative_labels\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Array
+  of alternative/old names of the venue.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"city\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"City
+  in which the venue is.\";s:7:\"example\";s:14:\"Saint-Herblain\";s:4:\"type\";s:6:\"string\";}s:12:\"country_code\";O:8:\"stdClass\":3:{s:11:\"description\";s:119:\"Country
+  in which the venue is (<a href='https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3'>ISO
+  3166-1 alpha-3 code</a>).\";s:7:\"example\";s:2:\"FR\";s:4:\"type\";s:6:\"string\";}s:18:\"creation_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:68:\"Timestamp
+  for when the venue was created in the customer's database.\";s:7:\"example\";i:1262300401;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:13:\"first_address\";O:8:\"stdClass\":4:{s:11:\"description\";s:33:\"First
+  address field of the venue.\";s:7:\"example\";s:12:\"ZAC d'Ar Mor\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:23:\"Unique
+  ID of the venue.\";s:7:\"example\";i:27;s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"Name
+  of the venue.\";s:7:\"example\";s:28:\"Z\xE9nith de Nantes M\xE9tropole\";s:4:\"type\";s:6:\"string\";}s:21:\"last_update_timestamp\";O:8:\"stdClass\":4:{s:11:\"description\";s:73:\"Timestamp
+  for when the venue was last updated in the customer's database.\";s:7:\"example\";i:1473008115;s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"major_city\";O:8:\"stdClass\":4:{s:11:\"description\";s:53:\"Major
+  city or metropolitan area the venue belongs to.\";s:7:\"example\";s:6:\"Nantes\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:14:\"second_address\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"Second
+  address field of the venue.\";s:7:\"example\";s:20:\"Boulevard du Z\xE9nith\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}s:4:\"type\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"String
+  identifying the venue type.\";s:4:\"enum\";a:2:{i:0;s:3:\"SAL\";i:1;s:3:\"FES\";}s:7:\"example\";s:3:\"SAL\";s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":3:{s:11:\"description\";s:92:\"Label
+  of the venue type. This value is translated according to the 'Accept-Language' header.\";s:7:\"example\";s:5:\"Venue\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:2:\"id\";i:1;s:5:\"label\";}s:4:\"type\";s:6:\"object\";}s:8:\"zip_code\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"ZIP
+  code of the venue.\";s:7:\"example\";s:5:\"44800\";s:4:\"type\";s:6:\"string\";s:10:\"x-nullable\";b:1;}}s:8:\"required\";a:11:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:5:\"label\";i:3;s:13:\"first_address\";i:4;s:14:\"second_address\";i:5;s:8:\"zip_code\";i:6;s:4:\"city\";i:7;s:10:\"major_city\";i:8;s:12:\"country_code\";i:9;s:18:\"creation_timestamp\";i:10;s:21:\"last_update_timestamp\";}s:5:\"title\";s:5:\"Venue\";s:4:\"type\";s:6:\"object\";}}"
+...

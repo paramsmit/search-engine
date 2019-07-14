@@ -1,0 +1,328 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:14:\"Cellar Service\";s:11:\"description\";s:42:\"HTTP
+  service for managing your wine cellar\";s:7:\"version\";s:0:\"\";}"
+host: localhost:8000
+paths:
+  /sommelier:
+    post:
+      tags:
+      - sommelier
+      summary: pick sommelier
+      operationId: sommelier#pick
+      parameters:
+      - name: PickRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SommelierPickRequestBody'
+      responses:
+        200:
+          description: OK response.
+          schema:
+            $ref: '#/definitions/SommelierStoredBottleResponseCollection'
+        400:
+          description: Bad Request response.
+          schema:
+            $ref: '#/definitions/SommelierPickNoCriteriaResponseBody'
+        404:
+          description: Not Found response.
+          schema:
+            $ref: '#/definitions/SommelierPickNoMatchResponseBody'
+      schemes:
+      - http
+  /storage:
+    get:
+      tags:
+      - storage
+      summary: list storage
+      description: List all stored bottles
+      operationId: storage#list
+      responses:
+        200:
+          description: OK response.
+          schema:
+            $ref: '#/definitions/StorageStoredBottleResponseTinyCollection'
+      schemes:
+      - http
+    post:
+      tags:
+      - storage
+      summary: add storage
+      description: Add new bottle and return its ID.
+      operationId: storage#add
+      parameters:
+      - name: AddRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageAddRequestBody'
+          required:
+          - name
+          - winery
+          - vintage
+      responses:
+        201:
+          description: Created response.
+          schema:
+            type: string
+      schemes:
+      - http
+  /storage/multi_add:
+    post:
+      tags:
+      - storage
+      summary: multi_add storage
+      description: Add n number of bottles and return their IDs. This is a multipart
+        request and each part has field name 'bottle' and contains the encoded bottle
+        info to be added.
+      operationId: storage#multi_add
+      parameters:
+      - name: array
+        in: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/BottleRequestBody'
+      responses:
+        200:
+          description: OK response.
+          schema:
+            type: array
+            items:
+              type: string
+              example: Iusto consequatur.
+      schemes:
+      - http
+  /storage/multi_update:
+    put:
+      tags:
+      - storage
+      summary: multi_update storage
+      description: Update bottles with the given IDs. This is a multipart request
+        and each part has field name 'bottle' and contains the encoded bottle info
+        to be updated. The IDs in the query parameter is mapped to each part in the
+        request.
+      operationId: storage#multi_update
+      parameters:
+      - name: ids
+        in: query
+        description: IDs of the bottles to be updated
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: multi_update_request_body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StorageMultiUpdateRequestBody'
+          required:
+          - bottles
+      responses:
+        204:
+          description: No Content response.
+      schemes:
+      - http
+  /storage/rate:
+    post:
+      tags:
+      - storage
+      summary: rate storage
+      description: Rate bottles by IDs
+      operationId: storage#rate
+      responses:
+        200:
+          description: OK response.
+      schemes:
+      - http
+  /storage/{id}:
+    get:
+      tags:
+      - storage
+      summary: show storage
+      description: Show bottle by ID
+      operationId: storage#show
+      parameters:
+      - name: view
+        in: query
+        description: View to render
+        required: false
+        type: string
+        enum:
+        - default
+        - tiny
+      - name: id
+        in: path
+        description: ID of bottle to show
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK response.
+          schema:
+            $ref: '#/definitions/StorageShowResponseBody'
+        404:
+          description: Not Found response.
+          schema:
+            $ref: '#/definitions/StorageShowNotFoundResponseBody'
+            required:
+            - message
+            - id
+      schemes:
+      - http
+    delete:
+      tags:
+      - storage
+      summary: remove storage
+      description: Remove bottle from storage
+      operationId: storage#remove
+      parameters:
+      - name: id
+        in: path
+        description: ID of bottle to remove
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content response.
+      schemes:
+      - http
+  /swagger/swagger.json:
+    get:
+      summary: Download gen/http/openapi.json
+      description: JSON document containing the API swagger definition
+      operationId: swagger#/swagger/swagger.json
+      responses:
+        200:
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+      - https
+produces:
+- application/json
+- application/xml
+- application/gob
+definitions: !php/object "O:8:\"stdClass\":18:{s:17:\"BottleRequestBody\";O:8:\"stdClass\":6:{s:5:\"title\";s:17:\"BottleRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"composition\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ComponentRequestBody\";}s:11:\"description\";s:69:\"Composition
+  is the list of grape varietals and associated percentage.\";s:7:\"example\";a:4:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:3;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}}s:11:\"description\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Description
+  of bottle\";s:7:\"example\";s:119:\"Red wine blend with an emphasis on the Cabernet
+  Franc grape and including other Bordeaux grape varietals and some Syrah\";s:9:\"maxLength\";i:2000;}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of bottle\";s:7:\"example\";s:12:\"Blue's Cuvee\";s:9:\"maxLength\";i:100;}s:6:\"rating\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"Rating
+  of bottle from 1 (worst) to 5 (best)\";s:7:\"example\";i:3;s:7:\"minimum\";i:1;s:7:\"maximum\";i:5;}s:7:\"vintage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Vintage
+  of bottle\";s:7:\"example\";i:1964;s:7:\"minimum\";i:1900;s:7:\"maximum\";i:2020;}s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/WineryRequestBody\";}}s:11:\"description\";s:47:\"Bottle
+  describes a bottle of wine to be stored.\";s:7:\"example\";O:8:\"stdClass\":6:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:2;s:7:\"vintage\";i:1991;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:6:\"winery\";i:2;s:7:\"vintage\";}}s:20:\"ComponentRequestBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:20:\"ComponentRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"percentage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:30:\"Percentage
+  of varietal in wine\";s:7:\"example\";i:36;s:7:\"minimum\";i:1;s:7:\"maximum\";i:100;}s:8:\"varietal\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Grape
+  varietal\";s:7:\"example\";s:5:\"Syrah\";s:7:\"pattern\";s:11:\"[A-Za-z' ]+\";s:9:\"maxLength\";i:100;}}s:7:\"example\";O:8:\"stdClass\":2:{s:10:\"percentage\";i:31;s:8:\"varietal\";s:5:\"Syrah\";}s:8:\"required\";a:1:{i:0;s:8:\"varietal\";}}s:17:\"ComponentResponse\";O:8:\"stdClass\":5:{s:5:\"title\";s:17:\"ComponentResponse\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"percentage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:30:\"Percentage
+  of varietal in wine\";s:7:\"example\";i:91;s:7:\"minimum\";i:1;s:7:\"maximum\";i:100;}s:8:\"varietal\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Grape
+  varietal\";s:7:\"example\";s:5:\"Syrah\";s:7:\"pattern\";s:11:\"[A-Za-z' ]+\";s:9:\"maxLength\";i:100;}}s:7:\"example\";O:8:\"stdClass\":2:{s:10:\"percentage\";i:10;s:8:\"varietal\";s:5:\"Syrah\";}s:8:\"required\";a:1:{i:0;s:8:\"varietal\";}}s:21:\"ComponentResponseBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:21:\"ComponentResponseBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"percentage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:30:\"Percentage
+  of varietal in wine\";s:7:\"example\";i:35;s:7:\"minimum\";i:1;s:7:\"maximum\";i:100;}s:8:\"varietal\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Grape
+  varietal\";s:7:\"example\";s:5:\"Syrah\";s:7:\"pattern\";s:11:\"[A-Za-z' ]+\";s:9:\"maxLength\";i:100;}}s:7:\"example\";O:8:\"stdClass\":2:{s:10:\"percentage\";i:29;s:8:\"varietal\";s:5:\"Syrah\";}s:8:\"required\";a:1:{i:0;s:8:\"varietal\";}}s:35:\"SommelierPickNoCriteriaResponseBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:35:\"SommelierPickNoCriteriaResponseBody\";s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Missing
+  criteria\";s:7:\"example\";s:40:\"Consequuntur sed ut officiis voluptatem.\";}s:32:\"SommelierPickNoMatchResponseBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:32:\"SommelierPickNoMatchResponseBody\";s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"No
+  bottle matched given criteria\";s:7:\"example\";s:42:\"Magni natus optio praesentium
+  cum quaerat.\";}s:24:\"SommelierPickRequestBody\";O:8:\"stdClass\":4:{s:5:\"title\";s:24:\"SommelierPickRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Name
+  of bottle to pick\";s:7:\"example\";s:12:\"Blue's Cuvee\";}s:8:\"varietal\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Voluptatem
+  et.\";}s:11:\"description\";s:29:\"Varietals in preference order\";s:7:\"example\";a:3:{i:0;s:10:\"pinot
+  noir\";i:1;s:6:\"merlot\";i:2;s:14:\"cabernet franc\";}}s:6:\"winery\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Winery
+  of bottle to pick\";s:7:\"example\";s:8:\"longoria\";}}s:7:\"example\";O:8:\"stdClass\":3:{s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:8:\"varietal\";a:3:{i:0;s:10:\"pinot noir\";i:1;s:6:\"merlot\";i:2;s:14:\"cabernet
+  franc\";}s:6:\"winery\";s:8:\"longoria\";}}s:39:\"SommelierStoredBottleResponseCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:89:\"Mediatype
+  identifier: application/vnd.cellar.stored-bottle; type=collection; view=default\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/StoredBottleResponse\";}s:11:\"description\";s:87:\"PickResponseBody
+  is the result type for an array of StoredBottleResponse (default view)\";s:7:\"example\";a:4:{i:0;O:8:\"stdClass\":7:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:4;s:7:\"vintage\";i:1920;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}i:1;O:8:\"stdClass\":7:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:4;s:7:\"vintage\";i:1920;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}i:2;O:8:\"stdClass\":7:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:4;s:7:\"vintage\";i:1920;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}i:3;O:8:\"stdClass\":7:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:4;s:7:\"vintage\";i:1920;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}}}s:21:\"StorageAddRequestBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:21:\"StorageAddRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"composition\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ComponentRequestBody\";}s:11:\"description\";s:69:\"Composition
+  is the list of grape varietals and associated percentage.\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}}s:11:\"description\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Description
+  of bottle\";s:7:\"example\";s:119:\"Red wine blend with an emphasis on the Cabernet
+  Franc grape and including other Bordeaux grape varietals and some Syrah\";s:9:\"maxLength\";i:2000;}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of bottle\";s:7:\"example\";s:12:\"Blue's Cuvee\";s:9:\"maxLength\";i:100;}s:6:\"rating\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"Rating
+  of bottle from 1 (worst) to 5 (best)\";s:7:\"example\";i:2;s:7:\"minimum\";i:1;s:7:\"maximum\";i:5;}s:7:\"vintage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Vintage
+  of bottle\";s:7:\"example\";i:1943;s:7:\"minimum\";i:1900;s:7:\"maximum\";i:2020;}s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/WineryRequestBody\";}}s:7:\"example\";O:8:\"stdClass\":6:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:2;s:7:\"vintage\";i:1910;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:6:\"winery\";i:2;s:7:\"vintage\";}}s:29:\"StorageMultiUpdateRequestBody\";O:8:\"stdClass\":5:{s:5:\"title\";s:29:\"StorageMultiUpdateRequestBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"bottles\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/BottleRequestBody\";}s:11:\"description\";s:51:\"Array
+  of bottle info that matches the ids attribute\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":6:{s:11:\"composition\";a:2:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1978;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}i:1;O:8:\"stdClass\":6:{s:11:\"composition\";a:2:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1978;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}i:2;O:8:\"stdClass\":6:{s:11:\"composition\";a:2:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1978;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}}}}s:7:\"example\";O:8:\"stdClass\":1:{s:7:\"bottles\";a:2:{i:0;O:8:\"stdClass\":6:{s:11:\"composition\";a:2:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1978;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}i:1;O:8:\"stdClass\":6:{s:11:\"composition\";a:2:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:95;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:4:\"name\";s:12:\"Blue's Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1978;s:6:\"winery\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}}}}s:8:\"required\";a:1:{i:0;s:7:\"bottles\";}}s:31:\"StorageShowNotFoundResponseBody\";O:8:\"stdClass\":6:{s:5:\"title\";s:31:\"StorageShowNotFoundResponseBody\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"ID
+  of missing bottle\";s:7:\"example\";s:34:\"Deleniti et beatae nisi soluta ex.\";}s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Message
+  of error\";s:7:\"example\";s:18:\"bottle 1 not found\";}}s:11:\"description\";s:16:\"Bottle
+  not found\";s:7:\"example\";O:8:\"stdClass\":2:{s:2:\"id\";s:29:\"Accusamus ut rerum
+  dicta quo.\";s:7:\"message\";s:18:\"bottle 1 not found\";}s:8:\"required\";a:2:{i:0;s:7:\"message\";i:1;s:2:\"id\";}}s:23:\"StorageShowResponseBody\";O:8:\"stdClass\":6:{s:5:\"title\";s:72:\"Mediatype
+  identifier: application/vnd.cellar.stored-bottle; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"composition\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ComponentResponseBody\";}s:11:\"description\";s:69:\"Composition
+  is the list of grape varietals and associated percentage.\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}}}s:11:\"description\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Description
+  of bottle\";s:7:\"example\";s:119:\"Red wine blend with an emphasis on the Cabernet
+  Franc grape and including other Bordeaux grape varietals and some Syrah\";s:9:\"maxLength\";i:2000;}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"ID
+  is the unique id of the bottle.\";s:7:\"example\";s:6:\"123abc\";}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of bottle\";s:7:\"example\";s:12:\"Blue's Cuvee\";s:9:\"maxLength\";i:100;}s:6:\"rating\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"Rating
+  of bottle from 1 (worst) to 5 (best)\";s:7:\"example\";i:4;s:7:\"minimum\";i:1;s:7:\"maximum\";i:5;}s:7:\"vintage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Vintage
+  of bottle\";s:7:\"example\";i:1946;s:7:\"minimum\";i:1900;s:7:\"maximum\";i:2020;}s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/WineryResponseBodyTiny\";}}s:11:\"description\";s:43:\"ShowResponseBody
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":7:{s:11:\"composition\";a:4:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}i:3;O:8:\"stdClass\":2:{s:10:\"percentage\";i:13;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:4;s:7:\"vintage\";i:1922;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:6:\"winery\";i:3;s:7:\"vintage\";}}s:41:\"StorageStoredBottleResponseTinyCollection\";O:8:\"stdClass\":5:{s:5:\"title\";s:86:\"Mediatype
+  identifier: application/vnd.cellar.stored-bottle; type=collection; view=tiny\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/StoredBottleResponseTiny\";}s:11:\"description\";s:116:\"StorageStoredBottleResponseTinyCollection
+  is the result type for an array of StoredBottleResponseTiny (default view)\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":3:{s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}i:1;O:8:\"stdClass\":3:{s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}i:2;O:8:\"stdClass\":3:{s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}}}s:20:\"StoredBottleResponse\";O:8:\"stdClass\":6:{s:5:\"title\";s:72:\"Mediatype
+  identifier: application/vnd.cellar.stored-bottle; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"composition\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/ComponentResponse\";}s:11:\"description\";s:69:\"Composition
+  is the list of grape varietals and associated percentage.\";s:7:\"example\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}}s:11:\"description\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Description
+  of bottle\";s:7:\"example\";s:119:\"Red wine blend with an emphasis on the Cabernet
+  Franc grape and including other Bordeaux grape varietals and some Syrah\";s:9:\"maxLength\";i:2000;}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"ID
+  is the unique id of the bottle.\";s:7:\"example\";s:6:\"123abc\";}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of bottle\";s:7:\"example\";s:12:\"Blue's Cuvee\";s:9:\"maxLength\";i:100;}s:6:\"rating\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"Rating
+  of bottle from 1 (worst) to 5 (best)\";s:7:\"example\";i:4;s:7:\"minimum\";i:1;s:7:\"maximum\";i:5;}s:7:\"vintage\";O:8:\"stdClass\":5:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Vintage
+  of bottle\";s:7:\"example\";i:2006;s:7:\"minimum\";i:1900;s:7:\"maximum\";i:2020;}s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/WineryResponseTiny\";}}s:11:\"description\";s:82:\"A
+  StoredBottle describes a bottle retrieved by the storage service. (default view)\";s:7:\"example\";O:8:\"stdClass\":7:{s:11:\"composition\";a:3:{i:0;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:1;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}i:2;O:8:\"stdClass\":2:{s:10:\"percentage\";i:41;s:8:\"varietal\";s:5:\"Syrah\";}}s:11:\"description\";s:119:\"Red
+  wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux
+  grape varietals and some Syrah\";s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"rating\";i:1;s:7:\"vintage\";i:1932;s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:6:\"winery\";i:3;s:7:\"vintage\";}}s:24:\"StoredBottleResponseTiny\";O:8:\"stdClass\":6:{s:5:\"title\";s:72:\"Mediatype
+  identifier: application/vnd.cellar.stored-bottle; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"ID
+  is the unique id of the bottle.\";s:7:\"example\";s:6:\"123abc\";}s:4:\"name\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of bottle\";s:7:\"example\";s:12:\"Blue's Cuvee\";s:9:\"maxLength\";i:100;}s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/WineryResponseTiny\";}}s:11:\"description\";s:94:\"A
+  StoredBottle describes a bottle retrieved by the storage service. (tiny view) (default
+  view)\";s:7:\"example\";O:8:\"stdClass\":3:{s:2:\"id\";s:6:\"123abc\";s:4:\"name\";s:12:\"Blue's
+  Cuvee\";s:6:\"winery\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}}s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:6:\"winery\";}}s:17:\"WineryRequestBody\";O:8:\"stdClass\":6:{s:5:\"title\";s:42:\"Mediatype
+  identifier: winery; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"country\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Country
+  of winery\";s:7:\"example\";s:3:\"USA\";s:7:\"pattern\";s:14:\"(?i)[a-z '\\.]+\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of winery\";s:7:\"example\";s:8:\"Longoria\";}s:6:\"region\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Region
+  of winery\";s:7:\"example\";s:25:\"Central Coast, California\";s:7:\"pattern\";s:14:\"(?i)[a-z
+  '\\.]+\";}s:3:\"url\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Winery
+  website URL\";s:7:\"example\";s:28:\"http://www.longoriawine.com/\";s:7:\"pattern\";s:38:\"(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$\";}}s:11:\"description\";s:44:\"WineryRequestBody
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":4:{s:7:\"country\";s:3:\"USA\";s:4:\"name\";s:8:\"Longoria\";s:6:\"region\";s:25:\"Central
+  Coast, California\";s:3:\"url\";s:28:\"http://www.longoriawine.com/\";}s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:6:\"region\";i:2;s:7:\"country\";}}s:22:\"WineryResponseBodyTiny\";O:8:\"stdClass\":6:{s:5:\"title\";s:42:\"Mediatype
+  identifier: winery; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of winery\";s:7:\"example\";s:8:\"Longoria\";}}s:11:\"description\";s:49:\"WineryResponseBodyTiny
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}s:18:\"WineryResponseTiny\";O:8:\"stdClass\":6:{s:5:\"title\";s:42:\"Mediatype
+  identifier: winery; view=default\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Name
+  of winery\";s:7:\"example\";s:8:\"Longoria\";}}s:11:\"description\";s:45:\"WineryResponseTiny
+  result type (default view)\";s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"name\";s:8:\"Longoria\";}s:8:\"required\";a:1:{i:0;s:4:\"name\";}}}"
+...

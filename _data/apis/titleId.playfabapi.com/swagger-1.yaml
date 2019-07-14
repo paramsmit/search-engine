@@ -1,0 +1,982 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:7:\"version\";s:6:\"190627\";s:5:\"title\";s:18:\"PlayFab
+  Groups API\";s:11:\"description\";s:293:\"The Groups API is designed for any permanent
+  or semi-permanent collections of Entities (players, or non-players). If you want
+  to make Guilds/Clans/Corporations/etc., then you should use groups. Groups can also
+  be used to make chatrooms, parties, or any other persistent collection of entities.\";s:14:\"termsOfService\";s:26:\"https://playfab.com/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:3:\"url\";s:40:\"https://community.playfab.com/index.html\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:56:\"https://github.com/PlayFab/API_Specs/blob/master/LICENSE\";}}"
+host: titleId.playfabapi.com
+paths:
+  /Group/AcceptGroupApplication:
+    post:
+      operationId: AcceptGroupApplication
+      tags:
+      - Groups
+      description: Accepts an outstanding invitation to to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/AcceptGroupApplication
+      parameters:
+      - $ref: '#/parameters/AcceptGroupApplicationRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Accepts an outstanding invitation to to join a group if the
+        invited entity is not blocked by the group. Nothing is returned in the case
+        of success.
+      x-seeAlso:
+      - Group/ApplyToGroup
+      - Group/ListGroupApplications
+      - Group/RemoveGroupApplication
+      x-ms-docs-errors:
+      - GroupApplicationNotFound
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/AcceptGroupInvitation:
+    post:
+      operationId: AcceptGroupInvitation
+      tags:
+      - Groups
+      description: Accepts an invitation to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/AcceptGroupInvitation
+      parameters:
+      - $ref: '#/parameters/AcceptGroupInvitationRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Accepts an outstanding invitation to join the group if the
+        invited entity is not blocked by the group. Only the invited entity or a parent
+        in its chain (e.g. title) may accept the invitation on the invited entity's
+        behalf. Nothing is returned in the case of success.
+      x-seeAlso:
+      - Group/InviteToGroup
+      - Group/ListGroupInvitations
+      - Group/ListMembershipOpportunities
+      - Group/RemoveGroupInvitation
+      x-ms-docs-errors:
+      - GroupInvitationNotFound
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/AddMembers:
+    post:
+      operationId: AddMembers
+      tags:
+      - Groups
+      description: Adds members to a group or role.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/AddMembers
+      parameters:
+      - $ref: '#/parameters/AddMembersRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Adds members to a group or role. Existing members of the group
+        will added to roles within the group, but if the user is not already a member
+        of the group, only title claimants may add them to the group, and others must
+        use the group application or invite system to add new members to a group.
+        Returns nothing if successful.
+      x-seeAlso:
+      - Group/ApplyToGroup
+      - Group/InviteToGroup
+      - Group/ListGroupMembers
+      - Group/RemoveMembers
+      x-ms-docs-errors:
+      - InvalidParams
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleDoesNotExist
+  /Group/ApplyToGroup:
+    post:
+      operationId: ApplyToGroup
+      tags:
+      - Groups
+      description: Applies to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ApplyToGroup
+      parameters:
+      - $ref: '#/parameters/ApplyToGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ApplyToGroupResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Creates an application to join a group. Calling this while
+        a group application already exists will return the same application instead
+        of an error and will not refresh the time before the application expires.
+        By default, if the entity has an invitation to join the group outstanding,
+        this will accept the invitation to join the group instead and return an error
+        indicating such, rather than creating a duplicate application to join that
+        will need to be cleaned up later. Returns information about the application
+        or an error indicating an invitation was accepted instead.
+      x-seeAlso:
+      - Group/AcceptGroupApplication
+      - Group/ListGroupApplications
+      - Group/RemoveGroupApplication
+      x-ms-docs-errors:
+      - EntityIsAlreadyMember
+      - InvalidParams
+      - NotAuthenticated
+      - NotAuthorized
+      - OutstandingInvitationAcceptedInstead
+  /Group/BlockEntity:
+    post:
+      operationId: BlockEntity
+      tags:
+      - Groups
+      description: Blocks a list of entities from joining a group.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/BlockEntity
+      parameters:
+      - $ref: '#/parameters/BlockEntityRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Blocks a list of entities from joining a group. Blocked entities
+        may not create new applications to join, be invited to join, accept an invitation,
+        or have an application accepted. Failure due to being blocked does not clean
+        up existing applications or invitations to the group. No data is returned
+        in the case of success.
+      x-seeAlso:
+      - Group/ListGroupBlocks
+      - Group/UnblockEntity
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ChangeMemberRole:
+    post:
+      operationId: ChangeMemberRole
+      tags:
+      - Groups
+      description: Changes the role membership of a list of entities from one role
+        to another.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ChangeMemberRole
+      parameters:
+      - $ref: '#/parameters/ChangeMemberRoleRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Changes the role membership of a list of entities from one
+        role to another in in a single operation. The destination role must already
+        exist. This is equivalent to adding the entities to the destination role and
+        removing from the origin role. Returns nothing if successful.
+      x-seeAlso:
+      - Group/AddMembers
+      - Group/CreateRole
+      - Group/RemoveMembers
+      x-ms-docs-errors:
+      - InvalidParams
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleDoesNotExist
+  /Group/CreateGroup:
+    post:
+      operationId: CreateGroup
+      tags:
+      - Groups
+      description: Creates a new group.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/CreateGroup
+      parameters:
+      - $ref: '#/parameters/CreateGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/CreateGroupResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Creates a new group, as well as administration and member
+        roles, based off of a title's group template. Returns information about the
+        group that was created.
+      x-seeAlso:
+      - Group/AddMembers
+      - Group/ApplyToGroup
+      - Group/DeleteGroup
+      - Group/InviteToGroup
+      - Group/ListGroupMembers
+      - Group/RemoveMembers
+      x-ms-docs-errors:
+      - GroupNameNotAvailable
+      - NotAuthenticated
+      - NotAuthorized
+      - ProfileDoesNotExist
+  /Group/CreateRole:
+    post:
+      operationId: CreateRole
+      tags:
+      - Groups
+      description: Creates a new group role.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/CreateRole
+      parameters:
+      - $ref: '#/parameters/CreateGroupRoleRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/CreateGroupRoleResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Creates a new role within an existing group, with no members.
+        Both the role ID and role name must be unique within the group, but the name
+        can be the same as the ID. The role ID is set at creation and cannot be changed.
+        Returns information about the role that was created.
+      x-seeAlso:
+      - Group/DeleteRole
+      x-ms-docs-errors:
+      - DuplicateRoleId
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleNameNotAvailable
+  /Group/DeleteGroup:
+    post:
+      operationId: DeleteGroup
+      tags:
+      - Groups
+      description: Deletes a group and all roles, invitations, join requests, and
+        blocks associated with it.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/DeleteGroup
+      parameters:
+      - $ref: '#/parameters/DeleteGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Deletes a group and all roles, invitations, join requests,
+        and blocks associated with it. Permission to delete is only required the group
+        itself to execute this action. The group and data cannot be cannot be recovered
+        once removed, but any abuse reports about the group will remain. No data is
+        returned in the case of success.
+      x-seeAlso:
+      - Group/CreateGroup
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/DeleteRole:
+    post:
+      operationId: DeleteRole
+      tags:
+      - Groups
+      description: Deletes an existing role in a group.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/DeleteRole
+      parameters:
+      - $ref: '#/parameters/DeleteRoleRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Returns information about the role
+      x-seeAlso:
+      - Group/CreateRole
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleDoesNotExist
+  /Group/GetGroup:
+    post:
+      operationId: GetGroup
+      tags:
+      - Groups
+      description: Gets information about a group and its roles
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/GetGroup
+      parameters:
+      - $ref: '#/parameters/GetGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/GetGroupResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Returns the ID, name, role list and other non-membership related
+        information about a group.
+      x-seeAlso:
+      - Group/UpdateGroup
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/InviteToGroup:
+    post:
+      operationId: InviteToGroup
+      tags:
+      - Groups
+      description: Invites a player to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/InviteToGroup
+      parameters:
+      - $ref: '#/parameters/InviteToGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/InviteToGroupResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Invites a player to join a group, if they are not blocked
+        by the group. An optional role can be provided to automatically assign the
+        player to the role if they accept the invitation. By default, if the entity
+        has an application to the group outstanding, this will accept the application
+        instead and return an error indicating such, rather than creating a duplicate
+        invitation to join that will need to be cleaned up later. Returns information
+        about the new invitation or an error indicating an existing application to
+        join was accepted.
+      x-seeAlso:
+      - Group/AcceptGroupInvitation
+      - Group/ListGroupInvitations
+      - Group/ListMembershipOpportunities
+      - Group/RemoveGroupInvitation
+      x-ms-docs-errors:
+      - EntityIsAlreadyMember
+      - InvalidParams
+      - NotAuthenticated
+      - NotAuthorized
+      - OutstandingApplicationAcceptedInstead
+      - RoleDoesNotExist
+  /Group/IsMember:
+    post:
+      operationId: IsMember
+      tags:
+      - Groups
+      description: Checks to see if an entity is a member of a group or role within
+        the group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/IsMember
+      parameters:
+      - $ref: '#/parameters/IsMemberRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/IsMemberResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Checks to see if an entity is a member of a group or role
+        within the group. A result indicating if the entity is a member of the group
+        is returned, or a permission error if the caller does not have permission
+        to read the group's member list.
+      x-seeAlso:
+      - Group/GetGroup
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListGroupApplications:
+    post:
+      operationId: ListGroupApplications
+      tags:
+      - Groups
+      description: Lists all outstanding requests to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListGroupApplications
+      parameters:
+      - $ref: '#/parameters/ListGroupApplicationsRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListGroupApplicationsResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Lists all outstanding requests to join a group. Returns a
+        list of all requests to join, as well as when the request will expire. To
+        get the group applications for a specific entity, use ListMembershipOpportunities.
+      x-seeAlso:
+      - Group/AcceptGroupApplication
+      - Group/ApplyToGroup
+      - Group/RemoveGroupApplication
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListGroupBlocks:
+    post:
+      operationId: ListGroupBlocks
+      tags:
+      - Groups
+      description: Lists all entities blocked from joining a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListGroupBlocks
+      parameters:
+      - $ref: '#/parameters/ListGroupBlocksRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListGroupBlocksResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Lists all entities blocked from joining a group. A list of
+        blocked entities is returned
+      x-seeAlso:
+      - Group/BlockEntity
+      - Group/UnblockEntity
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListGroupInvitations:
+    post:
+      operationId: ListGroupInvitations
+      tags:
+      - Groups
+      description: Lists all outstanding invitations for a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListGroupInvitations
+      parameters:
+      - $ref: '#/parameters/ListGroupInvitationsRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListGroupInvitationsResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Lists all outstanding invitations for a group. Returns a list
+        of entities that have been invited, as well as when the invitation will expire.
+        To get the group invitations for a specific entity, use ListMembershipOpportunities.
+      x-seeAlso:
+      - Group/AcceptGroupInvitation
+      - Group/InviteToGroup
+      - Group/ListMembershipOpportunities
+      - Group/RemoveGroupInvitation
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListGroupMembers:
+    post:
+      operationId: ListGroupMembers
+      tags:
+      - Groups
+      description: Lists all members for a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListGroupMembers
+      parameters:
+      - $ref: '#/parameters/ListGroupMembersRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListGroupMembersResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Gets a list of members and the roles they belong to within
+        the group. If the caller does not have permission to view the role, and the
+        member is in no other role, the member is not displayed. Returns a list of
+        entities that are members of the group.
+      x-seeAlso:
+      - Group/ListMembership
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListMembership:
+    post:
+      operationId: ListMembership
+      tags:
+      - Groups
+      description: Lists all groups and roles for an entity
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListMembership
+      parameters:
+      - $ref: '#/parameters/ListMembershipRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListMembershipResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Lists the groups and roles that an entity is a part of, checking
+        to see if group and role metadata and memberships should be visible to the
+        caller. If the entity is not in any roles that are visible to the caller,
+        the group is not returned in the results, even if the caller otherwise has
+        permission to see that the entity is a member of that group.
+      x-seeAlso:
+      - Group/ListGroupMembers
+      - Group/ListMembershipOpportunities
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/ListMembershipOpportunities:
+    post:
+      operationId: ListMembershipOpportunities
+      tags:
+      - Groups
+      description: Lists all outstanding invitations and group applications for an
+        entity
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/ListMembershipOpportunities
+      parameters:
+      - $ref: '#/parameters/ListMembershipOpportunitiesRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/ListMembershipOpportunitiesResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Lists all outstanding group applications and invitations for
+        an entity. Anyone may call this for any entity, but data will only be returned
+        for the entity or a parent of that entity. To list invitations or applications
+        for a group to check if a player is trying to join, use ListGroupInvitations
+        and ListGroupApplications.
+      x-seeAlso:
+      - Group/ListGroupApplications
+      - Group/ListGroupInvitations
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/RemoveGroupApplication:
+    post:
+      operationId: RemoveGroupApplication
+      tags:
+      - Groups
+      description: Removes an application to join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/RemoveGroupApplication
+      parameters:
+      - $ref: '#/parameters/RemoveGroupApplicationRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Removes an existing application to join the group. This is
+        used for both rejection of an application as well as withdrawing an application.
+        The applying entity or a parent in its chain (e.g. title) may withdraw the
+        application, and any caller with appropriate access in the group may reject
+        an application. No data is returned in the case of success.
+      x-seeAlso:
+      - Group/AcceptGroupApplication
+      - Group/ApplyToGroup
+      - Group/ListGroupApplications
+      x-ms-docs-errors:
+      - GroupApplicationNotFound
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/RemoveGroupInvitation:
+    post:
+      operationId: RemoveGroupInvitation
+      tags:
+      - Groups
+      description: Removes an invitation join a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/RemoveGroupInvitation
+      parameters:
+      - $ref: '#/parameters/RemoveGroupInvitationRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Removes an existing invitation to join the group. This is
+        used for both rejection of an invitation as well as rescinding an invitation.
+        The invited entity or a parent in its chain (e.g. title) may reject the invitation
+        by calling this method, and any caller with appropriate access in the group
+        may rescind an invitation. No data is returned in the case of success.
+      x-seeAlso:
+      - Group/AcceptGroupInvitation
+      - Group/InviteToGroup
+      - Group/ListGroupInvitations
+      - Group/ListMembershipOpportunities
+      x-ms-docs-errors:
+      - GroupInvitationNotFound
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/RemoveMembers:
+    post:
+      operationId: RemoveMembers
+      tags:
+      - Groups
+      description: Removes members from a group.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/RemoveMembers
+      parameters:
+      - $ref: '#/parameters/RemoveMembersRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Removes members from a group. A member can always remove themselves
+        from a group, regardless of permissions. Returns nothing if successful.
+      x-seeAlso:
+      - Group/AddMembers
+      - Group/ListGroupMembers
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/UnblockEntity:
+    post:
+      operationId: UnblockEntity
+      tags:
+      - Groups
+      description: Unblocks a list of entities from joining a group
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/UnblockEntity
+      parameters:
+      - $ref: '#/parameters/UnblockEntityRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/EmptyResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Unblocks a list of entities from joining a group. No data
+        is returned in the case of success.
+      x-seeAlso:
+      - Group/BlockEntity
+      - Group/ListGroupBlocks
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+  /Group/UpdateGroup:
+    post:
+      operationId: UpdateGroup
+      tags:
+      - Groups
+      description: Updates non-membership data about a group.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/UpdateGroup
+      parameters:
+      - $ref: '#/parameters/UpdateGroupRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/UpdateGroupResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Updates data about a group, such as the name or default member
+        role. Returns information about whether the update was successful. Only title
+        claimants may modify the administration role for a group.
+      x-seeAlso:
+      - Group/CreateGroup
+      - Group/DeleteGroup
+      - Group/GetGroup
+      x-ms-docs-errors:
+      - GroupNameNotAvailable
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleDoesNotExist
+  /Group/UpdateRole:
+    post:
+      operationId: UpdateRole
+      tags:
+      - Groups
+      description: Updates metadata about a role.
+      externalDocs:
+        url: https://api.playfab.com/documentation/groups/method/UpdateRole
+      parameters:
+      - $ref: '#/parameters/UpdateGroupRoleRequest'
+      security:
+      - EntityToken: []
+      responses:
+        200:
+          $ref: '#/responses/UpdateGroupRoleResponse'
+        400:
+          $ref: '#/responses/ApiErrorWrapper'
+      x-requestDetails: Updates the role name. Returns information about whether the
+        update was successful.
+      x-seeAlso:
+      - Group/CreateRole
+      - Group/DeleteRole
+      x-ms-docs-errors:
+      - NotAuthenticated
+      - NotAuthorized
+      - RoleDoesNotExist
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":50:{s:15:\"ApiErrorWrapper\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"The
+  basic wrapper around every failed API response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"code\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Numerical
+  HTTP code\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:6:\"status\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"String
+  HTTP code\";s:4:\"type\";s:6:\"string\";}s:5:\"error\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Playfab
+  error code\";s:4:\"type\";s:6:\"string\";}s:9:\"errorCode\";O:8:\"stdClass\":3:{s:11:\"description\";s:28:\"Numerical
+  Playfab error code\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:12:\"errorMessage\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Description
+  for the Playfab errorCode\";s:4:\"type\";s:6:\"string\";}s:12:\"errorDetails\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Detailed
+  description of individual issues with the request object\";s:4:\"type\";s:6:\"object\";}}}s:29:\"AcceptGroupApplicationRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:147:\"Accepts
+  an outstanding invitation to to join a group if the invited entity is not blocked
+  by the group. Nothing is returned in the case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:182:\"Optional.
+  Type of the entity to accept as. If specified, must be the same entity as the claimant
+  or an entity that is a child of the claimant entity. Defaults to the claimant entity.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:28:\"AcceptGroupInvitationRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:266:\"Accepts
+  an outstanding invitation to join the group if the invited entity is not blocked
+  by the group. Only the invited entity or a parent in its chain (e.g. title) may
+  accept the invitation on the invited entity's behalf. Nothing is returned in the
+  case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:17:\"AddMembersRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:323:\"Adds
+  members to a group or role. Existing members of the group will added to roles within
+  the group, but if the user is not already a member of the group, only title claimants
+  may add them to the group, and others must use the group application or invite system
+  to add new members to a group. Returns nothing if successful.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Members\";O:8:\"stdClass\":4:{s:11:\"description\";s:118:\"List
+  of entities to add to the group. Only entities of type title_player_account and
+  character may be added to groups.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";}s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:190:\"Optional:
+  The ID of the existing role to add the entities to. If this is not specified, the
+  default member role for the group will be used. Role IDs must be between 1 and 64
+  characters long.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:7:\"Members\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:7:\"Members\";a:1:{i:0;O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}}s:19:\"ApplyToGroupRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:571:\"Creates
+  an application to join a group. Calling this while a group application already exists
+  will return the same application instead of an error and will not refresh the time
+  before the application expires. By default, if the entity has an invitation to join
+  the group outstanding, this will accept the invitation to join the group instead
+  and return an error indicating such, rather than creating a duplicate application
+  to join that will need to be cleaned up later. Returns information about the application
+  or an error indicating an invitation was accepted instead.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:27:\"AutoAcceptOutstandingInvite\";O:8:\"stdClass\":2:{s:11:\"description\";s:119:\"Optional,
+  default true. Automatically accept an outstanding invitation if one exists instead
+  of creating an application\";s:4:\"type\";s:7:\"boolean\";}s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:20:\"ApplyToGroupResponse\";O:8:\"stdClass\":5:{s:11:\"description\";s:40:\"Describes
+  an application to join a group\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:40:\"Type
+  of entity that requested membership\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Expires\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"When
+  the application to join will expire and be deleted\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:56:\"ID
+  of the group that the entity requesting membership to\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:7:\"Expires\";}s:7:\"example\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}s:18:\"BlockEntityRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:322:\"Blocks
+  a list of entities from joining a group. Blocked entities may not create new applications
+  to join, be invited to join, accept an invitation, or have an application accepted.
+  Failure due to being blocked does not clean up existing applications or invitations
+  to the group. No data is returned in the case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:23:\"ChangeMemberRoleRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:273:\"Changes
+  the role membership of a list of entities from one role to another in in a single
+  operation. The destination role must already exist. This is equivalent to adding
+  the entities to the destination role and removing from the origin role. Returns
+  nothing if successful.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:17:\"DestinationRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:143:\"The
+  ID of the role that the entities will become a member of. This must be an existing
+  role. Role IDs must be between 1 and 64 characters long.\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Members\";O:8:\"stdClass\":4:{s:11:\"description\";s:124:\"List
+  of entities to move between roles in the group. All entities in this list must be
+  members of the group and origin role.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";}s:9:\"x-isclass\";b:1;}s:12:\"OriginRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:114:\"The
+  ID of the role that the entities currently are a member of. Role IDs must be between
+  1 and 64 characters long.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:5:\"Group\";i:1;s:12:\"OriginRoleId\";i:2;s:7:\"Members\";}s:7:\"example\";O:8:\"stdClass\":4:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:12:\"OriginRoleId\";s:13:\"awesomepeople\";s:17:\"DestinationRoleId\";s:7:\"members\";s:7:\"Members\";a:1:{i:0;O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}}s:18:\"CreateGroupRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:157:\"Creates
+  a new group, as well as administration and member roles, based off of a title's
+  group template. Returns information about the group that was created.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"The
+  name of the group. This is unique at the title level by default.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:9:\"GroupName\";}s:7:\"example\";O:8:\"stdClass\":1:{s:9:\"GroupName\";s:13:\"Example
+  Group\";}}s:19:\"CreateGroupResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"AdminRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  ID of the administrator role for the group.\";s:4:\"type\";s:6:\"string\";}s:7:\"Created\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  server date and time the group was created.\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  name of the group.\";s:4:\"type\";s:6:\"string\";}s:12:\"MemberRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  ID of the default member role for the group.\";s:4:\"type\";s:6:\"string\";}s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:87:\"The
+  current version of the profile, can be used for concurrency control during updates.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:5:\"Roles\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"The
+  list of roles and names that belong to the group.\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:3:{i:0;s:5:\"Group\";i:1;s:7:\"Created\";i:2;s:14:\"ProfileVersion\";}s:7:\"example\";O:8:\"stdClass\":7:{s:9:\"GroupName\";s:13:\"Example
+  Group\";s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:12:\"MemberRoleId\";s:9:\"ABC123DEF\";s:11:\"AdminRoleId\";s:9:\"ABC123456\";s:5:\"Roles\";O:8:\"stdClass\":3:{s:6:\"admins\";s:14:\"Administrators\";s:7:\"members\";s:7:\"Members\";s:13:\"awesomepeople\";s:15:\"Some
+  Other Role\";}s:7:\"Created\";s:19:\"2017-12-31T11:59:59\";s:14:\"ProfileVersion\";i:17;}}s:22:\"CreateGroupRoleRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:272:\"Creates
+  a new role within an existing group, with no members. Both the role ID and role
+  name must be unique within the group, but the name can be the same as the ID. The
+  role ID is set at creation and cannot be changed. Returns information about the
+  role that was created.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"The
+  ID of the role. This must be unique within the group and cannot be changed. Role
+  IDs must be between 1 and 64 characters long.\";s:4:\"type\";s:6:\"string\";}s:8:\"RoleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:137:\"The
+  name of the role. This must be unique within the group and can be changed later.
+  Role names must be between 1 and 100 characters long\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:6:\"RoleId\";i:1;s:8:\"RoleName\";i:2;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"RoleId\";s:7:\"example\";s:8:\"RoleName\";s:12:\"Example
+  Role\";s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:23:\"CreateGroupRoleResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"The
+  current version of the group profile, can be used for concurrency control during
+  updates.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"ID
+  for the role\";s:4:\"type\";s:6:\"string\";}s:8:\"RoleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  name of the role\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:14:\"ProfileVersion\";}s:7:\"example\";O:8:\"stdClass\":3:{s:8:\"RoleName\";s:12:\"Example
+  Role\";s:6:\"RoleId\";s:9:\"ABC123DEF\";s:14:\"ProfileVersion\";i:17;}}s:18:\"DeleteGroupRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:326:\"Deletes
+  a group and all roles, invitations, join requests, and blocks associated with it.
+  Permission to delete is only required the group itself to execute this action. The
+  group and data cannot be cannot be recovered once removed, but any abuse reports
+  about the group will remain. No data is returned in the case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:33:\"ID
+  of the group or role to remove\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:17:\"DeleteRoleRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:34:\"Returns
+  information about the role\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"The
+  ID of the role to delete. Role IDs must be between 1 and 64 characters long.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"RoleId\";s:10:\"ABC1234DEF\";}}s:13:\"EmptyResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}s:9:\"EntityKey\";O:8:\"stdClass\":4:{s:11:\"description\";s:80:\"Combined
+  entity type and ID structure which uniquely identifies a single entity.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"Id\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"Unique
+  ID of the entity.\";s:4:\"type\";s:6:\"string\";}s:4:\"Type\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"Entity
+  type. See https://api.playfab.com/docs/tutorials/entities/entitytypes\";s:4:\"type\";s:6:\"string\";}s:10:\"TypeString\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Alternate
+  name for Type.\";s:4:\"type\";s:6:\"string\";s:13:\"x-deprecation\";O:8:\"stdClass\":4:{s:13:\"ProposedAfter\";s:8:\"6/1/2018\";s:15:\"DeprecatedAfter\";s:8:\"7/1/2018\";s:13:\"ObsoleteAfter\";s:8:\"8/1/2018\";s:10:\"ReplacedBy\";s:4:\"Type\";}}}s:8:\"required\";a:1:{i:0;s:2:\"Id\";}}s:16:\"EntityMemberRole\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"Members\";O:8:\"stdClass\":4:{s:11:\"description\";s:31:\"The
+  list of members in the role\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";}s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"The
+  ID of the role.\";s:4:\"type\";s:6:\"string\";}s:8:\"RoleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  name of the role\";s:4:\"type\";s:6:\"string\";}}}s:17:\"EntityWithLineage\";O:8:\"stdClass\":3:{s:11:\"description\";s:106:\"Entity
+  wrapper class that contains the entity key and the entities that make up the lineage
+  of the entity.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:39:\"The
+  entity key for the specified entity\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Lineage\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:78:\"Dictionary
+  of entity keys for related entities. Dictionary key is entity type.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}}s:15:\"GetGroupRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:91:\"Returns
+  the ID, name, role list and other non-membership related information about a group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  full name of the group\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:16:\"GetGroupResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"AdminRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  ID of the administrator role for the group.\";s:4:\"type\";s:6:\"string\";}s:7:\"Created\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  server date and time the group was created.\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  name of the group.\";s:4:\"type\";s:6:\"string\";}s:12:\"MemberRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  ID of the default member role for the group.\";s:4:\"type\";s:6:\"string\";}s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:87:\"The
+  current version of the profile, can be used for concurrency control during updates.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:5:\"Roles\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"The
+  list of roles and names that belong to the group.\";s:4:\"type\";s:6:\"object\";}}s:8:\"required\";a:3:{i:0;s:5:\"Group\";i:1;s:7:\"Created\";i:2;s:14:\"ProfileVersion\";}s:7:\"example\";O:8:\"stdClass\":7:{s:9:\"GroupName\";s:13:\"Example
+  Group\";s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:12:\"MemberRoleId\";s:9:\"ABC123DEF\";s:11:\"AdminRoleId\";s:9:\"ABC123456\";s:5:\"Roles\";O:8:\"stdClass\":3:{s:6:\"admins\";s:14:\"Administrators\";s:7:\"members\";s:7:\"Members\";s:13:\"awesomepeople\";s:15:\"Some
+  Other Role\";}s:7:\"Created\";s:19:\"2017-12-31T11:59:59\";s:14:\"ProfileVersion\";i:17;}}s:16:\"GroupApplication\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"Describes
+  an application to join a group\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:40:\"Type
+  of entity that requested membership\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Expires\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"When
+  the application to join will expire and be deleted\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:56:\"ID
+  of the group that the entity requesting membership to\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:7:\"Expires\";}}s:10:\"GroupBlock\";O:8:\"stdClass\":5:{s:11:\"description\";s:57:\"Describes
+  an entity that is blocked from joining a group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:26:\"The
+  entity that is blocked\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:47:\"ID
+  of the group that the entity is blocked from\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:15:\"GroupInvitation\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Describes
+  an invitation to a group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"Expires\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"When
+  the invitation will expire and be deleted\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:36:\"The
+  group that the entity invited to\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:15:\"InvitedByEntity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:38:\"The
+  entity that created the invitation\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:13:\"InvitedEntity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:26:\"The
+  entity that is invited\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"ID
+  of the role in the group to assign the user to.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"Expires\";}s:7:\"example\";O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:13:\"awesomepeople\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}s:9:\"GroupRole\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"Describes
+  a group role\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"ID
+  for the role\";s:4:\"type\";s:6:\"string\";}s:8:\"RoleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  name of the role\";s:4:\"type\";s:6:\"string\";}}s:7:\"example\";O:8:\"stdClass\":2:{s:8:\"RoleName\";s:12:\"Example
+  Role\";s:6:\"RoleId\";s:9:\"ABC123DEF\";}}s:14:\"GroupWithRoles\";O:8:\"stdClass\":4:{s:11:\"description\";s:48:\"Describes
+  a group and the roles that it contains\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:16:\"ID
+  for the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the group\";s:4:\"type\";s:6:\"string\";}s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:87:\"The
+  current version of the profile, can be used for concurrency control during updates.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:5:\"Roles\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"The
+  list of roles within the group\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/GroupRole\";}s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:14:\"ProfileVersion\";}}s:20:\"InviteToGroupRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:536:\"Invites
+  a player to join a group, if they are not blocked by the group. An optional role
+  can be provided to automatically assign the player to the role if they accept the
+  invitation. By default, if the entity has an application to the group outstanding,
+  this will accept the application instead and return an error indicating such, rather
+  than creating a duplicate invitation to join that will need to be cleaned up later.
+  Returns information about the new invitation or an error indicating an existing
+  application to join was accepted.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:32:\"AutoAcceptOutstandingApplication\";O:8:\"stdClass\":2:{s:11:\"description\";s:107:\"Optional,
+  default true. Automatically accept an application if one exists instead of creating
+  an invitation\";s:4:\"type\";s:7:\"boolean\";}s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:187:\"Optional.
+  ID of an existing a role in the group to assign the user to. The group's default
+  member role is used if this is not specified. Role IDs must be between 1 and 64
+  characters long.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"RoleId\";s:13:\"awesomepeople\";s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:21:\"InviteToGroupResponse\";O:8:\"stdClass\":5:{s:11:\"description\";s:35:\"Describes
+  an invitation to a group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"Expires\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"When
+  the invitation will expire and be deleted\";s:4:\"type\";s:6:\"string\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:36:\"The
+  group that the entity invited to\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:15:\"InvitedByEntity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:38:\"The
+  entity that created the invitation\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:13:\"InvitedEntity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:31:\"#/definitions/EntityWithLineage\";s:11:\"description\";s:26:\"The
+  entity that is invited\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"ID
+  of the role in the group to assign the user to.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"Expires\";}s:7:\"example\";O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:13:\"awesomepeople\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}s:15:\"IsMemberRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:241:\"Checks
+  to see if an entity is a member of a group or role within the group. A result indicating
+  if the entity is a member of the group is returned, or a permission error if the
+  caller does not have permission to read the group's member list.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:166:\"Optional:
+  ID of the role to check membership of. Defaults to any role (that is, check to see
+  if the entity is a member of the group in any capacity) if not specified.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"RoleId\";s:10:\"ABC1234DEF\";s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:16:\"IsMemberResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"IsMember\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"A
+  value indicating whether or not the entity is a member.\";s:4:\"type\";s:7:\"boolean\";}}s:8:\"required\";a:1:{i:0;s:8:\"IsMember\";}s:7:\"example\";O:8:\"stdClass\":1:{s:8:\"IsMember\";b:1;}}s:28:\"ListGroupApplicationsRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:214:\"Lists
+  all outstanding requests to join a group. Returns a list of all requests to join,
+  as well as when the request will expire. To get the group applications for a specific
+  entity, use ListMembershipOpportunities.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:29:\"ListGroupApplicationsResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"Applications\";O:8:\"stdClass\":4:{s:11:\"description\";s:48:\"The
+  requested list of applications to the group.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/GroupApplication\";}s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":1:{s:12:\"Applications\";a:2:{i:0;O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}i:1;O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}}}s:22:\"ListGroupBlocksRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:87:\"Lists
+  all entities blocked from joining a group. A list of blocked entities is returned\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:23:\"ListGroupBlocksResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"BlockedEntities\";O:8:\"stdClass\":4:{s:11:\"description\";s:36:\"The
+  requested list blocked entities.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/GroupBlock\";}s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":1:{s:15:\"BlockedEntities\";a:1:{i:0;O:8:\"stdClass\":1:{s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}}}}}s:27:\"ListGroupInvitationsRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:226:\"Lists
+  all outstanding invitations for a group. Returns a list of entities that have been
+  invited, as well as when the invitation will expire. To get the group invitations
+  for a specific entity, use ListMembershipOpportunities.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:28:\"ListGroupInvitationsResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"Invitations\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"The
+  requested list of group invitations.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/GroupInvitation\";}s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":1:{s:11:\"Invitations\";a:2:{i:0;O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:13:\"awesomepeople\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}i:1;O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:7:\"members\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}}}s:23:\"ListGroupMembersRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:249:\"Gets
+  a list of members and the roles they belong to within the group. If the caller does
+  not have permission to view the role, and the member is in no other role, the member
+  is not displayed. Returns a list of entities that are members of the group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:49:\"ID
+  of the group to list the members and roles for\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":1:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}}}s:24:\"ListGroupMembersResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"Members\";O:8:\"stdClass\":4:{s:11:\"description\";s:50:\"The
+  requested list of roles and member entity IDs.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/EntityMemberRole\";}s:9:\"x-isclass\";b:1;}}}s:34:\"ListMembershipOpportunitiesRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:322:\"Lists
+  all outstanding group applications and invitations for an entity. Anyone may call
+  this for any entity, but data will only be returned for the entity or a parent of
+  that entity. To list invitations or applications for a group to check if a player
+  is trying to join, use ListGroupInvitations and ListGroupApplications.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":0:{}}s:35:\"ListMembershipOpportunitiesResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"Applications\";O:8:\"stdClass\":4:{s:11:\"description\";s:41:\"The
+  requested list of group applications.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/GroupApplication\";}s:9:\"x-isclass\";b:1;}s:11:\"Invitations\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"The
+  requested list of group invitations.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/GroupInvitation\";}s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"Invitations\";a:2:{i:0;O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:13:\"awesomepeople\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}i:1;O:8:\"stdClass\":5:{s:13:\"InvitedEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:15:\"InvitedByEntity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"9023AFF3\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"366AD424\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:6:\"RoleId\";s:7:\"members\";s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}s:12:\"Applications\";a:1:{i:0;O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":2:{s:3:\"Key\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}s:7:\"Lineage\";O:8:\"stdClass\":1:{s:21:\"master_player_account\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"800DED92\";s:4:\"Type\";s:21:\"master_player_account\";s:10:\"TypeString\";s:21:\"master_player_account\";}}}s:7:\"Expires\";s:19:\"2017-12-31T11:59:59\";}}}}s:21:\"ListMembershipRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:349:\"Lists
+  the groups and roles that an entity is a part of, checking to see if group and role
+  metadata and memberships should be visible to the caller. If the entity is not in
+  any roles that are visible to the caller, the group is not returned in the results,
+  even if the caller otherwise has permission to see that the entity is a member of
+  that group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":0:{}}s:22:\"ListMembershipResponse\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"Groups\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"The
+  list of groups\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/GroupWithRoles\";}s:9:\"x-isclass\";b:1;}}s:7:\"example\";O:8:\"stdClass\":1:{s:6:\"Groups\";a:1:{i:0;O:8:\"stdClass\":4:{s:9:\"GroupName\";s:13:\"Example
+  Group\";s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:14:\"ProfileVersion\";i:17;s:5:\"Roles\";a:1:{i:0;O:8:\"stdClass\":2:{s:8:\"RoleName\";s:12:\"Example
+  Role\";s:6:\"RoleId\";s:9:\"ABC123DEF\";}}}}}}s:14:\"OperationTypes\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"enum\";a:4:{i:0;s:7:\"Created\";i:1;s:7:\"Updated\";i:2;s:7:\"Deleted\";i:3;s:4:\"None\";}}s:29:\"RemoveGroupApplicationRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:350:\"Removes
+  an existing application to join the group. This is used for both rejection of an
+  application as well as withdrawing an application. The applying entity or a parent
+  in its chain (e.g. title) may withdraw the application, and any caller with appropriate
+  access in the group may reject an application. No data is returned in the case of
+  success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:28:\"RemoveGroupInvitationRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:365:\"Removes
+  an existing invitation to join the group. This is used for both rejection of an
+  invitation as well as rescinding an invitation. The invited entity or a parent in
+  its chain (e.g. title) may reject the invitation by calling this method, and any
+  caller with appropriate access in the group may rescind an invitation. No data is
+  returned in the case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:20:\"RemoveMembersRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:139:\"Removes
+  members from a group. A member can always remove themselves from a group, regardless
+  of permissions. Returns nothing if successful.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:7:\"Members\";O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"List
+  of entities to remove\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";}s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  ID of the role to remove the entities from.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:7:\"Members\";}s:7:\"example\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"RoleId\";s:10:\"ABC1234DEF\";s:7:\"Members\";a:1:{i:0;O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}}s:20:\"UnblockEntityRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:93:\"Unblocks
+  a list of entities from joining a group. No data is returned in the case of success.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"Entity\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:37:\"The
+  entity to perform this action on.\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:6:\"Entity\";}s:7:\"example\";O:8:\"stdClass\":2:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"Entity\";O:8:\"stdClass\":3:{s:2:\"Id\";s:8:\"90901000\";s:4:\"Type\";s:20:\"title_player_account\";s:10:\"TypeString\";s:20:\"title_player_account\";}}}s:18:\"UpdateGroupRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:198:\"Updates
+  data about a group, such as the name or default member role. Returns information
+  about whether the update was successful. Only title claimants may modify the administration
+  role for a group.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"AdminRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"Optional:
+  the ID of an existing role to set as the new administrator role for the group\";s:4:\"type\";s:6:\"string\";}s:22:\"ExpectedProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:284:\"Optional
+  field used for concurrency control. By specifying the previously returned value
+  of ProfileVersion from the GetGroup API, you can ensure that the group data update
+  will only be performed if the group has not been updated by any other clients since
+  the version you last loaded.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:9:\"GroupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Optional:
+  the new name of the group\";s:4:\"type\";s:6:\"string\";}s:12:\"MemberRoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"Optional:
+  the ID of an existing role to set as the new member role for the group\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:5:\"Group\";}s:7:\"example\";O:8:\"stdClass\":3:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:9:\"GroupName\";s:17:\"My
+  New Group Name\";s:22:\"ExpectedProfileVersion\";i:17;}}s:19:\"UpdateGroupResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"OperationReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"Optional
+  reason to explain why the operation was the result that it was.\";s:4:\"type\";s:6:\"string\";}s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"New
+  version of the group data.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:9:\"SetResult\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:28:\"#/definitions/OperationTypes\";s:11:\"description\";s:82:\"Indicates
+  which operation was completed, either Created, Updated, Deleted or None.\";s:4:\"type\";s:6:\"string\";s:8:\"x-isenum\";b:1;}}s:8:\"required\";a:1:{i:0;s:14:\"ProfileVersion\";}s:7:\"example\";O:8:\"stdClass\":2:{s:14:\"ProfileVersion\";i:18;s:9:\"SetResult\";s:7:\"Updated\";}}s:22:\"UpdateGroupRoleRequest\";O:8:\"stdClass\":5:{s:11:\"description\";s:83:\"Updates
+  the role name. Returns information about whether the update was successful.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:22:\"ExpectedProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:284:\"Optional
+  field used for concurrency control. By specifying the previously returned value
+  of ProfileVersion from the GetGroup API, you can ensure that the group data update
+  will only be performed if the group has not been updated by any other clients since
+  the version you last loaded.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:5:\"Group\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:23:\"#/definitions/EntityKey\";s:11:\"description\";s:27:\"The
+  identifier of the group\";s:4:\"type\";s:6:\"object\";s:9:\"x-isclass\";b:1;}s:6:\"RoleId\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"ID
+  of the role to update. Role IDs must be between 1 and 64 characters long.\";s:4:\"type\";s:6:\"string\";}s:8:\"RoleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  new name of the role\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:5:\"Group\";i:1;s:8:\"RoleName\";}s:7:\"example\";O:8:\"stdClass\":4:{s:5:\"Group\";O:8:\"stdClass\":1:{s:2:\"Id\";s:10:\"ABC1234ABC\";}s:6:\"RoleId\";s:10:\"ABC1234DEF\";s:8:\"RoleName\";s:16:\"My
+  New Role Name\";s:22:\"ExpectedProfileVersion\";i:17;}}s:23:\"UpdateGroupRoleResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"OperationReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"Optional
+  reason to explain why the operation was the result that it was.\";s:4:\"type\";s:6:\"string\";}s:14:\"ProfileVersion\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"New
+  version of the role data.\";s:4:\"type\";s:6:\"number\";s:12:\"x-actualtype\";s:5:\"int32\";}s:9:\"SetResult\";O:8:\"stdClass\":4:{s:4:\"$ref\";s:28:\"#/definitions/OperationTypes\";s:11:\"description\";s:82:\"Indicates
+  which operation was completed, either Created, Updated, Deleted or None.\";s:4:\"type\";s:6:\"string\";s:8:\"x-isenum\";b:1;}}s:8:\"required\";a:1:{i:0;s:14:\"ProfileVersion\";}s:7:\"example\";O:8:\"stdClass\":2:{s:14:\"ProfileVersion\";i:18;s:9:\"SetResult\";s:7:\"Updated\";}}}"
+...

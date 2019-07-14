@@ -1,0 +1,727 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:4:\"3.10\";s:5:\"title\";s:11:\"ichildguard\";}"
+host: ichildguard.co.in:8082
+basePath: /api
+paths:
+  /commands:
+    post:
+      summary: Dispatch commands to device
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Command'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Command'
+        400:
+          description: Could happen when dispatching to a device that is offline,
+            the user doesn't have permission or an incorrect command _type_ for the
+            device
+  /devices:
+    get:
+      summary: Fetch a list of Devices
+      description: Without any params, returns a list of the user's devices
+      parameters:
+      - $ref: '#/parameters/all'
+      - $ref: '#/parameters/userId'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Device'
+        400:
+          description: No permission
+    post:
+      summary: Create a Device
+      parameters:
+      - $ref: '#/parameters/Device'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Device'
+  /devices/{id}:
+    put:
+      summary: Update a Device
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/Device'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Device'
+    delete:
+      summary: Update a Device
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+  /devices/{id}/distance:
+    put:
+      summary: Update the distance counter of the Device
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/DeviceTotalDistance'
+      responses:
+        204:
+          description: No Content
+  /devices/geofences:
+    post:
+      summary: Link a Geofence to a Device
+      parameters:
+      - $ref: '#/parameters/DeviceGeofence'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DeviceGeofence'
+    delete:
+      summary: Remove a Geofence from a Device
+      parameters:
+      - $ref: '#/parameters/DeviceGeofence'
+      responses:
+        204:
+          description: No Content
+  /groups:
+    get:
+      summary: Fetch a list of Groups
+      description: Without any params, returns a list of the Groups the user belongs
+        to
+      parameters:
+      - $ref: '#/parameters/all'
+      - $ref: '#/parameters/userId'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Group'
+    post:
+      summary: Create a Group
+      parameters:
+      - $ref: '#/parameters/Group'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Group'
+        400:
+          description: No permission
+  /groups/{id}:
+    put:
+      summary: Update a Group
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/Group'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Group'
+    delete:
+      summary: Delete a Group
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+  /groups/geofences:
+    post:
+      summary: Link a Geofence to a Group
+      parameters:
+      - $ref: '#/parameters/GroupGeofence'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GroupGeofence'
+    delete:
+      summary: Remove a Geofence from a Group
+      parameters:
+      - $ref: '#/parameters/GroupGeofence'
+      responses:
+        204:
+          description: No Content
+  /permissions/devices:
+    post:
+      summary: Link a Device to a User
+      parameters:
+      - $ref: '#/parameters/DevicePermission'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DevicePermission'
+        400:
+          description: No permission
+    delete:
+      summary: Remove a Device from a User
+      parameters:
+      - $ref: '#/parameters/DevicePermission'
+      responses:
+        204:
+          description: No Content
+  /permissions/groups:
+    post:
+      summary: Link a Group to a User
+      parameters:
+      - $ref: '#/parameters/GroupPermission'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GroupPermission'
+    delete:
+      summary: Remove a Group from a User
+      parameters:
+      - $ref: '#/parameters/GroupPermission'
+      responses:
+        204:
+          description: No Content
+  /permissions/geofences:
+    post:
+      summary: Link a Geofence to a User
+      parameters:
+      - $ref: '#/parameters/GeofencePermission'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GeofencePermission'
+    delete:
+      summary: Remove a Geofence from a User
+      parameters:
+      - $ref: '#/parameters/GeofencePermission'
+      responses:
+        204:
+          description: No Content
+  /permissions/calendars:
+    post:
+      summary: Link a Calendar to a User
+      parameters:
+      - $ref: '#/parameters/CalendarPermission'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CalendarPermission'
+    delete:
+      summary: Remove a Calendar from a User
+      parameters:
+      - $ref: '#/parameters/CalendarPermission'
+      responses:
+        204:
+          description: No Content
+  /permissions/users:
+    post:
+      summary: Link a User to a manager User
+      parameters:
+      - $ref: '#/parameters/UserPermission'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserPermission'
+    delete:
+      summary: Remove a User from a manager User
+      parameters:
+      - $ref: '#/parameters/UserPermission'
+      responses:
+        204:
+          description: No Content
+  /positions:
+    get:
+      summary: Fetches a list of Positions
+      description: Without any params, it returns a list of last known positions for
+        all the user's Devices. _from_ and _to_ fields are not required with _id_
+      consumes:
+      - application/json
+      - text/csv
+      - application/gpx+xml
+      produces:
+      - application/json
+      - text/csv
+      - application/gpx+xml
+      parameters:
+      - name: deviceId
+        in: query
+        description: _deviceId_ is optional, but requires the _from_ and _to_ parameters
+          when used
+        required: false
+        type: integer
+      - name: from
+        in: query
+        description: in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+        required: false
+        type: string
+        format: date-time
+      - name: to
+        in: query
+        description: in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+        required: false
+        type: string
+        format: date-time
+      - name: id
+        in: query
+        description: To fetch one or more positions. Multiple params can be passed
+          like `id=31&id=42`
+        required: false
+        type: integer
+        collectionFormat: multi
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Position'
+  /server:
+    get:
+      summary: Fetch Server information
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Server'
+    put:
+      summary: Update Server information
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Server'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Server'
+  /session:
+    get:
+      summary: Fetch Session information
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: token
+        in: query
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: Not Found
+    post:
+      summary: Create a new Session
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: email
+        in: formData
+        required: true
+        type: string
+      - name: password
+        in: formData
+        required: true
+        type: string
+        format: password
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        401:
+          description: Unauthorized
+    delete:
+      summary: Close the Session
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters: []
+      responses:
+        204:
+          description: No Content
+  /users:
+    get:
+      summary: Fetch a list of Users
+      parameters:
+      - name: userId
+        in: query
+        description: Can only be used by admin or manager users
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        400:
+          description: No Permission
+    post:
+      summary: Create a User
+      parameters:
+      - $ref: '#/parameters/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+  /users/{id}:
+    put:
+      summary: Update a User
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+    delete:
+      summary: Delete a User
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+  /users/notifications:
+    get:
+      summary: Fetch a list of Notification types
+      description: Without params, it returns a list of the user's enabled Notifications
+      parameters:
+      - name: all
+        in: query
+        description: To fetch a list of all available Notifications
+        type: boolean
+      - $ref: '#/parameters/userId'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Notification'
+    post:
+      summary: Set or unset a Notification
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Notification'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Notification'
+  /commandtypes:
+    get:
+      summary: Fetch a list of available Commands for the Device
+      parameters:
+      - name: deviceId
+        in: query
+        required: true
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CommandType'
+        400:
+          description: Could happen when trying to fetch from an offline device or
+            the user does not have permission
+  /geofences:
+    get:
+      summary: Fetch a list of Geofences
+      description: Without params, it returns a list of Geofences the user has access
+        to
+      parameters:
+      - $ref: '#/parameters/all'
+      - $ref: '#/parameters/userId'
+      - name: groupId
+        in: query
+        type: integer
+      - $ref: '#/parameters/deviceId'
+      - name: refresh
+        in: query
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Geofence'
+    post:
+      summary: Create a Geofence
+      parameters:
+      - $ref: '#/parameters/Geofence'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Geofence'
+  /geofences/{id}:
+    put:
+      summary: Update a Geofence
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/Geofence'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Geofence'
+    delete:
+      summary: Delete a Geofence
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+  /events/{id}:
+    get:
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Event'
+  /reports/route:
+    get:
+      summary: Fetch a list of Positions within the time period for the Devices or
+        Groups
+      description: At least one _deviceId_ or one _groupId_ must be passed
+      consumes:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      produces:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      parameters:
+      - $ref: '#/parameters/deviceIdArray'
+      - $ref: '#/parameters/groupIdArray'
+      - $ref: '#/parameters/fromTime'
+      - $ref: '#/parameters/toTime'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Position'
+  /reports/events:
+    get:
+      summary: Fetch a list of Events within the time period for the Devices or Groups
+      description: At least one _deviceId_ or one _groupId_ must be passed
+      consumes:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      produces:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      parameters:
+      - $ref: '#/parameters/deviceIdArray'
+      - $ref: '#/parameters/groupIdArray'
+      - name: type
+        in: query
+        description: '% can be used to return events of all types'
+        type: array
+        items:
+          type: string
+      - $ref: '#/parameters/fromTime'
+      - $ref: '#/parameters/toTime'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Event'
+  /reports/summary:
+    get:
+      summary: Fetch a list of ReportSummary within the time period for the Devices
+        or Groups
+      description: At least one _deviceId_ or one _groupId_ must be passed
+      consumes:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      produces:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      parameters:
+      - $ref: '#/parameters/deviceIdArray'
+      - $ref: '#/parameters/groupIdArray'
+      - $ref: '#/parameters/fromTime'
+      - $ref: '#/parameters/toTime'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReportSummary'
+  /reports/trips:
+    get:
+      summary: Fetch a list of ReportTrips within the time period for the Devices
+        or Groups
+      description: At least one _deviceId_ or one _groupId_ must be passed
+      consumes:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      produces:
+      - application/json
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      parameters:
+      - $ref: '#/parameters/deviceIdArray'
+      - $ref: '#/parameters/groupIdArray'
+      - $ref: '#/parameters/fromTime'
+      - $ref: '#/parameters/toTime'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReportTrips'
+  /statistics:
+    get:
+      summary: Fetch server Statistics
+      parameters:
+      - $ref: '#/parameters/fromTime'
+      - $ref: '#/parameters/toTime'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Statistics'
+  /attributes/aliases:
+    get:
+      summary: Fetch a list of AttributeAlias
+      description: Without params, it returns a list of AttributeAlias from all the
+        user's Devices
+      parameters:
+      - $ref: '#/parameters/deviceId'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AttributeAlias'
+    post:
+      summary: Set an AttributeAlias
+      parameters:
+      - $ref: '#/parameters/AttributeAlias'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AttributeAlias'
+  /attributes/aliases/{id}:
+    put:
+      summary: Update an AttributeAlias
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/AttributeAlias'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AttributeAlias'
+    delete:
+      summary: Delete an AttributeAlias
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+  /calendars:
+    get:
+      summary: Fetch a list of Calendars
+      description: Without params, it returns a list of Calendars the user has access
+        to
+      parameters:
+      - $ref: '#/parameters/all'
+      - $ref: '#/parameters/userId'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Calendar'
+    post:
+      summary: Create a Calendar
+      parameters:
+      - $ref: '#/parameters/Calendar'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Calendar'
+  /calendars/{id}:
+    put:
+      summary: Update a Calendar
+      parameters:
+      - $ref: '#/parameters/entityId'
+      - $ref: '#/parameters/Calendar'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Calendar'
+    delete:
+      summary: Delete a Calendar
+      parameters:
+      - $ref: '#/parameters/entityId'
+      responses:
+        204:
+          description: No Content
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":23:{s:8:\"Position\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":17:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"protocol\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"deviceTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:7:\"fixTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:10:\"serverTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:8:\"outdated\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"valid\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"altitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:5:\"speed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"in
+  knots\";}s:6:\"course\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"accuracy\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"network\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:4:\"User\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":21:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"readonly\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"admin\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"map\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"distanceUnit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"speedUnit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"zoom\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"twelveHourFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"coordinateFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"disabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"expirationTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:11:\"deviceLimit\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"userLimit\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"deviceReadonly\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"token\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:6:\"Server\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":16:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"registration\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"readonly\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"map\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"bingKey\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"mapUrl\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"distanceUnit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"speedUnit\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"latitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:4:\"zoom\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"twelveHourFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"forceSettings\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"coordinateFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:7:\"Command\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:6:\"Device\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"uniqueId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"lastUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:10:\"positionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"model\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"category\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"geofenceIds\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:5:\"Group\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:16:\"DevicePermission\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:15:\"GroupPermission\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:18:\"GeofencePermission\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"geofenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:18:\"CalendarPermission\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"calendarId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:14:\"UserPermission\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"managedUserId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:13:\"GroupGeofence\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"groupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"geofenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:14:\"DeviceGeofence\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"geofenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:11:\"CommandType\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"Geofence\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"area\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"calendarId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:12:\"Notification\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"web\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"mail\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:5:\"Event\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"serverTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"positionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"geofenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"attributes\";O:8:\"stdClass\":0:{}}}s:13:\"ReportSummary\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"deviceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"maxSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"in
+  knots\";}s:12:\"averageSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"in
+  knots\";}s:8:\"distance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"in
+  meters\";}s:11:\"engineHours\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:11:\"ReportTrips\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"deviceName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"maxSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"in
+  knots\";}s:12:\"averageSpeed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"in
+  knots\";}s:8:\"distance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"in
+  meters\";}s:8:\"duration\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:12:\"startAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"startLat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:8:\"startLon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:10:\"endAddress\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"endLat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"endLon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:10:\"Statistics\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"captureTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:46:\"in
+  IS0 8601 format. eg. `1963-11-22T18:30:00Z`\";}s:11:\"activeUsers\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"activeDevices\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"requests\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:16:\"messagesReceived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"messagesStored\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:14:\"AttributeAlias\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"attribute\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"alias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"DeviceTotalDistance\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"deviceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"totalDistance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"in
+  meters\";}}}s:8:\"Calendar\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"base64
+  encoded in iCalendar format\";}s:9:\"atributes\";O:8:\"stdClass\":0:{}}}}"
+...

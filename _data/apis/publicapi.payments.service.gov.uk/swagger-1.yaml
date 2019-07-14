@@ -1,0 +1,353 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:5:\"GOVUK\";}s:11:\"description\";s:14:\"GOV.UK
+  Pay Api\";s:5:\"title\";s:14:\"GOV.UK Pay Api\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"financial\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:77:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_GOVUK_profile_image.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:84:\"https://raw.githubusercontent.com/alphagov/pay-publicapi/master/swagger/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:23:\"payments.service.gov.uk\";s:13:\"x-serviceName\";s:8:\"payments\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:32:\"payments_service_gov_uk_payments\";s:4:\"type\";s:7:\"openapi\";}}"
+host: publicapi.payments.service.gov.uk
+paths:
+  /v1/payments:
+    get:
+      description: 'Search payments by reference, state, ''from'' and ''to'' date.
+        The Authorisation token needs to be specified in the ''authorization'' header
+        as ''authorization: Bearer YOUR_API_KEY_HERE'''
+      operationId: searchPayments
+      parameters:
+      - description: Your payment reference to search
+        in: query
+        name: reference
+        required: false
+        type: string
+      - description: The user email used in the payment to be searched
+        in: query
+        name: email
+        required: false
+        type: string
+      - description: State of payments to be searched. Example=success
+        enum:
+        - range[created
+        - started
+        - submitted
+        - success
+        - failed
+        - cancelled
+        - error
+        in: query
+        name: state
+        required: false
+        type: string
+      - description: Card brand used for payment. Example=master-card
+        in: query
+        name: card_brand
+        required: false
+        type: string
+      - description: From date of payments to be searched (this date is inclusive).
+          Example=2015-08-13T12:35:00Z
+        in: query
+        name: from_date
+        required: false
+        type: string
+      - description: To date of payments to be searched (this date is exclusive).
+          Example=2015-08-14T12:35:00Z
+        in: query
+        name: to_date
+        required: false
+        type: string
+      - description: Page number requested for the search, should be a positive integer
+          (optional, defaults to 1)
+        in: query
+        name: page
+        required: false
+        type: string
+      - description: Number of results to be shown per page, should be a positive
+          integer (optional, defaults to 500, max 500)
+        in: query
+        name: display_size
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PaymentSearchResults'
+        401:
+          description: Credentials are required to access this resource
+        422:
+          description: 'Invalid parameters: from_date, to_date, status, display_size.
+            See Public API documentation for the correct data formats'
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Search payments
+    post:
+      consumes:
+      - application/json
+      description: 'Create a new payment for the account associated to the Authorisation
+        token. The Authorisation token needs to be specified in the ''authorization''
+        header as ''authorization: Bearer YOUR_API_KEY_HERE'''
+      operationId: newPayment
+      parameters:
+      - description: requestPayload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreatePaymentRequest'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/PaymentWithAllLinks'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        401:
+          description: Credentials are required to access this resource
+        422:
+          description: 'Invalid attribute value: description. Must be less than or
+            equal to 255 characters length'
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Create new payment
+  /v1/payments/{paymentId}:
+    get:
+      description: 'Return information about the payment The Authorisation token needs
+        to be specified in the ''authorization'' header as ''authorization: Bearer
+        YOUR_API_KEY_HERE'''
+      operationId: getPayment
+      parameters:
+      - in: path
+        name: paymentId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PaymentWithAllLinks'
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Find payment by ID
+  /v1/payments/{paymentId}/cancel:
+    post:
+      description: 'Cancel a payment based on the provided payment ID and the Authorisation
+        token. The Authorisation token needs to be specified in the ''authorization''
+        header as ''authorization: Bearer YOUR_API_KEY_HERE''. A payment can only
+        be cancelled if it''s in a state that isn''t finished.'
+      operationId: cancelPayment
+      parameters:
+      - in: path
+        name: paymentId
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Cancellation of payment failed
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Cancel payment
+  /v1/payments/{paymentId}/events:
+    get:
+      description: 'Return payment events information about a certain payment The
+        Authorisation token needs to be specified in the ''authorization'' header
+        as ''authorization: Bearer YOUR_API_KEY_HERE'''
+      operationId: getPaymentEvents
+      parameters:
+      - in: path
+        name: paymentId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/PaymentEventsInformation'
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Return payment events by ID
+  /v1/payments/{paymentId}/refunds:
+    get:
+      description: 'Return refunds for a payment. The Authorisation token needs to
+        be specified in the ''authorization'' header as ''authorization: Bearer YOUR_API_KEY_HERE'''
+      operationId: getRefunds
+      parameters:
+      - in: path
+        name: paymentId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Get all refunds for a payment.
+      tags:
+      - refunds
+    post:
+      consumes:
+      - application/json
+      description: 'Return issued refund information. The Authorisation token needs
+        to be specified in the ''authorization'' header as ''authorization: Bearer
+        YOUR_API_KEY_HERE'''
+      operationId: submitRefund
+      parameters:
+      - description: paymentId
+        in: path
+        name: paymentId
+        required: true
+        type: string
+      - description: requestPayload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreatePaymentRefundRequest'
+      responses:
+        202:
+          description: ACCEPTED
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        412:
+          description: Refund amount available mismatch
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Submit a refund for a payment
+      tags:
+      - refunds
+  /v1/payments/{paymentId}/refunds/{refundId}:
+    get:
+      description: 'Return payment refund information by Refund ID The Authorisation
+        token needs to be specified in the ''authorization'' header as ''authorization:
+        Bearer YOUR_API_KEY_HERE'''
+      operationId: getRefundById
+      parameters:
+      - in: path
+        name: paymentId
+        required: true
+        type: string
+      - in: path
+        name: refundId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Credentials are required to access this resource
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+        500:
+          description: Downstream system error
+          schema:
+            $ref: '#/definitions/Payment%20Error'
+      summary: Find payment refund by ID
+      tags:
+      - refunds
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":29:{s:15:\"Billing Address\";O:8:\"stdClass\":0:{}s:15:\"Billing_Address\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"A
+  structure representing the billing address of a card\";s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"city\";O:8:\"stdClass\":3:{s:7:\"example\";s:12:\"address
+  city\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":3:{s:7:\"example\";s:2:\"UK\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:5:\"line1\";O:8:\"stdClass\":3:{s:7:\"example\";s:14:\"address
+  line 1\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:5:\"line2\";O:8:\"stdClass\":3:{s:7:\"example\";s:14:\"address
+  line 2\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:8:\"postcode\";O:8:\"stdClass\":3:{s:7:\"example\";s:7:\"AB1
+  2CD\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"Card
+  Payment\";O:8:\"stdClass\":0:{}s:12:\"Card_Payment\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Payment\";}i:1;O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"card_brand\";O:8:\"stdClass\":4:{s:11:\"description\";s:10:\"Card
+  Brand\";s:7:\"example\";s:4:\"Visa\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:12:\"card_details\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:38:\"#/definitions/Payment%20card%20details\";s:8:\"readOnly\";b:1;}s:14:\"refund_summary\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/Refund%20Summary\";s:8:\"readOnly\";b:1;}s:18:\"settlement_summary\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:34:\"#/definitions/Settlement%20Summary\";s:8:\"readOnly\";b:1;}}s:4:\"type\";s:6:\"object\";}}}s:26:\"CreatePaymentRefundRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:34:\"The
+  Payment Refund Request Payload\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"amount\";O:8:\"stdClass\":6:{s:11:\"description\";s:68:\"Amount
+  in pence. Can't be more than the available amount for refunds\";s:7:\"example\";s:6:\"150000\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:10000000;s:7:\"minimum\";i:1;s:4:\"type\";s:7:\"integer\";}s:23:\"refund_amount_available\";O:8:\"stdClass\":7:{s:11:\"description\";s:71:\"Amount
+  in pence. Total amount still available before issuing the refund\";s:7:\"example\";s:6:\"200000\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:10000000;s:7:\"minimum\";i:1;s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:1:{i:0;s:6:\"amount\";}s:4:\"type\";s:6:\"object\";}s:20:\"CreatePaymentRequest\";O:8:\"stdClass\":4:{s:11:\"description\";s:27:\"The
+  Payment Request Payload\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"amount\";O:8:\"stdClass\":6:{s:11:\"description\";s:15:\"amount
+  in pence\";s:7:\"example\";s:5:\"12000\";s:6:\"format\";s:5:\"int32\";s:7:\"maximum\";i:10000000;s:7:\"minimum\";i:1;s:4:\"type\";s:7:\"integer\";}s:11:\"description\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"payment
+  description\";s:7:\"example\";s:24:\"New passport application\";s:4:\"type\";s:6:\"string\";}s:9:\"reference\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"payment
+  reference\";s:7:\"example\";s:5:\"12345\";s:4:\"type\";s:6:\"string\";}s:10:\"return_url\";O:8:\"stdClass\":4:{s:11:\"description\";s:18:\"service
+  return url\";s:7:\"example\";s:46:\"https://service-name.gov.uk/transactions/12345\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:6:\"amount\";i:1;s:11:\"description\";i:2;s:9:\"reference\";i:3;s:10:\"return_url\";}s:4:\"type\";s:6:\"object\";}s:20:\"Direct_Debit_Payment\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Payment\";}i:1;O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}}s:7:\"Payment\";O:8:\"stdClass\":3:{s:13:\"discriminator\";s:11:\"paymentType\";s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"amount\";O:8:\"stdClass\":3:{s:7:\"example\";s:4:\"1200\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:12:\"created_date\";O:8:\"stdClass\":3:{s:7:\"example\";s:20:\"2016-01-21T17:15:00Z\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:7:\"example\";s:24:\"Your
+  Service Description\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:7:\"example\";s:10:\"your
+  email\";s:4:\"type\";s:6:\"string\";}s:10:\"payment_id\";O:8:\"stdClass\":3:{s:7:\"example\";s:26:\"hu20sqlact5260q2nanm0q8u93\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:16:\"payment_provider\";O:8:\"stdClass\":3:{s:7:\"example\";s:8:\"worldpay\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:9:\"reference\";O:8:\"stdClass\":2:{s:7:\"example\";s:14:\"your-reference\";s:4:\"type\";s:6:\"string\";}s:10:\"return_url\";O:8:\"stdClass\":3:{s:7:\"example\";s:41:\"http://your.service.domain/your-reference\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/Payment%20state\";}}s:4:\"type\";s:6:\"object\";}s:13:\"Payment
+  Error\";O:8:\"stdClass\":0:{}s:25:\"Payment Event information\";O:8:\"stdClass\":0:{}s:20:\"Payment
+  card details\";O:8:\"stdClass\":0:{}s:13:\"Payment state\";O:8:\"stdClass\":0:{}s:24:\"PaymentEventsInformation\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"A
+  List of Payment Events information\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"_links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/linksForEvents\";}s:6:\"events\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/Payment%20Event%20information\";}s:4:\"type\";s:5:\"array\";}s:10:\"payment_id\";O:8:\"stdClass\":3:{s:7:\"example\";s:26:\"hu20sqlact5260q2nanm0q8u93\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"PaymentSearchResults\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"results\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Card%20Payment\";}s:8:\"readOnly\";b:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:19:\"PaymentWithAllLinks\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"_links\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:33:\"#/definitions/allLinksForAPayment\";s:8:\"readOnly\";b:1;}s:7:\"payment\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Payment\";}}s:4:\"type\";s:6:\"object\";}s:13:\"Payment_Error\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"A
+  Payment Error response\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:7:\"example\";s:5:\"P0102\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:7:\"example\";s:71:\"Invalid
+  attribute value: amount. Must be less than or equal to 10000000\";s:4:\"type\";s:6:\"string\";}s:5:\"field\";O:8:\"stdClass\":2:{s:7:\"example\";s:6:\"amount\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"Payment_Event_information\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"A
+  List of Payment Events information\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"_links\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:32:\"#/definitions/payment-event-link\";s:8:\"readOnly\";b:1;}s:10:\"payment_id\";O:8:\"stdClass\":3:{s:7:\"example\";s:26:\"hu20sqlact5260q2nanm0q8u93\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:29:\"#/definitions/Payment%20state\";s:11:\"description\";s:5:\"state\";s:8:\"readOnly\";b:1;}s:7:\"updated\";O:8:\"stdClass\":4:{s:11:\"description\";s:7:\"updated\";s:7:\"example\";s:12:\"updated_date\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"Payment_card_details\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"A
+  structure representing the payment card\";s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"billing_address\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:31:\"#/definitions/Billing%20Address\";s:8:\"readOnly\";b:1;}s:10:\"card_brand\";O:8:\"stdClass\":3:{s:7:\"example\";s:4:\"Visa\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:15:\"cardholder_name\";O:8:\"stdClass\":3:{s:7:\"example\";s:15:\"Mr.
+  Card holder\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:11:\"expiry_date\";O:8:\"stdClass\":3:{s:7:\"example\";s:5:\"12/20\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:23:\"last_digits_card_number\";O:8:\"stdClass\":3:{s:7:\"example\";s:4:\"1234\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:13:\"Payment_state\";O:8:\"stdClass\":4:{s:11:\"description\";s:75:\"A
+  structure representing the current state of the payment in its lifecycle.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"code\";O:8:\"stdClass\":4:{s:11:\"description\";s:74:\"What
+  went wrong with the Payment if it finished with an error - error code\";s:7:\"example\";s:4:\"P010\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:8:\"finished\";O:8:\"stdClass\":4:{s:7:\"default\";b:0;s:11:\"description\";s:32:\"Whether
+  the payment has finished\";s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"boolean\";}s:7:\"message\";O:8:\"stdClass\":4:{s:11:\"description\";s:79:\"What
+  went wrong with the Payment if it finished with an error - English message\";s:7:\"example\";s:26:\"User
+  cancelled the payment\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:48:\"Current
+  progress of the payment in its lifecycle\";s:7:\"example\";s:7:\"created\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:4:\"code\";i:1;s:8:\"finished\";i:2;s:7:\"message\";i:3;s:6:\"status\";}s:4:\"type\";s:6:\"object\";}s:14:\"Refund
+  Summary\";O:8:\"stdClass\":0:{}s:14:\"Refund_Summary\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"A
+  structure representing the refunds availability\";s:10:\"properties\";O:8:\"stdClass\":3:{s:16:\"amount_available\";O:8:\"stdClass\":4:{s:11:\"description\";s:36:\"Amount
+  available for refund in pence\";s:6:\"format\";s:5:\"int64\";s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";}s:16:\"amount_submitted\";O:8:\"stdClass\":4:{s:11:\"description\";s:53:\"Amount
+  submitted for refunds on this Payment in pence\";s:6:\"format\";s:5:\"int64\";s:8:\"readOnly\";b:1;s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"Availability
+  status of the refund\";s:7:\"example\";s:9:\"available\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"Settlement
+  Summary\";O:8:\"stdClass\":0:{}s:18:\"Settlement_Summary\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"A
+  structure representing information about a settlement\";s:10:\"properties\";O:8:\"stdClass\":2:{s:19:\"capture_submit_time\";O:8:\"stdClass\":4:{s:11:\"description\";s:133:\"Date
+  and time capture request has been submitted (may be null if capture request was
+  not immediately acknowledged by payment gateway)\";s:7:\"example\";s:20:\"2016-01-21T17:15:00Z\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:13:\"captured_date\";O:8:\"stdClass\":4:{s:11:\"description\";s:25:\"Date
+  of the capture event\";s:7:\"example\";s:10:\"2016-01-21\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:19:\"allLinksForAPayment\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"self,events
+  and next links of a Payment\";s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"cancel\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:29:\"#/definitions/paymentPOSTLink\";s:11:\"description\";s:6:\"cancel\";s:8:\"readOnly\";b:1;}s:6:\"events\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:6:\"events\";s:8:\"readOnly\";b:1;}s:8:\"next_url\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:8:\"next_url\";s:8:\"readOnly\";b:1;}s:13:\"next_url_post\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:29:\"#/definitions/paymentPOSTLink\";s:11:\"description\";s:13:\"next_url_post\";s:8:\"readOnly\";b:1;}s:7:\"refunds\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:7:\"refunds\";s:8:\"readOnly\";b:1;}s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:4:\"self\";s:8:\"readOnly\";b:1;}}s:4:\"type\";s:6:\"object\";}s:14:\"linksForEvents\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"links
+  for events resource\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:4:\"self\";s:8:\"readOnly\";b:1;}}s:4:\"type\";s:6:\"object\";}s:21:\"linksForSearchResults\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"links
+  for search payment resource\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"cancel\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:29:\"#/definitions/paymentPOSTLink\";s:11:\"description\";s:6:\"cancel\";s:8:\"readOnly\";b:1;}s:6:\"events\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:6:\"events\";s:8:\"readOnly\";b:1;}s:7:\"refunds\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:7:\"refunds\";s:8:\"readOnly\";b:1;}s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:4:\"self\";s:8:\"readOnly\";b:1;}}s:4:\"type\";s:6:\"object\";}s:18:\"payment-event-link\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"Resource
+  link for a payment of a payment event\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"payment_url\";O:8:\"stdClass\":3:{s:4:\"$ref\";s:25:\"#/definitions/paymentLink\";s:11:\"description\";s:11:\"payment_url\";s:8:\"readOnly\";b:1;}}s:4:\"type\";s:6:\"object\";}s:11:\"paymentLink\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"A
+  link related to a payment\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"href\";O:8:\"stdClass\":3:{s:7:\"example\";s:45:\"https://an.example.link/from/payment/platform\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"method\";O:8:\"stdClass\":3:{s:7:\"example\";s:3:\"GET\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"paymentPOSTLink\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"A
+  POST link related to a payment\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"href\";O:8:\"stdClass\":3:{s:7:\"example\";s:45:\"https://an.example.link/from/payment/platform\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"method\";O:8:\"stdClass\":3:{s:7:\"example\";s:4:\"POST\";s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:6:\"params\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"example\";s:66:\"\"description\":\"This
+  is a value for a parameter called description\"\";s:4:\"type\";s:6:\"object\";}s:4:\"type\";O:8:\"stdClass\":2:{s:7:\"example\";s:19:\"multipart/form-data\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

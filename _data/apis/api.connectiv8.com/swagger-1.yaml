@@ -1,0 +1,775 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:14:\"Connectiv8 API\";s:11:\"description\";s:36:\"REST
+  API for the Connectiv8 web app.\";s:7:\"version\";s:5:\"0.0.2\";}"
+host: api.connectiv8.com
+paths:
+  /accounts:
+    get:
+      summary: Get accounts
+      description: Get a list of all accounts.n
+      tags:
+      - accounts
+      operationId: Accounts_Get
+      parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      responses:
+        200:
+          description: Retrieved accounts.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AccountViewModel'
+        401:
+          description: Unauthorized.
+    post:
+      summary: Create account
+      description: Register a new account with the service. n
+      tags:
+      - accounts
+      operationId: Accounts_Post
+      parameters:
+      - in: body
+        name: body
+        description: New account object.
+        required: true
+        schema:
+          $ref: '#/definitions/RegisterViewModel'
+      responses:
+        201:
+          description: User created.
+          schema:
+            $ref: '#/definitions/AccountViewModel'
+  /accounts/{username}:
+    get:
+      summary: Get account info
+      description: Returns the account info for the given username.n
+      tags:
+      - accounts
+      operationId: Accounts_GetAccount
+      parameters:
+      - name: username
+        in: path
+        description: The username of the account we are accessing the info of.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Requested account info.
+          schema:
+            $ref: '#/definitions/AccountViewModel'
+    put:
+      summary: Update account info
+      description: Updates the account info for the given account.n
+      tags:
+      - accounts
+      operationId: Accounts_PutAccount
+      parameters:
+      - name: username
+        in: path
+        description: The username of the account we are updating the info of.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: New user info
+        schema:
+          $ref: '#/definitions/AccountViewModel'
+      responses:
+        204:
+          description: Successfully updated the account info.
+    delete:
+      summary: Delete the given account.
+      description: Closes this account.n
+      tags:
+      - accounts
+      operationId: Accounts_DeleteAccount
+      parameters:
+      - name: username
+        in: path
+        description: The username of the account we are deleting.
+        required: true
+        type: string
+      - name: removeCompletely
+        in: query
+        description: Should all information associated with this account be removed
+          as well.
+        type: boolean
+        default: false
+      responses:
+        204:
+          description: Account successfully deleted.
+  /accounts/{username}/change-password:
+    post:
+      summary: Change password
+      description: Change the password of the current account.
+      tags:
+      - accounts
+      operationId: Accounts_Account_ChangePassword
+      parameters:
+      - name: username
+        in: path
+        description: The username of the account we are changing the password of.
+        required: true
+        type: string
+      - name: model
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ChangePasswordViewModel'
+      responses:
+        204:
+          description: Password changed successfully.
+  /accounts/logout:
+    post:
+      summary: Logout
+      description: Logout with the provided authentication.
+      tags:
+      - accounts
+      operationId: Accounts_Logout
+      parameters: []
+      responses:
+        204:
+          description: Log out successful.
+  /users:
+    get:
+      summary: Get users
+      description: Get a list of users.
+      tags:
+      - users
+      operationId: Users_Get
+      parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      responses:
+        200:
+          description: Users retrieved successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserViewModel'
+    post:
+      summary: Post user
+      description: Create a new user.
+      tags:
+      - users
+      operationId: Users_Post
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UserViewModel'
+      responses:
+        204:
+          description: User created successfully.
+  /users/{username}:
+    get:
+      summary: Get user
+      description: Get information for the specified user.
+      tags:
+      - users
+      operationId: Users_GetUser
+      parameters:
+      - in: path
+        name: username
+        required: true
+        description: The username of the user we are getting information about.
+        type: string
+      responses:
+        200:
+          description: User retrieved successfully.
+          schema:
+            $ref: '#/definitions/UserViewModel'
+    put:
+      summary: Put user
+      description: Replace the given user with the new user information
+      tags:
+      - users
+      operationId: Users_PutUser
+      parameters:
+      - in: path
+        name: username
+        required: true
+        description: The username of the user we are updating the information of.
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UserViewModel'
+      responses:
+        204:
+          description: User updated successfully.
+  /projects:
+    get:
+      summary: Get projects
+      description: Returns a list of projects. Accepts search queries.
+      tags:
+      - projects
+      operationId: Projects_Get
+      parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      - in: query
+        name: state
+        type: string
+      - in: query
+        name: search
+        type: string
+      responses:
+        200:
+          description: A list of projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CompleteProjectViewModel'
+    post:
+      summary: Post project
+      description: Post a new project.
+      tags:
+      - projects
+      operationId: Projects_Post
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ProjectViewModel'
+      responses:
+        201:
+          description: Project created.
+  /projects/{id}:
+    get:
+      summary: Get project
+      description: Get the details of a particular project.
+      tags:
+      - projects
+      operationId: Projects_GetProject
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        200:
+          description: Project found successfully.
+          schema:
+            $ref: '#/definitions/CompleteProjectViewModel'
+    put:
+      summary: Update project
+      description: Update a project to match the given details.
+      tags:
+      - projects
+      operationId: Projects_PutProject
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ProjectViewModel'
+      responses:
+        204:
+          description: Project updated successfully.
+    delete:
+      summary: Delete a project
+      description: Delete a project. Can be done to open projects. Requires both student
+        and client confirmation if the project is in progress.
+      tags:
+      - projects
+      operationId: Projects_DeleteProject
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        204:
+          description: Project successfully deleted.
+  /projects/{id}/applications:
+    get:
+      summary: Get applications
+      description: Get the applications which have been received for a particular
+        project. Only the project's client can retrieve this list.
+      tags:
+      - projects
+      - applications
+      operationId: Projects_Project_Applications_Get
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      responses:
+        200:
+          description: Applications successfully retrieved.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ApplicationViewModel'
+    post:
+      summary: Post application
+      description: Create a new application for this project. Only students can do
+        this.
+      tags:
+      - projects
+      - applications
+      - students
+      operationId: Projects_Project_Applications_Post
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ApplicationWriteModel'
+      responses:
+        201:
+          description: Application created successfully.
+  /projects/{id}/applications/{username}:
+    get:
+      summary: Get a single application
+      description: Get the application for a specific student.
+      tags:
+      - projects
+      - applications
+      - students
+      operationId: Projects_Project_Applications_GetApplication
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: path
+        name: username
+        type: string
+        required: true
+      responses:
+        200:
+          description: Application retrieved successfully.
+          schema:
+            $ref: '#/definitions/ApplicationViewModel'
+    put:
+      summary: Replace an application
+      description: Replace a student's application with new information
+      tags:
+      - projects
+      - applications
+      - students
+      operationId: Projects_Project_Applications_PutApplication
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: path
+        name: username
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ApplicationWriteModel'
+      responses:
+        200:
+          description: Application modified successfully.
+          schema:
+            $ref: '#/definitions/ApplicationWriteModel'
+    delete:
+      summary: Delete an application
+      description: Deletes an application for a specific student.
+      tags:
+      - projects
+      - applications
+      - students
+      operationId: Projects_Project_Applications_DeleteApplication
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: path
+        name: username
+        type: string
+        required: true
+      responses:
+        204:
+          description: Application successfully deleted.
+  /projects/{id}/applications/{username}/accept:
+    post:
+      summary: Accept an application
+      description: Accepts a student's applications so the project can start. If this
+        project only accepts one student, the project will start.nOtherwise, the project
+        will start when all spots are filled, or a PUT to /projects/{id} changes the
+        project staten
+      tags:
+      - projects
+      - applications
+      - students
+      operationId: Projects_Project_Applications_Application_Accept
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: path
+        name: username
+        type: string
+        required: true
+      responses:
+        200:
+          description: Application successfully accepted. Returning updated project
+            information.
+          schema:
+            $ref: '#/definitions/CompleteProjectViewModel'
+  /students:
+    get:
+      summary: Get students
+      description: Get a list of students
+      tags:
+      - students
+      operationId: Students_Get
+      parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      - in: query
+        name: search
+        type: string
+      responses:
+        200:
+          description: Retrieved a list of students.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/StudentViewModel'
+    post:
+      summary: Create student
+      description: Create a new student profile.
+      tags:
+      - students
+      operationId: Students_Post
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/StudentWriteModel'
+      responses:
+        201:
+          description: Student successfully created.
+  /students/{username}:
+    get:
+      summary: Get student
+      description: Get a specific student profile.
+      tags:
+      - students
+      operationId: Students_GetStudent
+      parameters:
+      - in: path
+        name: username
+        type: string
+        required: true
+      responses:
+        200:
+          description: Student successfully retrieved.
+          schema:
+            $ref: '#/definitions/StudentViewModel'
+    put:
+      summary: Update student profile
+      description: Update a specific student profile.
+      tags:
+      - students
+      operationId: Students_PutStudent
+      parameters:
+      - in: path
+        name: username
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/StudentWriteModel'
+      responses:
+        204:
+          description: Student updated successfully.
+    delete:
+      summary: Delete student profile
+      description: Delete a specific student profile. Does not delete the associated
+        user.
+      tags:
+      - students
+      operationId: Students_DeleteStudent
+      parameters:
+      - in: path
+        name: username
+        type: string
+        required: true
+      responses:
+        204:
+          description: Student deleted successfully.
+  /students/{username}/projects:
+    get:
+      summary: Get a student's projects
+      description: Gets a list of projects a student has completed, is completing,
+        or has applied to.
+      tags:
+      - students
+      - projects
+      operationId: Students_Student_GetProjects
+      parameters:
+      - in: path
+        name: username
+        type: string
+        required: true
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      - in: query
+        name: state
+        type: string
+      responses:
+        200:
+          description: Projects retrieved successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CompleteProjectViewModel'
+  /clients:
+    get:
+      summary: Get clients
+      description: Get a list of clients
+      tags:
+      - clients
+      operationId: Clients_Get
+      parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      - in: query
+        name: search
+        type: string
+      responses:
+        200:
+          description: Retrieved a list of clients.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ClientViewModel'
+    post:
+      summary: Create client
+      description: Create a new client profile.
+      tags:
+      - clients
+      operationId: Clients_Post
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ClientWriteModel'
+      responses:
+        201:
+          description: Client successfully created.
+  /clients/{id}:
+    get:
+      summary: Get client
+      description: Get a specific client profile.
+      tags:
+      - clients
+      operationId: Clients_GetClient
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        200:
+          description: Client successfully retrieved.
+          schema:
+            $ref: '#/definitions/ClientViewModel'
+    put:
+      summary: Update client profile
+      description: Update a specific client profile.
+      tags:
+      - clients
+      operationId: Clients_PutClient
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        204:
+          description: Client updated successfully.
+    delete:
+      summary: Delete client profile
+      description: Delete a specific client profile. Does not delete the associated
+        user.
+      tags:
+      - clients
+      operationId: Clients_DeleteClient
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        204:
+          description: Client deleted successfully.
+  /clients/{id}/projects:
+    get:
+      summary: Get a client's projects
+      description: Gets a list of projects a client has created.
+      tags:
+      - clients
+      - projects
+      operationId: Clients_Client_GetProjects
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
+      - in: query
+        name: state
+        type: string
+      responses:
+        200:
+          description: Projects retrieved successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CompleteProjectViewModel'
+  /schools:
+    get:
+      summary: Get Connectiv8 schools
+      description: Gets a list of schools in which Connectiv8 operates.
+      tags:
+      - schools
+      operationId: Schools_Get
+      parameters: []
+      responses:
+        200:
+          description: Schools retrieved successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SchoolViewModel'
+    post:
+      summary: Add a school
+      description: Add a school for Connectiv8 to operate in.
+      tags:
+      - schools
+      operationId: Schools_Post
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/SchoolViewModel'
+      responses:
+        201:
+          description: School successfully created
+  /schools/{id}:
+    get:
+      summary: Get school
+      description: Gets information for a school in which Connectiv8 operates.
+      tags:
+      - schools
+      operationId: Schools_GetSchool
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        200:
+          description: School retrieved successfully.
+          schema:
+            $ref: '#/definitions/SchoolViewModel'
+    put:
+      summary: Put school
+      description: Replaces information about a school in which Connectiv8 operates.
+      tags:
+      - schools
+      operationId: Schools_PutSchool
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/SchoolViewModel'
+      responses:
+        200:
+          description: School updated successfully.
+          schema:
+            $ref: '#/definitions/SchoolViewModel'
+    delete:
+      summary: Delete school
+      description: Deletes a school from the database. This will prevent any students
+        registered from that school from applying for new projects, but their accounts
+        will remain open.
+      tags:
+      - schools
+      operationId: Schools_DeleteSchool
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        204:
+          description: School deleted successfully.
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":15:{s:17:\"RegisterViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:3:{i:0;s:5:\"email\";i:1;s:9:\"firstName\";i:2;s:8:\"lastName\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}s:15:\"confirmPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}}}s:16:\"AccountViewModel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"logins\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/LoginInfoViewModel\";}}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"LoginInfoViewModel\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"loginProvider\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"providerKey\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:23:\"ChangePasswordViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:3:{i:0;s:11:\"oldPassword\";i:1;s:11:\"newPassword\";i:2;s:15:\"confirmPassword\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"oldPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}s:11:\"newPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}s:15:\"confirmPassword\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}}}s:13:\"UserViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:2:{i:0;s:9:\"firstName\";i:1;s:8:\"lastName\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AddressViewModel\";}}}s:16:\"AddressViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:1:{i:0;s:7:\"country\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:20:\"buildingNameOrNumber\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"extraInfo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"street\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"city\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"postalCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"ProjectViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:5:\"state\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"shortDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"longDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"applicationDueDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:14:\"projectDueDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:24:\"CompleteProjectViewModel\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProjectViewModel\";}i:1;O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"client\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ClientViewModel\";}s:8:\"students\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/StudentViewModel\";}}}}}}s:21:\"ApplicationWriteModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:1:{i:0;s:9:\"projectId\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"projectId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"projectUri\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:20:\"ApplicationViewModel\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ApplicationWriteModel\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:5:{i:0;s:8:\"clientId\";i:1;s:10:\"clientName\";i:2;s:11:\"projectName\";i:3;s:5:\"state\";i:4;s:7:\"student\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"clientId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"clientName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"projectName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"student\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/StudentViewModel\";}}}}}s:17:\"StudentWriteModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:4:{i:0;s:9:\"firstName\";i:1;s:8:\"lastName\";i:2;s:5:\"major\";i:3;s:11:\"schoolEmail\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"major\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"schoolEmail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"StudentViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:5:{i:0;s:8:\"username\";i:1;s:9:\"firstName\";i:2;s:8:\"lastName\";i:3;s:5:\"major\";i:4;s:6:\"school\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"major\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"school\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"mostRecentProject\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProjectViewModel\";}}}s:16:\"ClientWriteModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:3:{i:0;s:4:\"name\";i:1;s:11:\"description\";i:2;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AddressViewModel\";}}}s:15:\"ClientViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AddressViewModel\";}s:17:\"mostRecentProject\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ProjectViewModel\";}}}s:15:\"SchoolViewModel\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";b:0;s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:6:\"domain\";i:2;s:4:\"name\";i:3;s:7:\"address\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/AddressViewModel\";}}}}"
+...

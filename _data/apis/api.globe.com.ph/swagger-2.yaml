@@ -1,0 +1,2072 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"List of Postpaid
+  APIs - Change account/plan -> account/detail - Add response to account/detail\";s:7:\"version\";s:5:\"2.4.0\";s:5:\"title\";s:13:\"Postpaid
+  APIs\";}"
+host: api.globe.com.ph
+basePath: /globeone-es-api/postpaid/v1
+paths:
+  /account/detail:
+    post:
+      tags:
+      - Postpaid
+      summary: Get Plan Detail of An Account
+      description: This API is used to get the plan of a specific account which belong
+        to an user in G1ES
+      operationId: getAccountPlanInfo
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody'
+      responses:
+        200:
+          description: Successful
+          examples:
+            Success:
+              responseCode: 200
+              errors: []
+              isTattooPostpaid: false
+              accountDetail:
+                firstName: Samantha
+                lastName: Cruz
+                accountNumber: "4567890123"
+                emailAddress: samantha@gmail.com
+              planDetail:
+                planId: "2667094"
+                planName: myLifestyle Plan 499
+                isExpired: true
+                contractExpired: 1533455999000
+                contractDuration: 0 months
+                monthRemaining: 0 months
+              billing:
+                billingAddress: 123 Four Street, 5 Subdivision, Barangay 6, 7 City,
+                  Metro Manila
+                spendingLimit: "2,000.00"
+                creditLimit: "10,000.00"
+              cutOffDate: 9th
+              nextBillingDays: 10
+            Empty result 1:
+              responseCode: 200
+              errors: []
+              isTattooPostpaid: false
+              accountDetail:
+                firstName: ""
+                lastName: ""
+                accountNumber: ""
+                emailAddress: ""
+              billing:
+                billingAddress: ""
+              cutOffDate: 9th
+              nextBillingDays: 10
+            Empty result 2:
+              responseCode: 200
+              errors: []
+              isTattooPostpaid: false
+              accountDetail:
+                firstName: ""
+                lastName: ""
+                accountNumber: ""
+                emailAddress: ""
+              planDetail:
+                planId: "2667094"
+                planName: myLifestyle Plan 499
+                isExpired: true
+                contractExpired: 1533455999000
+                contractDuration: 0 months
+                monthRemaining: 0 months
+              billing:
+                billingAddress: 123 Four Street, 5 Subdivision, Barangay 6, 7 City,
+                  Metro Manila
+                spendingLimit: "2,000.00"
+                creditLimit: "10,000.00"
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Service Number is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Service Number is required
+                parameter: serviceNumber
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: serviceNumber
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: serviceNumber
+            Account not found:
+              responseCode: 400
+              errors:
+              - code: API006
+                message: Account not found
+                parameter: serviceNumber
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/payment-info:
+    post:
+      tags:
+      - Postpaid
+      summary: Get Payment Info By Service Number
+      description: This API is used to get the payment information of a specific account
+        which belong to an user in G1ESn
+      operationId: getAccountPaymentInfo
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/request'
+      responses:
+        200:
+          description: success
+          examples:
+            Active account:
+              responseCode: 200
+              errors: []
+              paymentInfo:
+                totalAmount: "1,799.00"
+                accountType: postpaid
+                dueDate: 1538236800000
+                lastPaymentAmt: 2.900.00
+                lastPaymentDate: 1538236800000
+                lastApiCall: 1538236800000
+                isOverDue: false
+              isTmpDisconnected: false
+              isVoluntaryDisconnect: false
+            Temporary Disconnected Account - Due to Overdue:
+              responseCode: 200
+              errors: []
+              paymentInfo:
+                totalAmount: "1,799.00"
+                accountType: postpaid
+                dueDate: 1538236800000
+                lastPaymentAmt: 2.900.00
+                lastPaymentDate: 1538236800000
+                lastApiCall: 1538236800000
+                isOverDue: false
+              isTmpDisconnected: true
+              isVoluntaryDisconnect: false
+            Temporary Disconnected Account - Voluntary:
+              responseCode: 200
+              errors: []
+              paymentInfo:
+                totalAmount: "1,799.00"
+                accountType: postpaid
+                dueDate: 1538236800000
+                lastPaymentAmt: 2.900.00
+                lastPaymentDate: 1538236800000
+                lastApiCall: 1538236800000
+                isOverDue: true
+              isTmpDisconnected: true
+              isVoluntaryDisconnect: true
+            Call external Api return null Object:
+              responseCode: 200
+              errors: []
+              isTmpDisconnected: false
+              isVoluntaryDisconnect: false
+          schema:
+            type: object
+            properties:
+              totalAmount:
+                type: number
+                format: double
+              accountType:
+                type: string
+              dueDate:
+                type: number
+                format: long
+              lastApiCall:
+                type: number
+                format: long
+              lastPaymentAmt:
+                type: number
+                format: double
+              lastPaymentDate:
+                type: number
+                format: long
+              isTmpDisconnected:
+                type: boolean
+              isVoluntaryDisconnect:
+                type: boolean
+        400:
+          description: Bad request
+          examples:
+            Account Not Found:
+              responseCode: 400
+              errors:
+              - code: API006
+                message: Account not found
+                parameter: serviceNumber
+            Service Number is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Service Number is required
+                parameter: serviceNumber
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: serviceNumber
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: serviceNumber
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        404:
+          description: Account has no bill
+          examples:
+            Account has no bill:
+              responseCode: 404
+              errors:
+              - code: API016
+                message: Account has No bill
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  type: object
+                  properties: []
+  /account/data-allocation:
+    post:
+      tags:
+      - Postpaid
+      summary: Get Data Allocation By Service Number
+      description: This API is used to get the data allocation of a specific account
+        which belong to an user in G1ESn
+      operationId: getAccountDataAllocation
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is userId which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/request_1'
+      responses:
+        200:
+          description: success
+          examples:
+            Active account:
+              responseCode: 200
+              errors: []
+              dataAllocation:
+                remainingQuota: 6.45 GB
+                quota: 7 GB
+                remainingQuotaPercentage: 89
+                lastApiCall: 1538236800000
+              dataRenewalCutOffDate: 1538236800000
+              isTmpDisconnected: false
+              isVoluntaryDisconnect: false
+            Temporary Disconnected Account - Due to Overdue:
+              responseCode: 200
+              errors: []
+              dataAllocation:
+                remainingQuota: 6.45 GB
+                quota: 7 GB
+                remainingQuotaPercentage: 89
+                lastApiCall: 1538236800000
+              dataRenewalCutOffDate: 1538236800000
+              isTmpDisconnected: true
+              isVoluntaryDisconnect: false
+            Temporary Disconnected Account - Voluntary:
+              responseCode: 200
+              errors: []
+              dataAllocation:
+                remainingQuota: 6.45 GB
+                quota: 7 GB
+                remainingQuotaPercentage: 89 %
+                lastApiCall: 1538236800000
+              dataRenewalCutOffDate: 1538236800000
+              isTmpDisconnected: true
+              isVoluntaryDisconnect: true
+            Success with empty dataAllocation:
+              responseCode: 200
+              errors: []
+              dataRenewalCutOffDate: 1538236800000
+            Success with empty dataRenewalCutOffDate:
+              responseCode: 200
+              errors: []
+              dataAllocation:
+                remainingQuota: 6.45 GB
+                quota: 7 GB
+                remainingQuotaPercentage: 89
+                lastApiCall: 1538236800000
+              isTmpDisconnected: false
+              isVoluntaryDisconnect: false
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+              remainingQuota:
+                type: string
+              quota:
+                type: string
+              remainingQuotaPercentage:
+                type: string
+              lastApiCall:
+                type: number
+                format: long
+              dataRenewalCutOffDate:
+                type: number
+                format: long
+              isTmpDisconnected:
+                type: boolean
+              isVoluntaryDisconnect:
+                type: boolean
+        400:
+          description: Bad request
+          examples:
+            Account Not Found:
+              responseCode: 400
+              errors:
+              - code: API006
+                message: Account not found
+                parameter: serviceNumber
+            Service Number is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Service Number is required
+                parameter: serviceNumber
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: serviceNumber
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: serviceNumber
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 400
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          examples:
+            Internal Server Error:
+              responseCode: 500
+              errors:
+              - code: API001
+                message: Internal Server Error
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/reward-point:
+    post:
+      tags:
+      - Postpaid
+      summary: Get Rewards Points
+      description: This API is used for getting the rewards points accumulated by
+        the consumer in G1ESn
+      operationId: getRewardsPoints
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_1'
+      responses:
+        200:
+          description: success
+          examples:
+            Success:
+              responseCode: 200
+              errors: []
+              rewardsPoints: 0
+              lastApiCall: 1539766113885
+              subscriberAvailableRewards:
+              - rewardType: NON-TELCO
+                rewardName: MOES
+                rewardDescription: P250 off at Denny's  Indulge in sumptuous meals
+                  with this exclusive offer! Enjoy this discount with a minimum spend
+                  of P750
+                rewardStatus: active
+                rewardId: 11631
+                rewardPointsCost: "0"
+                rewardCategory: "10164"
+              - rewardType: NON-TELCO
+                rewardName: DENNYS
+                rewardDescription: P500 off at Denny's  Indulge in sumptuous meals
+                  with this exclusive offer! Enjoy this discount with a minimum spend
+                  of P1,500
+                rewardStatus: active
+                rewardId: 11632
+                rewardPointsCost: "0"
+                rewardCategory: "10164"
+              - rewardType: NON-TELCO
+                rewardName: BAKERCOOK
+                rewardDescription: P250 off at Baker and Cook  Indulge in sumptuous
+                  meals with this exclusive offer! Enjoy this discount with a minimum
+                  spend of P750
+                rewardStatus: active
+                rewardId: 11633
+                rewardPointsCost: "0"
+                rewardCategory: "10164"
+              - rewardType: TELCO
+                rewardName: WORK30
+                rewardDescription: 30 days access to Gmail, Yahoo Mail, Google Drive,
+                  Hotmail, Evernote, valid for 30 days
+                rewardStatus: active
+                rewardId: 11634
+                rewardPointsCost: "50"
+                rewardCategory: "10101"
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 200
+              errors:
+                type: array
+                example: []
+                items:
+                  $ref: '#/definitions/inline_response_200_2_errors'
+              rewardsPoints:
+                type: number
+              lastApiCall:
+                type: number
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Msisdn is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Msisdn is required
+                parameter: msisdn
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: msisdn
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: msisdn
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/billing-list:
+    post:
+      tags:
+      - Postpaid
+      summary: ESB - Get List Bills of An Account
+      description: ""
+      operationId: getBillingList
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_2'
+      responses:
+        200:
+          description: Successful
+          examples:
+            Successful:
+              responseCode: 200
+              errors: []
+              billingListResult:
+              - docId: 120117054
+                docStatus: 78
+                billDate: 1466265600000
+                baNo: 337849614
+                startDate: 1463500800000
+                endDate: 1466092800000
+                dueDate: 1467907200000
+                totalAmount: "28134.64"
+                invoiceAmount: "499.00"
+                legalInvoiceNo: 1032337958-2
+              - docId: 120114075
+                docStatus: 78
+                billDate: 1464105600000
+                baNo: 337849614
+                startDate: 1463414400000
+                endDate: 1463414400000
+                dueDate: 1465228800000
+                totalAmount: "27635.64"
+                invoiceAmount: "27635.64"
+                legalInvoiceNo: 1032337958-1
+            Account has no list bill:
+              responseCode: 200
+              errors: []
+              billingListResult: []
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Msisdn is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Msisdn is required
+                parameter: msisdn
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: msisdn
+            Msisdn contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: msisdn
+            Page size contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: pageSize
+            Max Page Size is 18:
+              responseCode: 400
+              errors:
+              - code: API031
+                message: Max Page Size is 18
+                parameter: pageSize
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          examples:
+            Internal Server Error:
+              responseCode: 500
+              errors:
+              - code: API001
+                message: Internal Server Error
+                parameter: ""
+            Globe ESB API error:
+              responseCode: 500
+              errors:
+              - code: ""
+                message: ESB_PROVIDER_ERROR:Error occurred in service provider.
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/spending-limit:
+    post:
+      tags:
+      - Postpaid
+      summary: Get Account Spending Limit
+      description: This API is used to get account spending limit information
+      operationId: getAccountSpendingLimit
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_3'
+      responses:
+        200:
+          description: Successful
+          examples:
+            Successful:
+              responseCode: 200
+              errors: []
+              cutOffStartDate: 1539310232435
+              cutOffEndDate: 1539310232435
+              spendingLimitResponse:
+                totalSpendingLimitAmt: 200.010000
+                excessUsageDetailsAmt: 100.060000
+                excessUsageCharges:
+                  data: 20.010000
+                  call: 20.010000
+                  vas: 20.010000
+                  text: 10.010000
+                  others: 30.010000
+            Response with empty result:
+              responseCode: 200
+              errors: []
+              cutOffStartDate: 1539100800000
+              cutOffEndDate: 1541779200000
+              spendingLimitResponse:
+                totalSpendingLimitAmt: 100
+                excessUsageDetailsAmt: 0
+                excessUsageCharges:
+                  data: 0
+                  call: 0
+                  vas: 0
+                  text: 0
+                  others: 0
+            Response with Empty Cut-off Date:
+              responseCode: 200
+              errors: []
+              spendingLimitResponse:
+                totalSpendingLimitAmt: 100
+                excessUsageDetailsAmt: 0
+                excessUsageCharges:
+                  data: 0
+                  call: 0
+                  vas: 0
+                  text: 0
+                  others: 0
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Service Number is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Service Number is required
+                parameter: serviceNumber
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: serviceNumber
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: serviceNumber
+            Account not found:
+              responseCode: 400
+              errors:
+              - code: API006
+                message: Account not found
+                parameter: serviceNumber
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        404:
+          description: Not Found
+          examples:
+            Account has No bill:
+              responseCode: 404
+              errors:
+              - code: API016
+                message: Account has No bill
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/bill-list-by-msisdn:
+    post:
+      tags:
+      - Globe API
+      summary: ESB - Get List Bills of An Account
+      description: ""
+      operationId: getBillingListByMsisdn
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_4'
+      responses:
+        200:
+          description: Successful
+          examples:
+            Successful:
+              responseCode: 200
+              errors: []
+              lastApiCall: 1543501934038
+              billingListResponse:
+                billingListResult:
+                  docLists:
+                  - docId: 411189327
+                    docType: BL
+                    docStatus: 78
+                    billDate: 1542643200000
+                    cycleControlInfo:
+                      cycleNo: 24723
+                      cycleCode: 16
+                      cycleYear: 2018
+                      cycleInstance: 11
+                      startDate: 1539619200000
+                      endDate: 1542211200000
+                      runDate: 1542297600000
+                      status: CN
+                      cycleSeqRun: 0
+                      periodKey: 107
+                    periodCoverageStartDate: 1542038400000
+                    periodCoverageEndDate: 1542211200000
+                    productionType: FR
+                    accountNo: 1072467828
+                    customerNo: 400432288
+                    baNo: 341519504
+                    docProduceInd: 89
+                    amountCurrency: PHP
+                    dueDate: 1544025600000
+                    totalAmount: 1202.970000
+                    invoiceAmount: 1202.970000
+                    invoiceTaxAmount: 128.900000
+                    invoiceNetAmount: 1074.070000
+                    legalInvoiceNo: 1072467828-1-000411606347
+                    billFrequency: 1
+                    rebillActivity: 78
+                    docDemandType: REGULR
+                  paginationInfo:
+                    pageSize: 12
+                    pageNumber: 0
+                    numberOfRows: 1
+                  resultNameSpace: billing
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Msisdn is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Msisdn is required
+                parameter: msisdn
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: msisdn
+            Msisdn contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: msisdn
+            Page size contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: pageSize
+            Max Page Size is 18:
+              responseCode: 400
+              errors:
+              - code: API031
+                message: Max Page Size is 18
+                parameter: pageSize
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          examples:
+            Internal Server Error:
+              responseCode: 500
+              errors:
+              - code: API001
+                message: Internal Server Error
+                parameter: ""
+            Globe ESB API error:
+              responseCode: 500
+              errors:
+              - code: ""
+                message: ESB_PROVIDER_ERROR:Error occurred in service provider.
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/transactions-history:
+    post:
+      tags:
+      - Globe API
+      summary: BPM - Get List of Transactions History
+      description: This API is used for getting the list of transactions historyn
+      operationId: getListOfTransactionsHistory
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_5'
+      responses:
+        200:
+          description: success
+          examples:
+            Success Result:
+              responseCode: 200
+              errors: []
+              transactionHistoryResult:
+                transactions:
+                - transaction:
+                    transactionId: 227
+                    bpmId: -1163570037
+                    serviceRequest: Change Credit Limit
+                    lastName: legaspi
+                    firstName: rufo
+                    emailAddress: legaspirufo23@gmail.com
+                    mobileNo: 09271078055
+                    accountNo: 1071447343
+                    customerNo: 199586987
+                    channel: WEB
+                    mode: Logged Out
+                    requestStatus: Successful
+                    transactionDateTime: "2018-10-29T07:56:48Z"
+                - transaction:
+                    transactionId: 226
+                    bpmId: -1163964536
+                    serviceRequest: Request Billing Statement
+                    lastName: Legaspi
+                    firstName: Rufo
+                    emailAddress: legaspirufo23@gmail.com
+                    mobileNo: 09271078055
+                    accountNo: 1071447343
+                    customerNo: 199586987
+                    channel: WEB
+                    mode: Logged Out
+                    requestStatus: Successful
+                    transactionDateTime: "2018-10-29T07:50:15Z"
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Service Number is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Service Number is required
+                parameter: serviceNumber
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: serviceNumber
+            Service Number Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: serviceNumber
+            Account Number is required:
+              responseCode: 400
+              errors:
+              - code: API026
+                message: Account Number is required
+                parameter: accountNumber
+            Account Number Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: accountNumber
+            CustomerId is required:
+              responseCode: 400
+              errors:
+              - code: API027
+                message: CustomerId is required
+                parameter: customerId
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/official-receipts-by-acc-no-and-year:
+    post:
+      tags:
+      - Globe API
+      summary: PIS - Get Official Receipts List by Account No and Year
+      description: This API is used for getting the list of transactions historyn
+      operationId: getORsByAccNoAndYear
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_6'
+      responses:
+        200:
+          description: Successful
+          examples:
+            Successful:
+              responseCode: 200
+              errors: []
+              officialReceipt:
+              - paymentAmount: 1400.010000
+                paymentDate: 1454346000000
+                printable: 1
+                accountId: 82427994
+                email: sarroza.dj@gmail.com
+                msisdn: "639178760746"
+                orId: GPNC1600016OR6478457
+                paymentSourceId: GCASH
+            Data not found:
+              responseCode: 200
+              errors: []
+              officialReceipt: []
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Account number is required:
+              responseCode: 400
+              errors:
+              - code: API026
+                message: Account number is required
+                parameter: accountNumber
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: accountNumber
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/pos-url:
+    post:
+      tags:
+      - Globe API
+      summary: Get Account POS Url
+      description: This API is used to get POS url information
+      operationId: getPOSUrl
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_7'
+      responses:
+        200:
+          description: success
+          examples:
+            Successful:
+              responseCode: 200
+              errors: []
+              getPosUrlResponse:
+              - receiptUrl: http://10.234.52.220:8081/TransReceipt.aspx?P=sfnEd47B%2fkgrkVQIz%2fu55B0OqKQbl8LQahxzYq4U4g%2bldzoeJ2fQVsgF7S2Yf7lAqtszkXprBvv8dxIIhoA3eg%3d%3d%7c5
+            Data not found:
+              responseCode: 200
+              errors: []
+          schema:
+            type: object
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            receiptId is required:
+              responseCode: 400
+              errors:
+              - code: API032
+                message: receiptId is required
+                parameter: receiptId
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/pos-url-body:
+    post:
+      tags:
+      - Globe API
+      summary: Get POS Url Body
+      description: This API is used to get POS url body information
+      operationId: getPosUrlBody
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_8'
+      responses:
+        200:
+          description: success
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 200
+              errors:
+                type: array
+                example: []
+                items:
+                  $ref: '#/definitions/inline_response_200_2_errors'
+              posUrlBodyResult:
+                type: string
+                example: <html/>
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            ReceiptUrl is required:
+              responseCode: 400
+              errors:
+              - code: API033
+                message: ReceiptUrl is required
+                parameter: receiptUrl
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/billing-statement:
+    post:
+      tags:
+      - Globe API
+      summary: ESB - Retrieve Billing Statement
+      description: Gets operationStatus, reprintResponse, errorCode, errorMsg, fileBytes,
+        resultNamespace from external api RetrieveBillingStatement.
+      operationId: retrieveBillingStatement
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: request
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/request_2'
+      responses:
+        200:
+          description: Success
+          examples:
+            Success Response:
+              responseCode: 200
+              errors: []
+              billingStatementResult:
+                operationStatus: 0
+                reprintResponse: -1
+                errorCode: 0
+                errorMsg: SUCCESS
+                resultNamespace: billing
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        400:
+          description: Bad Request
+          examples:
+            Msisdn is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Msisdn is required
+                parameter: msisdn
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: msisdn
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: msisdn
+            Page size contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: pageSize
+            Max Page Size is 18:
+              responseCode: 400
+              errors:
+              - code: API031
+                message: Max Page Size is 18
+                parameter: pageSize
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          examples:
+            Internal Server Error:
+              responseCode: 500
+              errors:
+              - code: API001
+                message: Internal Server Error
+                parameter: ""
+            Globe ESB API Error:
+              responseCode: 500
+              errors:
+              - code: ""
+                message: ESB_PROVIDER_ERROR:Error occurred in service provider.
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/loyalty-subscriber-available-rewards:
+    post:
+      tags:
+      - Globe API
+      summary: ESB - Get Loyalty Subscriber Available Rewards
+      description: This API is used for getting the available rewards of the subscriber
+        in G1ESn
+      operationId: getLoyaltySubscriberAvailableRewards
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_9'
+      responses:
+        200:
+          description: success
+          examples:
+            Query Succeeded:
+              responseCode: 200
+              errors: []
+              loyaltySubscriberAvailableRewardsResponse:
+                loyaltySubscriberAvailableRewardsResult:
+                  resultCode: 0
+                  resultDescription: 'Thank you for using GLOBE REWARDS. To redeem
+                    items, type REDEEM <itemcode> to 4438. see items available '
+                  userIdType: 0
+                  userId: "639171926241"
+                  rewardDetailsList:
+                    rewardDetails:
+                    - rewardType: NON-TELCO
+                      rewardName: JAMBAJUICE
+                      rewardDescription: JAMBA PREPAID
+                      rewardStatus: active
+                      rewardId: 11518
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: JAMBAJUICE
+                      rewardDescription: sugus jamba juice non telco GP
+                      rewardStatus: active
+                      rewardId: 11479
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: YAKIMIX
+                      rewardDescription: SUGUS NON TELCO TM YAKIMIX
+                      rewardStatus: active
+                      rewardId: 11478
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: SHANGHAI
+                      rewardDescription: P500 off at Modern Shanghai  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11624
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: WATAMI
+                      rewardDescription: P500 off at Watami  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11623
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: BULGOGI
+                      rewardDescription: P500 off at Bulgogi Brothers  Indulge in
+                        sumptuous meals with this exclusive offer! Enjoy this discount
+                        with a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11621
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: KRAZYGARLIK
+                      rewardDescription: P500 off at Krazy Garlik  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11620
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: FISHCO
+                      rewardDescription: P500 off at Fish & Co.  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11619
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: ITALIANNIS
+                      rewardDescription: P500 off at Italianni's  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,500
+                      rewardStatus: active
+                      rewardId: 11618
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                    - rewardType: NON-TELCO
+                      rewardName: FRIDAYS
+                      rewardDescription: P250 off at Friday's  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P1,000
+                      rewardStatus: active
+                      rewardId: 11617
+                      rewardPointsCost: "0"
+                      rewardCategory: "10066"
+                    - rewardType: NON-TELCO
+                      rewardName: EL POLLO LOCO
+                      rewardDescription: P100 off at El Pollo Loco  Indulge in sumptuous
+                        meals with this exclusive offer! Enjoy this discount with
+                        a minimum spend of P500
+                      rewardStatus: active
+                      rewardId: 11596
+                      rewardPointsCost: "0"
+                      rewardCategory: "10164"
+                  resultNamespace: rewards
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 200
+              errors:
+                type: array
+                example: []
+                items:
+                  $ref: '#/definitions/inline_response_200_2_errors'
+              loyaltySubscriberAvailableRewardsResponse:
+                $ref: '#/definitions/inline_response_200_4_loyaltySubscriberAvailableRewardsResponse'
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            User Id is required:
+              responseCode: 400
+              errors:
+              - code: API025
+                message: User Id is required
+                parameter: userId
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: userId
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: userId
+            User Id Type is required:
+              responseCode: 400
+              errors:
+              - code: API026
+                message: User Id Type is required
+                parameter: userIdType
+            Loyalty Program Id is required:
+              responseCode: 400
+              errors:
+              - code: API027
+                message: Loyalty Program Id is required
+                parameter: loyaltyProgramId
+            User Id Type is invalid:
+              responseCode: 400
+              errors:
+              - code: API028
+                message: User Id Type is invalid
+                parameter: userIdType
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/loyalty-subscriber-points:
+    post:
+      tags:
+      - Globe API
+      summary: ESB - Get Loyalty Subscriber Points
+      description: This API is used for getting the rewards points accumulated by
+        the consumer in G1ESn
+      operationId: getLoyaltySubscriberPoints
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_10'
+      responses:
+        200:
+          description: success
+          examples:
+            Query Succeeded:
+              responseCode: 200
+              errors: []
+              lastApiCall: 1539766113885
+              loyaltySubscriberPointsResponse:
+                loyaltySubscriberPointsResult:
+                  resultCode: 0
+                  resultDescription: Query succeeded
+                  userIdType: 0
+                  userId: "639171926241"
+                  loyaltyProgramDetailsList:
+                    loyaltyProgramDetails:
+                    - totalPoints: 0
+                  resultNamespace: rewards
+            SUBSCRIBER ACCOUNT NOT REGISTERED:
+              responseCode: 200
+              errors: []
+              lastCall: 1539767906980
+              loyaltySubscriberPointsResponse:
+                loyaltySubscriberPointsResult:
+                  resultCode: 69
+                  resultDescription: SUBSCRIBER ACCOUNT NOT REGISTERED
+                  resultNamespace: rewards
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 200
+              errors:
+                type: array
+                example: []
+                items:
+                  $ref: '#/definitions/inline_response_200_2_errors'
+              lastApiCall:
+                type: number
+              loyaltySubscriberPointsResponse:
+                $ref: '#/definitions/inline_response_200_5_loyaltySubscriberPointsResponse'
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            Msisdn is required:
+              responseCode: 400
+              errors:
+              - code: API003
+                message: Msisdn is required
+                parameter: msisdn
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: msisdn
+            Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: msisdn
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                example:
+                - code: API001
+                  message: Internal Server Error
+                  parameter: ""
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+  /account/prov-deprov-promo:
+    post:
+      tags:
+      - Globe API
+      summary: ESB ProvDeprovPromo
+      description: This API is used for subscribing/unsubscribing the customer from
+        the promo.n
+      operationId: ProvDeprovPromo
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: g1es_token
+        in: header
+        description: The value is email which was encrypted
+        required: true
+        type: string
+      - in: body
+        name: requestBody
+        description: Request body
+        required: true
+        schema:
+          $ref: '#/definitions/requestBody_11'
+      responses:
+        200:
+          description: success
+          examples:
+            Query Succeeded:
+              responseCode: 200
+              errors: []
+              provDeprovPromoResult: Request queued.
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 200
+              errors:
+                type: array
+                example: []
+                items:
+                  $ref: '#/definitions/inline_response_200_2_errors'
+              caseId:
+                type: string
+        400:
+          description: Bad Request
+          examples:
+            Token is required:
+              responseCode: 400
+              errors:
+              - code: API002
+                message: Token is required
+                parameter: g1es_token
+            SMS MessageString is required:
+              responseCode: 400
+              errors:
+              - code: API038
+                message: SMS Message String is required
+                parameter: SMS_Message_String
+            CSP Txid is required:
+              responseCode: 400
+              errors:
+              - code: API039
+                message: CSP Txid is required
+                parameter: CSP_Txid
+            SUB Mobtel is required:
+              responseCode: 400
+              errors:
+              - code: API040
+                message: SUB Mobtel is required
+                parameter: SUB_Mobtel
+            Invalid number format:
+              responseCode: 400
+              errors:
+              - code: API004
+                message: Invalid number format
+                parameter: SUB_Mobtel
+            SUB Mobtel Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: SUB_Mobtel
+            SMS Source Addr is required:
+              responseCode: 400
+              errors:
+              - code: API041
+                message: SMS Source Addr is required
+                parameter: SMS_SourceAddr
+            SMS Source Addr Contains non-numeric characters:
+              responseCode: 400
+              errors:
+              - code: API005
+                message: Contains non-numeric characters
+                parameter: SMS_SourceAddr
+            SUB Device Details is required:
+              responseCode: 400
+              errors:
+              - code: API042
+                message: SUB Device Details is required
+                parameter: SUB_Device_Details
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        403:
+          description: Not Authenticated
+          examples:
+            Not Authenticated:
+              responseCode: 403
+              errors:
+              - code: ""
+                message: Not Authenticated
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        404:
+          description: Wrong Url or Missing Parameters
+          examples:
+            Wrong Url or Missing Parameters:
+              responseCode: 404
+              errors:
+              - code: ""
+                message: Wrong URL/Missing Parameters
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        500:
+          description: Internal Server Error
+          examples:
+            Internal Server Error:
+              responseCode: 500
+              errors:
+              - code: API001
+                message: Internal Server Error
+                parameter: ""
+            Globe ESB API Error 1:
+              responseCode: 500
+              errors:
+              - code: ""
+                message: Incorrect Parameter format OR other error (contact Globe)
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+                example: 500
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+        503:
+          description: Other Errors
+          examples:
+            Other Errors:
+              responseCode: 503
+              errors:
+              - code: ""
+                message: Other Errors
+                parameter: ""
+          schema:
+            type: object
+            properties:
+              responseCode:
+                type: integer
+              errors:
+                type: array
+                items:
+                  $ref: '#/definitions/inline_response_400_errors'
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":37:{s:7:\"request\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"serviceNumber\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"serviceNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"0917232323\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:21:\"inline_response_500_2\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:500;}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/inline_response_400_errors\";}}}}s:21:\"inline_response_500_1\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:500;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":3:{s:4:\"code\";s:6:\"API001\";s:7:\"message\";s:21:\"Internal
+  Server Error\";s:9:\"parameter\";s:0:\"\";}}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":0:{}}}}}s:13:\"requestBody_5\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:13:\"accountNumber\";i:1;s:13:\"serviceNumber\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"serviceNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09171926212\";}s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"1032337796\";}s:10:\"customerId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"139711613\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:13:\"requestBody_4\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"msisdn\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"msisdn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09171926241\";}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";d:12;}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:13:\"requestBody_3\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"serviceNumber\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"serviceNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09171926241\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:13:\"requestBody_2\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"msisdn\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"msisdn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09171926241\";}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:7:\"example\";d:12;}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:13:\"requestBody_1\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"msisdn\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"msisdn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09054936923\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:11:\"requestBody\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"serviceNumber\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"serviceNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09271075172\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:19:\"inline_response_200\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:11:\"totalAmount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:11:\"accountType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"dueDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:4:\"long\";}s:11:\"lastApiCall\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:4:\"long\";}s:14:\"lastPaymentAmt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:15:\"lastPaymentDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:4:\"long\";}s:17:\"isTmpDisconnected\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"isVoluntaryDisconnect\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:28:\"inline_response_200_2_errors\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"requestBody_9\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"userId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"639171926241\";}s:10:\"userIdType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"0\";}s:16:\"loyaltyProgramId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"12603\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:9:\"request_1\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"serviceNumber\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"serviceNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"0917232323\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:13:\"requestBody_8\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:10:\"receiptUrl\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"receiptUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:162:\"http%3A%2F%2F10.234.52.220%3A8081%2FTransReceipt.aspx%3FP%3DuvQxVTAVZqBFZHKrPJJNODue5gkt3z9lco5gzPH9NX7224lMIu2Sfhh5JgOMl2sdpDp6nP0q3qbpOVU90y72dg%253d%253d%257c5\";}}}s:19:\"inline_response_500\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:500;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:1:{i:0;O:8:\"stdClass\":3:{s:4:\"code\";s:6:\"API001\";s:7:\"message\";s:21:\"Internal
+  Server Error\";s:9:\"parameter\";s:0:\"\";}}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/inline_response_400_errors\";}}}}s:13:\"requestBody_7\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:9:\"receiptId\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"receiptId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:20:\"GPNC1600016OR6478457\";}}}s:9:\"request_2\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"msisdn\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:6:\"msisdn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09271070313\";}s:19:\"primaryResourceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"C\";}s:6:\"billId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:8:\"57808300\";}s:11:\"convertible\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:8:\"fullBill\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:9:\"immediate\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:8:\"pageSize\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:12;}s:12:\"numberOfRows\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:1;}s:12:\"absolutePath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"/data/cmsdev/\";}s:8:\"filename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:26:\"BPM-20160105-120096218.pdf\";}}}s:19:\"inline_response_400\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"responseCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/inline_response_400_errors\";}}}}s:21:\"inline_response_400_1\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:400;}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/inline_response_400_errors\";}}}}s:13:\"requestBody_6\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:13:\"accountNumber\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:10:\"1032337796\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:26:\"inline_response_400_errors\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"parameter\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:131:\"inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult_loyaltyProgramDetailsList_loyaltyProgramDetails\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"totalPoints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:13:\"regularPoints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:19:\"regularPointsExpiry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:11:\"bonusPoints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:17:\"bonusPointsExpiry\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:21:\"inline_response_200_5\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:200;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/inline_response_200_2_errors\";}}s:11:\"lastApiCall\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:31:\"loyaltySubscriberPointsResponse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:67:\"#/definitions/inline_response_200_5_loyaltySubscriberPointsResponse\";}}}s:21:\"inline_response_200_6\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:200;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/inline_response_200_2_errors\";}}s:6:\"caseId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:53:\"inline_response_200_5_loyaltySubscriberPointsResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:29:\"loyaltySubscriberPointsResult\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:97:\"#/definitions/inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult\";}}}s:83:\"inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"resultCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"resultDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"userIdType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:25:\"loyaltyProgramDetailsList\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:123:\"#/definitions/inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult_loyaltyProgramDetailsList\";}s:15:\"resultNamespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"requestBody_11\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:8:\"CSP_Txid\";i:1;s:18:\"SMS_Message_String\";i:2;s:14:\"SMS_SourceAddr\";i:3;s:10:\"SUB_Mobtel\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:18:\"SMS_Message_String\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"MYSUPERDUO+TAG+ON\";}s:8:\"CSP_Txid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:41:\"SOLN20181023111249-1063231132-09178915895\";}s:10:\"SUB_Mobtel\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"639178915895\";}s:14:\"SMS_SourceAddr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"8080\";}s:18:\"SUB_Device_Details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"TEST\";}}}s:14:\"requestBody_10\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"msisdn\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"msisdn\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"09054936923\";}s:12:\"forceRefresh\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:135:\"inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult_rewardDetailsList_rewardDetails\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:10:\"rewardType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"rewardName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"rewardDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"rewardStatus\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"rewardId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:16:\"rewardPointsCost\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"rewardCategory\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:103:\"inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"resultCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"resultDescription\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"userIdType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"rewardDetailsList\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:135:\"#/definitions/inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult_rewardDetailsList\";}s:15:\"resultNamespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:109:\"inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult_loyaltyProgramDetailsList\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:21:\"loyaltyProgramDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:145:\"#/definitions/inline_response_200_5_loyaltySubscriberPointsResponse_loyaltySubscriberPointsResult_loyaltyProgramDetailsList_loyaltyProgramDetails\";}}}}s:121:\"inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult_rewardDetailsList\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:13:\"rewardDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:149:\"#/definitions/inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult_rewardDetailsList_rewardDetails\";}}}}s:21:\"inline_response_200_1\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":9:{s:12:\"responseCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/inline_response_400_errors\";}}s:14:\"remainingQuota\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"quota\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:24:\"remainingQuotaPercentage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastApiCall\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:4:\"long\";}s:21:\"dataRenewalCutOffDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:4:\"long\";}s:17:\"isTmpDisconnected\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"isVoluntaryDisconnect\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:21:\"inline_response_200_2\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:200;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/inline_response_200_2_errors\";}}s:13:\"rewardsPoints\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:11:\"lastApiCall\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:21:\"inline_response_200_3\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:200;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/inline_response_200_2_errors\";}}s:16:\"posUrlBodyResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:7:\"<html/>\";}}}s:63:\"inline_response_200_4_loyaltySubscriberAvailableRewardsResponse\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:39:\"loyaltySubscriberAvailableRewardsResult\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:117:\"#/definitions/inline_response_200_4_loyaltySubscriberAvailableRewardsResponse_loyaltySubscriberAvailableRewardsResult\";}}}s:21:\"inline_response_200_4\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"responseCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:7:\"example\";i:200;}s:6:\"errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:7:\"example\";a:0:{}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/inline_response_200_2_errors\";}}s:41:\"loyaltySubscriberAvailableRewardsResponse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:77:\"#/definitions/inline_response_200_4_loyaltySubscriberAvailableRewardsResponse\";}}}}"
+...

@@ -1,0 +1,189 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"QLess Merchant Locator\";s:7:\"version\";s:3:\"1.0\";s:11:\"description\";s:86:\"This
+  API retrieves merchant location records based on text/geo-based query parameters.\";}"
+basePath: /
+paths:
+  /merchant/location:
+    get:
+      responses:
+        502:
+          description: Invalid response from an upstream server.
+          schema:
+            $ref: '#/definitions/APIError'
+        500:
+          description: Unexpected service failure.
+          schema:
+            $ref: '#/definitions/APIError'
+        404:
+          description: No records found.
+          schema:
+            $ref: '#/definitions/APIError'
+        400:
+          description: Invalid request parameter(s).
+          schema:
+            $ref: '#/definitions/APIError'
+        200:
+          description: Location(s) matching the search parameters.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Location'
+      summary: Returns merchant locations that match search criteria
+      description: This method identifies valid locations that match ALL provided
+        search criteria.  Simpler queries work best for experimentation and early
+        development, whereas multi-parameter queries permit strict optimization of
+        client data usage.
+      operationId: merchant_location_search
+      parameters:
+      - name: searchText
+        in: query
+        type: string
+        description: Identify and sort merchants or locations for which the search
+          text offers approximate matches.
+      - name: longitude
+        in: query
+        type: number
+        description: Limits results to a region with its center specified by the given
+          GPS longitude.
+      - name: latitude
+        in: query
+        type: number
+        description: Limits results to a region with its center specified by the given
+          GPS latitude.
+      - name: searchRadius
+        in: query
+        type: integer
+        description: Radius of the search area in meters.
+        default: 50000
+      - name: gid
+        in: query
+        type: array
+        description: Limits/queries locations by the provided global identifier.
+        items:
+          type: string
+        collectionFormat: multi
+      - name: maximumResults
+        in: query
+        type: integer
+        minimum: 1
+        maximum: 100
+        description: The maximum number of locations to return for a single query.
+        default: 10
+      - name: mobileClientAccess
+        in: query
+        type: boolean
+        description: If set, limits results to locations having/restricting mobile
+          access.
+      - name: omitMerchantInfo
+        in: query
+        type: boolean
+        description: If true, omit the merchant information from returned locations.
+      - name: omitContactInfo
+        in: query
+        type: boolean
+        description: If true, omit the contact information from returned locations.
+      - name: omitConsumerFeatures
+        in: query
+        type: boolean
+        description: If true, omit the list of supported consumer features from the
+          returned locations.
+      - name: X-Fields
+        in: header
+        type: string
+        format: mask
+        description: An optional fields mask
+      tags:
+      - default
+  /merchant/location/{location_gid}:
+    parameters:
+    - name: location_gid
+      in: path
+      required: true
+      type: string
+    get:
+      responses:
+        502:
+          description: Invalid response from an upstream server.
+          schema:
+            $ref: '#/definitions/APIError'
+        500:
+          description: Unexpected service failure.
+          schema:
+            $ref: '#/definitions/APIError'
+        404:
+          description: No records found.
+          schema:
+            $ref: '#/definitions/APIError'
+        200:
+          description: Location matching the global identifier.
+          schema:
+            $ref: '#/definitions/Location'
+      summary: Returns a uniquely-identified merchant location
+      description: This method returns a single merchant location that matches a unique
+        global identifier.  The global identifier is returned in a NetworkSource entity
+        with a 'location' type, usually in response to a location search query.
+      operationId: merchant_location_get
+      parameters:
+      - name: mobileClientAccess
+        in: query
+        type: boolean
+        description: If set, limits result to locations having/restricting mobile
+          access.
+      - name: omitMerchantInfo
+        in: query
+        type: boolean
+        description: If true, omit the merchant information from returned locations.
+      - name: omitContactInfo
+        in: query
+        type: boolean
+        description: If true, omit the contact information from returned locations.
+      - name: omitConsumerFeatures
+        in: query
+        type: boolean
+        description: If true, omit the list of supported consumer features from the
+          returned locations.
+      - name: X-Fields
+        in: header
+        type: string
+        format: mask
+        description: An optional fields mask
+      tags:
+      - default
+produces:
+- application/json
+definitions: !php/object "O:8:\"stdClass\":9:{s:8:\"APIError\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Text
+  describing the cause of the error.\";s:7:\"example\";s:51:\"The request failed due
+  to an internal server error.\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Location\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"source\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/NetworkSource\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  human-readable name of this location.\";s:7:\"example\";s:10:\"Speedy DMV\";}s:11:\"description\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Descriptive
+  text for this location.\";s:7:\"example\";s:23:\"Speedy DMV, St. Charles\";}s:12:\"merchantInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Merchant\";}s:11:\"contactInfo\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/LocationContactInfo\";}s:16:\"consumerFeatures\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ConsumerFeatures\";}}s:4:\"type\";s:6:\"object\";}s:13:\"NetworkSource\";O:8:\"stdClass\":3:{s:8:\"required\";a:4:{i:0;s:8:\"globalId\";i:1;s:6:\"hostId\";i:2;s:8:\"hostName\";i:3;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"The
+  source data category that this object identifies.\";s:7:\"example\";s:8:\"location\";s:4:\"enum\";a:2:{i:0;s:8:\"location\";i:1;s:8:\"merchant\";}}s:8:\"globalId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"A
+  globally-unique identification for the associated data element within this API.\";s:7:\"example\";s:40:\"514E898949227FE83D4F51F238354B6F91BE3DAF\";}s:8:\"hostName\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  host environment that owns the data element.\";s:7:\"example\";s:18:\"merchant.qless.com\";}s:6:\"hostId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:63:\"The
+  QLess environment-specific identifier for the data element.\";s:7:\"example\";s:5:\"10512\";}s:10:\"indirectId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:125:\"A
+  globally-unique (GUUID) identification for the associated object and is equivalent
+  to the QLess indirectId in its database.\";s:7:\"example\";s:36:\"5f69bd28-2ba2-4f7a-b89b-224a323d0843\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Merchant\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"source\";O:8:\"stdClass\":2:{s:7:\"example\";O:8:\"stdClass\":5:{s:4:\"type\";s:8:\"merchant\";s:8:\"globalId\";s:40:\"4943203390A6F695E7071B4CC570C58015298972\";s:8:\"hostName\";s:18:\"merchant.qless.com\";s:6:\"hostId\";s:4:\"1512\";s:10:\"indirectId\";s:36:\"0e060021-a452-41e5-94cf-e33558e11c01\";}s:4:\"$ref\";s:27:\"#/definitions/NetworkSource\";}s:4:\"name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"The
+  merchant descriptive name.\";s:7:\"example\";s:18:\"Super Speedy, Inc.\";}}s:4:\"type\";s:6:\"object\";}s:19:\"LocationContactInfo\";O:8:\"stdClass\":3:{s:8:\"required\";a:1:{i:0;s:8:\"timeZone\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:8:\"timeZone\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  Olson-formatted timezone.\";s:7:\"example\";s:15:\"America/Chicago\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Address\";}s:5:\"phone\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PhoneNumber\";}s:3:\"fax\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/PhoneNumber\";}s:3:\"gps\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/GPSCoordinates\";}}s:4:\"type\";s:6:\"object\";}s:7:\"Address\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:12:\"addressLines\";i:1;s:4:\"city\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"addressLines\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"One
+  or more lines of identification within the city.\";s:7:\"example\";a:1:{i:0;s:18:\"123
+  South Main St.\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"city\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"The
+  city where the address is located.\";s:7:\"example\";s:11:\"St. Charles\";}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"The
+  state where the address is located.\";s:7:\"example\";s:2:\"MO\";}s:10:\"postalCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"The
+  zip/postal code for the address.\";s:7:\"example\";s:5:\"63301\";}s:14:\"isoCountryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"The
+  ISO Alpha-2 country code where the address is located.\";s:7:\"example\";s:2:\"US\";}}s:4:\"type\";s:6:\"object\";}s:11:\"PhoneNumber\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:11:\"countryCode\";i:1;s:6:\"digits\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"countryCode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  international phone number calling code.\";s:7:\"example\";s:1:\"1\";}s:6:\"digits\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"The
+  phone number without prefix or country code.\";s:7:\"example\";s:10:\"6365557322\";}}s:4:\"type\";s:6:\"object\";}s:14:\"GPSCoordinates\";O:8:\"stdClass\":3:{s:8:\"required\";a:2:{i:0;s:8:\"latitude\";i:1;s:9:\"longitude\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"longitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"The
+  longitude for the site.\";s:7:\"example\";d:-90.513022000000007;}s:8:\"latitude\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"The
+  latitude for the site.\";s:7:\"example\";d:38.786270999999999;}}s:4:\"type\";s:6:\"object\";}s:16:\"ConsumerFeatures\";O:8:\"stdClass\":3:{s:8:\"required\";a:10:{i:0;s:15:\"hasAppointments\";i:1;s:16:\"hasCustomScreens\";i:2;s:15:\"hasMobileAccess\";i:3;s:15:\"hasSMSSummoning\";i:4;s:19:\"hasTransactionTypes\";i:5;s:15:\"hasVoiceQueuing\";i:6;s:21:\"maxSimultaneousQueues\";i:7;s:41:\"shouldDisplayTransactionTypesBeforeQueues\";i:8;s:16:\"supportedLocales\";i:9;s:17:\"supportsPartySize\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:15:\"hasAppointments\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:47:\"Appointments
+  may be scheduled at this location.\";s:7:\"default\";b:0;s:7:\"example\";b:1;}s:16:\"hasCustomScreens\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:82:\"Queuing
+  a customer at the location recommends providing additional custom content.\";s:7:\"default\";b:0;}s:15:\"hasSMSSummoning\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"Consumers
+  may be summoned via SMS.\";s:7:\"default\";b:0;}s:15:\"hasVoiceQueuing\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:75:\"Consumers
+  may call a dedicated phone number to manage their queue position.\";s:7:\"default\";b:0;s:7:\"example\";b:1;}s:19:\"hasTransactionTypes\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:80:\"Queued
+  customers may include transaction types describing their desired service.\";s:7:\"default\";b:0;s:7:\"example\";b:1;}s:15:\"hasMobileAccess\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:61:\"Customers
+  may use mobile devices to join queues on their own.\";s:7:\"default\";b:0;s:7:\"example\";b:1;}s:21:\"maxSimultaneousQueues\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:61:\"The
+  maximum number of queues that may be entered at one time.\";s:7:\"default\";i:0;s:7:\"example\";i:1;}s:17:\"supportsPartySize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:44:\"Party
+  size is required when entering queues.\";s:7:\"default\";b:0;}s:41:\"shouldDisplayTransactionTypesBeforeQueues\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:123:\"Recommends
+  that consumers being queued be allowed to first choose their desired transaction
+  type before their target queue.\";s:7:\"default\";b:0;}s:16:\"supportedLocales\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:71:\"Provides
+  the list of supported languages for consumers at the location.\";s:7:\"example\";a:2:{i:0;s:5:\"en_US\";i:1;s:5:\"es_ES\";}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"type\";s:6:\"object\";}}"
+...

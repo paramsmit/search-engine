@@ -1,0 +1,2181 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:18:\"Coinsbank Site API\";s:11:\"description\";s:105:\"Alphabetical
+  list of common-used CoinsBank API methods. Key and signature is obligatory with
+  each request\";s:7:\"version\";s:3:\"0.2\";}"
+host: coinsbank.com
+basePath: /sapi
+paths:
+  /customer/_{merchantOrderId}:
+    get:
+      summary: Get merchant invoice info
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/MerchantOrderDetails'
+    put:
+      summary: Pay for invoice with cryptocurrency
+      description: Set params - currency to pay, payee details, etc. Returns crypto
+        address and amount to pay
+      parameters:
+      - name: payInCurrency
+        in: body
+        description: Currency to pay for invoice
+        required: true
+        type: string
+      - name: customerFullName
+        in: body
+        required: false
+        description: Payee name
+        type: string
+      - name: customerAddress
+        in: body
+        required: false
+        description: 'Billing address: stree, building, etc'
+        type: string
+      - name: customerCity
+        in: body
+        required: false
+        description: 'Billing address: city'
+        type: string
+      - name: customerCountry
+        in: body
+        required: false
+        description: 'Billing address: country'
+        type: string
+      - name: customerZip
+        in: body
+        required: false
+        description: 'Billing address: postal (ZIP) code'
+        type: string
+      - name: customerRegion
+        in: body
+        required: false
+        description: 'Billing address: region/state'
+        type: string
+      responses:
+        200:
+          description: Payment params has been set successfully
+          schema:
+            properties:
+              address:
+                type: string
+                description: Crypto address to pay
+              currencyfixed:
+                type: string
+                description: Currency to pay
+              amountfixed:
+                type: number
+                description: Amount in selected currency
+              ttlfixed:
+                type: number
+                description: Time to expire exchange rate. After that time, amount
+                  to pay could be changed
+  /customer/transfer/_{merchantOrderId}:
+    put:
+      summary: Pay invoice with transfer from CoinsBank account
+      parameters:
+      - name: accountId
+        in: body
+        description: Account UID. Should be owned by or available for current user
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/Transfer'
+  /freeze:
+    get:
+      description: Get deposit freezes list
+      parameters: []
+      responses:
+        200:
+          description: Array of freezes objects
+          schema:
+            $ref: '#/definitions/Freeze'
+  /head:
+    get:
+      description: Get various user details
+      deprecated: "true"
+      parameters: []
+      responses:
+        200:
+          description: Array containing user details
+          schema:
+            type: object
+            properties:
+              balance:
+                type: object
+                description: Summarized user's balances by currency {currency => amount}
+              baseBalance:
+                type: number
+                format: double
+                description: Summarized user's balanced in selected base currency
+              baseCurrency:
+                type: string
+                description: User's base currency
+              country_ip:
+                type: string
+                description: Country code by IP address
+              currencies:
+                type: array
+                description: Currencies list
+                items:
+                  type: string
+              languages:
+                type: array
+                description: Languages available
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      description: Language ID
+                    name:
+                      type: string
+                      description: Language name
+                    code:
+                      type: string
+                      description: Language code
+              notifications:
+                type: integer
+                description: Unread notifications count
+              operations:
+                type: integer
+                description: Operations in progress
+              orders:
+                type: integer
+                description: Open trade orders count
+              pairs:
+                type: array
+                description: Currency pairs for trading
+                items:
+                  type: object
+                  properties:
+                    pair_code:
+                      type: string
+                      description: Currency pair name
+                    base_code:
+                      type: string
+                      description: Currency pair base currency
+                    quote_code:
+                      type: string
+                      description: Currency pair quoted currency
+                    lot:
+                      type: number
+                      format: double
+                      description: Minimal amount to trade for pair
+                    rate:
+                      type: number
+                      format: double
+                      description: Rate precision for pair
+              profile:
+                type: object
+                description: User profile data
+                properties:
+                  uid:
+                    type: integer
+                    description: Unique ID
+                  address:
+                    type: string
+                    description: Address
+                  birth_date:
+                    type: string
+                    description: Birth date, YYYY-MM-DD
+                  blocked:
+                    type: boolean
+                    description: User blocked or not
+                  city:
+                    type: string
+                    description: City
+                  country:
+                    type: string
+                    description: Country name
+                  country_id:
+                    type: string
+                    description: Country ID
+                  email:
+                    type: string
+                    description: Email
+                  first_name:
+                    type: string
+                    description: First (given) name
+                  last_name:
+                    type: string
+                    description: Last (family) name
+                  language:
+                    type: string
+                    description: Selected language
+                  name:
+                    type: string
+                    description: Full name
+                  phone:
+                    type: string
+                    description: Phone number
+                  postal:
+                    type: string
+                    description: Postal (ZIP) code
+                  verification_level:
+                    type: integer
+                    description: Verification level
+                  corporate_verification_level:
+                    type: integer
+                    description: Verification level if corporate user
+              verification: ~
+              rates:
+                type: object
+                description: Last prices for trade pairs {pair => rate}
+              smsCommission:
+                type: number
+                format: double
+                description: Current fee for 2FA codes sent by SMS
+              tickets:
+                type: integer
+                description: Open support tickets
+              newsLiner:
+                type: array
+                description: News liners data
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: News ID
+                    text:
+                      type: string
+                      description: News content
+              freeze:
+                type: number
+                format: double
+                description: Summarized amount of deposit freezes in base currency
+              corporate:
+                type: boolean
+                description: Corporate account or not
+  /merchant:
+    get:
+      summary: Get merchant invoices list
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Sort order, array. For example sort[type]=asc&sort[status]=desc
+      - name: filter
+        in: query
+        description: Filters list
+        required: false
+        schema:
+          type: object
+          properties:
+            chainId:
+              type: integer
+              description: Invoice numerical ID or array
+            uniqueId:
+              type: string
+              description: Invoice UID or array
+            amountFrom:
+              type: number
+              description: Amount from, decimal
+            amountTo:
+              type: number
+              description: Amount to, decimal
+            currency:
+              type: string
+              description: Currency to get
+            caption:
+              type: string
+              description: Invoice caption/name, partial or full string
+            descr:
+              type: string
+              description: Invoice description, partial or full string
+            externalid:
+              type: string
+              description: Ivoice ID in merchant's system
+            dateValidTo:
+              type: string
+              description: Date valid to
+            dateValidFrom:
+              type: string
+              description: Date valid from
+            email:
+              type: string
+              description: Partial or full payee email address
+            phone:
+              type: string
+              description: Partial or full payee phone number
+            receivecrypto:
+              type: string
+              description: Receive crypto as payment or not
+            receivefiat:
+              type: string
+              description: Receive fiat as payment or not
+            status:
+              type: string
+              description: Invoice status
+            dateCreatedTo:
+              type: string
+              description: Invoice create date to
+            dateCreatedFrom:
+              type: string
+              description: Invoice create date from
+      responses:
+        200:
+          description: An array with invoice objects
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with invoice objects
+                items:
+                  $ref: '#/definitions/MerchantOrder'
+    post:
+      summary: 'Create invoice '
+      description: Invoice will be sent automatically with payment link to payee email
+        or phone number
+      parameters:
+      - name: amount
+        in: body
+        required: true
+        description: Invoice amount
+        type: number
+      - name: currency
+        in: body
+        required: true
+        description: Invoice currency
+        type: string
+      - name: serviceName
+        in: body
+        required: true
+        description: Invoice caption/name
+        type: string
+      - name: serviceDescription
+        in: body
+        required: true
+        description: Invoice description
+        type: string
+      - name: merchantNumber
+        in: body
+        required: true
+        description: Invoice ID in merchant's system
+        type: string
+      - name: ttl
+        in: body
+        required: true
+        description: Invoice expiry in seconds
+        type: integer
+      - name: buyerEmail
+        in: body
+        required: true
+        description: Payee email address
+        type: string
+      - name: buyerPhone
+        in: body
+        required: false
+        description: Payee phone number
+        type: string
+      - name: acceptCrypto
+        in: body
+        required: true
+        description: Accept crypto as payment
+        type: boolean
+      - name: currencyWish
+        in: body
+        required: false
+        description: Currency to get after payment. Will be automatically converted
+          if differs from invoice currency
+        type: string
+      - name: acceptFiat
+        in: body
+        required: true
+        description: Accept fiat as payment
+        type: boolean
+      - name: customerAddress
+        in: body
+        required: false
+        description: 'Billing address: street, building, etc'
+        type: string
+      - name: customerFullName
+        in: body
+        required: false
+        description: Payee full name
+        type: string
+      - name: customerCity
+        in: body
+        required: false
+        description: 'Billing address: city'
+        type: string
+      - name: customerCountry
+        in: body
+        required: false
+        description: 'Billing address: country'
+        type: string
+      - name: customerZip
+        in: body
+        required: false
+        description: 'Billing address: postal (ZIP) code'
+        type: string
+      - name: customerRegion
+        in: body
+        required: false
+        description: 'Billing address: region/state'
+        type: string
+      - name: commissionType
+        in: body
+        required: false
+        description: Include CoinsBank fee to invoice or not
+        type: number
+        default: 0
+        enum:
+        - 0 - fee will be taken from merchant
+        - 1 - fee will be included to invoice
+      responses:
+        200:
+          description: Invoice has been created
+          schema:
+            properties:
+              unique_id:
+                type: string
+                description: Invoice UID
+  /merchant/_{merchantOrderId}:
+    delete:
+      summary: Cancel invoice
+      description: Will cancel invoice if possible
+      responses:
+        200:
+          description: []
+    get:
+      summary: Get invoice object
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/MerchantOrder'
+  /merchant/accept/_{merchantOrderId}:
+    put:
+      summary: Force invoice close, accept payment whenever paid partially or not
+      parameters:
+      - name: currencyaccept
+        in: body
+        description: currencyfixed params from invoice details
+        required: true
+        type: string
+      responses:
+        200:
+          description: Invoice closed
+  /merchant/activate:
+    get:
+      summary: Is current user has active merchant service or not
+      description: Merchant service should be activated before first invoice created
+      responses:
+        200:
+          schema:
+            properties:
+              is_merchant:
+                type: boolean
+    post:
+      summary: Activate merchant service
+      description: Activate merchant service and accept CoinsBank rules and conditions
+      responses:
+        200:
+          description: Service has been activated successfully
+  /merchant/fee:
+    get:
+      summary: Get fee for invoice
+      description: Calculate fee for invoice processing. Fee could be included to
+        invoice or taken from amount paid by invoice
+      responses:
+        200:
+          description: An object with invoice fee
+          schema:
+            type: object
+            $ref: '#/definitions/MerchantOrderFees'
+  /operation:
+    get:
+      summary: Get user operations list
+      description: Operation is a group of transactions. For example, a deposit, withdrawal
+        or card payment, etc. Operations has statuses, transactions hasn't.
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Associative array of fields - direction (desc/asc)
+      - name: filter
+        in: query
+        description: Filters for operations
+        required: false
+        schema:
+          type: object
+          properties:
+            chainId:
+              type: integer
+              description: Internal numeric ID
+            operationType:
+              type: integer
+              description: Operation type, integet or integers array
+            dateCreateFrom:
+              type: string
+              description: Created from, DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Created to, DD.MM.YYYY
+            dateUpdateFrom:
+              type: string
+              description: Updated from, DD.MM.YYYY
+            dateUpdateTo:
+              type: string
+              description: Updated to, DD.MM.YYYY
+            amountFrom:
+              type: number
+              description: Amount from
+            amountTo:
+              type: number
+              description: Amount to
+            currency:
+              type: string
+              description: Currency, string or array of strings
+            accountId:
+              type: string
+              description: Account UID or array of UIDs
+            status:
+              type: integer
+              description: Operation status, integer of integers array
+            isActive:
+              type: boolean
+              description: Only operations in progress
+      responses:
+        200:
+          description: An object with operations info
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with operations
+                items:
+                  $ref: '#/definitions/Operation'
+  /operation/_{chainId}:
+    get:
+      summary: Get operation details
+      responses:
+        200:
+          description: Object with operation details
+  /operation/wallet/_{walletUniqueId}:
+    get:
+      description: Get operations list by account UID
+      parameters:
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Associative array of fields - direction (desc/asc)
+      - name: filter
+        in: query
+        description: Filters for operations
+        required: false
+        schema:
+          type: object
+          properties:
+            chainId:
+              type: integer
+              description: Internal numeric ID
+            operationType:
+              type: integer
+              description: Operation type, integet or integers array
+            dateCreateFrom:
+              type: string
+              description: Created from, DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Created to, DD.MM.YYYY
+            dateUpdateFrom:
+              type: string
+              description: Updated from, DD.MM.YYYY
+            dateUpdateTo:
+              type: string
+              description: Updated to, DD.MM.YYYY
+            amountFrom:
+              type: number
+              description: Amount from
+            amountTo:
+              type: number
+              description: Amount to
+            currency:
+              type: string
+              description: Currency, string or array of strings
+            accountId:
+              type: string
+              description: Account UID or array of UIDs
+            status:
+              type: integer
+              description: Operation status, integer of integers array
+            isActive:
+              type: boolean
+              description: Only operations in progress
+      responses:
+        200:
+          description: Array of operation objects
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with operations
+                items:
+                  $ref: '#/definitions/Operation'
+  /trade:
+    post:
+      description: Create new trade order
+      parameters:
+      - name: exchangeRate
+        in: body
+        description: Exchange rate for limit order. Market order if not set.
+        required: false
+        type: number
+      - name: fromUserAccount
+        in: body
+        description: Account UID to get funds
+        required: true
+        type: string
+      - name: toUserAccount
+        in: body
+        description: Account UID to put funds
+        required: true
+        type: string
+      - name: amount
+        in: body
+        description: Amount in base currency
+        required: true
+        type: number
+      - name: direction
+        in: body
+        description: 'Order direction: ''buy'' or ''sell'' '
+        required: true
+        type: string
+        enum:
+        - '''buy'' - buy pair''s base currency'
+        - '''sell'' - sell pair''s base currency'
+      - name: stopLoss
+        in: body
+        description: Exchange rate for stop-loss trigger
+        required: false
+        type: number
+      - name: takeProfit
+        in: body
+        description: Exchange rate for take-profit trigger
+        required: false
+        type: number
+      - name: commissionType
+        in: body
+        description: Take trade fee from account
+        required: true
+        type: number
+        enum:
+        - 0 - account take currency from. Ex., if during the trades user spends USD,
+          fee will be taken in USD
+        - 1 - account get currency to. Ex., if during the trades user acquires BTC,
+          fee will be taken in BTC
+      responses:
+        200:
+          description: Success
+    get:
+      description: Trade orders list
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Sort order, array. For example sort[type]=asc&sort[status]=desc
+      - name: distinct
+        in: query
+        description: only distinct items
+      - name: filter
+        in: query
+        description: Filters list for orders
+        required: false
+        schema:
+          type: object
+          properties:
+            type:
+              type: integer
+              description: Order type
+            status:
+              type: integer
+              description: Order status, integer or array
+            direction:
+              type: integer
+              description: Direction (0 - buy, 1 - sell)
+              enum:
+              - 0
+              - 1
+            orderNumber:
+              type: string
+              description: Order unique ID
+            triggeredBy:
+              type: string
+              description: Triggered by order unique ID. For stop-loss/take-profit
+            exchangeRateFrom:
+              type: number
+              description: Exchange rate from
+            exchangeRateTo:
+              type: number
+              description: Exchange rate to
+            dateCreateFrom:
+              type: string
+              description: Create date from, format DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Create date to, format DD.MM.YYYY
+            dateUpdateFrom:
+              type: string
+              description: Update date from, format DD.MM.YYYY
+            dateUpdateTo:
+              type: string
+              description: Update date to, format DD.MM.YYYY
+            stopLoss:
+              type: integer
+              description: Has stop-loss trigger
+              enum:
+              - 0
+              - 1
+            takeProfit:
+              type: integer
+              description: Has take-profit trigger
+              enum:
+              - 0
+              - 1
+            currencyPair:
+              type: string
+              description: Currency pair, string or array
+            currencyGet:
+              type: string
+              description: Currency to get, string or array
+            currencyPay:
+              type: string
+              description: Currency to pay, string or array
+            amountGetFrom:
+              type: number
+              description: Amount to get min
+            amountGetTo:
+              type: number
+              description: Amount to get max
+            amountPayFrom:
+              type: number
+              description: Amount to pay, min
+            amountPayTo:
+              type: number
+              description: Amount to pay, max
+            accountIdFrom:
+              type: string
+              description: Account UID to pay, string or array
+            accountIdTo:
+              type: string
+              description: Account UID to get, string or array
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/TradeOrder'
+  /trade/_{tradeOrderId}:
+    delete:
+      summary: Cancel trade order
+      description: Cancel trade order if possible
+      responses:
+        200:
+          description: true
+    get:
+      summary: Get order details
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/TradeOrderDetail'
+    put:
+      summary: Update order
+      description: Reset order triggers if possible
+      parameters:
+      - name: action
+        in: body
+        description: Action to perform
+        required: true
+        type: string
+        enum:
+        - resettp
+        - resetsl
+        - resetsltp
+      responses:
+        200:
+          description: Success
+  /trade/closing/_{tradeOrderId}:
+    get:
+      description: Order closing details
+      parameters: []
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/TradeOrderHistory'
+  /trade/fee:
+    get:
+      description: Get estimated trade fee
+      parameters:
+      - name: fromUserAccount
+        in: query
+        description: Account UID to pay currency from
+        required: true
+        type: string
+      - name: toUserAccount
+        in: query
+        description: Account UID to get currency
+        required: true
+        type: string
+      - name: direction
+        in: query
+        description: Order direction for fee calculations. If sell - by fromUserAccount,
+          buy - toUserAccount
+        required: true
+        type: string
+        enum:
+        - buy
+        - sell
+      - name: amount
+        in: query
+        description: Amnount to calculate fee by direction
+        required: true
+        type: number
+      - name: exchangeRate
+        in: query
+        description: Exchange rate for limit order. If not set then market order
+        required: false
+        type: number
+      - name: commissionType
+        in: query
+        description: Take fee from currency
+        required: true
+        type: number
+        enum:
+        - 0 - by fromUserAccount
+        - 1 - by toUserAccount
+      responses:
+        200:
+          description: Fee estimates
+          schema:
+            type: object
+            properties:
+              amount:
+                description: Fee amount
+              exchrateavg:
+                description: Average exchange rate
+              comis:
+                description: Fee
+              amountbase:
+                description: Fee in pair's base currency
+              amountquote:
+                description: Fee in pair's quoted currency
+              amount_min:
+                description: Min amount for order by account balance excl. fee
+              amount_max:
+                description: Max amount for order by account balance excl. fee
+              bid:
+                description: Max exchange rate to bid
+              ask:
+                description: Max exchange rate to ask
+  /trade/ohlcv:
+    get:
+      description: Get OHLCV data
+      parameters:
+      - name: pairCode
+        in: query
+        description: Currency pair code
+        required: true
+        schema:
+          type: string
+      - name: interval
+        in: query
+        description: Interval
+        required: true
+        schema:
+          type: integer
+          enum:
+          - 60
+          - 300
+          - 600
+          - 1800
+          - 3600
+      responses:
+        200:
+          description: Data
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                date:
+                  description: timestamp with microseconds
+                  type: number
+                o:
+                  description: Open
+                  type: string
+                h:
+                  description: High
+                  type: string
+                l:
+                  description: Low
+                  type: string
+                c:
+                  description: Close
+                  type: string
+                v:
+                  description: Volume
+                  type: string
+                dt:
+                  description: Date
+                  type: string
+                vq:
+                  description: Quoted currency amount
+                  type: string
+  /trade/simple:
+    post:
+      description: Exchange currencies by market
+      parameters:
+      - name: TradeSimpleParams
+        in: body
+        description: Params
+        required: true
+        schema:
+          type: object
+          required:
+          - amount
+          - fromAccount
+          - toAccount
+          - type
+          properties:
+            amount:
+              description: Amount
+              type: number
+              format: double
+            fromAccount:
+              description: Account UID to pay currency from
+              type: string
+              format: uuid
+            toAccount:
+              description: Account UID to pay currency from
+              type: string
+              format: uuid
+            direction:
+              description: Direction (0 - buy, 1 - sell)
+              type: integer
+              enum:
+              - 0
+              - 1
+      responses:
+        200:
+          description: Success
+  /trade/simple/fee:
+    get:
+      description: Estimate trade fee for currency exchange
+      parameters:
+      - name: amount
+        in: query
+        description: Amount
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: fromAccount
+        in: query
+        description: Account UID to pay currency from
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: toAccount
+        in: query
+        description: Account UID to pay currency from
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: direction
+        in: query
+        description: Direction (0 - buy, 1 - sell)
+        required: true
+        schema:
+          type: integer
+          enum:
+          - 0
+          - 1
+      responses:
+        200:
+          description: Fee estimate
+          schema:
+            type: object
+            properties:
+              total:
+                type: number
+                format: double
+                description: Amount excl. fee
+              rate:
+                type: number
+                format: double
+                description: Average exchange rate
+              commission:
+                type: number
+                format: double
+                description: Trade fee
+              maxAmount:
+                type: number
+                format: double
+                description: Max amount to change
+              minAmount:
+                type: number
+                format: double
+                description: Min amount to change
+              bid:
+                type: number
+                format: double
+                description: Rate for bid
+              ask:
+                type: number
+                format: double
+                description: Rate for ask
+  /transaction:
+    get:
+      summary: Get transactions list
+      description: Get transactions list
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Sort order, array. For example sort[type]=asc&sort[status]=desc
+      - name: distinct
+        in: query
+        description: only distinct items
+      - name: filter
+        in: query
+        description: Filters list
+        required: false
+        schema:
+          type: object
+          properties:
+            accountId:
+              type: string
+              description: Account UID
+            currency:
+              type: string
+              description: Currency, string or array
+            status:
+              type: integer
+              description: Transaction status, integer or array
+            dateCreateFrom:
+              type: string
+              description: Create date from, format DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Create date to, format DD.MM.YYYY
+            amountFrom:
+              type: number
+              description: Amount min
+            amountTo:
+              type: number
+              description: Amount max
+            cardId:
+              type: integer
+              description: Card UID, string or array
+            transactionType:
+              type: integer
+              description: Transaction type, integer or array
+            transactionTypeGroup:
+              type: integer
+              description: Type group, integer or array
+            direction:
+              type: integer
+              description: Direction
+              enum:
+              - 0 - pay
+              - 1 - get
+            card:
+              type: boolean
+              description: Card transaction or not
+            initialBalanceFrom:
+              type: number
+              description: Initial balance min (before transaction)
+            initialBalancetTo:
+              type: number
+              description: Initial balance max (before transaction)
+            remainingBalanceFrom:
+              type: number
+              description: Remained balance min (after transaction)
+            remainingBalanceTo:
+              type: number
+              description: Remained balance max (after transaction)
+            cardUniqueId:
+              type: string
+              description: Card UID
+      responses:
+        200:
+          description: An array with transactions details
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with transactions
+                items:
+                  $ref: '#/definitions/Transaction'
+  /transaction/card/_{cardUniqueId}:
+    get:
+      summary: Get all transactions by card
+      description: Get all card transactions list
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Sort order, array. For example sort[type]=asc&sort[status]=desc
+      - name: distinct
+        in: query
+        description: only distinct items
+      - name: filter
+        in: query
+        description: Filters list
+        required: false
+        schema:
+          type: object
+          properties:
+            accountId:
+              type: string
+              description: Account UID
+            currency:
+              type: string
+              description: 'Currency, string or array '
+            status:
+              type: integer
+              description: Status, integer or array
+            dateCreateFrom:
+              type: string
+              description: Create date from, format DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Create date to, format DD.MM.YYYY
+            amountFrom:
+              type: number
+              description: Amount min
+            amountTo:
+              type: number
+              description: Amount max
+            transactionType:
+              type: integer
+              description: Transaction type, integer or array
+            transactionTypeGroup:
+              type: integer
+              description: Type group, integer or array
+            direction:
+              type: integer
+              description: Direction
+              enum:
+              - 0 - pay
+              - 1 - get
+            card:
+              type: boolean
+              description: Card transaction or not
+            initialBalanceFrom:
+              type: number
+              description: Initial balance min (before transaction)
+            initialBalancetTo:
+              type: number
+              description: Initial balance max (before transaction)
+            remainingBalanceFrom:
+              type: number
+              description: Remained balance min (after transaction)
+            remainingBalanceTo:
+              type: number
+              description: Remained balance max (after transaction)
+            cardUniqueId:
+              type: string
+              description: Card UID
+      responses:
+        200:
+          description: An array with transactions details
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with transactions
+                items:
+                  $ref: '#/definitions/Transaction'
+  /transaction/wallet/_{walletUniqueId}:
+    get:
+      summary: Get all transactions by account
+      description: Get all transactions
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        schema:
+          default: 0
+          type: integer
+      - name: pageSize
+        in: query
+        description: Items by page
+        schema:
+          type: integer
+          default: 50
+          enum:
+          - 50
+          - 100
+      - name: sort
+        in: query
+        description: Sort order, array. For example sort[type]=asc&sort[status]=desc
+      - name: distinct
+        in: query
+        description: only distinct items
+      - name: filter
+        in: query
+        description: Filters list
+        required: false
+        schema:
+          type: object
+          properties:
+            currency:
+              type: string
+              description: 'Currency, string or array '
+            status:
+              type: integer
+              description: Status, integer or array
+            dateCreateFrom:
+              type: string
+              description: Create date from, format DD.MM.YYYY
+            dateCreateTo:
+              type: string
+              description: Create date to, format DD.MM.YYYY
+            amountFrom:
+              type: number
+              description: Amount min
+            amountTo:
+              type: number
+              description: Amount max
+            transactionType:
+              type: integer
+              description: Transaction type, integer or array
+            transactionTypeGroup:
+              type: integer
+              description: Type group, integer or array
+            direction:
+              type: integer
+              description: Direction
+              enum:
+              - 0 - pay
+              - 1 - get
+            card:
+              type: boolean
+              description: Card transaction or not
+            initialBalanceFrom:
+              type: number
+              description: Initial balance min (before transaction)
+            initialBalancetTo:
+              type: number
+              description: Initial balance max (before transaction)
+            remainingBalanceFrom:
+              type: number
+              description: Remained balance min (after transaction)
+            remainingBalanceTo:
+              type: number
+              description: Remained balance max (after transaction)
+            cardUniqueId:
+              type: string
+              description: Card UID
+      responses:
+        200:
+          description: An array with transactions details
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              data:
+                type: array
+                description: An array with transactions
+                items:
+                  $ref: '#/definitions/Transaction'
+  /user/profile:
+    get:
+      description: Get user details
+      parameters: []
+      responses:
+        200:
+          description: Array with user details
+          schema:
+            $ref: '#/definitions/Profile'
+  /user/profile/currency:
+    put:
+      description: Set user base currency
+      parameters:
+      - name: currency
+        in: body
+        description: Base curency
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+  /wallet:
+    get:
+      summary: Get accounts info list
+      description: Get various accounts information.n
+      responses:
+        200:
+          description: An object with accounts info
+          schema:
+            type: object
+            properties:
+              totals:
+                type: array
+                description: Totals on accounts
+                items:
+                  type: object
+                  description: Total balance in main currency, total on hold, total
+                    available.
+                  properties:
+                    total:
+                      type: number
+                      description: Total on account
+                    available:
+                      type: number
+                      description: Available on account
+              wallets:
+                type: array
+                description: An array with accounts parameters
+                items:
+                  $ref: '#/definitions/WalletAll'
+    post:
+      summary: Create account
+      description: Create new account
+      parameters:
+      - name: name
+        in: body
+        description: Account name
+        required: false
+        type: string
+      - name: currency
+        in: body
+        description: Currency
+        required: true
+        type: string
+      - name: multiSign
+        in: body
+        description: For future usage
+        required: false
+        type: string
+      responses:
+        200:
+          description: Account object
+          schema:
+            $ref: '#/definitions/Wallet'
+  /wallet/_{wallet-unique-id}:
+    get:
+      summary: Get account info
+      description: Get various account information.
+      responses:
+        200:
+          description: Account
+          schema:
+            $ref: '#/definitions/Wallet'
+    put:
+      summary: Set account name
+      description: Set new account name
+      parameters:
+      - name: name
+        in: body
+        description: Account name
+        required: true
+        type: string
+      responses:
+        200:
+          description: Account object
+          schema:
+            $ref: '#/definitions/Wallet'
+    delete:
+      summary: Delete account
+      description: Delete account if possible. Balance should be zero
+      responses:
+        200:
+          description: Success
+  /wallet/deposit:
+    post:
+      summary: Create deposit
+      description: Create deposit
+      parameters:
+      - name: amount
+        in: body
+        description: Amount of deposit
+        required: true
+        schema:
+          type: float
+      - name: currency
+        in: body
+        description: Currency
+        required: true
+        schema:
+          type: string
+      - name: accountId
+        in: body
+        description: Account Id
+        required: true
+        schema:
+          type: string
+      - name: address
+        in: body
+        description: Phone number for QIWI
+        required: false
+        schema:
+          type: string
+      - name: paymentSystem
+        in: body
+        description: Payment system 3-letters code
+        required: true
+        schema:
+          type: string
+      - name: lastName
+        in: body
+        description: Last name
+        required: false
+        schema:
+          type: string
+      - name: firstName
+        in: body
+        description: First name
+        required: false
+        schema:
+          type: string
+      - name: countryId
+        in: body
+        description: Country Id
+        required: false
+        schema:
+          type: string
+      - name: email
+        in: body
+        description: E-mail
+        required: false
+        schema:
+          type: string
+          format: email
+      responses:
+        200:
+          description: Create deposit
+          schema:
+            $ref: '#/definitions/Deposit'
+  /wallet/deposit/_{deposit_unique_id}:
+    get:
+      summary: Get deposit
+      description: Get deposit information.n
+      responses:
+        200:
+          description: An object with deposit info
+          schema:
+            $ref: '#/definitions/Deposit'
+    delete:
+      summary: Cancel deposit
+      parameters: ~
+      description: Cancel deposit if applicable
+      responses:
+        200:
+          description: true
+  /wallet/deposit/available/_{walletUniqueId}:
+    get:
+      summary: Get available deposit methods for user, country and account
+      description: Get available deposit methods for user & country
+      responses:
+        200:
+          description: An object with deposits info
+          schema:
+            $ref: '#/definitions/Limits'
+  /wallet/deposit/fee:
+    get:
+      summary: Get deposit fees
+      description: Get deposit fees | For example currency=USD&amount=100&ps_code=WRT
+      parameters:
+      - name: currency
+        in: query
+        type: string
+        required: true
+      - name: amount
+        in: query
+        type: float
+        required: true
+      - name: ps_code
+        description: Wire transfer - WRT, Crypto Wallet - CRP, SEPA - SEP, Perfect
+          Money - PMO, QIWI - QWI, OKPay - OKP
+        in: query
+        type: string
+        required: true
+        enum:
+        - WRT
+        - CRP
+        - SEP
+        - PMO
+        - QWI
+        - OKP
+      responses:
+        200:
+          description: An object with deposit fees
+          schema:
+            type: object
+            $ref: '#/definitions/DepositFees'
+  /wallet/transfer:
+    post:
+      summary: Create internal transfer
+      description: Create transfer between owned accounts or to another CoinsBank
+        customer
+      parameters:
+      - name: amount
+        in: body
+        type: float
+        description: Amount of transfer
+        required: true
+      - name: accountId
+        in: body
+        description: Account UID
+        required: true
+        type: string
+      - name: address
+        in: body
+        description: Transfer destination. Could by another customer UID, email address
+          or phone number
+        required: true
+        type: string
+      - name: direction
+        in: body
+        description: 'Type of transfer: 1 - to another customer, 0 - to owned account'
+        required: true
+      - name: comment
+        in: body
+        description: comment
+        required: false
+      responses:
+        200:
+          description: Transfer details
+          schema:
+            $ref: '#/definitions/Transfer'
+  /wallet/transfer/_{transfer_unique_id}:
+    delete:
+      summary: Cancel transfer
+      description: Cancel transfer if applicable
+      parameters:
+      - name: Transfer
+        in: query
+        description: Transfer Unique ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Transfer cancelled
+  /wallet/withdrawal:
+    post:
+      summary: Create withdrawal
+      description: Create withdrawaln
+      parameters:
+      - name: accountId
+        in: body
+        description: Account UID
+        required: true
+        type: string
+      - name: paymentSystem
+        in: body
+        description: Payment system. CRP, PPL, WRT, SEP, PMO, QWI, OKP, WMY
+        required: true
+        type: string
+      - name: amount
+        in: body
+        description: Withdrawal amount
+        required: true
+        type: float
+      - name: currency
+        in: body
+        description: Withdrawal currency
+        required: true
+        type: string
+      - name: address
+        in: body
+        description: Crypto-address for withdrawal
+        required: true if crypto
+        type: string
+      - name: comment
+        in: body
+        description: Comment
+        required: false
+        type: string
+      - name: beneficiaryName
+        in: body
+        description: Beneficiary name
+        required: true for bank
+        type: string
+      - name: beneficiaryAddress
+        in: body
+        description: Beneficiary address
+        required: true for bank
+        type: string
+      - name: iban
+        in: body
+        description: Account Number/IBAN
+        required: true for bank
+        type: string
+      - name: swift
+        in: body
+        description: SWIFT/ABA
+        required: true for bank
+        type: string
+      - name: bankName
+        in: body
+        description: Name of the Bank
+        required: true for bank
+        type: string
+      - name: bankAddress
+        in: body
+        description: Bank Address
+        required: true for bank
+        type: string
+      - name: bankABA
+        in: body
+        description: Bank ABA
+        required: true for bank
+        type: string
+      - name: beneficiaryCity
+        in: body
+        description: City
+        required: true for WU
+        type: string
+      - name: beneficiaryCountry
+        in: body
+        description: Country
+        required: true for WU
+        type: string
+      - name: cardNumber
+        in: body
+        description: card number
+        required: true for Credit card
+        type: string
+      - name: expirationDate
+        in: body
+        description: expiration date
+        required: true for Credit Card
+        type: string
+      - name: urgent
+        in: body
+        description: Urgent for extra fee
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Withdrawal details
+          schema:
+            $ref: '#/definitions/Withdrawal'
+  /wallet/withdrawal/_{withdrawal_unique_id}:
+    delete:
+      description: Cancel withdrawal if applicable
+      parameters:
+      - name: withdrawal_unique_id
+        in: path
+        description: Withdrawal UID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Withdrawal cancelled
+  /wallet/withdrawal/available:
+    get:
+      summary: Get available withdrawal methods for user & country
+      description: Get available withdrawal methods for user & country
+      responses:
+        200:
+          description: An object with withdrawals info
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Limits'
+  /wallet/withdrawal/fee:
+    get:
+      summary: Get withdrawal fee
+      description: Get withdrawal fee currency=USD&amount=100&urgent=1&ps_code=WRT
+      parameters:
+      - name: currency
+        in: query
+        type: string
+        required: true
+      - name: amount
+        in: query
+        type: float
+        required: true
+      - name: urgent
+        in: query
+        type: integer
+        required: false
+      - name: paymentSystem
+        description: Wire transfer - WRT, PayPal - PPL, Crypto Wallet - CRP, SEPA
+          - SEP, Perfect Money - PMO, OKPay - OKP
+        in: query
+        type: string
+        required: true
+        enum:
+        - CBI
+        - CBE
+        - WRT
+        - PPL
+        - CRP
+        - SEP
+        - PMO
+        - OKP
+        - WMY
+      - name: address
+        description: Withdrawal destination account or address
+        in: query
+        type: string
+        required: true
+      responses:
+        200:
+          description: An object with withdrawal fees
+          schema:
+            type: object
+            $ref: '#/definitions/WithdrawalFees'
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":30:{s:11:\"accountData\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":9:{s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"unique
+  id\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"currency\";}s:3:\"min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"min\";}s:3:\"max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"max\";}s:11:\"wallet_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"account
+  name\";}s:7:\"balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:7:\"balance\";}s:7:\"blocked\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:7:\"blocked\";}s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"label\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"name\";}}}s:18:\"AuthorizationError\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"Negative
+  error code\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Error
+  description\";}}}s:22:\"AuthenticationRequired\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Auth
+  toket, TTL 5 mins\";}s:8:\"gaEnable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:35:\"GoogleAuthentication
+  enabled or not\";}s:4:\"voip\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:31:\"Request
+  for call allowed or not\";}s:3:\"sms\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:30:\"Request
+  for SMS allowed or not\";}}}s:7:\"Deposit\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":22:{s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Unique
+  ID\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"Create
+  date and time\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Currency\";}s:6:\"pscode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Payment
+  system code\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:6:\"Amount\";}s:13:\"confirmations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:33:\"Confirmations
+  for crypto deposits\";}s:17:\"min_confirmations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"Min
+  confirmations count for crypto deposits\";}s:11:\"crypto_txid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Crypto
+  tx ID\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:6:\"Status\";}s:6:\"params\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:33:\"Params
+  for some types of deposits\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"countryId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"beneficiary_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Beneficiary
+  name\";}s:4:\"iban\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"swift\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"bank_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"card_number\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"comission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Deposit
+  fee\";}s:15:\"payment_details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:15:\"Payment
+  details\";}s:11:\"wallet_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:9:\"wallet_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Account
+  UID\";}s:7:\"idchain\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Internal
+  ID\";}s:26:\"verification_attempts_left\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:41:\"Security
+  code confirmations attempts left\";}s:6:\"action\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:15:\"Deposit
+  actions\";}}}s:11:\"DepositFees\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:23:\"Deposit
+  amount inc. fee\";}s:10:\"commission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Fee
+  amount\";}s:7:\"percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:43:\"Variable
+  fee (percent from original amount)\";}s:5:\"fixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"Fixed
+  fee\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"Negative
+  error code\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Error
+  description\";}}}s:6:\"Freeze\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"Freeze
+  UID\";s:4:\"type\";s:7:\"integer\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"Currency\";s:4:\"type\";s:6:\"string\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Freeze
+  amount\";}s:13:\"amountDeposit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:14:\"Deposit
+  amount\";}s:11:\"validToDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Freeze
+  expiry date\";}s:10:\"createDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Freeze
+  create date\";}s:13:\"paymentSystem\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Payment
+  system code\";}}}s:6:\"Limits\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"accounts\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:13:\"Limits
+  object\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":11:{s:9:\"unique_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:11:\"Account
+  UID\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:3:\"min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"Minimum
+  amount for account\";}s:3:\"max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"Maximum
+  amount for account\";}s:12:\"typecurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:37:\"0
+  - cryptocurrency, 1 - fiat currency\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:11:\"wallet_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:7:\"balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:15:\"Account
+  balance\";}s:7:\"blocked\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Account
+  is blocked\";}s:4:\"hold\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Account
+  hold\";}s:5:\"comis\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"Fee\";}s:9:\"multisign\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:22:\"Account
+  multisignature\";}}}}s:6:\"limits\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";N;s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:6:\"pscode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Payment
+  system code\";}s:9:\"pscaption\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Payment
+  system name\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:3:\"min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:33:\"Minimum
+  amount for payment system\";}s:3:\"max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:33:\"Maximum
+  amount for payment system\";}s:9:\"operation\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"typecurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:37:\"0
+  - cryptocurrency, 1 - fiat currency\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:15:\"depositpriority\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:18:\"withdrawalpriority\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:16:\"Priority
+  in list\";}s:13:\"reasondisable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Reason
+  if system not allowed\";}s:5:\"comis\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"Fee\";}s:9:\"available\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}}}}s:13:\"MerchantOrder\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":30:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:6:\"Amount\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:7:\"caption\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Invoice
+  name\";}s:5:\"descr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Invoice
+  description\";}s:10:\"externalid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Invoice
+  ID in merchant's system\";}s:7:\"validto\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Valid
+  until\";}s:3:\"ttl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:22:\"Expiry
+  time in seconds\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Customer
+  (payee) email\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Customer
+  (payee) phone number\";}s:12:\"currencywish\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Curency
+  to receive to merchant's account\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Invoice
+  status\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Create
+  date\";}s:6:\"viewed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Viewed
+  by customer (payee) date\";}s:7:\"started\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Date
+  when payment has been started (tx seen in blockchain if cryptocurrency)\";}s:8:\"finished\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Date
+  when payment has been received\";}s:6:\"closed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Close
+  date\";}s:9:\"cancelled\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Cancellation
+  date\";}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Unique
+  ID\";}s:15:\"customeraddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Customer
+  (payee) address: street, building number\";}s:16:\"customerfullname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  (payee) full name\";}s:12:\"customercity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Customer
+  (payee) address: city\";}s:15:\"customercountry\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Customer
+  (payee) address: country\";}s:11:\"customerzip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Customer
+  (payee) address: postal code\";}s:14:\"customerregion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Customer
+  (payee) address: region/state\";}s:13:\"currencyfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Currency
+  to pay for invoice (fixed)\";}s:11:\"amountfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:35:\"Amount
+  in selected currency (fixed)\";}s:8:\"ttlfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:75:\"Time
+  to expire exchange rate and fixed amount for payment in cryptocurrency\";}s:10:\"amountpaid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Amount
+  paid\";}s:14:\"commissionType\";O:8:\"stdClass\":4:{s:11:\"description\";s:8:\"Fee
+  type\";s:4:\"type\";s:6:\"number\";s:7:\"default\";i:0;s:4:\"enum\";a:2:{i:0;s:36:\"0
+  - fee excluded from invoice amount\";i:1;s:34:\"1 - fee included to invoice amount\";}}s:5:\"total\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:43:\"Invoice
+  amount as shown to customer (payee)\";}}}s:20:\"MerchantOrderDetails\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":31:{s:7:\"idchain\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Internal
+  ID\";}s:7:\"user_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"User
+  UID\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:6:\"Amount\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:7:\"caption\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Invoice
+  name\";}s:5:\"descr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Invoice
+  description\";}s:10:\"externalid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Invoice
+  ID in merchant's system\";}s:7:\"validto\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Valid
+  until\";}s:3:\"ttl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:22:\"Expiry
+  time in seconds\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Customer
+  (payee) email\";}s:5:\"phone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Customer
+  (payee) phone number\";}s:12:\"currencywish\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Curency
+  to receive to merchant's account\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Invoice
+  status\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Create
+  date\";}s:6:\"viewed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Viewed
+  by customer (payee) date\";}s:7:\"started\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Date
+  when payment has been started (tx seen in blockchain if cryptocurrency)\";}s:8:\"finished\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Date
+  when payment has been received\";}s:6:\"closed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Close
+  date\";}s:9:\"cancelled\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Cancellation
+  date\";}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Unique
+  ID\";}s:15:\"customeraddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Customer
+  (payee) address: street, building number\";}s:16:\"customerfullname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Customer
+  (payee) full name\";}s:12:\"customercity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Customer
+  (payee) address: city\";}s:15:\"customercountry\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Customer
+  (payee) address: country\";}s:11:\"customerzip\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Customer
+  (payee) address: postal code\";}s:14:\"customerregion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:38:\"Customer
+  (payee) address: region/state\";}s:13:\"currencyfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Currency
+  to pay for invoice (fixed)\";}s:11:\"amountfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:35:\"Amount
+  in selected currency (fixed)\";}s:8:\"ttlfixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:75:\"Time
+  to expire exchange rate and fixed amount for payment in cryptocurrency\";}s:7:\"deposit\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Create
+  date\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:4:\"txid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Crypto
+  tx ID\";}s:13:\"confirmations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"Confirmations
+  count\";}s:17:\"min_confirmations\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"Min
+  confirmations count\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Deposit
+  amount\";}}}}s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:13:\"cryptoaddress\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Cryptoaddress
+  for payment\";}}}}}}s:9:\"Operation\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:7:\"idchain\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Internal
+  ID\";}s:6:\"idtype\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Operation
+  type\";}s:7:\"created\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Create
+  date, format DD.MM.YYYY\";}s:7:\"updated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Update
+  date, format DD.MM.YYYY\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:6:\"Amount\";}s:11:\"amount_sign\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Signed
+  amount\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:16:\"wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Account
+  UID\";}s:10:\"walletname\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:17:\"operation_details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Operation
+  details\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:23:\"Operation
+  common status\";}s:8:\"isactive\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:39:\"Is
+  operation active (in progess) or not\";}}}s:16:\"OperationsFilter\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"property1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Standard
+  filter\";}}}s:7:\"Profile\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":13:{s:12:\"baseCurrency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"User-selected
+  base currency\";}s:5:\"email\";O:8:\"stdClass\":5:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"Email\";s:6:\"format\";s:5:\"email\";s:9:\"minLength\";i:6;s:9:\"maxLength\";i:12;}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"User
+  UID\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"User
+  full name\";}s:20:\"notificationTimeZone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"ISO
+  timezone, for example 'Europe/Amsterdam'\";}s:5:\"phone\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"phone\";s:11:\"description\";s:12:\"Phone
+  number\";}s:12:\"recoveryType\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"Recovery
+  method (1 - sms, 2 - email)\";s:4:\"enum\";a:3:{i:0;i:1;i:1;i:2;i:2;N;}}s:13:\"recoveryValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Email
+  or phone number for recovery\";}s:9:\"sleepMode\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"Is
+  sleep mode active or not. When sleep mode active, no notifications will come to
+  user's devices\";s:4:\"type\";s:7:\"boolean\";}s:13:\"sleepModeFrom\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Sleep
+  mode time start, format HH:MM\";}s:11:\"sleepModeTo\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Sleep
+  mode time end, format HH:MM\";}s:7:\"tfaMode\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"2FA
+  mode\";s:4:\"enum\";a:2:{i:0;s:3:\"sms\";i:1;s:2:\"ga\";}}s:17:\"verificationLevel\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Verification
+  level\";}}}s:19:\"TemporaryFileParams\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":8:{s:10:\"deleteType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Request
+  type, always DELETE\";s:4:\"enum\";a:1:{i:0;s:6:\"DELETE\";}}s:9:\"deleteUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Relative
+  link to delete file\";}s:8:\"filename\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Internal
+  filename with extension\";}s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"File
+  key\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Original
+  filename with extension\";}s:4:\"size\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Filesize
+  in bytes\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"File
+  MIME type\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Relative
+  link to view temp file\";}}}s:8:\"TradeFee\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":15:{s:16:\"commissionAmount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:10:\"Fee
+  amount\";}s:17:\"commissionPercent\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:14:\"Fee
+  in percent\";}s:9:\"direction\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:79:\"Direction
+  for base pair curency (0 - buy base currency, 1 - sell base currency)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:12:\"exchangeRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:15:\"fromUserAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:23:\"Account
+  UID to pay from\";}s:3:\"get\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Amount
+  to get\";}s:3:\"pay\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Amount
+  to pay\";}s:6:\"payAll\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:53:\"Pay
+  all available amount (0 - don't pay, 1 - pay all)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:13:\"rateDeviation\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:72:\"1,
+  if deviation from average exchange rate more than 30%, otherwise null\";s:4:\"enum\";a:2:{i:0;i:1;i:1;N;}}s:8:\"stopLoss\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:28:\"Amount
+  for stop loss trigger\";}s:10:\"takeProfit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:30:\"Amount
+  for take profit trigger\";}s:5:\"total\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:12:\"Total
+  amount\";}s:8:\"totalGet\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:19:\"Total
+  amount to get\";}s:13:\"toUserAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:24:\"Account
+  UID to get funds\";}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Order
+  type (0 - market, 2 - limit)\";s:7:\"default\";i:2;s:4:\"enum\";a:2:{i:0;i:0;i:1;i:2;}}}}s:10:\"TradeOrder\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":26:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Order
+  type (0 - market, 2 - limit)\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:129:\"Order
+  status (0 - initial, 1 - open, 2 - closed, 3 - cancelled, 5 - waiting for Take Profit
+  rate, 6 - waiting for Stop Loss rate)\";}s:9:\"direction\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:79:\"Direction
+  for base pair curency (0 - buy base currency, 1 - sell base currency)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Order
+  UID\";}s:8:\"exchrate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:13:\"exchrateclose\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Average
+  close exchange rate\";}s:11:\"exchratemin\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"Min
+  exchange rate for order\";}s:11:\"exchratemax\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"Max
+  exchage rate for order\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Create
+  date and time\";}s:11:\"time_update\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Update
+  date and time\";}s:2:\"sl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Stop
+  loss rate\";}s:2:\"tp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:16:\"Take
+  profit rate\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Currency
+  pair code\";}s:7:\"codeget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to get\";}s:7:\"codepay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to pay\";}s:3:\"get\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to get\";}s:3:\"pay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to pay\";}s:21:\"from_wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Account
+  UID to pay from\";}s:19:\"to_wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Account
+  UID to get to\";}s:8:\"codebase\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Base
+  currency\";}s:9:\"codequote\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Quoted
+  currency\";}s:12:\"triggered_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Original
+  order UID if current order was triggered by SL/TP\";}s:10:\"num_childs\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Count
+  for triggered orders\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:17:\"Amount
+  to execute\";}s:14:\"amount_initial\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Order
+  amount\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Order
+  details\";}}}s:16:\"TradeOrderDetail\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":42:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"Order
+  UID\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Order
+  type (0 - market, 2 - limit)\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Order
+  status\";}s:9:\"direction\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:79:\"Direction
+  for base pair curency (0 - buy base currency, 1 - sell base currency)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Order
+  UID\";}s:8:\"exchrate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:13:\"exchrateclose\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Average
+  close exchange rate\";}s:11:\"exchratemin\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"Min
+  exchange rate for order\";}s:11:\"exchratemax\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:26:\"Max
+  exchage rate for order\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Create
+  date and time\";}s:11:\"time_update\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Update
+  date and time\";}s:2:\"sl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:14:\"Stop
+  loss rate\";}s:2:\"tp\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:16:\"Take
+  profit rate\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Currency
+  pair code\";}s:7:\"codeget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to get\";}s:7:\"codepay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to pay\";}s:3:\"get\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to get\";}s:3:\"pay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to pay\";}s:21:\"from_wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Account
+  UID to pay from\";}s:19:\"to_wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Account
+  UID to get to\";}s:8:\"codebase\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Base
+  currency\";}s:9:\"codequote\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Quoted
+  currency\";}s:12:\"triggered_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"Original
+  order UID if current order was triggered by SL/TP\";}s:10:\"num_childs\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Count
+  for triggered orders\";}s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:17:\"Amount
+  to execute\";}s:14:\"amount_initial\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Order
+  amount\";}s:10:\"commission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Order
+  fdee\";}s:18:\"commission_initial\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"Estimated
+  fee at order creation\";}s:11:\"amount_open\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:24:\"Amount
+  on order creation\";}s:12:\"amount_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:21:\"Amount
+  on order close\";}s:15:\"commission_open\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:21:\"Fee
+  on order creation\";}s:16:\"commission_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:18:\"Fee
+  on order close\";}s:15:\"transaction_fee\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:30:\"Fixed
+  fee for order (obsolete)\";}s:14:\"total_pay_open\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Total
+  amount to pay on order creation\";}s:15:\"total_pay_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:34:\"Total
+  amount to pay on order close\";}s:14:\"total_get_open\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Total
+  amount to get on order creation\";}s:15:\"total_get_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:34:\"Total
+  amount to get on order close\";}s:9:\"get_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"Total
+  amount got on order close\";}s:9:\"pay_close\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:32:\"Total
+  amount paid on order close\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Order
+  details\";}s:9:\"comistype\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:8:\"Fee
+  type\";}s:9:\"codecomis\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Fee
+  currency\";}}}s:17:\"TradeOrderHistory\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Order
+  UID\";}s:14:\"unique_id_corr\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Order
+  UID\";}s:11:\"time_update\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Update
+  date\";}s:8:\"exchrate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Order
+  type (0 - market, 2 - limit)\";}s:10:\"commission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"Fee\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Create
+  date\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:6:\"Status\";}s:3:\"pay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to pay\";}s:3:\"get\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Amount
+  to get\";}s:7:\"codepay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to pay\";}s:7:\"codeget\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Currency
+  to get\";}}}s:11:\"TradeParams\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:4:\"base\";i:1;s:7:\"counter\";i:2;s:15:\"fromUserAccount\";i:3;s:13:\"toUserAccount\";i:4;s:4:\"type\";i:5;s:9:\"direction\";}s:10:\"properties\";O:8:\"stdClass\":13:{s:6:\"active\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:0:\"\";s:4:\"enum\";a:2:{i:0;s:3:\"pay\";i:1;s:3:\"get\";}}s:4:\"base\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Base
+  currency\";}s:7:\"counter\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Quote
+  currency\";}s:9:\"direction\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:79:\"Direction
+  for base pair curency (0 - buy base currency, 1 - sell base currency)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:12:\"exchangeRate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:15:\"fromUserAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:11:\"Account
+  UID\";}s:3:\"get\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Amount
+  to get\";}s:3:\"pay\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:13:\"Amount
+  to pay\";}s:6:\"payAll\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:53:\"Pay
+  all available amount (0 - don't pay, 1 - pay all)\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:8:\"stopLoss\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:16:\"Stop
+  loss amount\";}s:10:\"takeProfit\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:18:\"Take
+  profit amount\";}s:13:\"toUserAccount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:11:\"Account
+  UID\";}s:4:\"type\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Order
+  type (0 - market, 2 - limit)\";s:7:\"default\";i:2;s:4:\"enum\";a:2:{i:0;i:0;i:1;i:2;}}}}s:11:\"Transaction\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:6:\"amount\";O:8:\"stdClass\":3:{s:11:\"description\";s:6:\"amount\";s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Time
+  of creating\";s:4:\"type\";s:7:\"integer\";}s:7:\"comment\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"comment\";s:4:\"type\";s:6:\"string\";}s:6:\"params\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"Details\";s:4:\"type\";s:6:\"object\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"currency
+  (EUR, USD, GBP)\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"EUR\";i:1;s:3:\"USD\";i:2;s:3:\"GBP\";}}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Transaction
+  type\";s:4:\"type\";s:7:\"integer\";}s:9:\"direction\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"Direction
+  of transaction (1=IN, 0=OUT)\";s:4:\"type\";s:7:\"integer\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:11:\"amount_sign\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Signed
+  amount\";s:4:\"type\";s:6:\"number\";}s:11:\"commentfull\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"Comment\";s:4:\"type\";s:6:\"string\";}s:15:\"initial_balance\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"Balance
+  before transaction\";s:4:\"type\";s:6:\"number\";}s:17:\"remaining_balance\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Balance
+  after transaction\";s:4:\"type\";s:6:\"number\";}s:14:\"card_unique_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Card
+  UID if applicable\";s:4:\"type\";s:6:\"string\";}s:9:\"wallet_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"Account
+  UID\";s:4:\"type\";s:6:\"string\";}s:11:\"wallet_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Account
+  name\";s:4:\"type\";s:6:\"string\";}}}s:18:\"TransactionsFilter\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"property1\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Standard
+  filter\";}}}s:8:\"Transfer\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":12:{s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Transfer
+  request unique ID\";}s:17:\"timestamp_created\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:21:\"Timestamp
+  of creating\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:8:\"Currency\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:3:\"EUR\";i:1;s:3:\"USD\";i:2;s:3:\"GBP\";i:3;s:3:\"BTC\";i:4;s:3:\"LTC\";i:5;s:3:\"RUB\";}}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"Treansfers
+  type number (0 - My account, 1 - Another User)\";s:4:\"type\";s:7:\"integer\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:9:\"type_name\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Transfers
+  type name\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:9:\"My wallet\";i:1;s:12:\"Another
+  User\";}}s:4:\"from\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"User's
+  source account name\";}s:2:\"to\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"User's
+  destination account name (type 0 or another user unique ID (type 1)\";}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:26:\"Amount
+  of transfer request\";}s:10:\"commission\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:20:\"Amount
+  of commission\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:193:\"Current
+  status number (0 - Pending, 1 - Rejected, 2 - Confirmed, 3 - Cancelled, 4 - Completed,
+  5 - Failed, 6 - On Hold, 7 - New, 8 - Awaiting confirmation, 9 - Awaiting approval,
+  10 - Approved)\";s:4:\"enum\";a:11:{i:0;i:0;i:1;i:1;i:2;i:2;i:3;i:3;i:4;i:4;i:5;i:5;i:6;i:6;i:7;i:7;i:8;i:8;i:9;i:9;i:10;i:10;}}s:11:\"status_name\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Current
+  status name\";s:4:\"enum\";a:11:{i:0;s:7:\"Pending\";i:1;s:8:\"Rejected\";i:2;s:9:\"Confirmed\";i:3;s:9:\"Cancelled\";i:4;s:9:\"Completed\";i:5;s:6:\"Failed\";i:6;s:7:\"On
+  Hold\";i:7;s:3:\"New\";i:8;s:21:\"Awaiting confirmation\";i:9;s:17:\"Awaiting approval\";i:10;s:8:\"Approved\";}}s:13:\"currencycomis\";O:8:\"stdClass\":3:{s:11:\"description\";s:12:\"Fee
+  currency\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:3:\"EUR\";i:1;s:3:\"USD\";i:2;s:3:\"GBP\";i:3;s:3:\"BTC\";i:4;s:3:\"LTC\";i:5;s:3:\"RUB\";}}}}s:12:\"TransferFees\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:16:\"Amount
+  excl. fee\";}s:10:\"commission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:10:\"Fee
+  amount\";}s:7:\"percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Variable
+  fee (in percent)\";}s:5:\"fixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"Fixed
+  fee\";}}}s:14:\"TransferAmount\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Amount
+  in currency to get\";}s:11:\"exchrateavg\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:21:\"Avergae
+  exchange rate\";}s:5:\"comis\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"Fee\";}s:10:\"amountbase\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Amount
+  in currency to pay\";}s:11:\"amountquote\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:25:\"Amount
+  in currency to get\";}s:10:\"amount_min\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:22:\"Min
+  amount to transfer\";}s:10:\"amount_max\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:22:\"Max
+  amount to transfer\";}s:3:\"bid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Exchange
+  rate\";}s:3:\"ask\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:13:\"Exchange
+  rate\";}}}s:11:\"UserBalance\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"balance\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:6:\"Amount\";}s:9:\"in_orders\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:16:\"Amount
+  in orders\";}s:9:\"available\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:36:\"Available
+  amount (balance-in_orders)\";}s:4:\"type\";O:8:\"stdClass\":3:{s:11:\"description\";s:13:\"Currency
+  type\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"Crypto\";i:1;s:4:\"Fiat\";}}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"Currency
+  (EUR, USD, GBP)\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:3:\"EUR\";i:1;s:3:\"USD\";i:2;s:3:\"GBP\";}}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"User's
+  account UID\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"User's
+  account name\";}}}s:15:\"ValidationError\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:19:\"Negative
+  error code\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Error
+  description\";}s:6:\"fields\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:32:\"Params
+  list as array field:error\";}}}s:6:\"Wallet\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":14:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:7:\"balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:7:\"Balance\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Unique
+  ID\";}s:14:\"crypto_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Crypto
+  address\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:6:\"Status\";}s:12:\"typecurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:35:\"Currency
+  type, 0 - crypto, 1 - fiat\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:11:\"time_create\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";s:11:\"description\";s:11:\"Create
+  date\";}s:11:\"currency_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Currency
+  ID\";}s:7:\"blocked\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:7:\"blocked\";}s:6:\"norder\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Priority
+  in list\";}s:16:\"balanceconverted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"Balance\";}s:9:\"multisign\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:12:\"Account
+  type\";}s:13:\"multisigntype\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Account
+  type\";}}}s:9:\"WalletAll\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":17:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:7:\"balance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:7:\"Balance\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Account
+  UID\";}s:14:\"crypto_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Crypto
+  address\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:6:\"Status\";}s:12:\"typecurrency\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:35:\"Currency
+  type, 0 - crypto, 1 - fiat\";s:4:\"enum\";a:2:{i:0;i:0;i:1;i:1;}}s:11:\"time_create\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"datetime\";s:11:\"description\";s:11:\"Create
+  date\";}s:11:\"currency_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Currency
+  ID\";}s:7:\"blocked\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:7:\"blocked\";}s:6:\"norder\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Priority
+  in list\";}s:16:\"balanceconverted\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"Balance\";}s:9:\"multisign\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:12:\"Account
+  type\";}s:13:\"multisigntype\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Account
+  type\";}s:6:\"shared\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:37:\"Shared
+  account from another customers\";}s:8:\"owner_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Account
+  owner UID\";}s:11:\"existsshare\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:33:\"Account
+  shared to other customers\";}}}s:10:\"Withdrawal\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":21:{s:9:\"unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Withdrawal
+  request unique ID\";}s:11:\"time_create\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:21:\"Timestamp
+  of creating\";}s:8:\"currency\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Currency
+  (BTC, LTC)\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"BTC\";i:1;s:3:\"LTC\";}}s:6:\"pscode\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"Payment
+  system code\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:3:\"QWI\";}}s:6:\"amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:28:\"Amount
+  of withdrawal request\";}s:10:\"commission\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:20:\"Amount
+  of commission\";}s:5:\"total\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:12:\"Total
+  amount\";}s:6:\"status\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:171:\"Current
+  status number (0=Pending, 1=Rejected, 2=Confirmed, 3=Cancelled, 4=Completed, 5=Failed,
+  6=On Hold, 7=New, 8=Awaiting confirmation, 9=Awaiting approval, 10=Approved)\";s:4:\"enum\";a:11:{i:0;i:0;i:1;i:1;i:2;i:2;i:3;i:3;i:4;i:4;i:5;i:5;i:6;i:6;i:7;i:7;i:8;i:8;i:9;i:9;i:10;i:10;}}s:7:\"address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Crypto
+  address of destination\";}s:13:\"confirmations\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:17:\"min_confirmations\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:4:\"txid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"crypto_txid\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"urgent\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"some
+  withdrawal code\";}s:11:\"usercomment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"idchain\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Internal
+  ID\";}s:16:\"wallet_unique_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Account
+  UID\";}s:11:\"wallet_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Account
+  name\";}s:7:\"details\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:15:\"Various
+  details\";}s:6:\"action\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:16:\"Possbile
+  actions\";}}}s:14:\"WithdrawalFees\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"amount\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"Withdrawal
+  amount excl. fee\";}s:11:\"amountTotal\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"Withdrawal
+  amount incl. fee\";}s:10:\"commission\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"Fee\";}s:7:\"percent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:43:\"Variable
+  fee (percent from original amount)\";}s:5:\"fixed\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:9:\"Fixed
+  fee\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"Currency\";}}}}"
+...
