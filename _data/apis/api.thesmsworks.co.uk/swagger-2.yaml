@@ -1,0 +1,382 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:7:\"contact\";O:8:\"stdClass\":1:{s:9:\"x-twitter\";s:11:\"thesmsworks\";}s:11:\"description\";s:131:\"The
+  SMS Works provides a low-cost, reliable SMS API for developers. Pay only for delivered
+  texts, all failed messages are refunded.\";s:5:\"title\";s:13:\"The SMS Works\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"messaging\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:84:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_thesmsworks_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:54:\"https://api.thesmsworks.co.uk/api/swagger/swagger.yaml\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:17:\"thesmsworks.co.uk\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"thesmsworks\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.thesmsworks.co.uk
+basePath: /v1
+paths:
+  /auth/getApiKey:
+    get:
+      description: Generates an API Key/Secret pair
+      operationId: keySecret
+      parameters:
+      - description: The Customer ID
+        in: query
+        name: customerid
+        required: true
+        type: string
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/apiKeyResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      tags:
+      - auth
+    x-swagger-router-controller: authentication
+  /auth/token:
+    post:
+      description: Generates a Json Web Token
+      operationId: login
+      parameters:
+      - description: API Key & Secret
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/Login'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/TokenResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      tags:
+      - auth
+    x-swagger-router-controller: authentication
+  /batch/schedule:
+    post:
+      description: Schedules a batch of SMS messages to be sent at the date time you
+        specify
+      operationId: scheduleBatch
+      parameters:
+      - description: Message properties
+        in: body
+        name: smsMessage
+        required: true
+        schema:
+          $ref: '#/definitions/BatchMessage'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/ScheduledBatchResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - batch messages
+    x-swagger-router-controller: smpp-client
+  /batch/send:
+    post:
+      description: Send a single SMS message to multiple recipients
+      operationId: sendBatch
+      parameters:
+      - description: Message properties
+        in: body
+        name: smsMessage
+        required: true
+        schema:
+          $ref: '#/definitions/BatchMessage'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/BatchMessageResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - batch messages
+    x-swagger-router-controller: smpp-client
+  /batch/{batchid}:
+    get:
+      description: Retrieve all messages in a batch with the given batch ID
+      operationId: getBatchById
+      parameters:
+      - description: The ID of the batch you would like returned
+        in: path
+        name: batchid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+        404:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - batch messages
+    x-swagger-router-controller: smpp-client
+  /batches/schedule/{batchid}:
+    delete:
+      description: Cancels a scheduled SMS message
+      operationId: cancelScheduledBatchJob
+      parameters:
+      - description: The ID of the batch you would like returned
+        in: path
+        name: batchid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CancelledMessageResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - batch messages
+    x-swagger-router-controller: smpp-client
+  /message/schedule:
+    post:
+      description: Schedules an SMS message to be sent at the date-time you specify
+      operationId: scheduleMessage
+      parameters:
+      - description: Message properties
+        in: body
+        name: smsMessage
+        required: true
+        schema:
+          $ref: '#/definitions/Message'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/ScheduledMessageResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: smpp-client
+  /message/send:
+    post:
+      description: Sends an SMS message
+      operationId: sendMessage
+      parameters:
+      - description: Message properties
+        in: body
+        name: smsMessage
+        required: true
+        schema:
+          $ref: '#/definitions/Message'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/SendMessageResponse'
+        402:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: smpp-client
+  /messages:
+    post:
+      description: Get messages matching your search criteria
+      operationId: getMessages
+      parameters:
+      - in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/Query'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: message-client
+  /messages/inbox:
+    post:
+      description: Get unread uncoming messages matching your search criteria
+      operationId: getInboxMessages
+      parameters:
+      - in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/Query'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: message-client
+  /messages/schedule/{messageid}:
+    delete:
+      description: Cancels a scheduled SMS message
+      operationId: cancelScheduledJob
+      parameters:
+      - description: The ID of the message you would like returned
+        in: path
+        name: messageid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CancelledMessageResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ExtendedErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: smpp-client
+  /messages/{messageid}:
+    get:
+      description: Retrieve a logged message by the message ID
+      operationId: getMessageById
+      parameters:
+      - description: The ID of the message you would like returned
+        in: path
+        name: messageid
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MessageResponse'
+        404:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      security:
+      - JWT: []
+      tags:
+      - messages
+    x-swagger-router-controller: message-client
+  /swagger:
+    x-swagger-pipe: swagger_raw
+  /utils/test:
+    get:
+      description: Returns the customer ID to the caller
+      operationId: test
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/TestResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      tags:
+      - utils
+    x-swagger-router-controller: hello_world
+produces:
+- application/json;charset=UTF-8
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":16:{s:12:\"BatchMessage\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"SMS
+  Message Batch\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"content\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"Message
+  to send to the recipient\";s:7:\"example\";s:30:\"My super awesome batch message\";s:4:\"type\";s:6:\"string\";}s:12:\"destinations\";O:8:\"stdClass\":4:{s:11:\"description\";s:43:\"Telephone
+  numbers of each of the recipients\";s:7:\"example\";a:3:{i:0;i:447777777777;i:1;i:447777777778;i:2;i:447777777779;}s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"schedule\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"Date-time
+  at which to send the batch. This is only used by the batch/schedule service.\";s:7:\"example\";s:39:\"Wed
+  Jul 19 2017 20:26:28 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:6:\"sender\";O:8:\"stdClass\":3:{s:11:\"description\";s:157:\"The
+  sender of the message. Should be no longer than 11 characters for alphanumeric or
+  15 characters for numeric sender ID's. No spaces or special characters.\";s:7:\"example\";s:11:\"YourCompany\";s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":3:{s:11:\"description\";s:128:\"An
+  identifying label for the message, which you can use to filter and report on messages
+  you've sent later. Ideal for campaigns.\";s:7:\"example\";s:13:\"SummerSpecial\";s:4:\"type\";s:6:\"string\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:11:\"description\";s:104:\"The
+  number of minutes before the message is deleted. Optional. Omit to prevent delivery
+  report deletion.\";s:7:\"example\";i:10;s:4:\"type\";s:6:\"number\";}}s:8:\"required\";a:4:{i:0;s:6:\"sender\";i:1;s:12:\"destinations\";i:2;s:7:\"content\";i:3;s:8:\"schedule\";}}s:20:\"BatchMessageResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"batchid\";O:8:\"stdClass\":2:{s:7:\"example\";i:2586749;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"SCHEDULED\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:7:\"batchid\";i:1;s:6:\"status\";}}s:24:\"CancelledMessageResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"messageid\";O:8:\"stdClass\":2:{s:7:\"example\";i:5620320;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"CANCELLED\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:9:\"messageid\";i:1;s:6:\"status\";}}s:10:\"ErrorModel\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}s:4:\"type\";s:6:\"object\";}s:18:\"ExtendedErrorModel\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/ErrorModel\";}i:1;O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"errorCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:9:\"errorCode\";i:1;s:6:\"status\";}s:4:\"type\";s:6:\"object\";}}}s:5:\"Login\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"authorisation
+  object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"customerid\";O:8:\"stdClass\":2:{s:11:\"description\";s:90:\"Your
+  customer ID, available from your account area at https://thesmsworks.co.uk/user/login\";s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":2:{s:11:\"description\";s:7:\"API
+  Key\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:10:\"API
+  Secret\";s:4:\"type\";s:6:\"string\";}}}s:7:\"Message\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"SMS
+  message object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:7:\"content\";O:8:\"stdClass\":3:{s:11:\"description\";s:311:\"Message
+  to send to the recipient. Content can be up to 640 characters in length. You will
+  be charged 1 credit for each 160 characters, up to a maximum of 4 credits. Messages
+  sent to numbers registered outside the UK will be charged double credits (i.e. 2
+  credits per 160 characters, up to maximum of 8 credits).\";s:7:\"example\";s:26:\"Your
+  super awesome message\";s:4:\"type\";s:6:\"string\";}s:11:\"destination\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"Telephone
+  number of the recipient\";s:7:\"example\";i:447777777777;s:4:\"type\";s:6:\"string\";}s:8:\"schedule\";O:8:\"stdClass\":3:{s:11:\"description\";s:126:\"Date
+  at which to send the message. This is only used by the message/schedule service
+  and can be left empty for other services.\";s:7:\"example\";s:39:\"Sun Sep 03 2017
+  15:34:23 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:6:\"sender\";O:8:\"stdClass\":3:{s:11:\"description\";s:157:\"The
+  sender of the message. Should be no longer than 11 characters for alphanumeric or
+  15 characters for numeric sender ID's. No spaces or special characters.\";s:7:\"example\";s:11:\"YourCompany\";s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":3:{s:11:\"description\";s:128:\"An
+  identifying label for the message, which you can use to filter and report on messages
+  you've sent later. Ideal for campaigns.\";s:7:\"example\";s:13:\"SummerSpecial\";s:4:\"type\";s:6:\"string\";}s:3:\"ttl\";O:8:\"stdClass\":3:{s:11:\"description\";s:104:\"The
+  number of minutes before the message is deleted. Optional. Omit to prevent delivery
+  report deletion.\";s:7:\"example\";i:10;s:4:\"type\";s:6:\"number\";}}s:8:\"required\";a:4:{i:0;s:6:\"sender\";i:1;s:11:\"destination\";i:2;s:7:\"content\";i:3;s:8:\"schedule\";}}s:15:\"MessageResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":14:{s:7:\"batchid\";O:8:\"stdClass\":2:{s:7:\"example\";i:2586749;s:4:\"type\";s:6:\"string\";}s:7:\"content\";O:8:\"stdClass\":2:{s:7:\"example\";s:24:\"My
+  super awesome message\";s:4:\"type\";s:6:\"string\";}s:7:\"created\";O:8:\"stdClass\":2:{s:7:\"example\";s:39:\"Wed
+  Jul 19 2017 20:53:46 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:10:\"customerid\";O:8:\"stdClass\":2:{s:7:\"example\";s:36:\"0fca8c3c-6cbc-11e7-8154-a6006ad3dba0\";s:4:\"type\";s:6:\"string\";}s:11:\"destination\";O:8:\"stdClass\":2:{s:7:\"example\";i:447777777777;s:4:\"type\";s:6:\"number\";}s:13:\"failureReason\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:7:\"example\";i:34;s:4:\"type\";s:6:\"number\";}s:7:\"details\";O:8:\"stdClass\":2:{s:7:\"example\";s:13:\"Handset
+  error\";s:4:\"type\";s:6:\"string\";}s:9:\"permanent\";O:8:\"stdClass\":2:{s:7:\"example\";b:0;s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:2:\"id\";O:8:\"stdClass\":2:{s:7:\"example\";i:123456789;s:4:\"type\";s:6:\"string\";}s:7:\"keyword\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"SOLO\";s:4:\"type\";s:6:\"string\";}s:9:\"messageid\";O:8:\"stdClass\":2:{s:7:\"example\";i:123456789;s:4:\"type\";s:6:\"string\";}s:8:\"modified\";O:8:\"stdClass\":2:{s:7:\"example\";s:39:\"Wed
+  Jul 19 2017 20:53:49 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:8:\"schedule\";O:8:\"stdClass\":2:{s:7:\"example\";s:39:\"Wed
+  Jul 19 2017 20:53:45 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:6:\"sender\";O:8:\"stdClass\":2:{s:7:\"example\";s:11:\"YourCompany\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"DELIVERED\";s:4:\"type\";s:6:\"string\";}s:3:\"tag\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"campaign2\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:12:{i:0;s:7:\"batchid\";i:1;s:7:\"content\";i:2;s:7:\"created\";i:3;s:10:\"customerid\";i:4;s:11:\"destination\";i:5;s:7:\"keyword\";i:6;s:9:\"messageid\";i:7;s:8:\"modified\";i:8;s:8:\"schedule\";i:9;s:6:\"status\";i:10;s:6:\"sender\";i:11;s:3:\"tag\";}}s:16:\"MessagesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"messages\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"schema\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/MessageResponse\";}}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:1:{i:0;s:8:\"messages\";}}s:5:\"Query\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"search
+  parameters for querying the message database\";s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"destination\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  phone number of the recipient. Start UK numbers with 44 and drop the leading 0.\";s:7:\"example\";i:447777777777;s:4:\"type\";s:6:\"string\";}s:4:\"from\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"The
+  date-time from which you would like matching messages\";s:7:\"example\";s:39:\"Wed
+  Jul 12 2017 20:26:28 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}s:7:\"keyword\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"The
+  keyword used in the inbound message\";s:7:\"example\";s:9:\"SKYWALKER\";s:4:\"type\";s:6:\"string\";}s:6:\"sender\";O:8:\"stdClass\":3:{s:11:\"description\";s:142:\"The
+  sender of the message (this can be the configured sender name for an outbound message
+  or the senders phone number for an inbound message).\";s:7:\"example\";s:11:\"YourCompany\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:153:\"The
+  status of the messages you would like returned (either 'SENT', 'DELIVERED', 'EXPIRED',
+  'DELETED', 'UNDELIVERABLE', 'ACCEPTED', 'UNKNOWN', 'REJECTED')\";s:7:\"example\";s:4:\"SENT\";s:4:\"type\";s:6:\"string\";}s:2:\"to\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"The
+  date-time to which you would like matching messages\";s:7:\"example\";s:39:\"Wed
+  Jul 19 2017 20:26:28 GMT+0100 (BST)\";s:4:\"type\";s:6:\"string\";}}}s:22:\"ScheduledBatchResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"batchid\";O:8:\"stdClass\":2:{s:7:\"example\";i:3200562;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"SCHEDULED\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:7:\"batchid\";i:1;s:6:\"status\";}}s:24:\"ScheduledMessageResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"messageid\";O:8:\"stdClass\":2:{s:7:\"example\";i:123456789;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:9:\"SCHEDULED\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:9:\"messageid\";i:1;s:6:\"status\";}}s:19:\"SendMessageResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"credits\";O:8:\"stdClass\":2:{s:7:\"example\";i:180;s:4:\"type\";s:7:\"integer\";}s:9:\"messageid\";O:8:\"stdClass\":2:{s:7:\"example\";i:123456789;s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:7:\"example\";s:4:\"SENT\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:9:\"messageid\";i:1;s:6:\"status\";i:2;s:7:\"credits\";}}s:12:\"TestResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}}s:13:\"TokenResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"token\";O:8:\"stdClass\":2:{s:7:\"example\";s:388:\"JWT
+  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1MDA0OTU2NjEsImV4cCI6MTUzMjAzMTY2MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.BR1BIDy0Mw3R4ilfqAojsnh7bp_pgeX2jfjhhZyaexQ\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:5:\"token\";}}s:14:\"apiKeyResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:7:\"example\";s:36:\"22795661-48a1-442d-92a3-bc2384836fad\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:7:\"example\";s:64:\"10045176307448ced2e1b74963d137f2bfaefbdad6fe415df429b64c4d63b856\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:6:\"secret\";}}}"
+...

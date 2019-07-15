@@ -1,0 +1,518 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:225:\"This is a Shoppers
+  Catalogue server.\n\n[Learn about Swagger](http://swagger.io) or join the IRC channel
+  `#swagger` on irc.freenode.net.\n\nFor this sample, you can use the api key `special-key`
+  to test the authorization filters\n\";s:7:\"version\";s:5:\"1.0.0\";s:5:\"title\";s:16:\"Shoppers
+  OpenAPI\";s:14:\"termsOfService\";s:29:\"http://helloreverb.com/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:19:\"harjeetss@gmail.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: shoppers.io
+basePath: /v2
+paths:
+  /v1/products:
+    post:
+      tags:
+      - product
+      summary: Add a new product to the store
+      description: ""
+      operationId: addProduct
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: $body
+        in: body
+        schema:
+          required:
+          - product
+          properties:
+            product:
+              $ref: '#/definitions/product'
+            saveOptions:
+              type: boolean
+          type: object
+      responses:
+        200:
+          description: 200 Success.
+          schema:
+            $ref: '#/definitions/product'
+        400:
+          description: 400 Bad Request
+          schema:
+            $ref: '#/definitions/error-response'
+        401:
+          description: 401 Unauthorized
+          schema:
+            $ref: '#/definitions/error-response'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error-response'
+      security:
+      - shoppers_auth:
+        - write_products
+        - read_products
+  /v1/products/findByCategory:
+    get:
+      tags:
+      - product
+      summary: Finds Products by category
+      description: Use category1 for testing.
+      operationId: findProductsByCategories
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: query
+        name: category
+        description: Category to filter by
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/catalog-data-product-search-results-interface'
+        400:
+          description: Invalid category value
+      security:
+      - shoppers_auth:
+        - write_products
+        - read_products
+  /v1/products/{productId}:
+    get:
+      tags:
+      - product
+      summary: Find product by ID
+      description: Returns a product when ID < 10.  ID > 10 or nonintegers will simulate
+        API error conditions
+      operationId: getProductById
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: path
+        name: productId
+        description: ID of product that needs to be fetched
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/product'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Product not found
+      security:
+      - api_key: []
+      - shoppers_auth:
+        - write_products
+        - read_products
+    post:
+      tags:
+      - product
+      summary: Updates a product in the store with form data
+      description: ""
+      operationId: updateProductWithForm
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: path
+        name: productId
+        description: ID of product that needs to be updated
+        required: true
+        type: string
+      - in: formData
+        name: name
+        description: Updated name of the product
+        required: true
+        type: string
+      - in: formData
+        name: status
+        description: Updated status of the product
+        required: true
+        type: string
+      responses:
+        405:
+          description: Invalid input
+      security:
+      - shoppers_auth:
+        - write_products
+        - read_products
+    delete:
+      tags:
+      - product
+      summary: Deletes a product
+      description: ""
+      operationId: deleteProduct
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: header
+        name: api_key
+        description: ""
+        required: true
+        type: string
+      - in: path
+        name: productId
+        description: Product id to delete
+        required: true
+        type: integer
+        format: int64
+      responses:
+        400:
+          description: Invalid product value
+      security:
+      - shoppers_auth:
+        - write_products
+        - read_products
+  /v1/products/{sku}/websites:
+    post:
+      tags:
+      - catalogProductWebsiteLinkRepositoryV1
+      description: Assign a product to the website
+      operationId: catalogProductWebsiteLinkRepositoryV1SavePost
+      parameters:
+      - name: sku
+        in: path
+        type: string
+        required: true
+      - name: $body
+        in: body
+        schema:
+          required:
+          - productWebsiteLink
+          properties:
+            productWebsiteLink:
+              $ref: '#/definitions/catalog-product-website-link-interface'
+          type: object
+      responses:
+        200:
+          description: 200 Success.
+          schema:
+            type: boolean
+            description: will returned True if website successfully assigned to product
+        400:
+          description: 400 Bad Request
+          schema:
+            $ref: '#/definitions/error-response'
+        401:
+          description: 401 Unauthorized
+          schema:
+            $ref: '#/definitions/error-response'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error-response'
+    put:
+      tags:
+      - catalogProductWebsiteLinkRepositoryV1
+      description: Assign a product to the website
+      operationId: catalogProductWebsiteLinkRepositoryV1SavePut
+      parameters:
+      - name: sku
+        in: path
+        type: string
+        required: true
+      - name: $body
+        in: body
+        schema:
+          required:
+          - productWebsiteLink
+          properties:
+            productWebsiteLink:
+              $ref: '#/definitions/catalog-product-website-link-interface'
+          type: object
+      responses:
+        200:
+          description: 200 Success.
+          schema:
+            type: boolean
+            description: will returned True if website successfully assigned to product
+        400:
+          description: 400 Bad Request
+          schema:
+            $ref: '#/definitions/error-response'
+        401:
+          description: 401 Unauthorized
+          schema:
+            $ref: '#/definitions/error-response'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error-response'
+  /v1/products/{sku}/websites/{websiteId}:
+    delete:
+      tags:
+      - catalogProductWebsiteLinkRepositoryV1
+      description: Remove the website assignment from the product by product sku
+      operationId: catalogProductWebsiteLinkRepositoryV1DeleteByIdDelete
+      parameters:
+      - name: sku
+        in: path
+        type: string
+        required: true
+      - name: websiteId
+        in: path
+        type: integer
+        required: true
+      responses:
+        200:
+          description: 200 Success.
+          schema:
+            type: boolean
+            description: will returned True if website successfully unassigned from
+              product
+        400:
+          description: 400 Bad Request
+          schema:
+            $ref: '#/definitions/error-response'
+        401:
+          description: 401 Unauthorized
+          schema:
+            $ref: '#/definitions/error-response'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error-response'
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":47:{s:14:\"error-response\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Error
+  message\";}s:6:\"errors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/error-errors\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Error
+  code\";}s:10:\"parameters\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/error-parameters\";}s:5:\"trace\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Stack
+  trace\";}}s:8:\"required\";a:1:{i:0;s:7:\"message\";}}s:12:\"error-errors\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:11:\"Errors
+  list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/error-errors-item\";}}s:17:\"error-errors-item\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:13:\"Error
+  details\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Error
+  message\";}s:10:\"parameters\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/error-parameters\";}}}s:16:\"error-parameters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:21:\"Error
+  parameters list\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/error-parameters-item\";}}s:21:\"error-parameters-item\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:21:\"Error
+  parameters item\";s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"resources\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"ACL
+  resource\";}s:9:\"fieldName\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Missing
+  or invalid field name\";}s:10:\"fieldValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Incorrect
+  field value\";}}}s:35:\"framework-search-criteria-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:26:\"Search
+  criteria interface.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:13:\"filter_groups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:24:\"A
+  list of filter groups.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-search-filter-group\";}}s:11:\"sort_orders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:11:\"Sort
+  order.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/framework-sort-order\";}}s:9:\"page_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Page
+  size.\";}s:12:\"current_page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:13:\"Current
+  page.\";}}s:8:\"required\";a:1:{i:0;s:13:\"filter_groups\";}}s:29:\"framework-search-filter-group\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:54:\"Groups
+  two or more filters together using a logical OR\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"filters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:31:\"A
+  list of filters in this group\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/framework-filter\";}}}}s:16:\"framework-filter\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:59:\"Filter
+  which can be used by any methods from service layer.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"field\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"Field\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"Value\";}s:14:\"condition_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Condition
+  type\";}}s:8:\"required\";a:2:{i:0;s:5:\"field\";i:1;s:5:\"value\";}}s:20:\"framework-sort-order\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:27:\"Data
+  object for sort order.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"field\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Sorting
+  field.\";}s:9:\"direction\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Sorting
+  direction.\";}}s:8:\"required\";a:2:{i:0;s:5:\"field\";i:1;s:9:\"direction\";}}s:29:\"framework-attribute-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:37:\"Interface
+  for custom attribute value.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"attribute_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Attribute
+  code\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Attribute
+  value\";}}s:8:\"required\";a:2:{i:0;s:14:\"attribute_code\";i:1;s:5:\"value\";}}s:7:\"product\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":17:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:2:\"Id\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"Sku\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:4:\"Name\";}s:16:\"attribute_set_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Attribute
+  set id\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:5:\"Price\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:6:\"Status\";}s:10:\"visibility\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Visibility\";}s:7:\"type_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:7:\"Type
+  id\";}s:10:\"created_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Created
+  date\";}s:10:\"updated_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Updated
+  date\";}s:6:\"weight\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:6:\"Weight\";}s:20:\"extension_attributes\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/product-extension-interface\";}s:13:\"product_links\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:18:\"Product
+  links info\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/catalog-data-product-link-interface\";}}s:7:\"options\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:23:\"List
+  of product options\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/catalog-data-product-custom-option-interface\";}}s:21:\"media_gallery_entries\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:21:\"Media
+  gallery entries\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:74:\"#/definitions/catalog-data-product-attribute-media-gallery-entry-interface\";}}s:11:\"tier_prices\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:27:\"List
+  of product tier prices\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:55:\"#/definitions/catalog-data-product-tier-price-interface\";}}s:17:\"custom_attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Custom
+  attributes values.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-attribute-interface\";}}}s:8:\"required\";a:1:{i:0;s:3:\"sku\";}}s:8:\"Category\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:27:\"product-extension-interface\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:9:\"extending\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"stock_item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/catalog-inventory-data-stock-item-interface\";}s:22:\"bundle_product_options\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/bundle-data-option-interface\";}}s:26:\"downloadable_product_links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:46:\"#/definitions/downloadable-data-link-interface\";}}s:28:\"downloadable_product_samples\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/downloadable-data-sample-interface\";}}s:28:\"configurable_product_options\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:56:\"#/definitions/configurable-product-data-option-interface\";}}s:26:\"configurable_product_links\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}}s:43:\"catalog-inventory-data-stock-item-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:19:\"Interface
+  StockItem\";s:10:\"properties\";O:8:\"stdClass\":26:{s:7:\"item_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"product_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"stock_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Stock
+  identifier\";}s:3:\"qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}s:11:\"is_in_stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:18:\"Stock
+  Availability\";}s:14:\"is_qty_decimal\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:33:\"show_default_notification_message\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"use_config_min_qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"min_qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:51:\"Minimal
+  quantity available for item status in stock\";}s:23:\"use_config_min_sale_qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"min_sale_qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:72:\"Minimum
+  Qty Allowed in Shopping Cart or NULL when there is no limitation\";}s:23:\"use_config_max_sale_qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"max_sale_qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:49:\"Maximum
+  Qty Allowed in Shopping Cart data wrapper\";}s:21:\"use_config_backorders\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"backorders\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Backorders
+  status\";}s:27:\"use_config_notify_stock_qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"notify_stock_qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:38:\"Notify
+  for Quantity Below data wrapper\";}s:25:\"use_config_qty_increments\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"qty_increments\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:32:\"Quantity
+  Increments data wrapper\";}s:25:\"use_config_enable_qty_inc\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:21:\"enable_qty_increments\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:38:\"Whether
+  Quantity Increments is enabled\";}s:23:\"use_config_manage_stock\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"manage_stock\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:16:\"Can
+  Manage Stock\";}s:14:\"low_stock_date\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"is_decimal_divided\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:25:\"stock_status_changed_auto\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:23:{i:0;s:3:\"qty\";i:1;s:11:\"is_in_stock\";i:2;s:14:\"is_qty_decimal\";i:3;s:33:\"show_default_notification_message\";i:4;s:18:\"use_config_min_qty\";i:5;s:7:\"min_qty\";i:6;s:23:\"use_config_min_sale_qty\";i:7;s:12:\"min_sale_qty\";i:8;s:23:\"use_config_max_sale_qty\";i:9;s:12:\"max_sale_qty\";i:10;s:21:\"use_config_backorders\";i:11;s:10:\"backorders\";i:12;s:27:\"use_config_notify_stock_qty\";i:13;s:16:\"notify_stock_qty\";i:14;s:25:\"use_config_qty_increments\";i:15;s:14:\"qty_increments\";i:16;s:25:\"use_config_enable_qty_inc\";i:17;s:21:\"enable_qty_increments\";i:18;s:23:\"use_config_manage_stock\";i:19;s:12:\"manage_stock\";i:20;s:14:\"low_stock_date\";i:21;s:18:\"is_decimal_divided\";i:22;s:25:\"stock_status_changed_auto\";}}s:28:\"bundle-data-option-interface\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:25:\"Interface
+  OptionInterface\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"option_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"Option
+  id\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  title\";}s:8:\"required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:18:\"Is
+  required option\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Input
+  type\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:15:\"Option
+  position\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Product
+  sku\";}s:13:\"product_links\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:13:\"Product
+  links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/bundle-data-link-interface\";}}}}s:26:\"bundle-data-link-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:23:\"Interface
+  LinkInterface\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"The
+  identifier\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Linked
+  product sku\";}s:9:\"option_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"Option
+  id\";}s:3:\"qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:3:\"Qty\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Position\";}s:10:\"is_default\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:10:\"Is
+  default\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:5:\"Price\";}s:10:\"price_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Price
+  type\";}s:19:\"can_change_quantity\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:33:\"Whether
+  quantity could be changed\";}}s:8:\"required\";a:3:{i:0;s:10:\"is_default\";i:1;s:5:\"price\";i:2;s:10:\"price_type\";}}s:32:\"downloadable-data-link-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":14:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Sample(or
+  link) id\";}s:5:\"title\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"sort_order\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"is_shareable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Shareable
+  status\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:5:\"Price\";}s:19:\"number_of_downloads\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:21:\"Of
+  downloads per user\";}s:9:\"link_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"link_file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"relative
+  file path\";}s:17:\"link_file_content\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:54:\"#/definitions/downloadable-data-file-content-interface\";}s:8:\"link_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Link
+  url or null when type is 'file'\";}s:11:\"sample_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"sample_file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"relative
+  file path\";}s:19:\"sample_file_content\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:54:\"#/definitions/downloadable-data-file-content-interface\";}s:10:\"sample_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"file
+  URL\";}}s:8:\"required\";a:5:{i:0;s:10:\"sort_order\";i:1;s:12:\"is_shareable\";i:2;s:5:\"price\";i:3;s:9:\"link_type\";i:4;s:11:\"sample_type\";}}s:40:\"downloadable-data-file-content-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"file_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Data
+  (base64 encoded content)\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"File
+  name\";}}s:8:\"required\";a:2:{i:0;s:9:\"file_data\";i:1;s:4:\"name\";}}s:34:\"downloadable-data-sample-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Sample(or
+  link) id\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:5:\"Title\";}s:10:\"sort_order\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:22:\"Order
+  index for sample\";}s:11:\"sample_type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"sample_file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"relative
+  file path\";}s:19:\"sample_file_content\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:54:\"#/definitions/downloadable-data-file-content-interface\";}s:10:\"sample_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:8:\"file
+  URL\";}}s:8:\"required\";a:3:{i:0;s:5:\"title\";i:1;s:10:\"sort_order\";i:2;s:11:\"sample_type\";}}s:42:\"configurable-product-data-option-interface\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:25:\"Interface
+  OptionInterface\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"attribute_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"position\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:14:\"is_use_default\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"values\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:62:\"#/definitions/configurable-product-data-option-value-interface\";}}s:10:\"product_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:48:\"configurable-product-data-option-value-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:30:\"Interface
+  OptionValueInterface\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"value_index\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:1:{i:0;s:11:\"value_index\";}}s:35:\"catalog-data-product-link-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"SKU\";}s:9:\"link_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"Link
+  type\";}s:18:\"linked_product_sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Linked
+  product sku\";}s:19:\"linked_product_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Linked
+  product type (simple, virtual, etc)\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"Linked
+  item position\";}}s:8:\"required\";a:5:{i:0;s:3:\"sku\";i:1;s:9:\"link_type\";i:2;s:18:\"linked_product_sku\";i:3;s:19:\"linked_product_type\";i:4;s:8:\"position\";}}s:44:\"catalog-data-product-custom-option-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":14:{s:11:\"product_sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Product
+  SKU\";}s:9:\"option_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:9:\"Option
+  id\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  title\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Option
+  type\";}s:10:\"sort_order\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Sort
+  order\";}s:10:\"is_require\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:10:\"Is
+  require\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:5:\"Price\";}s:10:\"price_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Price
+  type\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"Sku\";}s:14:\"file_extension\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"max_characters\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"image_size_x\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"image_size_y\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"values\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:65:\"#/definitions/catalog-data-product-custom-option-values-interface\";}}}s:8:\"required\";a:5:{i:0;s:11:\"product_sku\";i:1;s:5:\"title\";i:2;s:4:\"type\";i:3;s:10:\"sort_order\";i:4;s:10:\"is_require\";}}s:51:\"catalog-data-product-custom-option-values-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  title\";}s:10:\"sort_order\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Sort
+  order\";}s:5:\"price\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:5:\"Price\";}s:10:\"price_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Price
+  type\";}s:3:\"sku\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:3:\"Sku\";}s:14:\"option_type_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Option
+  type id\";}}s:8:\"required\";a:4:{i:0;s:5:\"title\";i:1;s:10:\"sort_order\";i:2;s:5:\"price\";i:3;s:10:\"price_type\";}}s:60:\"catalog-data-product-attribute-media-gallery-entry-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:16:\"Gallery
+  entry ID\";}s:10:\"media_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Media
+  type\";}s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Gallery
+  entry alternative text\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:35:\"Gallery
+  entry position (sort order)\";}s:8:\"disabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:44:\"If
+  gallery entry is hidden from product page\";}s:5:\"types\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:61:\"Gallery
+  entry image types (thumbnail, image, small_image etc)\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"file\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"File
+  path\";}s:7:\"content\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:52:\"#/definitions/framework-data-image-content-interface\";}}s:8:\"required\";a:5:{i:0;s:10:\"media_type\";i:1;s:5:\"label\";i:2;s:8:\"position\";i:3;s:8:\"disabled\";i:4;s:5:\"types\";}}s:38:\"framework-data-image-content-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:28:\"Image
+  Content data interface\";s:10:\"properties\";O:8:\"stdClass\":3:{s:19:\"base64_encoded_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Media
+  data (base64 encoded content)\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:9:\"MIME
+  type\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Image
+  name\";}}s:8:\"required\";a:3:{i:0;s:19:\"base64_encoded_data\";i:1;s:4:\"type\";i:2;s:4:\"name\";}}s:41:\"catalog-data-product-tier-price-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:17:\"customer_group_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Customer
+  group id\";}s:3:\"qty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:8:\"Tier
+  qty\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:11:\"Price
+  value\";}}s:8:\"required\";a:3:{i:0;s:17:\"customer_group_id\";i:1;s:3:\"qty\";i:2;s:5:\"value\";}}s:45:\"catalog-data-product-search-results-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"Attributes
+  list.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/product\";}}s:15:\"search_criteria\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/framework-search-criteria-interface\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Total
+  count.\";}}s:8:\"required\";a:3:{i:0;s:5:\"items\";i:1;s:15:\"search_criteria\";i:2;s:11:\"total_count\";}}s:40:\"catalog-data-product-attribute-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":36:{s:18:\"is_wysiwyg_enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:12:\"WYSIWYG
+  flag\";}s:24:\"is_html_allowed_on_front\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:41:\"The
+  HTML tags are allowed on the frontend\";}s:16:\"used_for_sort_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:41:\"It
+  is used for sorting in product listing\";}s:13:\"is_filterable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:29:\"It
+  used in layered navigation\";}s:23:\"is_filterable_in_search\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:47:\"It
+  is used in search results layered navigation\";}s:15:\"is_used_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"It
+  is used in catalog product grid\";}s:18:\"is_visible_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:37:\"It
+  is visible in catalog product grid\";}s:21:\"is_filterable_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:40:\"It
+  is filterable in catalog product grid\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Position\";}s:8:\"apply_to\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"Apply
+  to value for the element\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"is_searchable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  attribute can be used in Quick Search\";}s:29:\"is_visible_in_advanced_search\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  attribute can be used in Advanced Search\";}s:13:\"is_comparable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  attribute can be compared on the frontend\";}s:23:\"is_used_for_promo_rules\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  attribute can be used for promo rules\";}s:19:\"is_visible_on_front\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  attribute is visible on the frontend\";}s:23:\"used_in_product_listing\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  attribute can be used in product listing\";}s:10:\"is_visible\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:33:\"Attribute
+  is visible on frontend.\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Attribute
+  scope\";}s:12:\"attribute_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"Id
+  of the attribute.\";}s:14:\"attribute_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Code
+  of the attribute.\";}s:14:\"frontend_input\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"HTML
+  for input element.\";}s:14:\"entity_type_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Entity
+  type id\";}s:11:\"is_required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:22:\"Attribute
+  is required.\";}s:7:\"options\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:56:\"Options
+  of the attribute (key => value pairs for select)\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/eav-data-attribute-option-interface\";}}s:15:\"is_user_defined\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:45:\"Current
+  attribute has been defined by a user.\";}s:22:\"default_frontend_label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Frontend
+  label for default store\";}s:15:\"frontend_labels\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"Frontend
+  label for each store\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/eav-data-attribute-frontend-label-interface\";}}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  note attribute for the element.\";}s:12:\"backend_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Backend
+  type.\";}s:13:\"backend_model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Backend
+  model\";}s:12:\"source_model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Source
+  model\";}s:13:\"default_value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Default
+  value for the element.\";}s:9:\"is_unique\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"This
+  is a unique attribute\";}s:14:\"frontend_class\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Frontend
+  class of attribute\";}s:16:\"validation_rules\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Validation
+  rules.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/eav-data-attribute-validation-rule-interface\";}}s:17:\"custom_attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Custom
+  attributes values.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-attribute-interface\";}}}s:8:\"required\";a:4:{i:0;s:14:\"attribute_code\";i:1;s:14:\"frontend_input\";i:2;s:11:\"is_required\";i:3;s:15:\"frontend_labels\";}}s:35:\"eav-data-attribute-option-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:13:\"Created
+  from:\";s:10:\"properties\";O:8:\"stdClass\":5:{s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  label\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  value\";}s:10:\"sort_order\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Option
+  order\";}s:10:\"is_default\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:7:\"Default\";}s:12:\"store_labels\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"Option
+  label for store scopes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:55:\"#/definitions/eav-data-attribute-option-label-interface\";}}}s:8:\"required\";a:2:{i:0;s:5:\"label\";i:1;s:5:\"value\";}}s:41:\"eav-data-attribute-option-label-interface\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:39:\"Interface
+  AttributeOptionLabelInterface\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"store_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Store
+  id\";}s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  label\";}}}s:43:\"eav-data-attribute-frontend-label-interface\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:41:\"Interface
+  AttributeFrontendLabelInterface\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"store_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Store
+  id\";}s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Option
+  label\";}}}s:44:\"eav-data-attribute-validation-rule-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:42:\"Interface
+  AttributeValidationRuleInterface\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"key\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Object
+  key\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Object
+  value\";}}s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:5:\"value\";}}s:55:\"catalog-data-product-attribute-search-results-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:16:\"Attributes
+  list.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:54:\"#/definitions/catalog-data-product-attribute-interface\";}}s:15:\"search_criteria\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/framework-search-criteria-interface\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Total
+  count.\";}}s:8:\"required\";a:3:{i:0;s:5:\"items\";i:1;s:15:\"search_criteria\";i:2;s:11:\"total_count\";}}s:41:\"catalog-data-category-attribute-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":36:{s:18:\"is_wysiwyg_enabled\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:12:\"WYSIWYG
+  flag\";}s:24:\"is_html_allowed_on_front\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:41:\"The
+  HTML tags are allowed on the frontend\";}s:16:\"used_for_sort_by\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:41:\"It
+  is used for sorting in product listing\";}s:13:\"is_filterable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:29:\"It
+  used in layered navigation\";}s:23:\"is_filterable_in_search\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:47:\"It
+  is used in search results layered navigation\";}s:15:\"is_used_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:34:\"It
+  is used in catalog product grid\";}s:18:\"is_visible_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:37:\"It
+  is visible in catalog product grid\";}s:21:\"is_filterable_in_grid\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:40:\"It
+  is filterable in catalog product grid\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:8:\"Position\";}s:8:\"apply_to\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:30:\"Apply
+  to value for the element\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"is_searchable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  attribute can be used in Quick Search\";}s:29:\"is_visible_in_advanced_search\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  attribute can be used in Advanced Search\";}s:13:\"is_comparable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"The
+  attribute can be compared on the frontend\";}s:23:\"is_used_for_promo_rules\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:41:\"The
+  attribute can be used for promo rules\";}s:19:\"is_visible_on_front\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"The
+  attribute is visible on the frontend\";}s:23:\"used_in_product_listing\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"The
+  attribute can be used in product listing\";}s:10:\"is_visible\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:33:\"Attribute
+  is visible on frontend.\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"Attribute
+  scope\";}s:12:\"attribute_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:20:\"Id
+  of the attribute.\";}s:14:\"attribute_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Code
+  of the attribute.\";}s:14:\"frontend_input\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"HTML
+  for input element.\";}s:14:\"entity_type_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Entity
+  type id\";}s:11:\"is_required\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:22:\"Attribute
+  is required.\";}s:7:\"options\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:56:\"Options
+  of the attribute (key => value pairs for select)\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/eav-data-attribute-option-interface\";}}s:15:\"is_user_defined\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:45:\"Current
+  attribute has been defined by a user.\";}s:22:\"default_frontend_label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Frontend
+  label for default store\";}s:15:\"frontend_labels\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:29:\"Frontend
+  label for each store\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/eav-data-attribute-frontend-label-interface\";}}s:4:\"note\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"The
+  note attribute for the element.\";}s:12:\"backend_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Backend
+  type.\";}s:13:\"backend_model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Backend
+  model\";}s:12:\"source_model\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Source
+  model\";}s:13:\"default_value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Default
+  value for the element.\";}s:9:\"is_unique\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"This
+  is a unique attribute\";}s:14:\"frontend_class\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Frontend
+  class of attribute\";}s:16:\"validation_rules\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Validation
+  rules.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/eav-data-attribute-validation-rule-interface\";}}s:17:\"custom_attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Custom
+  attributes values.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-attribute-interface\";}}}s:8:\"required\";a:4:{i:0;s:14:\"attribute_code\";i:1;s:14:\"frontend_input\";i:2;s:11:\"is_required\";i:3;s:15:\"frontend_labels\";}}s:36:\"catalog-data-category-tree-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:9:\"parent_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:18:\"Parent
+  category ID\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:13:\"Category
+  name\";}s:9:\"is_active\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:26:\"Whether
+  category is active\";}s:8:\"position\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:17:\"Category
+  position\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:14:\"Category
+  level\";}s:13:\"product_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:13:\"Product
+  count\";}s:13:\"children_data\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:50:\"#/definitions/catalog-data-category-tree-interface\";}}}s:8:\"required\";a:7:{i:0;s:9:\"parent_id\";i:1;s:4:\"name\";i:2;s:9:\"is_active\";i:3;s:8:\"position\";i:4;s:5:\"level\";i:5;s:13:\"product_count\";i:6;s:13:\"children_data\";}}s:38:\"catalog-product-website-link-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":2:{s:3:\"sku\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"website_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:11:\"Website
+  ids\";}}s:8:\"required\";a:2:{i:0;s:3:\"sku\";i:1;s:10:\"website_id\";}}s:56:\"catalog-inventory-data-stock-status-collection-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:33:\"Stock
+  Status collection interface\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:5:\"Items\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:59:\"#/definitions/catalog-inventory-data-stock-status-interface\";}}s:15:\"search_criteria\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:63:\"#/definitions/catalog-inventory-stock-status-criteria-interface\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Total
+  count.\";}}s:8:\"required\";a:3:{i:0;s:5:\"items\";i:1;s:15:\"search_criteria\";i:2;s:11:\"total_count\";}}s:45:\"catalog-inventory-data-stock-status-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:30:\"Interface
+  StockStatusInterface\";s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"product_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:8:\"stock_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:3:\"qty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:12:\"stock_status\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:10:\"stock_item\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/catalog-inventory-data-stock-item-interface\";}}s:8:\"required\";a:5:{i:0;s:10:\"product_id\";i:1;s:8:\"stock_id\";i:2;s:3:\"qty\";i:3;s:12:\"stock_status\";i:4;s:10:\"stock_item\";}}s:49:\"catalog-inventory-stock-status-criteria-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:38:\"Interface
+  StockStatusCriteriaInterface\";s:10:\"properties\";O:8:\"stdClass\":5:{s:21:\"mapper_interface_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Associated
+  Mapper Interface name\";}s:13:\"criteria_list\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"Criteria
+  objects added to current Composite Criteria\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/framework-criteria-interface\";}}s:7:\"filters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:15:\"List
+  of filters\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"orders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Ordering
+  criteria\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"limit\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:5:\"Limit\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:5:{i:0;s:21:\"mapper_interface_name\";i:1;s:13:\"criteria_list\";i:2;s:7:\"filters\";i:3;s:6:\"orders\";i:4;s:5:\"limit\";}}s:28:\"framework-criteria-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:27:\"Interface
+  CriteriaInterface\";s:10:\"properties\";O:8:\"stdClass\":5:{s:21:\"mapper_interface_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Associated
+  Mapper Interface name\";}s:13:\"criteria_list\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"Criteria
+  objects added to current Composite Criteria\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/framework-criteria-interface\";}}s:7:\"filters\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:15:\"List
+  of filters\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:6:\"orders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:17:\"Ordering
+  criteria\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"limit\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:5:\"Limit\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:5:{i:0;s:21:\"mapper_interface_name\";i:1;s:13:\"criteria_list\";i:2;s:7:\"filters\";i:3;s:6:\"orders\";i:4;s:5:\"limit\";}}s:40:\"framework-search-search-result-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/framework-search-document-interface\";}}s:12:\"aggregations\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:52:\"#/definitions/framework-search-aggregation-interface\";}s:15:\"search_criteria\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:56:\"#/definitions/framework-search-search-criteria-interface\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:12:\"Total
+  count.\";}}s:8:\"required\";a:4:{i:0;s:5:\"items\";i:1;s:12:\"aggregations\";i:2;s:15:\"search_criteria\";i:3;s:11:\"total_count\";}}s:35:\"framework-search-document-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:17:\"custom_attributes\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Custom
+  attributes values.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-attribute-interface\";}}}s:8:\"required\";a:1:{i:0;s:2:\"id\";}}s:38:\"framework-search-aggregation-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:12:\"Faceted
+  data\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"buckets\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:19:\"All
+  Document fields\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/framework-search-bucket-interface\";}}s:12:\"bucket_names\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:20:\"Document
+  field names\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:2:{i:0;s:7:\"buckets\";i:1;s:12:\"bucket_names\";}}s:33:\"framework-search-bucket-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:12:\"Facet
+  Bucket\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"Field
+  name\";}s:6:\"values\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:12:\"Field
+  values\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/framework-search-aggregation-value-interface\";}}}s:8:\"required\";a:2:{i:0;s:4:\"name\";i:1;s:6:\"values\";}}s:44:\"framework-search-aggregation-value-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Aggregation\";}s:7:\"metrics\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:7:\"Metrics\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"required\";a:2:{i:0;s:5:\"value\";i:1;s:7:\"metrics\";}}s:42:\"framework-search-search-criteria-interface\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"request_name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"filter_groups\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:24:\"A
+  list of filter groups.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/framework-search-filter-group\";}}s:11:\"sort_orders\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:11:\"Sort
+  order.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/framework-sort-order\";}}s:9:\"page_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:10:\"Page
+  size.\";}s:12:\"current_page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:13:\"Current
+  page.\";}}s:8:\"required\";a:2:{i:0;s:12:\"request_name\";i:1;s:13:\"filter_groups\";}}}"
+...

@@ -1,0 +1,938 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:5:\"title\";s:20:\"management.auth0.com\";s:7:\"version\";s:1:\"2\";}"
+host: management.auth0.com
+basePath: /
+paths:
+  /api/v2/clients:
+    get:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - description: A comma separated list of fields to include or exclude (depending
+          on include_fields) from the result, empty to retrieve all fields
+        in: query
+        name: fields
+        type: string
+      - description: <code>true</code> if the fields specified are to be included
+          in the result, <code>false</code> otherwise (defaults to <code>true</code>)
+        in: query
+        name: include_fields
+        type: boolean
+      - description: The page number. Zero based.
+        in: query
+        minimum: 0
+        name: page
+        type: integer
+      - description: 'The amount of entries per page. Default: <code>50</code>. Max
+          value: <code>100</code>. If not present, pagination will be disabled'
+        in: query
+        maximum: 100
+        minimum: 0
+        name: per_page
+        type: integer
+      - description: true if a query summary must be included in the result
+        in: query
+        name: include_totals
+        type: boolean
+      - description: Optionally filter on the global client parameter
+        in: query
+        name: is_global
+        type: boolean
+      - description: Filter on whether or not a client is a first party client
+        in: query
+        name: is_first_party
+        type: boolean
+      - description: A comma separated list of application types used to filter the
+          returned clients (native, spa, regular_web, non_interactive, rms, box, cloudbees,
+          concur, dropbox, mscrm, echosign, egnyte, newrelic, office365, salesforce,
+          sentry, sharepoint, slack, springcm, zendesk, zoom)
+        in: query
+        name: app_type
+        type: string
+      responses:
+        200:
+          description: The clients were retrieved. See <strong>Response Class</strong>
+            below for schema.
+          schema:
+            items:
+              $ref: '#/definitions/get_clients_response'
+            type: array
+        400:
+          description: Invalid request query string. The message will vary depending
+            on the cause.
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: Some fields cannot be read with the permissions granted by
+            the bearer token scopes. The message will vary depending on the fields
+            and the scopes.
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: Retrieves a list of all client applications. Accepts a list of
+        fields to include or exclude.nn<strong>Important:</strong> The <code>client_secret</code>
+        and <code>encryption_key</code> attributes can only be retrieved with the
+        <code>read:client_keys</code> scope.n
+      operationId: get_clients
+      summary: Get all clients
+    post:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/post_clients_body'
+      responses:
+        200:
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/post_clients_response'
+        201:
+          description: The client was created. See <strong>Response Class</strong>
+            below for schema.
+        400:
+          description: Invalid request body. The message will vary depending on the
+            cause.
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: 'Insufficient scope, expected any of: create:clients'
+        409:
+          description: There is another client with the same alias.
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: Creates a new client application. The samples on the right show
+        most attributes that can be used. nnWe recommend to let us to generate a safe
+        secret for you, but you can also provide your own with the <code>client_secret</code>
+        parametern
+      operationId: post_clients
+      summary: Create a client
+  /api/v2/clients/{id}:
+    delete:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - description: The id of the client to delete
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        200:
+          description: No response was specified
+        204:
+          description: The client was deleted.
+        400:
+          description: Global client cannot be deleted
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: 'Insufficient scope, expected any of: delete:clients'
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: Deletes a client and all its related assets (like rules, connections,
+        etc) given its id.
+      operationId: delete_clients_by_id
+      summary: Delete a client
+    get:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - description: The id of the client to retrieve
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: A comma separated list of fields to include or exclude (depending
+          on include_fields) from the result, empty to retrieve all fields
+        in: query
+        name: fields
+        type: string
+      - description: <code>true</code> if the fields specified are to be included
+          in the result, <code>false</code> otherwise (defaults to <code>true</code>)
+        in: query
+        name: include_fields
+        type: boolean
+      responses:
+        200:
+          description: The client was retrieved. See <strong>Response Class</strong>
+            below for schema.
+          schema:
+            $ref: '#/definitions/get_clients_by_id_response'
+        400:
+          description: Invalid request query string. The message will vary depending
+            on the cause.
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: Some fields cannot be read with the permissions granted by
+            the bearer token scopes. The message will vary depending on the fields
+            and the scopes.
+        404:
+          description: The client does not exist.
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: Retrieves a client by its id.nn<strong>Important:</strong> The
+        <code>client_secret</code> <code>encryption_key</code> and <code>signing_keys</code>
+        attributes can only be retrieved with the <code>read:client_keys</code> scope.n
+      operationId: get_clients_by_id
+      summary: Get a client
+    patch:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - description: The id of the client to retrieve
+        in: path
+        name: id
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/patch_clients_by_id_body'
+      responses:
+        200:
+          description: The client was updated. See <strong>Response Class</strong>
+            below for schema.
+          schema:
+            $ref: '#/definitions/patch_clients_by_id_response'
+        400:
+          description: Invalid request body. The message will vary depending on the
+            cause.
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: Some fields cannot be updated with the permissions granted
+            by the bearer token scopes. The message will vary depending on the fields
+            and the scopes.
+        404:
+          description: The client does not exist.
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: <strong>Important:</strong> The <code>client_secret</code> and
+        <code>encryption_key</code> attributes can only be updated with the <code>update:client_keys</code>
+        scope.n
+      operationId: patch_clients_by_id
+      summary: Update a client
+  /api/v2/clients/{id}/rotate-secret:
+    post:
+      consumes:
+      - application/json
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - description: The id of the client to rotate secrets
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        200:
+          description: The secret was rotated. See <strong>Response Class</strong>
+            below for schema.
+          schema:
+            $ref: '#/definitions/post_rotate-secret_response'
+        400:
+          description: Invalid request body. The message will vary depending on the
+            cause.
+        401:
+          description: Invalid signature received for JSON Web Token validation
+        403:
+          description: Some fields cannot be updated with the permissions granted
+            by the bearer token scopes. The message will vary depending on the fields
+            and the scopes.
+        404:
+          description: The client does not exist.
+        429:
+          description: Too many requests. Check the X-RateLimit-Limit, X-RateLimit-Remaining
+            and X-RateLimit-Reset headers.
+      security:
+      - jwt: []
+      description: Rotate a client secret. The generated secret is <strong>NOT</strong>
+        base64 encoded.n
+      operationId: post_rotate-secret
+      summary: Rotate a client secret
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":121:{s:26:\"get_clients_by_id_response\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":29:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/get_clients_by_id_response_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"app_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  URLs that Auth0 can use to as a callback for the client\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"client_aliases\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"client_id\";O:8:\"stdClass\":3:{s:7:\"default\";s:32:\"AaiyAPdpYdesoKnqjj8HJqRn4T5titww\";s:11:\"description\";s:20:\"The
+  id of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:56:\"#/definitions/get_clients_by_id_response_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":3:{s:7:\"default\";s:64:\"MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H\";s:11:\"description\";s:40:\"The
+  client secret, it must not be public\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:104:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  true\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:55:\"#/definitions/get_clients_by_id_response_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"is_first_party\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:47:\"Whether
+  this client a first party client or not\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/get_clients_by_id_response_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/get_clients_by_id_response_mobile\";}s:4:\"name\";O:8:\"stdClass\":3:{s:7:\"default\";s:14:\"My
+  application\";s:11:\"description\";s:22:\"The name of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:12:\"signing_keys\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Client
+  signing keys.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Signing
+  public key.\";s:4:\"type\";s:6:\"string\";}s:5:\"pkcs7\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Signing
+  public key (PKCS#7 format).\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:7:\"default\";b:0;s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":4:{s:7:\"default\";s:4:\"none\";s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:33:\"get_clients_by_id_response_addons\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:34:\"get_clients_by_id_response_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:42:\"get_clients_by_id_response_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:41:\"get_clients_by_id_response_encryption_key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:30:\"get_clients_by_id_response_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:44:\"get_clients_by_id_response_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Configuration
+  related to JWTs for the client\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"alg\";O:8:\"stdClass\":4:{s:7:\"default\";s:5:\"HS256\";s:11:\"description\";s:27:\"Algorithm
+  uses to sign JWTs\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:7:\"default\";i:36000;s:11:\"description\";s:76:\"The
+  amount of seconds the JWT will be valid (affects <code>exp</code> claim)\";s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:14:\"secret_encoded\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:117:\"<code>true</code>
+  if the client secret is base64 encoded, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:33:\"get_clients_by_id_response_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:33:\"get_clients_by_id_response_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:20:\"get_clients_response\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":29:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/get_clients_response_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"app_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  URLs that Auth0 can use to as a callback for the client\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"client_aliases\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"client_id\";O:8:\"stdClass\":3:{s:7:\"default\";s:32:\"AaiyAPdpYdesoKnqjj8HJqRn4T5titww\";s:11:\"description\";s:20:\"The
+  id of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:50:\"#/definitions/get_clients_response_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":3:{s:7:\"default\";s:64:\"MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H\";s:11:\"description\";s:40:\"The
+  client secret, it must not be public\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:104:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  true\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/get_clients_response_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"is_first_party\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:47:\"Whether
+  this client a first party client or not\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:52:\"#/definitions/get_clients_response_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:41:\"#/definitions/get_clients_response_mobile\";}s:4:\"name\";O:8:\"stdClass\":3:{s:7:\"default\";s:14:\"My
+  application\";s:11:\"description\";s:22:\"The name of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:12:\"signing_keys\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Client
+  signing keys.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Signing
+  public key.\";s:4:\"type\";s:6:\"string\";}s:5:\"pkcs7\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Signing
+  public key (PKCS#7 format).\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:7:\"default\";b:0;s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":4:{s:7:\"default\";s:4:\"none\";s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:27:\"get_clients_response_addons\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:28:\"get_clients_response_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:36:\"get_clients_response_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:35:\"get_clients_response_encryption_key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:24:\"get_clients_response_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:38:\"get_clients_response_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Configuration
+  related to JWTs for the client\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"alg\";O:8:\"stdClass\":4:{s:7:\"default\";s:5:\"HS256\";s:11:\"description\";s:27:\"Algorithm
+  uses to sign JWTs\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:7:\"default\";i:36000;s:11:\"description\";s:76:\"The
+  amount of seconds the JWT will be valid (affects <code>exp</code> claim)\";s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:14:\"secret_encoded\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:117:\"<code>true</code>
+  if the client secret is base64 encoded, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:27:\"get_clients_response_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:27:\"get_clients_response_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:24:\"patch_clients_by_id_body\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":27:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/patch_clients_by_id_body_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":4:{s:11:\"description\";s:220:\"Ids
+  of clients that will be allowed to perform delegation requests. Clients that will
+  be allowed to make delegation request. By default, all your clients will be allowed.
+  This field allows you to specify specific clients\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":4:{s:11:\"description\";s:67:\"A
+  set of URLs that are valid to redirect to after logout from Auth0\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:15:\"allowed_origins\";O:8:\"stdClass\":4:{s:11:\"description\";s:52:\"A
+  set of URLs that represents valid origins for CORS\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:8:\"app_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"enum\";a:21:{i:0;s:6:\"native\";i:1;s:3:\"spa\";i:2;s:11:\"regular_web\";i:3;s:15:\"non_interactive\";i:4;s:3:\"rms\";i:5;s:3:\"box\";i:6;s:9:\"cloudbees\";i:7;s:6:\"concur\";i:8;s:7:\"dropbox\";i:9;s:5:\"mscrm\";i:10;s:8:\"echosign\";i:11;s:6:\"egnyte\";i:12;s:8:\"newrelic\";i:13;s:9:\"office365\";i:14;s:10:\"salesforce\";i:15;s:6:\"sentry\";i:16;s:10:\"sharepoint\";i:17;s:5:\"slack\";i:18;s:8:\"springcm\";i:19;s:7:\"zendesk\";i:20;s:4:\"zoom\";}s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":4:{s:11:\"description\";s:78:\"A
+  set of URLs that are valid to call back from Auth0 when authenticating users\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:14:\"client_aliases\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"List
+  of audiences for SAML protocol\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:54:\"#/definitions/patch_clients_by_id_body_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"The
+  secret used to sign tokens for the client\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:11:\"url-or-null\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"The
+  content (HTML, CSS, JS) of the custom login page\";s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise.\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:53:\"#/definitions/patch_clients_by_id_body_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Form
+  template for WS-Federation protocol\";s:4:\"type\";s:6:\"string\";}s:11:\"grant_types\";O:8:\"stdClass\":4:{s:11:\"description\";s:57:\"A
+  set of grant types that the client is authorized to use\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:56:\"#/definitions/patch_clients_by_id_body_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:6:\"format\";s:21:\"absolute-uri-or-empty\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:45:\"#/definitions/patch_clients_by_id_body_mobile\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"The
+  name of the client. Must contain at least one character. Does not allow '<' or '>'.\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"<code>true</code>
+  to use Auth0 instead of the IdP to do Single Sign On, <code>false</code> otherwise
+  (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":3:{s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":4:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}}s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_addons\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  addons for the client\";s:10:\"properties\";O:8:\"stdClass\":28:{s:3:\"aws\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"For
+  example: 'arn:aws:iam::010616021751:saml-provider/idpname'\";s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"For
+  example: 'arn:aws:iam::010616021751:role/foo'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:10:\"azure_blob\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"accountName\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"Your
+  Azure storage account name. Just enter the first segment of the storage URL: http://<strong>YOUR
+  ACCOUNT NAME</strong>.blob.core.windows.net\";s:4:\"type\";s:6:\"string\";}s:8:\"blobName\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"The
+  entity you want to request a token for: e.g. 'my-blob'. If left blank, the computed
+  SAS will apply to the entire storage container\";s:4:\"type\";s:6:\"string\";}s:11:\"blob_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Indicates
+  that the issued token has permission to delete the blob\";s:4:\"type\";s:7:\"boolean\";}s:9:\"blob_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:151:\"Indicates
+  that the issued token has permission to read the content, properties, metadata and
+  block list. Use the blob as the source of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:10:\"blob_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:249:\"Indicates
+  that the issued token has permission to create or write content, properties, metadata,
+  or block list. Snapshot or lease the blob. Resize the blob (page blob only). Use
+  the blob as the destination of a copy operation within the same account\";s:4:\"type\";s:7:\"boolean\";}s:13:\"containerName\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"The
+  container you want to request a token for: e.g. 'my-container'\";s:4:\"type\";s:6:\"string\";}s:16:\"container_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Indicates
+  that the issued token has permission to delete any blob in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_list\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Indicates
+  that the issued token has permission to list blobs in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:196:\"Indicates
+  that the issued token has permission to read the content, properties, metadata or
+  block list of any blob in the container. Use any blob in the container as the source
+  of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:15:\"container_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:279:\"Indicates
+  that for any blob in the container the issued token has permission to create or
+  write content, properties, metadata, or block list. Snapshot or lease the blob.
+  Resize the blob (page blob only). Use the blob as the destination of a copy operation
+  within the same account\";s:4:\"type\";s:7:\"boolean\";}s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:16:\"signedIdentifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  shared access policy identifier defined in your storage account resource\";s:4:\"type\";s:6:\"string\";}s:16:\"storageAccessKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  storage account access key associated storage account\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"azure_sb\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"entityPath\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  entity you want to request a token for, for example: 'my-queue'\";s:4:\"type\";s:6:\"string\";}s:10:\"expiration\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:4:\"type\";s:7:\"integer\";}s:9:\"namespace\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Your
+  Azure Service Bus namespace. The first segment of the Service Bus URL: http://YOUR_NAMESPACE.servicebus.windows.net\";s:4:\"type\";s:6:\"string\";}s:6:\"sasKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  Primary Key associated with the shared access policy\";s:4:\"type\";s:6:\"string\";}s:10:\"sasKeyName\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  shared access policy name defined in your Service Bus entity\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:3:\"box\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:9:\"cloudbees\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:6:\"concur\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:7:\"dropbox\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:8:\"echosign\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:6:\"egnyte\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:8:\"firebase\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"client_email\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  ID of the Service Account you have created (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Lifespan
+  of the Token in seconds (SDK 3+)\";s:4:\"type\";s:7:\"integer\";}s:11:\"private_key\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  Private Key for signing the token. (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:14:\"private_key_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Optional.
+  ID of the private key (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Firebase's
+  secret\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"layer\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"An
+  optional expiration in minutes for the generated token. By default it will be 5
+  minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:5:\"keyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"The
+  Authentication Key identifier used to sign the Layer token\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"The
+  name of the property used as the unique user id in Layer. If none is specified user_id
+  will be used\";s:4:\"type\";s:6:\"string\";}s:10:\"privateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  private key for signing the Layer token\";s:4:\"type\";s:6:\"string\";}s:10:\"providerId\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  Provider ID of your Layer account\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:10:\"providerId\";i:1;s:5:\"keyId\";i:2;s:10:\"privateKey\";}s:4:\"type\";s:6:\"object\";}s:5:\"mscrm\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Microsoft
+  Dynamics CRM application URL.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:8:\"newrelic\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:9:\"office365\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:3:\"rms\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"This
+  is the URL of your Rights Management Server. It can be internal or external, but
+  users will have to be able to reach it.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:10:\"salesforce\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"entity_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"The
+  arbitrary logical URL that identifies the Saleforce resource. The format has to
+  be 'https://whatever.com'\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"salesforce_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"salesforce_sandbox_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"samlp\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":16:{s:8:\"audience\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"authnContextClassRef\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"createUpnClaim\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"digestAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"issuer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"lifetimeInSeconds\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"mapIdentities\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"mapUnknownClaimsAsIs\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierProbes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:30:\"passthroughClaimsWithNoMapping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"signResponse\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"signatureAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:7:\"sap_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Your
+  SAP client ID\";s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  NameID element of the Subject can be used to express the user's identity\";s:4:\"type\";s:6:\"string\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  requested scope for SAP APIs\";s:4:\"type\";s:6:\"string\";}s:15:\"servicePassword\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"API
+  calls to the token endpoint are authenticated with this password. Usually from a
+  service account\";s:4:\"type\";s:6:\"string\";}s:16:\"tokenEndpointUrl\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Your
+  SAP OData server OAuth2 Token Endpoint URL\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"usernameAttribute\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"The
+  name of the property in the user object that maps to a SAP username, for example:
+  'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"sentry\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:10:\"sharepoint\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:5:\"slack\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"team\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Slack
+  team name.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"team\";}s:4:\"type\";s:6:\"object\";}s:8:\"springcm\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:4:\"wams\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"masterkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  Windows Azure Mobile Services's master key\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"wsfed\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:7:\"zendesk\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:4:\"zoom\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"The
+  first segment of your Vanity URL, for example: 'https://{account}.zoom.us'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:32:\"patch_clients_by_id_body_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:28:\"patch_clients_by_id_body_aws\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"For
+  example: 'arn:aws:iam::010616021751:saml-provider/idpname'\";s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"For
+  example: 'arn:aws:iam::010616021751:role/foo'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_body_azure_blob\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"accountName\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"Your
+  Azure storage account name. Just enter the first segment of the storage URL: http://<strong>YOUR
+  ACCOUNT NAME</strong>.blob.core.windows.net\";s:4:\"type\";s:6:\"string\";}s:8:\"blobName\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"The
+  entity you want to request a token for: e.g. 'my-blob'. If left blank, the computed
+  SAS will apply to the entire storage container\";s:4:\"type\";s:6:\"string\";}s:11:\"blob_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Indicates
+  that the issued token has permission to delete the blob\";s:4:\"type\";s:7:\"boolean\";}s:9:\"blob_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:151:\"Indicates
+  that the issued token has permission to read the content, properties, metadata and
+  block list. Use the blob as the source of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:10:\"blob_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:249:\"Indicates
+  that the issued token has permission to create or write content, properties, metadata,
+  or block list. Snapshot or lease the blob. Resize the blob (page blob only). Use
+  the blob as the destination of a copy operation within the same account\";s:4:\"type\";s:7:\"boolean\";}s:13:\"containerName\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"The
+  container you want to request a token for: e.g. 'my-container'\";s:4:\"type\";s:6:\"string\";}s:16:\"container_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Indicates
+  that the issued token has permission to delete any blob in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_list\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Indicates
+  that the issued token has permission to list blobs in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:196:\"Indicates
+  that the issued token has permission to read the content, properties, metadata or
+  block list of any blob in the container. Use any blob in the container as the source
+  of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:15:\"container_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:279:\"Indicates
+  that for any blob in the container the issued token has permission to create or
+  write content, properties, metadata, or block list. Snapshot or lease the blob.
+  Resize the blob (page blob only). Use the blob as the destination of a copy operation
+  within the same account\";s:4:\"type\";s:7:\"boolean\";}s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:16:\"signedIdentifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  shared access policy identifier defined in your storage account resource\";s:4:\"type\";s:6:\"string\";}s:16:\"storageAccessKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  storage account access key associated storage account\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_azure_sb\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"entityPath\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  entity you want to request a token for, for example: 'my-queue'\";s:4:\"type\";s:6:\"string\";}s:10:\"expiration\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:4:\"type\";s:7:\"integer\";}s:9:\"namespace\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Your
+  Azure Service Bus namespace. The first segment of the Service Bus URL: http://YOUR_NAMESPACE.servicebus.windows.net\";s:4:\"type\";s:6:\"string\";}s:6:\"sasKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  Primary Key associated with the shared access policy\";s:4:\"type\";s:6:\"string\";}s:10:\"sasKeyName\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  shared access policy name defined in your Service Bus entity\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:28:\"patch_clients_by_id_body_box\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:40:\"patch_clients_by_id_body_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:34:\"patch_clients_by_id_body_cloudbees\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_concur\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:32:\"patch_clients_by_id_body_dropbox\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_echosign\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_egnyte\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:39:\"patch_clients_by_id_body_encryption_key\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"The
+  client's encryption key\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Encryption
+  certificate\";s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Encryption
+  public key\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Certificate
+  subject\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_firebase\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"client_email\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  ID of the Service Account you have created (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Lifespan
+  of the Token in seconds (SDK 3+)\";s:4:\"type\";s:7:\"integer\";}s:11:\"private_key\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  Private Key for signing the token. (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:14:\"private_key_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Optional.
+  ID of the private key (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Firebase's
+  secret\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:28:\"patch_clients_by_id_body_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:42:\"patch_clients_by_id_body_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"An
+  object that holds settings related to how JWTs are created\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"alg\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"The
+  algorithm used to sign the JsonWebToken\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:11:\"description\";s:79:\"The
+  amount of time (in seconds) that the token will be valid after being issued\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:30:\"patch_clients_by_id_body_layer\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"An
+  optional expiration in minutes for the generated token. By default it will be 5
+  minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:5:\"keyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"The
+  Authentication Key identifier used to sign the Layer token\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"The
+  name of the property used as the unique user id in Layer. If none is specified user_id
+  will be used\";s:4:\"type\";s:6:\"string\";}s:10:\"privateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  private key for signing the Layer token\";s:4:\"type\";s:6:\"string\";}s:10:\"providerId\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  Provider ID of your Layer account\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:10:\"providerId\";i:1;s:5:\"keyId\";i:2;s:10:\"privateKey\";}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:30:\"patch_clients_by_id_body_mscrm\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Microsoft
+  Dynamics CRM application URL.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_newrelic\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:34:\"patch_clients_by_id_body_office365\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:28:\"patch_clients_by_id_body_rms\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"This
+  is the URL of your Rights Management Server. It can be internal or external, but
+  users will have to be able to reach it.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_body_salesforce\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"entity_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"The
+  arbitrary logical URL that identifies the Saleforce resource. The format has to
+  be 'https://whatever.com'\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:39:\"patch_clients_by_id_body_salesforce_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:47:\"patch_clients_by_id_body_salesforce_sandbox_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:30:\"patch_clients_by_id_body_samlp\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":16:{s:8:\"audience\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"authnContextClassRef\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"createUpnClaim\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"digestAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"issuer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"lifetimeInSeconds\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"mapIdentities\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"mapUnknownClaimsAsIs\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierProbes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:30:\"passthroughClaimsWithNoMapping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"signResponse\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"signatureAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:32:\"patch_clients_by_id_body_sap_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Your
+  SAP client ID\";s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  NameID element of the Subject can be used to express the user's identity\";s:4:\"type\";s:6:\"string\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  requested scope for SAP APIs\";s:4:\"type\";s:6:\"string\";}s:15:\"servicePassword\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"API
+  calls to the token endpoint are authenticated with this password. Usually from a
+  service account\";s:4:\"type\";s:6:\"string\";}s:16:\"tokenEndpointUrl\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Your
+  SAP OData server OAuth2 Token Endpoint URL\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"usernameAttribute\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"The
+  name of the property in the user object that maps to a SAP username, for example:
+  'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:31:\"patch_clients_by_id_body_sentry\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_body_sharepoint\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:30:\"patch_clients_by_id_body_slack\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"team\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Slack
+  team name.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"team\";}s:4:\"type\";s:6:\"object\";}s:33:\"patch_clients_by_id_body_springcm\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:29:\"patch_clients_by_id_body_wams\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"masterkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  Windows Azure Mobile Services's master key\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:30:\"patch_clients_by_id_body_wsfed\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:32:\"patch_clients_by_id_body_zendesk\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:29:\"patch_clients_by_id_body_zoom\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"The
+  first segment of your Vanity URL, for example: 'https://{account}.zoom.us'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:28:\"patch_clients_by_id_response\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":29:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/patch_clients_by_id_response_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"app_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  URLs that Auth0 can use to as a callback for the client\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"client_aliases\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"client_id\";O:8:\"stdClass\":3:{s:7:\"default\";s:32:\"AaiyAPdpYdesoKnqjj8HJqRn4T5titww\";s:11:\"description\";s:20:\"The
+  id of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:58:\"#/definitions/patch_clients_by_id_response_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":3:{s:7:\"default\";s:64:\"MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H\";s:11:\"description\";s:40:\"The
+  client secret, it must not be public\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:104:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  true\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/patch_clients_by_id_response_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"is_first_party\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:47:\"Whether
+  this client a first party client or not\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:60:\"#/definitions/patch_clients_by_id_response_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/patch_clients_by_id_response_mobile\";}s:4:\"name\";O:8:\"stdClass\":3:{s:7:\"default\";s:14:\"My
+  application\";s:11:\"description\";s:22:\"The name of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:12:\"signing_keys\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Client
+  signing keys.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Signing
+  public key.\";s:4:\"type\";s:6:\"string\";}s:5:\"pkcs7\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Signing
+  public key (PKCS#7 format).\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:7:\"default\";b:0;s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":4:{s:7:\"default\";s:4:\"none\";s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_response_addons\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:36:\"patch_clients_by_id_response_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:44:\"patch_clients_by_id_response_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:43:\"patch_clients_by_id_response_encryption_key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:32:\"patch_clients_by_id_response_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:46:\"patch_clients_by_id_response_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Configuration
+  related to JWTs for the client\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"alg\";O:8:\"stdClass\":4:{s:7:\"default\";s:5:\"HS256\";s:11:\"description\";s:27:\"Algorithm
+  uses to sign JWTs\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:7:\"default\";i:36000;s:11:\"description\";s:76:\"The
+  amount of seconds the JWT will be valid (affects <code>exp</code> claim)\";s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:14:\"secret_encoded\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:117:\"<code>true</code>
+  if the client secret is base64 encoded, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_response_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:35:\"patch_clients_by_id_response_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:17:\"post_clients_body\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":27:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/post_clients_body_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":4:{s:11:\"description\";s:220:\"Ids
+  of clients that will be allowed to perform delegation requests. Clients that will
+  be allowed to make delegation request. By default, all your clients will be allowed.
+  This field allows you to specify specific clients\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":4:{s:11:\"description\";s:67:\"A
+  set of URLs that are valid to redirect to after logout from Auth0\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:15:\"allowed_origins\";O:8:\"stdClass\":4:{s:11:\"description\";s:52:\"A
+  set of URLs that represents valid origins for CORS\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:8:\"app_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"enum\";a:21:{i:0;s:6:\"native\";i:1;s:3:\"spa\";i:2;s:11:\"regular_web\";i:3;s:15:\"non_interactive\";i:4;s:3:\"rms\";i:5;s:3:\"box\";i:6;s:9:\"cloudbees\";i:7;s:6:\"concur\";i:8;s:7:\"dropbox\";i:9;s:5:\"mscrm\";i:10;s:8:\"echosign\";i:11;s:6:\"egnyte\";i:12;s:8:\"newrelic\";i:13;s:9:\"office365\";i:14;s:10:\"salesforce\";i:15;s:6:\"sentry\";i:16;s:10:\"sharepoint\";i:17;s:5:\"slack\";i:18;s:8:\"springcm\";i:19;s:7:\"zendesk\";i:20;s:4:\"zoom\";}s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":4:{s:11:\"description\";s:78:\"A
+  set of URLs that are valid to call back from Auth0 when authenticating users\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:14:\"client_aliases\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"List
+  of audiences for SAML protocol\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/post_clients_body_client_metadata\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"The
+  content (HTML, CSS, JS) of the custom login page\";s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":2:{s:11:\"description\";s:117:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:46:\"#/definitions/post_clients_body_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Form
+  template for WS-Federation protocol\";s:4:\"type\";s:6:\"string\";}s:11:\"grant_types\";O:8:\"stdClass\":4:{s:11:\"description\";s:57:\"A
+  set of grant types that the client is authorized to use\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:13:\"is_heroku_app\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"<code>true</code>
+  if the client is a heroku application, <code>false</code> otherwise\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/post_clients_body_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:6:\"format\";s:21:\"absolute-uri-or-empty\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/post_clients_body_mobile\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:86:\"The
+  name of the client. Must contain at least one character. Does not allow '<' or '>'\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"<code>true</code>
+  to use Auth0 instead of the IdP to do Single Sign On, <code>false</code> otherwise
+  (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":3:{s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":4:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":2:{s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}}s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_addons\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  addons for the client\";s:10:\"properties\";O:8:\"stdClass\":28:{s:3:\"aws\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"For
+  example: 'arn:aws:iam::010616021751:saml-provider/idpname'\";s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"For
+  example: 'arn:aws:iam::010616021751:role/foo'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:10:\"azure_blob\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"accountName\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"Your
+  Azure storage account name. Just enter the first segment of the storage URL: http://<strong>YOUR
+  ACCOUNT NAME</strong>.blob.core.windows.net\";s:4:\"type\";s:6:\"string\";}s:8:\"blobName\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"The
+  entity you want to request a token for: e.g. 'my-blob'. If left blank, the computed
+  SAS will apply to the entire storage container\";s:4:\"type\";s:6:\"string\";}s:11:\"blob_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Indicates
+  that the issued token has permission to delete the blob\";s:4:\"type\";s:7:\"boolean\";}s:9:\"blob_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:151:\"Indicates
+  that the issued token has permission to read the content, properties, metadata and
+  block list. Use the blob as the source of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:10:\"blob_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:249:\"Indicates
+  that the issued token has permission to create or write content, properties, metadata,
+  or block list. Snapshot or lease the blob. Resize the blob (page blob only). Use
+  the blob as the destination of a copy operation within the same account\";s:4:\"type\";s:7:\"boolean\";}s:13:\"containerName\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"The
+  container you want to request a token for: e.g. 'my-container'\";s:4:\"type\";s:6:\"string\";}s:16:\"container_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Indicates
+  that the issued token has permission to delete any blob in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_list\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Indicates
+  that the issued token has permission to list blobs in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:196:\"Indicates
+  that the issued token has permission to read the content, properties, metadata or
+  block list of any blob in the container. Use any blob in the container as the source
+  of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:15:\"container_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:279:\"Indicates
+  that for any blob in the container the issued token has permission to create or
+  write content, properties, metadata, or block list. Snapshot or lease the blob.
+  Resize the blob (page blob only). Use the blob as the destination of a copy operation
+  within the same account\";s:4:\"type\";s:7:\"boolean\";}s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:16:\"signedIdentifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  shared access policy identifier defined in your storage account resource\";s:4:\"type\";s:6:\"string\";}s:16:\"storageAccessKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  storage account access key associated storage account\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"azure_sb\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"entityPath\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  entity you want to request a token for, for example: 'my-queue'\";s:4:\"type\";s:6:\"string\";}s:10:\"expiration\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:4:\"type\";s:7:\"integer\";}s:9:\"namespace\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Your
+  Azure Service Bus namespace. The first segment of the Service Bus URL: http://YOUR_NAMESPACE.servicebus.windows.net\";s:4:\"type\";s:6:\"string\";}s:6:\"sasKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  Primary Key associated with the shared access policy\";s:4:\"type\";s:6:\"string\";}s:10:\"sasKeyName\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  shared access policy name defined in your Service Bus entity\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:3:\"box\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:9:\"cloudbees\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:6:\"concur\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:7:\"dropbox\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:8:\"echosign\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:6:\"egnyte\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:8:\"firebase\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"client_email\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  ID of the Service Account you have created (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Lifespan
+  of the Token in seconds (SDK 3+)\";s:4:\"type\";s:7:\"integer\";}s:11:\"private_key\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  Private Key for signing the token. (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:14:\"private_key_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Optional.
+  ID of the private key (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Firebase's
+  secret\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"layer\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"An
+  optional expiration in minutes for the generated token. By default it will be 5
+  minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:5:\"keyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"The
+  Authentication Key identifier used to sign the Layer token\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"The
+  name of the property used as the unique user id in Layer. If none is specified user_id
+  will be used\";s:4:\"type\";s:6:\"string\";}s:10:\"privateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  private key for signing the Layer token\";s:4:\"type\";s:6:\"string\";}s:10:\"providerId\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  Provider ID of your Layer account\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:10:\"providerId\";i:1;s:5:\"keyId\";i:2;s:10:\"privateKey\";}s:4:\"type\";s:6:\"object\";}s:5:\"mscrm\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Microsoft
+  Dynamics CRM application URL.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:8:\"newrelic\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:9:\"office365\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:3:\"rms\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"This
+  is the URL of your Rights Management Server. It can be internal or external, but
+  users will have to be able to reach it.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:10:\"salesforce\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"entity_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"The
+  arbitrary logical URL that identifies the Saleforce resource. The format has to
+  be 'https://whatever.com'\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"salesforce_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:22:\"salesforce_sandbox_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"samlp\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":16:{s:8:\"audience\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"authnContextClassRef\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"createUpnClaim\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"digestAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"issuer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"lifetimeInSeconds\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"mapIdentities\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"mapUnknownClaimsAsIs\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierProbes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:30:\"passthroughClaimsWithNoMapping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"signResponse\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"signatureAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:7:\"sap_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Your
+  SAP client ID\";s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  NameID element of the Subject can be used to express the user's identity\";s:4:\"type\";s:6:\"string\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  requested scope for SAP APIs\";s:4:\"type\";s:6:\"string\";}s:15:\"servicePassword\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"API
+  calls to the token endpoint are authenticated with this password. Usually from a
+  service account\";s:4:\"type\";s:6:\"string\";}s:16:\"tokenEndpointUrl\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Your
+  SAP OData server OAuth2 Token Endpoint URL\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"usernameAttribute\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"The
+  name of the property in the user object that maps to a SAP username, for example:
+  'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:6:\"sentry\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:10:\"sharepoint\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:5:\"slack\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"team\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Slack
+  team name.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"team\";}s:4:\"type\";s:6:\"object\";}s:8:\"springcm\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:4:\"wams\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"masterkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  Windows Azure Mobile Services's master key\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"wsfed\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:7:\"zendesk\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:4:\"zoom\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"The
+  first segment of your Vanity URL, for example: 'https://{account}.zoom.us'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:25:\"post_clients_body_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:21:\"post_clients_body_aws\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"For
+  example: 'arn:aws:iam::010616021751:saml-provider/idpname'\";s:4:\"type\";s:6:\"string\";}s:4:\"role\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"For
+  example: 'arn:aws:iam::010616021751:role/foo'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_body_azure_blob\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":13:{s:11:\"accountName\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"Your
+  Azure storage account name. Just enter the first segment of the storage URL: http://<strong>YOUR
+  ACCOUNT NAME</strong>.blob.core.windows.net\";s:4:\"type\";s:6:\"string\";}s:8:\"blobName\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"The
+  entity you want to request a token for: e.g. 'my-blob'. If left blank, the computed
+  SAS will apply to the entire storage container\";s:4:\"type\";s:6:\"string\";}s:11:\"blob_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Indicates
+  that the issued token has permission to delete the blob\";s:4:\"type\";s:7:\"boolean\";}s:9:\"blob_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:151:\"Indicates
+  that the issued token has permission to read the content, properties, metadata and
+  block list. Use the blob as the source of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:10:\"blob_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:249:\"Indicates
+  that the issued token has permission to create or write content, properties, metadata,
+  or block list. Snapshot or lease the blob. Resize the blob (page blob only). Use
+  the blob as the destination of a copy operation within the same account\";s:4:\"type\";s:7:\"boolean\";}s:13:\"containerName\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"The
+  container you want to request a token for: e.g. 'my-container'\";s:4:\"type\";s:6:\"string\";}s:16:\"container_delete\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Indicates
+  that the issued token has permission to delete any blob in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_list\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Indicates
+  that the issued token has permission to list blobs in the container\";s:4:\"type\";s:7:\"boolean\";}s:14:\"container_read\";O:8:\"stdClass\":2:{s:11:\"description\";s:196:\"Indicates
+  that the issued token has permission to read the content, properties, metadata or
+  block list of any blob in the container. Use any blob in the container as the source
+  of a copy operation\";s:4:\"type\";s:7:\"boolean\";}s:15:\"container_write\";O:8:\"stdClass\":2:{s:11:\"description\";s:279:\"Indicates
+  that for any blob in the container the issued token has permission to create or
+  write content, properties, metadata, or block list. Snapshot or lease the blob.
+  Resize the blob (page blob only). Use the blob as the destination of a copy operation
+  within the same account\";s:4:\"type\";s:7:\"boolean\";}s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:16:\"signedIdentifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  shared access policy identifier defined in your storage account resource\";s:4:\"type\";s:6:\"string\";}s:16:\"storageAccessKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"The
+  storage account access key associated storage account\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_azure_sb\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"entityPath\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"The
+  entity you want to request a token for, for example: 'my-queue'\";s:4:\"type\";s:6:\"string\";}s:10:\"expiration\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Expiration
+  in minutes for the generated token. Default: 5 minutes\";s:4:\"type\";s:7:\"integer\";}s:9:\"namespace\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Your
+  Azure Service Bus namespace. The first segment of the Service Bus URL: http://YOUR_NAMESPACE.servicebus.windows.net\";s:4:\"type\";s:6:\"string\";}s:6:\"sasKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:56:\"The
+  Primary Key associated with the shared access policy\";s:4:\"type\";s:6:\"string\";}s:10:\"sasKeyName\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"The
+  shared access policy name defined in your Service Bus entity\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"post_clients_body_box\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:33:\"post_clients_body_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:27:\"post_clients_body_cloudbees\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_concur\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:25:\"post_clients_body_dropbox\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_echosign\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_egnyte\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:32:\"post_clients_body_encryption_key\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"The
+  client's encryption key\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"Encryption
+  certificate\";s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"Encryption
+  public key\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Certificate
+  subject\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_firebase\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:12:\"client_email\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  ID of the Service Account you have created (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Lifespan
+  of the Token in seconds (SDK 3+)\";s:4:\"type\";s:7:\"integer\";}s:11:\"private_key\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  Private Key for signing the token. (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:14:\"private_key_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Optional.
+  ID of the private key (SDK 3+)\";s:4:\"type\";s:6:\"string\";}s:6:\"secret\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Firebase's
+  secret\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"post_clients_body_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:35:\"post_clients_body_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"An
+  object that holds settings related to how JWTs are created\";s:10:\"properties\";O:8:\"stdClass\":3:{s:3:\"alg\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"The
+  algorithm used to sign the JsonWebToken\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:11:\"description\";s:79:\"The
+  amount of time (in seconds) that the token will be valid after being issued\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:23:\"post_clients_body_layer\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"expiration\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"An
+  optional expiration in minutes for the generated token. By default it will be 5
+  minutes\";s:7:\"minimum\";i:0;s:4:\"type\";s:7:\"integer\";}s:5:\"keyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:62:\"The
+  Authentication Key identifier used to sign the Layer token\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:103:\"The
+  name of the property used as the unique user id in Layer. If none is specified user_id
+  will be used\";s:4:\"type\";s:6:\"string\";}s:10:\"privateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  private key for signing the Layer token\";s:4:\"type\";s:6:\"string\";}s:10:\"providerId\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  Provider ID of your Layer account\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:10:\"providerId\";i:1;s:5:\"keyId\";i:2;s:10:\"privateKey\";}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:23:\"post_clients_body_mscrm\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"Microsoft
+  Dynamics CRM application URL.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_newrelic\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:27:\"post_clients_body_office365\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:21:\"post_clients_body_rms\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":3:{s:11:\"description\";s:125:\"This
+  is the URL of your Rights Management Server. It can be internal or external, but
+  users will have to be able to reach it.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:3:\"url\";}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_body_salesforce\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"entity_id\";O:8:\"stdClass\":3:{s:11:\"description\";s:109:\"The
+  arbitrary logical URL that identifies the Saleforce resource. The format has to
+  be 'https://whatever.com'\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:32:\"post_clients_body_salesforce_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:40:\"post_clients_body_salesforce_sandbox_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"The
+  Consumer Key assigned by Salesforce to the Connected App\";s:4:\"type\";s:6:\"string\";}s:13:\"communityName\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  community name\";s:4:\"type\";s:6:\"string\";}s:21:\"community_url_section\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  community url section\";s:4:\"type\";s:6:\"string\";}s:9:\"principal\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"The
+  name of the property in the user object that maps to a Salesforce username, for
+  example: 'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"post_clients_body_samlp\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":16:{s:8:\"audience\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"authnContextClassRef\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"createUpnClaim\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"destination\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"digestAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"issuer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"lifetimeInSeconds\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:13:\"mapIdentities\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"mapUnknownClaimsAsIs\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"mappings\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierProbes\";O:8:\"stdClass\":3:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;}s:30:\"passthroughClaimsWithNoMapping\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"recipient\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"signResponse\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:18:\"signatureAlgorithm\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"post_clients_body_sap_api\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"clientid\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Your
+  SAP client ID\";s:4:\"type\";s:6:\"string\";}s:20:\"nameIdentifierFormat\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  NameID element of the Subject can be used to express the user's identity\";s:4:\"type\";s:6:\"string\";}s:5:\"scope\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  requested scope for SAP APIs\";s:4:\"type\";s:6:\"string\";}s:15:\"servicePassword\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"API
+  calls to the token endpoint are authenticated with this password. Usually from a
+  service account\";s:4:\"type\";s:6:\"string\";}s:16:\"tokenEndpointUrl\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"Your
+  SAP OData server OAuth2 Token Endpoint URL\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"usernameAttribute\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"The
+  name of the property in the user object that maps to a SAP username, for example:
+  'email'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:24:\"post_clients_body_sentry\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_body_sharepoint\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:23:\"post_clients_body_slack\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"team\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Slack
+  team name.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"team\";}s:4:\"type\";s:6:\"object\";}s:26:\"post_clients_body_springcm\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:22:\"post_clients_body_wams\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:9:\"masterkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  Windows Azure Mobile Services's master key\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:23:\"post_clients_body_wsfed\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:25:\"post_clients_body_zendesk\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:22:\"post_clients_body_zoom\";O:8:\"stdClass\":3:{s:7:\"default\";O:8:\"stdClass\":0:{}s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"account\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"The
+  first segment of your Vanity URL, for example: 'https://{account}.zoom.us'\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"post_clients_response\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":29:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/post_clients_response_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"app_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  URLs that Auth0 can use to as a callback for the client\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"client_aliases\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"client_id\";O:8:\"stdClass\":3:{s:7:\"default\";s:32:\"AaiyAPdpYdesoKnqjj8HJqRn4T5titww\";s:11:\"description\";s:20:\"The
+  id of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:51:\"#/definitions/post_clients_response_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":3:{s:7:\"default\";s:64:\"MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H\";s:11:\"description\";s:40:\"The
+  client secret, it must not be public\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:104:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  true\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:50:\"#/definitions/post_clients_response_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"is_first_party\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:47:\"Whether
+  this client a first party client or not\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:53:\"#/definitions/post_clients_response_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/post_clients_response_mobile\";}s:4:\"name\";O:8:\"stdClass\":3:{s:7:\"default\";s:14:\"My
+  application\";s:11:\"description\";s:22:\"The name of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:12:\"signing_keys\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Client
+  signing keys.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Signing
+  public key.\";s:4:\"type\";s:6:\"string\";}s:5:\"pkcs7\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Signing
+  public key (PKCS#7 format).\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:7:\"default\";b:0;s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":4:{s:7:\"default\";s:4:\"none\";s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_response_addons\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:29:\"post_clients_response_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:37:\"post_clients_response_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:36:\"post_clients_response_encryption_key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:25:\"post_clients_response_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:39:\"post_clients_response_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Configuration
+  related to JWTs for the client\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"alg\";O:8:\"stdClass\":4:{s:7:\"default\";s:5:\"HS256\";s:11:\"description\";s:27:\"Algorithm
+  uses to sign JWTs\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:7:\"default\";i:36000;s:11:\"description\";s:76:\"The
+  amount of seconds the JWT will be valid (affects <code>exp</code> claim)\";s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:14:\"secret_encoded\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:117:\"<code>true</code>
+  if the client secret is base64 encoded, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_response_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:28:\"post_clients_response_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:27:\"post_rotate-secret_response\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":29:{s:6:\"addons\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/post_rotate-secret_response_addons\";}s:15:\"allowed_clients\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:19:\"allowed_logout_urls\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:15:\"allowed_origins\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"app_type\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  type of application this client represents\";s:4:\"type\";s:6:\"string\";}s:9:\"callbacks\";O:8:\"stdClass\":3:{s:11:\"description\";s:59:\"The
+  URLs that Auth0 can use to as a callback for the client\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:14:\"client_aliases\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:9:\"client_id\";O:8:\"stdClass\":3:{s:7:\"default\";s:32:\"AaiyAPdpYdesoKnqjj8HJqRn4T5titww\";s:11:\"description\";s:20:\"The
+  id of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"client_metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:57:\"#/definitions/post_rotate-secret_response_client_metadata\";}s:13:\"client_secret\";O:8:\"stdClass\":3:{s:7:\"default\";s:64:\"MG_TNT2ver-SylNat-_VeMmd-4m0Waba0jr1troztBniSChEw0glxEmgEi2Kw40H\";s:11:\"description\";s:40:\"The
+  client secret, it must not be public\";s:4:\"type\";s:6:\"string\";}s:17:\"cross_origin_auth\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"<code>true</code>
+  if this client can be used to make cross-origin authentication requests, <code>false</code>
+  otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:16:\"cross_origin_loc\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"Url
+  fo the location in your site where the cross origin verification takes place for
+  the cross-origin auth flow when performing Auth in your own domain instead of Auth0
+  hosted login page.\";s:6:\"format\";s:3:\"url\";s:4:\"type\";s:6:\"string\";}s:17:\"custom_login_page\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"custom_login_page_on\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:104:\"<code>true</code>
+  if the custom login page is to be used, <code>false</code> otherwise. Defaults to
+  true\";s:4:\"type\";s:7:\"boolean\";}s:25:\"custom_login_page_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Free
+  text description of the purpose of the Client. (Max character length: <code>140</code>)\";s:4:\"type\";s:6:\"string\";}s:14:\"encryption_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:56:\"#/definitions/post_rotate-secret_response_encryption_key\";}s:13:\"form_template\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"is_first_party\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:47:\"Whether
+  this client a first party client or not\";s:4:\"type\";s:7:\"boolean\";}s:17:\"jwt_configuration\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:59:\"#/definitions/post_rotate-secret_response_jwt_configuration\";}s:8:\"logo_uri\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"The
+  URL of the client logo (recommended size: 150x150)\";s:4:\"type\";s:6:\"string\";}s:6:\"mobile\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/post_rotate-secret_response_mobile\";}s:4:\"name\";O:8:\"stdClass\":3:{s:7:\"default\";s:14:\"My
+  application\";s:11:\"description\";s:22:\"The name of the client\";s:4:\"type\";s:6:\"string\";}s:15:\"oidc_conformant\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:62:\"Whether
+  this client will conform to strict OIDC specifications\";s:4:\"type\";s:7:\"boolean\";}s:12:\"signing_keys\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"Client
+  signing keys.\";s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"cert\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Signing
+  public key.\";s:4:\"type\";s:6:\"string\";}s:5:\"pkcs7\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Signing
+  public key (PKCS#7 format).\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:3:\"sso\";O:8:\"stdClass\":2:{s:7:\"default\";b:0;s:4:\"type\";s:7:\"boolean\";}s:12:\"sso_disabled\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:103:\"<code>true</code>
+  to disable Single Sign On, <code>false</code> otherwise (default: <code>false</code>)\";s:4:\"type\";s:7:\"boolean\";}s:26:\"token_endpoint_auth_method\";O:8:\"stdClass\":4:{s:7:\"default\";s:4:\"none\";s:11:\"description\";s:241:\"Defines
+  the requested authentication method for the token endpoint. Possible values are
+  'none' (public client without a client secret), 'client_secret_post' (client uses
+  HTTP POST parameters) or 'client_secret_basic' (client uses HTTP Basic)\";s:4:\"enum\";a:3:{i:0;s:4:\"none\";i:1;s:18:\"client_secret_post\";i:2;s:19:\"client_secret_basic\";}s:4:\"type\";s:6:\"string\";}s:11:\"web_origins\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"A
+  set of URLs that represents valid web origins for use with web message response
+  mode\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:34:\"post_rotate-secret_response_addons\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:35:\"post_rotate-secret_response_android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:43:\"post_rotate-secret_response_client_metadata\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Metadata
+  associated with the client, in the form of an object with string values (max 255
+  chars).  Maximum of 10 metadata properties allowed.\";s:4:\"type\";s:6:\"object\";}s:42:\"post_rotate-secret_response_encryption_key\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"cert\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"pub\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:31:\"post_rotate-secret_response_ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:45:\"post_rotate-secret_response_jwt_configuration\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Configuration
+  related to JWTs for the client\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"alg\";O:8:\"stdClass\":4:{s:7:\"default\";s:5:\"HS256\";s:11:\"description\";s:27:\"Algorithm
+  uses to sign JWTs\";s:4:\"enum\";a:2:{i:0;s:5:\"HS256\";i:1;s:5:\"RS256\";}s:4:\"type\";s:6:\"string\";}s:19:\"lifetime_in_seconds\";O:8:\"stdClass\":3:{s:7:\"default\";i:36000;s:11:\"description\";s:76:\"The
+  amount of seconds the JWT will be valid (affects <code>exp</code> claim)\";s:4:\"type\";s:7:\"integer\";}s:6:\"scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}s:14:\"secret_encoded\";O:8:\"stdClass\":3:{s:7:\"default\";b:1;s:11:\"description\";s:117:\"<code>true</code>
+  if the client secret is base64 encoded, <code>false</code> otherwise. Defaults to
+  <code>true</code>\";s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:34:\"post_rotate-secret_response_mobile\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Configuration
+  related to native mobile apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"android\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";s:11:\"com.example\";s:24:\"sha256_cert_fingerprints\";a:1:{i:0;s:12:\"D8:A0:83:...\";}}s:11:\"description\";s:44:\"Configuration
+  related to Android native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:16:\"app_package_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Application
+  package name found in <code>AndroidManifest.xml</code>\";s:4:\"type\";s:6:\"string\";}s:24:\"sha256_cert_fingerprints\";O:8:\"stdClass\":5:{s:7:\"default\";a:0:{}s:11:\"description\";s:171:\"The
+  SHA256 fingerprints of your app's signing certificate. Multiple fingerprints can
+  be used to support different versions of your app, such as debug and production
+  builds\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"minItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:3:\"ios\";O:8:\"stdClass\":4:{s:7:\"default\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";s:16:\"com.my.bundle.id\";s:7:\"team_id\";s:10:\"9JA89QQLNQ\";}s:11:\"description\";s:40:\"Configuration
+  related to iOS native apps\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"app_bundle_identifier\";O:8:\"stdClass\":2:{s:11:\"description\";s:153:\"Assigned
+  by the developer to the app as its unique identifier inside the store, usually is
+  a reverse domain plus the app name: <code>com.you.MyApp</code>\";s:4:\"type\";s:6:\"string\";}s:7:\"team_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Identifier
+  assigned to the account that signs and upload the app to the store\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:34:\"post_rotate-secret_response_scopes\";O:8:\"stdClass\":2:{s:7:\"default\";O:8:\"stdClass\":0:{}s:4:\"type\";s:6:\"object\";}}"
+...

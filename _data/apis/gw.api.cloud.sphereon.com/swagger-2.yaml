@@ -1,0 +1,698 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:26:\"Apache
+  License Version 2.0\";s:3:\"url\";s:42:\"http://www.apache.org/licenses/LICENSE-2.0\";}s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:20:\"Sphereon
+  DevOps Team\";s:3:\"url\";s:20:\"https://sphereon.com\";s:5:\"email\";s:16:\"dev@sphereon.com\";}s:11:\"description\";s:583:\"Sphereon
+  Storage API provides an abstraction layer for storage of (virtual) folders and streams
+  (files/contents) fully agnostic with respect to supported storage backends. This
+  allows for easy uniform access to and manipulation of contents regardless of the
+  content backend being used. Currently the following backends are supported: Sphereon
+  Cloud Storage, Amazon S3, Azure Blob Storage, Google Cloud Storage or one of the
+  Xillio supported content repositories like Documentum, Dropbox etc. For more information
+  about this API please visit https://docs.sphereon.com/api/storage/0.8/\";s:14:\"termsOfService\";s:42:\"https://docs.sphereon.com/api/storage/0.8/\";s:5:\"title\";s:7:\"Storage\";s:7:\"version\";s:3:\"0.8\";}"
+host: gw.api.cloud.sphereon.com
+basePath: /bucket-storage/0.8
+paths:
+  /containers/{containerId}:
+    get:
+      summary: Get container
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Get an existing container. Please note that you can retrieve a
+        container both by it's ID, which is globally unique among tenants and applications,
+        as well as by name, which is unique within an application of a tenant
+      operationId: getContainer
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/ContainerResponse'
+          description: Container info returned
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container name or id
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container does not exist
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      tags:
+      - Container
+      consumes:
+      - application/json
+    delete:
+      summary: Delete container
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Delete a container Please note that you can delete a container
+        both by it's ID, which is globally unique among tenants and applications,
+        as well as by name, which is unique within an application of a tenant
+      operationId: deleteContainer
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/ContainerResponse'
+          description: Container deleted
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container name or container was not empty and recursion
+            was not set
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: query
+        name: delete
+        description: delete
+        type: string
+        required: false
+        enum:
+        - RECURSIVE
+        - EMPTY_ONLY
+      tags:
+      - Container
+      consumes:
+      - application/json
+    put:
+      summary: Update container
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Update container with new information
+      operationId: updateContainer
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/ContainerResponse'
+          description: Container updated
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid Container request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Backend was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - schema:
+          $ref: '#/definitions/ContainerRequest'
+        in: body
+        name: containerRequest
+        description: containerRequest
+        required: true
+      tags:
+      - Container
+      consumes:
+      - application/json;charset=UTF-8
+  /containers:
+    post:
+      summary: Create container
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Create a new container
+      operationId: createContainer
+      responses:
+        201:
+          schema:
+            $ref: '#/definitions/ContainerResponse'
+          description: Container created
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid Container request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Backend was not found
+      parameters:
+      - schema:
+          $ref: '#/definitions/ContainerRequest'
+        in: body
+        name: containerRequest
+        description: containerRequest
+        required: true
+      tags:
+      - Container
+      consumes:
+      - application/json;charset=UTF-8
+  /info/path/{containerId}/:
+    get:
+      summary: List streams in root path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json
+      description: Returns Stream(s) information from the root. When the path points
+        to a file and if the file exists, a StreamInfo record of that single file
+        will be returned. When the path points to a folder, the StreamInfo records
+        of all files in that folder will be returned.
+      operationId: listInfoUsingRootPath
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/InfoResponse'
+          description: Object information result
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream information request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      tags:
+      - Info
+      consumes:
+      - application/json
+  /info/location:
+    post:
+      summary: List streams from StreamLocation
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json
+      description: Returns Stream(s) information from the given Stream Location. When
+        the path points to a file and if the file exists, a StreamInfo record of that
+        single file will be returned. When the path points to a folder, the StreamInfo
+        records of all files in that folder will be returned.
+      operationId: listInfoUsingLocation
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/InfoResponse'
+          description: Object information result
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream information request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - schema:
+          $ref: '#/definitions/StreamLocation'
+        in: body
+        name: streamLocation
+        description: streamLocation
+        required: true
+      tags:
+      - Info
+      consumes:
+      - application/json;charset=UTF-8
+  /streams/location:
+    post:
+      summary: Get stream using StreamLocation
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/octet-stream
+      - application/json;charset=UTF-8
+      description: Get stream from a container using a StreamLocation
+      operationId: getStreamUsingLocation
+      responses:
+        200:
+          schema:
+            format: byte
+            type: string
+          description: Object retrieved
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream name
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Object or container did not exist
+      parameters:
+      - schema:
+          $ref: '#/definitions/StreamLocation'
+        in: body
+        name: streamLocation
+        description: streamLocation
+        required: true
+      tags:
+      - Streams
+      consumes:
+      - application/json;charset=UTF-8
+    delete:
+      summary: Delete stream using StreamLocation
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - '*/*'
+      description: Delete an existing stream from a container by stream location.
+        There is no response body for a delete operation.
+      operationId: deleteStreamUsingLocation
+      responses:
+        200:
+          description: Object deleted
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream name
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container or stream was not found
+      parameters:
+      - schema:
+          $ref: '#/definitions/StreamLocation'
+        in: body
+        name: streamLocation
+        description: streamLocation
+        required: true
+      tags:
+      - Streams
+      consumes:
+      - application/json;charset=UTF-8
+  /streams/path/{containerId}/{path}:
+    post:
+      summary: Create a new stream using Path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json
+      description: Create a new stream within a container. Query parameter creationMode
+        accepts values NEW_ONLY to create a new stream, REQUIRE_EXISTING to update
+        an stream and ALLOW_EXISTING to create a new stream or overwrite an existing
+        stream.
+      operationId: createStreamUsingPath
+      responses:
+        201:
+          schema:
+            $ref: '#/definitions/StreamResponse'
+          description: Object created
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: path
+        name: path
+        description: path
+        type: string
+        required: true
+      - in: formData
+        name: stream
+        description: stream
+        type: file
+        required: true
+      - in: query
+        name: propagationType
+        description: propagationType
+        type: string
+        required: false
+        enum:
+        - "NO"
+        - REQUIRE
+        - ALLOW
+      tags:
+      - Streams
+      consumes:
+      - multipart/form-data
+    get:
+      summary: Get stream using Path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/octet-stream
+      - application/json;charset=UTF-8
+      description: Get stream from a container using a path
+      operationId: getStreamUsingPath
+      responses:
+        200:
+          schema:
+            format: byte
+            type: string
+          description: Object retrieved
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream name
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Object or container did not exist
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: path
+        name: path
+        description: path
+        type: string
+        required: true
+      tags:
+      - Streams
+      consumes:
+      - application/json
+    delete:
+      summary: Delete stream using Path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - '*/*'
+      description: Delete stream from a container. There is no request nor response
+        body for a delete operation.
+      operationId: deleteStreamUsingPath
+      responses:
+        200:
+          description: Object deleted
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream name
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container or stream was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: path
+        name: path
+        description: path
+        type: string
+        required: true
+      tags:
+      - Streams
+      consumes:
+      - application/json
+    put:
+      summary: Update existing stream using Path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json
+      description: Update stream within a container
+      operationId: updateStreamUsingPath
+      responses:
+        201:
+          schema:
+            $ref: '#/definitions/StreamResponse'
+          description: Object update
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: path
+        name: path
+        description: path
+        type: string
+        required: true
+      - in: formData
+        name: stream
+        description: stream
+        type: file
+        required: true
+      tags:
+      - Streams
+      consumes:
+      - multipart/form-data
+  /backends:
+    post:
+      summary: Create a new backend
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Create a new backend
+      operationId: createBackend
+      responses:
+        201:
+          schema:
+            $ref: '#/definitions/BackendResponse'
+          description: Backend created
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid backend request
+      parameters:
+      - schema:
+          $ref: '#/definitions/BackendRequest'
+        in: body
+        name: backendRequest
+        description: backendRequest
+        required: true
+      tags:
+      - Backend
+      consumes:
+      - application/json;charset=UTF-8
+  /backends/{backendId}:
+    get:
+      summary: Get backend
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Get an existing backend. Please note that you can retrieve a backend
+        both by it's ID, which is globally unique among tenants and applications,
+        as well as by name, which is unique within an application of a tenant
+      operationId: getBackend
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/BackendResponse'
+          description: Container info returned
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid backend name or id
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container does not exist
+      parameters:
+      - in: path
+        name: backendId
+        description: backendId
+        type: string
+        required: true
+      tags:
+      - Backend
+      consumes:
+      - application/json
+    delete:
+      summary: Delete a backend
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Delete an existing backend. Please note that you can delete a backend
+        both by it's ID, which is globally unique among tenants and applications,
+        as well as by name, which is unique within an application of a tenant
+      operationId: deleteBackend
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/BackendResponse'
+          description: Backend deleted
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Backend was already deleted or unknown backend
+      parameters:
+      - in: path
+        name: backendId
+        description: backendId
+        type: string
+        required: true
+      tags:
+      - Backend
+      consumes:
+      - application/json
+    put:
+      summary: Update backend
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json;charset=UTF-8
+      description: Update backend with new information
+      operationId: updateBackend
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/BackendResponse'
+          description: Backend updated
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid backend request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Backend was not found
+      parameters:
+      - in: path
+        name: backendId
+        description: backendId
+        type: string
+        required: true
+      - schema:
+          $ref: '#/definitions/BackendRequest'
+        in: body
+        name: backendRequest
+        description: backendRequest
+        required: true
+      tags:
+      - Backend
+      consumes:
+      - application/json;charset=UTF-8
+  /info/path/{containerId}/{path}:
+    get:
+      summary: List streams in path
+      security:
+      - oauth2schema:
+        - global
+      produces:
+      - application/json
+      description: Returns Stream(s) information on the given path. When the path
+        points to a file and if the file exists, a StreamInfo record of that single
+        file will be returned. When the path points to a folder, the StreamInfo records
+        of all files in that folder will be returned.
+      operationId: listInfoUsingPath
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/InfoResponse'
+          description: Object information result
+        400:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Invalid container or stream information request
+        404:
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: Container was not found
+      parameters:
+      - in: path
+        name: containerId
+        description: containerId
+        type: string
+        required: true
+      - in: path
+        name: path
+        description: path
+        type: string
+        required: true
+      tags:
+      - Info
+      consumes:
+      - application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":18:{s:14:\"BackendRequest\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:11:\"backendType\";i:1;s:11:\"credentials\";i:2;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:8:\"endpoint\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"The
+  endpoint for the backend. Please note that only a Xillio backend needs the endpoint
+  configured for now. Other backends are resolved automatically\";s:4:\"type\";s:6:\"string\";}s:11:\"credentials\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  credentials details\";s:4:\"$ref\";s:32:\"#/definitions/CredentialsRequest\";}s:11:\"backendType\";O:8:\"stdClass\":3:{s:11:\"description\";s:117:\"The
+  type of backend that is created. This field allows users to create a local backend
+  or with supported 3rd parties.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:22:\"SPHEREON_CLOUD_STORAGE\";i:1;s:9:\"AMAZON_S3\";i:2;s:21:\"MS_AZURE_BLOB_STORAGE\";i:3;s:20:\"GOOGLE_CLOUD_STORAGE\";i:4;s:13:\"XILLIO_ENGINE\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:196:\"The
+  storage region where the container and files are stored. This option is available
+  for Google and Amazon Storage. For Azure is only possible to set the region when
+  creating the storage account.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:26:{i:0;s:24:\"AMAZON_S3_AP_NORTHEAST_1\";i:1;s:24:\"AMAZON_S3_AP_NORTHEAST_2\";i:2;s:20:\"AMAZON_S3_AP_SOUTH_1\";i:3;s:24:\"AMAZON_S3_AP_SOUTHEAST_1\";i:4;s:24:\"AMAZON_S3_AP_SOUTHEAST_2\";i:5;s:22:\"AMAZON_S3_CA_CENTRAL_1\";i:6;s:20:\"AMAZON_S3_CN_NORTH_1\";i:7;s:22:\"AMAZON_S3_EU_CENTRAL_1\";i:8;s:19:\"AMAZON_S3_EU_WEST_1\";i:9;s:19:\"AMAZON_S3_EU_WEST_2\";i:10;s:19:\"AMAZON_S3_SA_EAST_1\";i:11;s:19:\"AMAZON_S3_US_EAST_1\";i:12;s:19:\"AMAZON_S3_US_EAST_2\";i:13;s:21:\"AMAZON_S3_US_STANDARD\";i:14;s:19:\"AMAZON_S3_US_WEST_1\";i:15;s:19:\"AMAZON_S3_US_WEST_2\";i:16;s:19:\"GOOGLE_STORAGE_ASIA\";i:17;s:25:\"GOOGLE_STORAGE_ASIA_EAST1\";i:18;s:17:\"GOOGLE_STORAGE_EU\";i:19;s:17:\"GOOGLE_STORAGE_US\";i:20;s:26:\"GOOGLE_STORAGE_US_CENTRAL1\";i:21;s:26:\"GOOGLE_STORAGE_US_CENTRAL2\";i:22;s:23:\"GOOGLE_STORAGE_US_EAST1\";i:23;s:23:\"GOOGLE_STORAGE_US_EAST2\";i:24;s:23:\"GOOGLE_STORAGE_US_EAST3\";i:25;s:23:\"GOOGLE_STORAGE_US_WEST1\";}}s:8:\"parentId\";O:8:\"stdClass\":2:{s:11:\"description\";s:156:\"The
+  backend that is used for when properties are not set. This allows usernamePasswordCredentials
+  to be set at one backend and re-used by multiple backends.\";s:4:\"type\";s:6:\"string\";}}}s:12:\"InfoResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:11:\"streamInfos\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/StreamInfo\";}}}}s:18:\"CredentialsRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:23:\"oAuth2ClientCredentials\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  oAuth2 Client Credentials for this backend.\";s:4:\"$ref\";s:37:\"#/definitions/OAuth2ClientCredentials\";}s:16:\"oAuthCredentials\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"The
+  oAuth Credentials for this backend.\";s:4:\"$ref\";s:30:\"#/definitions/OAuthCredentials\";}s:27:\"usernamePasswordCredentials\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"The
+  usernamePasswordCredentials for this backend.\";s:4:\"$ref\";s:41:\"#/definitions/UsernamePasswordCredentials\";}s:22:\"bearerTokenCredentials\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  bearerTokenCredentials for this backend.\";s:4:\"$ref\";s:36:\"#/definitions/BearerTokenCredentials\";}}}s:17:\"ContainerResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"container\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Container\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"REQUESTED\";i:1;s:7:\"CREATED\";i:2;s:7:\"UPDATED\";i:3;s:7:\"DELETED\";}}}}s:16:\"OAuthCredentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"credentialType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:13:\"NoCredentials\";i:1;s:16:\"OAuthCredentials\";i:2;s:22:\"BearerTokenCredentials\";i:3;s:27:\"UsernamePasswordCredentials\";i:4;s:23:\"OAuth2ClientCredentials\";}}s:9:\"secretkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  OAuth secret key.\";s:4:\"type\";s:6:\"string\";}s:11:\"accesskeyid\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  OAuth access key.\";s:4:\"type\";s:6:\"string\";}}}s:14:\"StreamResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"streamLocation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/StreamLocation\";}s:13:\"contentLength\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"REQUESTED\";i:1;s:7:\"CREATED\";i:2;s:7:\"UPDATED\";i:3;s:7:\"DELETED\";}}s:11:\"contentType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:15:\"BackendResponse\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"backend\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Backend\";}s:10:\"containers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Container\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"REQUESTED\";i:1;s:7:\"CREATED\";i:2;s:7:\"UPDATED\";i:3;s:7:\"DELETED\";}}}}s:5:\"Error\";O:8:\"stdClass\":4:{s:11:\"description\";s:8:\"An
+  error\";s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:4:\"code\";i:1;s:5:\"level\";i:2;s:7:\"message\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"INFO\";i:1;s:7:\"WARNING\";i:2;s:5:\"FATAL\";}}s:5:\"cause\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"StreamLocation\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Location
+  record of data stream\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"folderPath\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"filename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"type\";s:6:\"string\";}s:11:\"containerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"originalFilename\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"ErrorResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"The
+  error response\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Error\";}}}}s:27:\"UsernamePasswordCredentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:14:\"credentialType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:13:\"NoCredentials\";i:1;s:16:\"OAuthCredentials\";i:2;s:22:\"BearerTokenCredentials\";i:3;s:27:\"UsernamePasswordCredentials\";i:4;s:23:\"OAuth2ClientCredentials\";}}s:8:\"password\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  password associated with the username.\";s:4:\"type\";s:6:\"string\";}s:6:\"domain\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  domain associated with the username.\";s:4:\"type\";s:6:\"string\";}s:8:\"userName\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"The
+  username.\";s:4:\"type\";s:6:\"string\";}}}s:22:\"BearerTokenCredentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"credentialType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:13:\"NoCredentials\";i:1;s:16:\"OAuthCredentials\";i:2;s:22:\"BearerTokenCredentials\";i:3;s:27:\"UsernamePasswordCredentials\";i:4;s:23:\"OAuth2ClientCredentials\";}}s:5:\"token\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"The
+  bearer token.\";s:4:\"type\";s:6:\"string\";}}}s:7:\"Backend\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:11:\"backendType\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:8:\"endpoint\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"The
+  endpoint for the backend. Please note that only a Xillio backend needs the endpoint
+  configured for now. Other backends are resolved automatically\";s:4:\"type\";s:6:\"string\";}s:11:\"credentials\";O:8:\"stdClass\":3:{s:11:\"description\";s:75:\"The
+  credentials that are used to connect with the backend storage location.\";s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Credentials\";}}s:11:\"backendType\";O:8:\"stdClass\":3:{s:11:\"description\";s:117:\"The
+  type of backend that is created. This field allows users to create a local backend
+  or with supported 3rd parties.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:22:\"SPHEREON_CLOUD_STORAGE\";i:1;s:9:\"AMAZON_S3\";i:2;s:21:\"MS_AZURE_BLOB_STORAGE\";i:3;s:20:\"GOOGLE_CLOUD_STORAGE\";i:4;s:13:\"XILLIO_ENGINE\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":3:{s:11:\"description\";s:196:\"The
+  storage region where the container and files are stored. This option is available
+  for Google and Amazon Storage. For Azure is only possible to set the region when
+  creating the storage account.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:26:{i:0;s:24:\"AMAZON_S3_AP_NORTHEAST_1\";i:1;s:24:\"AMAZON_S3_AP_NORTHEAST_2\";i:2;s:20:\"AMAZON_S3_AP_SOUTH_1\";i:3;s:24:\"AMAZON_S3_AP_SOUTHEAST_1\";i:4;s:24:\"AMAZON_S3_AP_SOUTHEAST_2\";i:5;s:22:\"AMAZON_S3_CA_CENTRAL_1\";i:6;s:20:\"AMAZON_S3_CN_NORTH_1\";i:7;s:22:\"AMAZON_S3_EU_CENTRAL_1\";i:8;s:19:\"AMAZON_S3_EU_WEST_1\";i:9;s:19:\"AMAZON_S3_EU_WEST_2\";i:10;s:19:\"AMAZON_S3_SA_EAST_1\";i:11;s:19:\"AMAZON_S3_US_EAST_1\";i:12;s:19:\"AMAZON_S3_US_EAST_2\";i:13;s:21:\"AMAZON_S3_US_STANDARD\";i:14;s:19:\"AMAZON_S3_US_WEST_1\";i:15;s:19:\"AMAZON_S3_US_WEST_2\";i:16;s:19:\"GOOGLE_STORAGE_ASIA\";i:17;s:25:\"GOOGLE_STORAGE_ASIA_EAST1\";i:18;s:17:\"GOOGLE_STORAGE_EU\";i:19;s:17:\"GOOGLE_STORAGE_US\";i:20;s:26:\"GOOGLE_STORAGE_US_CENTRAL1\";i:21;s:26:\"GOOGLE_STORAGE_US_CENTRAL2\";i:22;s:23:\"GOOGLE_STORAGE_US_EAST1\";i:23;s:23:\"GOOGLE_STORAGE_US_EAST2\";i:24;s:23:\"GOOGLE_STORAGE_US_EAST3\";i:25;s:23:\"GOOGLE_STORAGE_US_WEST1\";}}s:8:\"parentId\";O:8:\"stdClass\":2:{s:11:\"description\";s:156:\"The
+  backend that is used for when properties are not set. This allows usernamePasswordCredentials
+  to be set at one backend and re-used by multiple backends.\";s:4:\"type\";s:6:\"string\";}}}s:9:\"Container\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"backendId\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"The
+  Sphereon backend in which the container will be stored or is stored.\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:23:\"OAuth2ClientCredentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:14:\"credentialType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:13:\"NoCredentials\";i:1;s:16:\"OAuthCredentials\";i:2;s:22:\"BearerTokenCredentials\";i:3;s:27:\"UsernamePasswordCredentials\";i:4;s:23:\"OAuth2ClientCredentials\";}}s:8:\"clientId\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"The
+  clientId\";s:4:\"type\";s:6:\"string\";}s:12:\"clientSecret\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"The
+  clientSecret.\";s:4:\"type\";s:6:\"string\";}}}s:10:\"StreamInfo\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"Information
+  record from a data stream\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:14:\"streamLocation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/StreamLocation\";}s:13:\"containerName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"providerId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"streamLength\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"etag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"timeCreated\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"region\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:26:{i:0;s:24:\"AMAZON_S3_AP_NORTHEAST_1\";i:1;s:24:\"AMAZON_S3_AP_NORTHEAST_2\";i:2;s:20:\"AMAZON_S3_AP_SOUTH_1\";i:3;s:24:\"AMAZON_S3_AP_SOUTHEAST_1\";i:4;s:24:\"AMAZON_S3_AP_SOUTHEAST_2\";i:5;s:22:\"AMAZON_S3_CA_CENTRAL_1\";i:6;s:20:\"AMAZON_S3_CN_NORTH_1\";i:7;s:22:\"AMAZON_S3_EU_CENTRAL_1\";i:8;s:19:\"AMAZON_S3_EU_WEST_1\";i:9;s:19:\"AMAZON_S3_EU_WEST_2\";i:10;s:19:\"AMAZON_S3_SA_EAST_1\";i:11;s:19:\"AMAZON_S3_US_EAST_1\";i:12;s:19:\"AMAZON_S3_US_EAST_2\";i:13;s:21:\"AMAZON_S3_US_STANDARD\";i:14;s:19:\"AMAZON_S3_US_WEST_1\";i:15;s:19:\"AMAZON_S3_US_WEST_2\";i:16;s:19:\"GOOGLE_STORAGE_ASIA\";i:17;s:25:\"GOOGLE_STORAGE_ASIA_EAST1\";i:18;s:17:\"GOOGLE_STORAGE_EU\";i:19;s:17:\"GOOGLE_STORAGE_US\";i:20;s:26:\"GOOGLE_STORAGE_US_CENTRAL1\";i:21;s:26:\"GOOGLE_STORAGE_US_CENTRAL2\";i:22;s:23:\"GOOGLE_STORAGE_US_EAST1\";i:23;s:23:\"GOOGLE_STORAGE_US_EAST2\";i:24;s:23:\"GOOGLE_STORAGE_US_EAST3\";i:25;s:23:\"GOOGLE_STORAGE_US_WEST1\";}}s:11:\"contentType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"timeModified\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:12:\"userMetadata\";O:8:\"stdClass\":2:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:6:\"object\";}}}s:16:\"ContainerRequest\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:15:\"propagationType\";O:8:\"stdClass\":3:{s:11:\"description\";s:265:\"The
+  way a container is creation. If propagation is no a new container will be created
+  in the backend; If propagation is require a existing container is used from the
+  backend. If propagation is allowed the a new container is created if the container
+  does not exists.\";s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:2:\"NO\";i:1;s:7:\"REQUIRE\";i:2;s:5:\"ALLOW\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"backendId\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"The
+  backend in which the container will be stored or is stored.\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"Credentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:14:\"credentialType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:13:\"NoCredentials\";i:1;s:16:\"OAuthCredentials\";i:2;s:22:\"BearerTokenCredentials\";i:3;s:27:\"UsernamePasswordCredentials\";i:4;s:23:\"OAuth2ClientCredentials\";}}s:22:\"authenticationProvider\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:12:\"API_SUPPLIER\";i:1;s:15:\"API_IMPLEMENTER\";}}}}}"
+...

@@ -1,0 +1,204 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:11:\"description\";s:26:\"Regression test
+  server API\";s:5:\"title\";s:26:\"Regression test server API\";s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:23:\"jake.wang@sydney.edu.au\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: /swagger-editor
+paths:
+  /history:
+    get:
+      tags:
+      - Viewer
+      summary: get a histories
+      description: get a list of histories or histories with request parameters
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: query
+        description: get a history by id
+        required: false
+        type: string
+      - name: skip
+        in: query
+        description: number of histories to skip for pagination
+        required: false
+        type: integer
+        maximum: 10
+        minimum: 0
+        format: int32
+      - name: limit
+        in: query
+        description: maximum number of histories to return
+        required: false
+        type: integer
+        maximum: 10
+        minimum: 0
+        format: int32
+      responses:
+        200:
+          description: get a list of histories
+          examples:
+            application/json:
+              $ref: '#/externalDocs/x-mocks/latestHistory'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/History'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - Viewer
+      summary: adds a new history
+      description: creates a new history at each of the regression test starting point
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: instance
+        in: body
+        description: regression test server instance, e.g. linux-chrome, win-edge
+        required: true
+      - name: server
+        in: body
+        description: running server, localdev, dev, test, train or prod
+        required: true
+      responses:
+        201:
+          description: item created
+          examples:
+            application/json:
+              $ref: '#/externalDocs/x-mocks/history'
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /visual:
+    post:
+      tags:
+      - Viewer
+      summary: adds a visual test result or a reference to the required history
+      description: use it to add a visual test result or a reference
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      examples:
+      - name: new visual reference
+        $ref: '#/definitions/VisualReference'
+      - name: 'new visual pass test '
+        $ref: '#/definitions/newPassVisualTest'
+      - name: new visual failed test
+        $ref: '#/definitions/newFailedVisualTest'
+      parameters:
+      - in: body
+        name: historyId
+        description: history id of the visual screenshot
+        required: true
+      - in: body
+        name: browser
+        description: browser version of the visual test
+        required: true
+      - in: body
+        name: name
+        description: visual test name or visual test label
+        required: true
+      - in: body
+        name: visualScreenshot
+        description: visual screenshot image, use it to find the related reference
+          or test
+        required: true
+      - in: body
+        name: visualScreenshotPath
+        description: visual screenshot related path
+        required: true
+      - in: body
+        name: visualReferenceId
+        description: visual reference id, it is for the pass and failed test result
+        required: false
+      - in: body
+        name: isSameDimensions
+        description: visual result parameter, the visual result is the same as the
+          dimensions of the reference or not
+        required: false
+      - in: body
+        name: misMatchPercentage
+        description: visual test screenshot mis match percentage with the reference
+        required: false
+      - in: body
+        name: visualDiffer
+        description: 'visual differ screenshot '
+        required: false
+      - in: body
+        name: visualDifferPath
+        description: visual differ screenshot related path
+        required: false
+      responses:
+        201:
+          description: item created
+          examples:
+            application/json:
+              $visualTestReference: '#/externalDocs/x-mocks/visualTestReference'
+              $visualTestResultFail: '#/externalDocs/x-mocks/visualTestResult'
+              $visualTestResultPass: '#/externalDocs/x-mocks/visualTestResultPass'
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exist
+    put:
+      tags:
+      - Viewer
+      summary: approve a failed visual test result
+      description: an failed visual test result to update
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Record'
+      responses:
+        200:
+          description: Successful response.
+          examples:
+            application/json:
+              $ref: '#/externalDocs/x-mocks/visualTestResultApproved'
+        400:
+          description: invalid input, object invalid
+  /report:
+    post:
+      tags:
+      - Viewer
+      summary: save the cucumber report html file link
+      description: save the cucumber report html file link to the related historyn
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Record'
+      responses:
+        201:
+          description: item created
+          examples:
+            application/json:
+              $ref: '#/externalDocs/x-mocks/functionalTestResult'
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+schemes:
+- https
+- http
+definitions: !php/object "O:8:\"stdClass\":2:{s:7:\"History\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:8:\"instance\";i:1;s:6:\"server\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:3:\"_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uid\";}s:6:\"weight\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"weight
+  is for sorting and ordering\";}s:8:\"instance\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:8:{i:0;s:12:\"linux-chrome\";i:1;s:13:\"linux-firefox\";i:2;s:11:\"mac-firefox\";i:3;s:10:\"mac-chrome\";i:4;s:12:\"win10-chrome\";i:5;s:13:\"win10-firefox\";i:6;s:10:\"win10-edge\";i:7;s:9:\"win7-ie11\";}}s:6:\"server\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:5:\"local\";i:1;s:3:\"dev\";i:2;s:4:\"test\";i:3;s:5:\"train\";i:4;s:4:\"prod\";}}s:7:\"allPass\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"data-time\";}}}s:6:\"Record\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:9:\"historyId\";i:1;s:12:\"resourceType\";}s:10:\"properties\";O:8:\"stdClass\":19:{s:3:\"_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uid\";}s:9:\"historyId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uid\";}s:8:\"instance\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"server\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"browser\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"resourceType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:10:\"visualTest\";i:1;s:15:\"visualReference\";i:2;s:6:\"report\";}}s:17:\"visualReferenceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"filePath\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:44:\"visual
+  screenshot or visual differ file path\";}s:16:\"visualScreenShot\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"visualDiffer\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"isArchived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"report\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"pass\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"viewport\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"approvedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:10:\"approvedBy\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uid\";s:11:\"description\";s:7:\"user
+  id\";}}}}"
+...

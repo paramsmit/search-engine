@@ -1,0 +1,291 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:11:\"IndiaCP API\";s:11:\"description\";s:26:\"This
+  API will drive the UI\";s:7:\"version\";s:5:\"1.0.0\";}"
+host: finwizui.azurewebsites.net
+basePath: /api
+paths:
+  /cpprogram/{issuer}:
+    post:
+      summary: Issue new CP Program
+      description: This creates a new CP Program with the details provided
+      operationId: issueCPProgram
+      consumes:
+      - application/json
+      parameters:
+      - name: cpprogram_details
+        in: body
+        description: Details of the CP Program to be Issued
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/CPProgram'
+      - name: issuer
+        in: path
+        description: Issuer id that uniquely maps to the issuer DL node
+        required: true
+        type: string
+      tags:
+      - Issuer
+      responses:
+        200:
+          description: Creates a new CP Program
+          schema:
+            $ref: '#/definitions/CPProgram'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cpprograms/{issuer}:
+    get:
+      summary: Fetch All CPPrograms for the current Issuer
+      description: Returns all the CP Programs for the current issuern
+      operationId: fetchAllCPProgram
+      parameters:
+      - name: issuer
+        in: path
+        description: issuer id that uniquely maps to the issuer DL node
+        required: true
+        type: string
+      tags:
+      - Issuer
+      responses:
+        200:
+          description: An array of CP Programs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CPProgram'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cpprogram/{issuer}/{cpProgramId}:
+    get:
+      summary: Get CP Program details by Id
+      description: This returns a single CP Program identified by an Id provided by
+        the calln
+      operationId: fetchCPProgram
+      parameters:
+      - name: issuer
+        in: path
+        description: issuer id that uniquely maps to the issuer DL node
+        required: true
+        type: string
+      - name: cpProgramId
+        in: path
+        description: CP Program ID that uniquely identifies the CP Program issued
+          by the Issuer
+        required: true
+        type: string
+      tags:
+      - Issuer
+      responses:
+        200:
+          description: Returns a CP Program
+          schema:
+            $ref: '#/definitions/CPProgram'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cpissues/{issuer}/{cpProgramId}:
+    get:
+      summary: Get CP Issues allotted under a given CP Program
+      description: This returns all the CP Issues under the umbrella CP Program identified
+        by an Id provided by the calln
+      operationId: fetchAllCPForCPProgram
+      parameters:
+      - name: issuer
+        in: path
+        description: issuer id that uniquely maps to the issuer DL node
+        required: true
+        type: string
+      - name: cpProgramId
+        in: path
+        description: CP Program ID that uniquely identifies the CP Program issued
+          by the Issuer
+        required: true
+        type: string
+      tags:
+      - Issuer
+      responses:
+        200:
+          description: Returns all CP Issues under the umbrella CP Program
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CPIssue'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cpissues/open/{entity}:
+    get:
+      summary: Get All Open CP Issues for the given Issuer/Investor. Open CP Issues
+        refers to the Issues that are yet to mature
+      description: This returns all the CP Issues under the umbrella CP Program identified
+        by an Id provided by the calln
+      operationId: fetchAllCP
+      parameters:
+      - name: entity
+        in: path
+        description: issuer or investor id that uniquely maps to the DL node
+        required: true
+        type: string
+      tags:
+      - Issuer
+      - Investor
+      responses:
+        200:
+          description: Get All Open CP Issues for the given Issuer/Investor. Open
+            CP Issues refers to the Issues that are yet to mature
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CPIssue'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cpissue/{entity}/{cpIssueId}:
+    get:
+      summary: Get All Open CP Issues for the given Issuer/Investor. Open CP Issues
+        refers to the Issues that are yet to mature
+      description: This returns all the CP Issues under the umbrella CP Program identified
+        by an Id provided by the calln
+      operationId: fetchCP
+      parameters:
+      - name: entity
+        in: path
+        description: issuer or investor id that uniquely maps to the DL node
+        required: true
+        type: string
+      - name: cpIssueId
+        in: path
+        description: Unique identifier of the CP Issue to be fetched
+        required: true
+        type: string
+      tags:
+      - Issuer
+      - Investor
+      responses:
+        200:
+          description: Get All Open CP Issues for the given Issuer/Investor. Open
+            CP Issues refers to the Issues that are yet to mature
+          schema:
+            $ref: '#/definitions/CPIssue'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /transactionhistory/{issuer}/{cpProgramId}:
+    get:
+      summary: Complete audit log of all changes/versions of given CP Program
+      description: A given CP Program once initiated undergoes various changes as
+        it progresses through the trade lifecycle of generating ISIN, generating Deal
+        Confirmations with each identified Investor, getting IPA Verification till
+        the final settlement of all Deals and followed by redemption of the CP at
+        the Maturity Date. This API will return this complete log history.
+      parameters:
+      - name: issuer
+        in: path
+        description: issuer id that uniquely maps to the DL node
+        required: true
+        type: string
+      - name: cpProgramId
+        in: path
+        description: CP Program ID that uniquely identifies the CP Program issued
+          by the Issuer
+        required: true
+        type: string
+      tags:
+      - User
+      responses:
+        200:
+          description: An array of all versions of the given CP Program
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CPProgram'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":6:{s:9:\"CPProgram\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":26:{s:10:\"program_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:72:\"Unique
+  identifier representing a specific CP Program raised by an Issuer\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Name
+  of the CP Program\";}s:7:\"user_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"User
+  identifier\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Type
+  of the CP Program\";}s:7:\"purpose\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Purpose
+  of the CP Program\";}s:4:\"isin\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:106:\"Unique
+  CP Security Identifier No. In India this is issued by NSDL for Commercial Paper
+  type of securities.\";}s:9:\"issuer_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Unique
+  identifier of the Issuer. This will also uniquely map to the DL Node of the Issuer\";}s:11:\"issuer_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Display
+  name of the Issuer\";}s:23:\"issue_commencement_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:138:\"Date
+  when the CP Program was initiated. India regulations mandate that a program should
+  be fully allocated within 2 weeks of commencement.\";}s:12:\"program_size\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:44:\"Total
+  borrowing amount under this CP Program\";}s:23:\"program_allocated_value\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:42:\"Amount
+  already allocated to the CP program\";}s:16:\"program_currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Currency
+  of the issue of CP notes\";}s:13:\"maturity_days\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:42:\"No
+  of days to maturity from the value date\";}s:6:\"ipa_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:83:\"Unique
+  identifier of the IPA. This will also uniquely map to the DL Node of the IPA\";}s:8:\"ipa_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Display
+  name of the IPA\";}s:13:\"depository_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:104:\"Unique
+  identifier of the Depository (NSDL). This will also uniquely map to the DL Node
+  of the Depository\";}s:15:\"depository_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Display
+  name of the Depository\";}s:30:\"isin_generation_request_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:74:\"Unique
+  identifier of the documents sent to the depository to generate ISIN\";}s:31:\"ipa_verification_request_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:76:\"Unique
+  identifier of the documents sent to the IPA to certify the CP Program\";}s:22:\"ipa_certificate_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:124:\"Unique
+  identifier of the IPA certificate issued by the IPA on verification of the CP Program
+  and supporting Issuer documents\";}s:28:\"corporate_action_form_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:82:\"Unique
+  identifier of the Corporate Action Form generated by the Issuer to allot CP\";}s:23:\"allotment_letter_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:97:\"Unique
+  identifier of the Allotment Letter generated by IPA for CP transfer to Investor
+  DP account\";}s:8:\"org_unit\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Top
+  level organizational borrowing limit contract\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Current
+  status of the CP Program\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:33:\"Current
+  version of the CP Program\";}s:13:\"last_modified\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:97:\"Unique
+  identifier of the Allotment Letter generated by IPA for CP transfer to Investor
+  DP account\";}}}s:7:\"CPIssue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":26:{s:13:\"cp_program_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:127:\"Unique
+  identifier representing a specific CP Program raised by an Issuer. This CP Issue
+  is allotted under this umbrella program\";}s:7:\"user_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:15:\"User
+  identifier\";}s:11:\"cp_trade_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:80:\"Unique
+  identifier representing a specific CP Issue under the umbrella CP Program\";}s:7:\"book_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:48:\"Internal
+  Book Id that this trade is booked under\";}s:4:\"isin\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:106:\"Unique
+  CP Security Identifier No. In India this is issued by NSDL for Commercial Paper
+  type of securities.\";}s:9:\"trader_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"Unique
+  identifier of the trader booking this trade\";}s:9:\"issuer_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Unique
+  identifier of the Issuer\";}s:11:\"issuer_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Display
+  name of the Issuer\";}s:11:\"investor_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:85:\"Unique
+  identifier of the Investor. This also uniquely identifies the Investor DL Node\";}s:13:\"investor_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Display
+  name of the Investor\";}s:6:\"ipa_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Unique
+  identifier of the IPA\";}s:8:\"ipa_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Display
+  name of the IPA\";}s:13:\"depository_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:42:\"Unique
+  identifier of the Depository (NSDL)\";}s:15:\"depository_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Display
+  name of the Depository\";}s:10:\"trade_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:36:\"Date
+  on which the trade was captured\";}s:10:\"value_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:115:\"Date
+  on which the trade was settled and the Cash and CP securities were swapped between
+  the Issuer and the Investor\";}s:13:\"maturity_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:49:\"Date
+  on which the CP will be matured and redeemed\";}s:8:\"currency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:31:\"Currency
+  of the issued CP Notes\";}s:15:\"notional_amount\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:80:\"This
+  is the amount that will be paid by the Issuer to the Investor on redemption\";}s:4:\"rate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:37:\"Rate
+  at which the yield is calculated\";}s:25:\"issuer_settlement_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SettlementDetails\";}s:27:\"investor_settlement_details\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/SettlementDetails\";}s:24:\"deal_confirmation_doc_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"Unique
+  identifier of the deal confirmation document signed by both the Issuer and the Investor\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Current
+  status of the CP Issue\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:31:\"Current
+  version of the CP Issue\";}s:13:\"last_modified\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"date\";s:11:\"description\";s:97:\"Unique
+  identifier of the Allotment Letter generated by IPA for CP transfer to Investor
+  DP account\";}}}s:17:\"SettlementDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:21:\"paymentAccountDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/PaymentAccountDetails\";}s:24:\"depositoryAccountDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/DepositoryAccountDetails\";}}}s:21:\"PaymentAccountDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"creditor_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:94:\"Name
+  in which the payment has to be made. For e.g. Barclays Investments & Loans (India)
+  Ltd CP\";}s:15:\"bank_account_no\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Bank
+  account no. at the IPA Bank\";}s:17:\"bank_account_type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Bank
+  account type. For e.g. current account\";}s:9:\"bank_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:20:\"Name
+  of the IPA Bank\";}s:14:\"rtgs_ifsc_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:50:\"RTGS
+  IFSC code of the IPA Bank to receive payments\";}}}s:24:\"DepositoryAccountDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"dp_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:53:\"Unique
+  identifier of the DP Account at the Depository\";}s:7:\"dp_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:89:\"Name
+  under which the DP Account is registered. For e.g. Barclays Securities India Pvt
+  Ltd\";}s:9:\"client_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:49:\"Unique
+  identifier of the Client at the Depository\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

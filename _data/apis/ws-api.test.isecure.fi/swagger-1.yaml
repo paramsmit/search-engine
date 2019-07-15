@@ -1,0 +1,185 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":7:{s:7:\"contact\";O:8:\"stdClass\":3:{s:5:\"email\";s:23:\"dan.forsberg@isecure.fi\";s:4:\"name\";s:10:\"ISECure
+  Oy\";s:3:\"url\";s:23:\"https://www.isecure.fi/\";}s:11:\"description\";s:4386:\"The
+  API provides secure file exchange with all common banks in Finland via *SEPA WebServices*
+  channel on the API side towards the banks, including certificate enrollment (PKI)
+  with automatic renewals.\n\nThe API specification in OpenAPI v2 format can be found
+  on GitHub [isecurefi/wsapi-v2](https://github.com/isecurefi/wsapi-v2). Command line
+  CLI and beefed-up PHP SDK are also available on GitHub [isecurefi/wscli-php](https://github.com/isecurefi/wscli-php).\n\nAPI
+  provides simple role based access control (RBAC) and user account management, password
+  recovery, and SMS based Multi Factor Authentication based on AWS Cognito Your User
+  Pool managed service.\n\n*NOTE: The API endpoint for production is the same as for
+  test, but without `test.` in the URL. Production and test APIs are deployd on separate
+  AWS accounts*.\n\n*NOTE: The API is run on AWS API Gateway and with AWS Lambda backend.
+  When Lambda functions are cold, there is a small delay in response time. Additionally,
+  banks have considerable delays in their processings, especially with certificate
+  enrollments.*\n\n### Service enrollment\n\nEvery integrator (partner) has own *API
+  Key* and every user account belongs to one integrator. *API Key* is bound with service
+  subscription. In other words, enrolling fresh *API Key* requires service agreement
+  before file transfers are allowed on production accounts.\n\nIf user registers with
+  `0` *API Key* (i.e. no *API Key*) she gets a fresh *API Key* and becomes the *API
+  Key* owner. The *API Key* owner account can list all users under the same *API Key*,
+  see the *Integrator API*. Integrators (partners) registers their own *API Key* owner
+  accounts and use it to register their client accounts.\n\n*NOTE: API call rate limits
+  are set and tracked per API Key by AWS API Gateway*.\n\n### Account management\n\nA
+  user (email address) can register either *admin* or *data* or both roles. The role
+  in the API is referred to as *mode*. Both modes have separate passwords and provide
+  differing capabilities for the user.\n\nLogin always requires account mode parameter
+  in addition to user's email address and password. *Admin* mode login always requires
+  an additional SMS one-time-password (MFA), whilst with *data* mode password is enough
+  (suitable for automation). *Admin* mode is used to configure the account (e.g. adding
+  PGP keys and sharing certs) and *data* mode to exchange files. Listing files is
+  allowed on both modes.\n\n*NOTE: Integrator (partner) registers her customers by
+  using her API Key from the API Key owner account.*\n\n### Bank certificate enrollment\n\nThe
+  *SEPA WebServices* connection to the bank requires enrolling PKI certificate with
+  the bank. The *Admin* mode can enroll certificates for different banks, but only
+  one certificate per bank. The corresponding private key is stored encrypted with
+  AWS KMS service.\n\n### Bank certificate sharing\n\nIt is possible to share the
+  same bank certificate with multiple accounts. Certificate sharing between accounts
+  can be configured when accounts have the same API Key. Account that holds the certificate
+  can share/unshare it with another account (*admin* mode operation). Note that only
+  the account that has the certificate can PGP export the certificate and corresponding
+  private key. This allows creating e.g. one *admin* mode only account and multiple
+  *data* mode only accounts, where the *admin* account shares its certificates with
+  other *data* accounts.\n\nAn account can never have multiple certificates per bank,
+  be it shared or account's enrolled certificate. This is because the API requires
+  identification of the bank, but not the certificate and private key pair.\n\n###
+  Access security\n\nAccess is secured with TLS on Amazon Web Services (AWS) API Gateway.
+  Inside TLS, secure sessions are established by using email address as username and
+  by RSA encrypting password along with dynamic username specific parameters fetched
+  from the API with `InitRegister` or `InitLogin` API commands (challenge response).\n\nSuccessful
+  login provides a session token (AWS Cognito User Pool). Authorization happens with
+  the session token (`Authorization`) and *API Key* (`x-api-key`) headers.\n\nAdministrative
+  actions require SMS based MFA authentication (see *admin* mode). User account management
+  is handled with AWS Cognito User Pools and each user (email) has separate *admin*
+  and/or *data* mode (role) accounts sharing the same API account data.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}s:14:\"termsOfService\";s:35:\"https://www.isecure.fi/ws-api-terms\";s:5:\"title\";s:22:\"ISECure
+  WS Channel API\";s:7:\"version\";s:6:\"v2.4.0\";s:6:\"x-logo\";O:8:\"stdClass\":2:{s:15:\"backgroundColor\";s:7:\"#FFFFFF\";s:3:\"url\";s:52:\"https://www.isecure.fi/images/isecure-small-logo.png\";}}"
+host: ws-api.test.isecure.fi
+basePath: /v2
+paths: ~
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":33:{s:17:\"AccountDescriptor\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":6:{s:9:\"AdminMode\";s:10:\"registered\";s:8:\"DataMode\";s:12:\"unregistered\";s:5:\"Email\";s:23:\"dan.forsberg@isecure.fi\";s:4:\"Name\";s:12:\"Dan
+  Forsberg\";s:5:\"Phone\";s:13:\"+358404835507\";s:6:\"export\";s:7:\"allowed\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"AdminMode\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"`admin`
+  mode status\";s:4:\"enum\";a:2:{i:0;s:10:\"registered\";i:1;s:12:\"unregistered\";}s:4:\"type\";s:6:\"string\";}s:5:\"Certs\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CertDescriptor\";}s:4:\"type\";s:5:\"array\";}s:8:\"DataMode\";O:8:\"stdClass\":3:{s:11:\"description\";s:18:\"`data`
+  mode status\";s:4:\"enum\";a:2:{i:0;s:10:\"registered\";i:1;s:12:\"unregistered\";}s:4:\"type\";s:6:\"string\";}s:5:\"Email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Email
+  address as the account username\";s:4:\"type\";s:6:\"string\";}s:6:\"Export\";O:8:\"stdClass\":3:{s:11:\"description\";s:73:\"Status
+  for certificate and private key export allowance. See ConfigCerts.\";s:4:\"enum\";a:2:{i:0;s:8:\"disabled\";i:1;s:7:\"allowed\";}s:4:\"type\";s:6:\"string\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Full
+  name of registrant\";s:4:\"type\";s:6:\"string\";}s:5:\"Phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Phone
+  number with country code and `+` in front\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:5:{i:0;s:4:\"Name\";i:1;s:5:\"Email\";i:2;s:5:\"Phone\";i:3;s:6:\"Export\";i:4;s:5:\"Certs\";}s:4:\"type\";s:6:\"object\";}s:14:\"CertDescriptor\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":6:{s:8:\"CertName\";s:33:\"osuuspankki_customer_signing_cert\";s:7:\"Expires\";s:24:\"Oct
+  28 06:30:08 2017 GMT\";s:6:\"Issuer\";s:30:\"CUSTOMER TEST OP-Pohjola WS CA\";s:3:\"PEM\";s:101:\"-----BEGIN
+  CERTIFICATE-----\nMIIF+DCCA+CgAwIBAgIDEaBdMA0GCS...x0t6Cnd5lyGKg=\n-----END CERTIFICATE-----\";s:6:\"Serial\";s:6:\"11A05D\";s:7:\"Subject\";s:10:\"1000038023\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"CertName\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Certificate
+  common name\";s:4:\"type\";s:6:\"string\";}s:7:\"Expires\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"Date
+  of expiry\";s:4:\"type\";s:6:\"string\";}s:6:\"Issuer\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Certificate
+  issuer\";s:4:\"type\";s:6:\"string\";}s:3:\"PEM\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Certificate
+  in PEM format\";s:4:\"type\";s:6:\"string\";}s:6:\"Serial\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Certificate
+  serial number\";s:4:\"type\";s:6:\"string\";}s:7:\"Subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"Certificate
+  subject\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:6:{i:0;s:8:\"CertName\";i:1;s:7:\"Expires\";i:2;s:7:\"Subject\";i:3;s:6:\"Issuer\";i:4;s:6:\"Serial\";i:5;s:3:\"PEM\";}s:4:\"type\";s:6:\"object\";}s:12:\"CertsAndKeys\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"Certificate\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Certificate
+  in PEM format\";s:4:\"type\";s:6:\"string\";}s:19:\"EncryptedPrivateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"PGP
+  encrypted ascii armored private key\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:11:\"Certificate\";i:1;s:19:\"EncryptedPrivateKey\";}s:4:\"type\";s:6:\"object\";}s:14:\"ConfigCertsReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":1:{s:6:\"Export\";s:8:\"disabled\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"Export\";O:8:\"stdClass\":2:{s:11:\"description\";s:79:\"Set
+  export to `disabled` to disallow certificate and private key pair exporting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:6:\"Export\";}s:4:\"type\";s:6:\"object\";}s:12:\"DeleteKeyReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":1:{s:8:\"PgpKeyId\";s:8:\"DBCBE671\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"PgpKeyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"8
+  chars hexadecimal PGP Key Id (see e.g. gpg --list-keys)\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:8:\"PgpKeyId\";}s:4:\"type\";s:6:\"object\";}s:13:\"DeleteKeyResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"PgpKeys\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"List
+  of PGP keys in API\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/PgpKeyDescriptor\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:7:\"PgpKeys\";}s:4:\"type\";s:6:\"object\";}s:16:\"DownloadFileResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"Content\";O:8:\"stdClass\":2:{s:11:\"description\";s:58:\"Downloaded
+  file content as from bank (e.g. in Base64 form)\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:7:\"Content\";}s:4:\"type\";s:6:\"object\";}s:13:\"EnrollCertReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":3:{s:4:\"Code\";s:16:\"8642603384107437\";s:7:\"Company\";s:10:\"ISECURE
+  OY\";s:8:\"WsUserId\";s:3:\"...\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"Code\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"Full
+  PIN code from bank (e.g. combined from SMS and letter)\";s:4:\"type\";s:6:\"string\";}s:7:\"Company\";O:8:\"stdClass\":2:{s:11:\"description\";s:245:\"Company
+  name as registered with bank (e.g. full capital letters, see contract). **NOTE**:
+  The value of this field is not compared with the account company name set during
+  registration because the format for cert enrollment differs between banks.\";s:4:\"type\";s:6:\"string\";}s:8:\"WsUserId\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"*SEPA
+  WebService*s channel user id as in contract with bank\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"Code\";i:1;s:7:\"Company\";i:2;s:8:\"WsUserId\";}s:4:\"type\";s:6:\"object\";}s:13:\"ErrorResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"RequestId\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"Service
+  side request id for problem tracing purposes\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"ExportCertResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"CertsAndKeys\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"List
+  of certificate and encrypted private key pairs\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/CertsAndKeys\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:12:\"CertsAndKeys\";}s:4:\"type\";s:6:\"object\";}s:14:\"FileDescriptor\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":6:{s:13:\"FileReference\";s:6:\"227166\";s:13:\"FileTimestamp\";s:29:\"2017-05-20T03:36:21.148+03:00\";s:8:\"FileType\";s:2:\"VA\";s:9:\"ServiceId\";s:3:\"N/A\";s:6:\"Status\";s:3:\"NEW\";s:8:\"TargetId\";s:3:\"MLP\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:13:\"FileReference\";O:8:\"stdClass\":2:{s:11:\"description\";s:53:\"File
+  reference id, use e.g. when downloading the file\";s:4:\"type\";s:6:\"string\";}s:13:\"FileTimestamp\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Creation
+  time stamp of the file from bank\";s:4:\"type\";s:6:\"string\";}s:8:\"FileType\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Bank
+  specific file type\";s:4:\"type\";s:6:\"string\";}s:9:\"ServiceId\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Bank
+  specific service id (e.g. bank account number)\";s:4:\"type\";s:6:\"string\";}s:6:\"Status\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"File
+  download status\";s:4:\"type\";s:6:\"string\";}s:8:\"TargetId\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Bank
+  specific target id\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:8:\"FileType\";i:1;s:6:\"Status\";i:2;s:13:\"FileTimestamp\";i:3;s:13:\"FileReference\";}s:4:\"type\";s:6:\"object\";}s:13:\"ImportCertReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":6:{s:11:\"Certificate\";s:3:\"...\";s:7:\"Company\";s:10:\"ISECURE
+  OY\";s:14:\"EncCertificate\";s:3:\"...\";s:13:\"EncPrivatekey\";s:3:\"...\";s:10:\"PrivateKey\";s:3:\"...\";s:8:\"WsUserId\";s:3:\"...\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"Certificate\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Certificate
+  in PEM format\";s:4:\"type\";s:6:\"string\";}s:7:\"Company\";O:8:\"stdClass\":2:{s:11:\"description\";s:89:\"Company
+  name as registered with bank (e.g. full capital letters without Oy, see contract)\";s:4:\"type\";s:6:\"string\";}s:14:\"EncCertificate\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Certificate
+  in PEM format (encryption certificate for DanskeBank)\";s:4:\"type\";s:6:\"string\";}s:13:\"EncPrivatekey\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Private
+  key in PEM format (encryption certificate for DanskeBank)\";s:4:\"type\";s:6:\"string\";}s:10:\"PrivateKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Private
+  key in PEM format\";s:4:\"type\";s:6:\"string\";}s:8:\"WsUserId\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"*SEPA
+  WebService*s channel user id as in contract with bank\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:7:\"Company\";i:1;s:8:\"WsUserId\";i:2;s:10:\"PrivateKey\";i:3;s:11:\"Certificate\";}s:4:\"type\";s:6:\"object\";}s:13:\"InitLoginResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"Challenge\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Challenge
+  copied from API response\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:9:\"Challenge\";}s:4:\"type\";s:6:\"object\";}s:16:\"InitRegisterResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"Challenge\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Challenge
+  copied from API response\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:9:\"Challenge\";}s:4:\"type\";s:6:\"object\";}s:16:\"ListAccountsResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"Accounts\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"List
+  of accounts under the API key\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/AccountDescriptor\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:8:\"Accounts\";}s:4:\"type\";s:6:\"object\";}s:13:\"ListCertsResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"Certs\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"List
+  of certificates\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CertDescriptor\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:5:\"Certs\";}s:4:\"type\";s:6:\"object\";}s:13:\"ListFilesResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:15:\"FileDescriptors\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"List
+  of downloadable files from bank\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/FileDescriptor\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:15:\"FileDescriptors\";}s:4:\"type\";s:6:\"object\";}s:12:\"ListKeysResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"PgpKeys\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"List
+  of PGP keys in API\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/PgpKeyDescriptor\";}s:4:\"type\";s:5:\"array\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:7:\"PgpKeys\";}s:4:\"type\";s:6:\"object\";}s:11:\"LoginMFAReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":2:{s:4:\"Code\";s:6:\"123456\";s:7:\"Session\";s:3:\"...\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"Code\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Code
+  from SMS\";s:4:\"type\";s:6:\"string\";}s:7:\"Session\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Session
+  token from login response\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"Code\";i:1;s:7:\"Session\";}s:4:\"type\";s:6:\"object\";}s:12:\"LoginMFAResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:11:\"AccessToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Access
+  token\";s:4:\"type\";s:6:\"string\";}s:6:\"ApiKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Integrator
+  API Key\";s:4:\"type\";s:6:\"string\";}s:9:\"ExpiresIn\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Session
+  expiration time\";s:4:\"type\";s:6:\"string\";}s:7:\"IdToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"ID
+  token\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:6:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:11:\"AccessToken\";i:3;s:7:\"IdToken\";i:4;s:9:\"ExpiresIn\";i:5;s:6:\"ApiKey\";}s:4:\"type\";s:6:\"object\";}s:8:\"LoginReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":2:{s:6:\"ChResp\";s:95:\"ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e\";s:9:\"Encrypted\";s:3:\"...\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"ChResp\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Challenge
+  copied from API response\";s:4:\"type\";s:6:\"string\";}s:9:\"Encrypted\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"RSA
+  encrypted password and timestamp\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:6:\"ChResp\";i:1;s:9:\"Encrypted\";}s:4:\"type\";s:6:\"object\";}s:9:\"LoginResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":7:{s:11:\"AccessToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Access
+  token\";s:4:\"type\";s:6:\"string\";}s:6:\"ApiKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Integrator
+  API Key\";s:4:\"type\";s:6:\"string\";}s:9:\"ExpiresIn\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Session
+  expiration time\";s:4:\"type\";s:6:\"string\";}s:7:\"IdToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:8:\"ID
+  token\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}s:7:\"Session\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Session
+  token\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:11:\"AccessToken\";i:3;s:7:\"IdToken\";i:4;s:9:\"ExpiresIn\";i:5;s:7:\"Session\";i:6;s:6:\"ApiKey\";}s:4:\"type\";s:6:\"object\";}s:16:\"PasswordResetReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":3:{s:6:\"ChResp\";s:95:\"ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e\";s:4:\"Code\";s:6:\"123456\";s:9:\"Encrypted\";s:3:\"...\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"ChResp\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Challenge
+  copied from API response\";s:4:\"type\";s:6:\"string\";}s:4:\"Code\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Code
+  from SMS\";s:4:\"type\";s:6:\"string\";}s:9:\"Encrypted\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"RSA
+  encrypted NEW password and timestamp\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:4:\"Code\";i:1;s:6:\"ChResp\";i:2;s:9:\"Encrypted\";}s:4:\"type\";s:6:\"object\";}s:16:\"PgpKeyDescriptor\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":2:{s:8:\"PgpKeyId\";s:8:\"3A3A59B2\";s:13:\"PgpKeyPurpose\";s:9:\"authorize\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"PgpKeyId\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Short
+  version of a PGP Key id idenfiying the key, e.g. `3A3A59B2`\";s:4:\"type\";s:6:\"string\";}s:13:\"PgpKeyPurpose\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"PGP
+  Key purpose\";s:4:\"enum\";a:2:{i:0;s:6:\"export\";i:1;s:9:\"authorize\";}s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:8:\"PgpKeyId\";}s:4:\"type\";s:6:\"object\";}s:11:\"RegisterReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":6:{s:6:\"ApiKey\";s:35:\"hzYAVO9Sg98nsNh81M84O2kyXVy6K1xwHD8\";s:6:\"ChResp\";s:95:\"ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e\";s:7:\"Company\";s:10:\"ISECure
+  Oy\";s:9:\"Encrypted\";s:3:\"...\";s:4:\"Name\";s:12:\"Dan Forsberg\";s:5:\"Phone\";s:13:\"+358404835507\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"ApiKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:86:\"Integrator
+  API Key, or `0` if not already known (e.g. initial integrator registration)\";s:4:\"type\";s:6:\"string\";}s:6:\"ChResp\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Challenge
+  copied from API response\";s:4:\"type\";s:6:\"string\";}s:7:\"Company\";O:8:\"stdClass\":2:{s:11:\"description\";s:12:\"Company
+  name\";s:4:\"type\";s:6:\"string\";}s:9:\"Encrypted\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"RSA
+  encrypted password and timestamp\";s:4:\"type\";s:6:\"string\";}s:4:\"Name\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Full
+  name of registrant\";s:4:\"type\";s:6:\"string\";}s:5:\"Phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Phone
+  number with country code and `+` in front\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:6:{i:0;s:4:\"Name\";i:1;s:5:\"Phone\";i:2;s:7:\"Company\";i:3;s:6:\"ApiKey\";i:4;s:6:\"ChResp\";i:5;s:9:\"Encrypted\";}s:4:\"type\";s:6:\"object\";}s:12:\"RegisterResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"ApiKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"Integrator
+  API Key\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:3:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:6:\"ApiKey\";}s:4:\"type\";s:6:\"object\";}s:8:\"Response\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";}s:4:\"type\";s:6:\"object\";}s:14:\"ShareCertsResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}s:10:\"SharedFrom\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"_ExtEmail_
+  account that this account shares certs from\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"SharedTo\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"_ExtEmail_
+  account that this account shares certs for\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:4:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:8:\"SharedTo\";i:3;s:10:\"SharedFrom\";}s:4:\"type\";s:6:\"object\";}s:16:\"UnshareCertsResp\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"ResponseCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"Two
+  digit response code in string format\";s:4:\"type\";s:6:\"string\";}s:12:\"ResponseText\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Human
+  readable response text\";s:4:\"type\";s:6:\"string\";}s:10:\"SharedFrom\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"_ExtEmail_
+  account that this account shares certs from\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:8:\"SharedTo\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"_ExtEmail_
+  account that this account shares certs for\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:8:\"required\";a:4:{i:0;s:12:\"ResponseCode\";i:1;s:12:\"ResponseText\";i:2;s:8:\"SharedTo\";i:3;s:10:\"SharedFrom\";}s:4:\"type\";s:6:\"object\";}s:13:\"UploadFileReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":4:{s:12:\"FileContents\";s:3:\"...\";s:8:\"FileName\";s:8:\"testfile\";s:8:\"FileType\";s:3:\"KTL\";s:9:\"Signature\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:12:\"FileContents\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Base64
+  encoded file contents\";s:4:\"type\";s:6:\"string\";}s:8:\"FileName\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Upload
+  file name\";s:4:\"type\";s:6:\"string\";}s:8:\"FileType\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"Bank
+  specific file type\";s:4:\"type\";s:6:\"string\";}s:9:\"Signature\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"Detached
+  PGP signature(s) made with registered PGP key(s)\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:4:{i:0;s:12:\"FileContents\";i:1;s:8:\"FileType\";i:2;s:8:\"FileName\";i:3;s:9:\"Signature\";}s:4:\"type\";s:6:\"object\";}s:12:\"UploadKeyReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":2:{s:6:\"PgpKey\";s:3:\"...\";s:13:\"PgpKeyPurpose\";s:9:\"authorize\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"PgpKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"ASCII
+  armored PGP Key\";s:4:\"type\";s:6:\"string\";}s:13:\"PgpKeyPurpose\";O:8:\"stdClass\":2:{s:11:\"description\";s:119:\"PGP
+  key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content
+  authorization verification).\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:6:\"PgpKey\";i:1;s:13:\"PgpKeyPurpose\";}s:4:\"type\";s:6:\"object\";}s:14:\"VerifyEmailReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"AccessToken\";s:3:\"...\";s:4:\"Code\";s:6:\"123456\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"AccessToken\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"Access
+  token from login response\";s:4:\"type\";s:6:\"string\";}s:4:\"Code\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"Code
+  from email\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:4:\"Code\";i:1;s:11:\"AccessToken\";}s:4:\"type\";s:6:\"object\";}s:14:\"VerifyPhoneReq\";O:8:\"stdClass\":4:{s:7:\"example\";O:8:\"stdClass\":1:{s:4:\"Code\";s:6:\"123456\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"Code\";O:8:\"stdClass\":2:{s:11:\"description\";s:13:\"Code
+  from SMS\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"Code\";}s:4:\"type\";s:6:\"object\";}}"
+...

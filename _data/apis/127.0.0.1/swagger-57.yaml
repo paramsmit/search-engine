@@ -1,0 +1,393 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":6:{s:11:\"description\";s:211:\"REST APIs provided
+  by tidb-admin support the management of services and process running states in a
+  TiDB cluster.\n[Learn about Swagger](http://swagger.io) or join the IRC channel
+  `#swagger` on irc.freenode.net.\n\";s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:20:\"TiDB
+  Admin REST APIs\";s:14:\"termsOfService\";s:29:\"http://helloreverb.com/terms/\";s:7:\"contact\";O:8:\"stdClass\":1:{s:4:\"name\";s:16:\"liuy@pingcap.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+host: 127.0.0.1:8080
+basePath: /api/v1
+paths:
+  /processes:
+    get:
+      tags:
+      - process
+      summary: get all processes in Ti-Cluster with either running or stopped state
+      description: ""
+      operationId: FindAllProcesses
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Process'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+      - process
+      summary: create a new process of specified service, and trigger started on the
+        assigned host node of Ti-Cluster
+      description: ""
+      operationId: StartNewProcess
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: the process status infomation which inherited from the configuration
+          of service which named as svcName
+        required: false
+        schema:
+          $ref: '#/definitions/Process'
+      responses:
+        200:
+          description: successful ooperation
+          schema:
+            $ref: '#/definitions/Process'
+        500:
+          description: failed to create new process
+  /processes/findByHost:
+    get:
+      tags:
+      - process
+      summary: find all processes scheduled on given host
+      description: ""
+      operationId: FindByHost
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: machID
+        description: machID that need to be considered for filter
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Process'
+        400:
+          description: Invalid machID
+  /processes/findByService:
+    get:
+      tags:
+      - process
+      summary: find processes instantiated from the specified service
+      description: ""
+      operationId: FindByService
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: svcName
+        description: service name to filter by
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Process'
+        400:
+          description: Invalid service name
+  /processes/{procID}:
+    get:
+      tags:
+      - process
+      summary: get speciafied process by given procID
+      description: ""
+      operationId: FindProess
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: procID
+        description: procID is a unique process identifier generated in cluster, not
+          the real PID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Process'
+        400:
+          description: Invalid procID supplied
+        404:
+          description: Process not found
+    delete:
+      tags:
+      - process
+      summary: destroy a process in cluster
+      description: ""
+      operationId: DestroyProcess
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: procID
+        description: procID is a unique process identifier generated in cluster, not
+          the real PID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Process'
+        400:
+          description: Invalid procID supplied
+        404:
+          description: Process not found
+  /processes/{procID}/start:
+    get:
+      tags:
+      - process
+      summary: start a process which is stopped state
+      description: after trigger start, the process changes to a starting state, until
+        fully started by backend
+      operationId: StartProcess
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: procID
+        description: procID is a unique process identifier generated in cluster, not
+          the real PID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Process'
+        400:
+          description: invalid procID supplied
+        404:
+          description: process not found
+  /processes/{procID}/stop:
+    get:
+      tags:
+      - process
+      summary: stop a process which is started state
+      description: after trigger stop, the process changes to stopping state, until
+        fully stopped by backend
+      operationId: StopProcess
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: procID
+        description: procID is a unique process identifier generated in cluster, not
+          the real PID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Process'
+        400:
+          description: invalid procID supplied
+        404:
+          description: process not found
+  /hosts:
+    get:
+      tags:
+      - host
+      summary: list all hosts in the Ti-Cluster
+      description: ""
+      operationId: FindAllHosts
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Host'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+  /hosts/{machID}:
+    get:
+      tags:
+      - host
+      summary: get the host infomation by a given machID
+      description: ""
+      operationId: FindHost
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: machID
+        description: machID is the unique identification of a physical machine in
+          Ti-Cluster
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Host'
+        400:
+          description: invalid machID supplied
+        404:
+          description: host not found
+  /hosts/{machID}/meta:
+    put:
+      tags:
+      - host
+      summary: update the metainfo of the specified host by given machID
+      description: ""
+      operationId: SetHostMetaInfo
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: machID
+        description: machID is the unique identification of a physical machine in
+          Ti-Cluster
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: meta object that needs to be updated to the host
+        required: false
+        schema:
+          $ref: '#/definitions/HostMeta'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Host'
+        400:
+          description: invalid machID supplied
+        404:
+          description: process not found
+  /services:
+    get:
+      tags:
+      - service
+      summary: get a list of service status in Ti-Cluster
+      description: ""
+      operationId: AllServices
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+  /services/{svcName}:
+    get:
+      tags:
+      - service
+      summary: get the specified service status
+      description: ""
+      operationId: Service
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: svcName
+        description: specified service name
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Service'
+        400:
+          description: invalid svcName supplied
+        404:
+          description: service not found
+  /version:
+    get:
+      tags:
+      - version
+      summary: show the version infomation of services in Ti-Cluster, including tidb-admin
+        self
+      description: ""
+      operationId: VersionInfo
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Version'
+        500:
+          description: internal server error
+  /monitor/real/tidb_perf:
+    get:
+      tags:
+      - monitor
+      summary: get performance metrics of tidb server over the cluster
+      description: ""
+      operationId: TiDBPerformanceMetrics
+      produces:
+      - application/json
+      responses:
+        200:
+          description: sucessful operation
+          schema:
+            $ref: '#/definitions/PerfMetrics'
+        500:
+          description: internal server error
+  /monitor/real/tikv_storage:
+    get:
+      tags:
+      - monitor
+      summary: get capacity and usage metrics of tikv storage
+      description: ""
+      operationId: TiKVStorageMetrics
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StorageMetrics'
+        500:
+          description: internal server error
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":11:{s:7:\"Process\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:3:{i:0;s:7:\"svcName\";i:1;s:6:\"machID\";i:2;s:12:\"desiredState\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:6:\"procID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"svcName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"machID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"desiredState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"stateStarted,
+  stateStopped\";}s:12:\"currentState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"stateStarted,
+  stateStopped\";}s:7:\"isAlive\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"endpoints\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"executor\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"command\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"args\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:12:\"environments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Environment\";}}s:8:\"publicIP\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"hostName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"hostMeta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HostMeta\";}s:4:\"port\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"protocol\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Service\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:7:\"svcName\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:7:\"svcName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"executor\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"command\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"args\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:12:\"environments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Environment\";}}s:4:\"port\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"protocol\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"endpoints\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:4:\"Host\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"machID\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:6:\"machID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"hostName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"hostMeta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/HostMeta\";}s:8:\"publicIP\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"isAlive\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:7:\"machine\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Machine\";}}}s:7:\"Machine\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:6:\"machID\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"machID\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"usageOfCPU\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:23:\"percentage
+  of CPU usage\";}s:8:\"totalMem\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}s:7:\"usedMem\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}s:8:\"totalSwp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}s:7:\"usedSwp\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}s:7:\"loadAvg\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";}}s:11:\"usageOfDisk\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DiskUsage\";}}s:11:\"clockOffset\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:11:\"unit
+  Second\";}}}s:9:\"DiskUsage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"mount\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"totalSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}s:8:\"usedSize\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:7:\"unit
+  MB\";}}}s:11:\"Environment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"HostMeta\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"region\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"datacenter\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"errCode\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"buildUTCTime\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"PerfMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"tps\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:3:\"qps\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"iops\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:5:\"conns\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:14:\"StorageMetrics\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"usage\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:10:\"unit
+  of MB\";}s:8:\"capacity\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:10:\"unit
+  of MB\";}}}}"
+...

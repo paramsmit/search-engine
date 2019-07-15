@@ -1,0 +1,442 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":4:{s:5:\"title\";s:15:\"vic-machine API\";s:11:\"description\";s:130:\"An
+  API for performing administrative operations on Virtual Container Hosts. Provides
+  functionality similar to the vic-machine CLI.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:59:\"https://raw.githubusercontent.com/vmware/vic/master/LICENSE\";}s:7:\"version\";s:6:\"v0.1.0\";}"
+basePath: /container
+paths:
+  /:
+    get:
+      summary: Show VIC metadata
+      description: A `GET` request on the base resource will return a JSON object
+        containing metadata including the version number of the server software and
+        a list of available appliance ISOs.
+      responses:
+        200:
+          $ref: '#/responses/metadata'
+      tags:
+      - not-yet-implemented
+      security: []
+  /hello:
+    get:
+      summary: Provide a welcome message
+      description: The API server may deployed with self-signed certificates. JavaScript
+        API clients may wish to direct users to this endpoint to view certificate
+        validation errors in their browser.
+      produces:
+      - text/plain
+      responses:
+        200:
+          $ref: '#/responses/hello'
+      security: []
+  /version:
+    get:
+      summary: Show VIC version information
+      description: A `GET` request on the `version` sub-resource will return the version
+        number of the server software.
+      produces:
+      - text/plain
+      responses:
+        200:
+          $ref: '#/responses/version'
+      security: []
+  /target/{target}:
+    get:
+      summary: Show information about the specified vSphere resources
+      description: A `GET` request on a vSphere target will return information about
+        the state of the host firewall on those resources.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/target'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    post:
+      summary: Perform an action on the specified vSphere resources
+      description: A `POST` request on a vSphere target with an action of `firewall:allow`
+        or `firewall:deny` will update the host firewall on those resources.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/target-action'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        204:
+          $ref: '#/responses/success'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+  /target/{target}/vch:
+    get:
+      summary: List VCHs on the target system
+      description: A `GET` request on `/vch` under a target will return information
+        about the VCHs on that target.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-list'
+        default:
+          $ref: '#/responses/error'
+    post:
+      summary: Create a VCH on the target system
+      description: A `POST` request on `/vch` under a target will create a VCH on
+        that target. Information about the VCH will be provided in the body of the
+        request. A portion of the request, including validation, will occur synchronously,
+        with any errors being returned using an appropriate response code and status.
+        The rest of the operation will proceed asynchronously. If present, the returned
+        task can be used to track the progress and status of that asynchronous work.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        201:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/vch/{vchId}:
+    get:
+      summary: Get information about the target VCH
+      description: A `GET` request on a VCH resource will return information about
+        the VCH. Information about the VCH will be provided in the body of the response
+        in the same format as the `POST` request to create a VCH.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch'
+        default:
+          $ref: '#/responses/error'
+    put:
+      summary: Reconfigure the target VCH
+      description: A `PUT` request on a VCH resource will update that VCH's configuration.
+        Information about the VCH will be provided in the body of the request in the
+        same format as the `POST` request to create a VCH. Fields which cannot be
+        modified may appear in the body of a `PUT` as long as the value of those fields
+        match the current state of the object. When the value of a field which cannot
+        be modified does not match the current state, a `409 Conflict` will be returned.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    patch:
+      summary: Reconfigure the target VCH
+      description: A `PATCH` request on a VCH resource (with a body as described in
+        RFC 7396) will update a subset of that VCH's configuration. As `PATCH` is
+        an explicit request to update a set of fields, fields which cannot be modified
+        must not appear in the body of the `PATCH` request, even if the modification
+        would be a no-op.
+      consumes:
+      - application/merge-patch+json
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    post:
+      summary: Perform an action on the target VCH
+      description: 'A `POST` request on a VCH resource with an action of `upgrade`
+        will initiate an upgrade of the VCH. The body of the request will be a JSON
+        object containing the following optional properties: `bootstrap-iso` (a reference
+        to a known bootstrap ISO on the OVA) and `rollback` (a boolean value).'
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch-action'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    delete:
+      summary: Delete the target VCH
+      description: A `DELETE` request on a VCH resource will delete that VCH. By default,
+        the request will fail if the VCH contains powered on Container VMs. By default,
+        volume stores will not be deleted.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/deletion-specification'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/vch/{vchId}/certificate:
+    get:
+      summary: Access the host certificate for a VCH
+      description: A GET request on `/certificate` under a VCH resource will return
+        the certificate the VCH uses when acting as a server, which clients may wish
+        to download and add to a trust store.
+      produces:
+      - application/x-pem-file
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-certificate'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/vch/{vchId}/log:
+    get:
+      summary: Access log messages for a VCH
+      description: A `GET` request on `/log` under a VCH resource will return the
+        log messages for the creation process of that VCH.
+      produces:
+      - text/plain
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-log'
+        default:
+          $ref: '#/responses/error-plain'
+  /target/{target}/datacenter/{datacenter}:
+    get:
+      summary: Show information about the specified vSphere resources
+      description: Making a `GET` request on a datacenter will return information
+        about the state of the host firewall on those resources.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/target'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    post:
+      summary: Perform an action on the specified vSphere resources
+      description: Making a `POST` request on a datacenter with an action of `firewall:allow`
+        or `firewall:deny` will update the host firewall on those resources.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/target-action'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        204:
+          $ref: '#/responses/success'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+  /target/{target}/datacenter/{datacenter}/vch:
+    get:
+      summary: List VCHs in the specified datacenter of the target system
+      description: A `GET` request on `/vch` under a datacenter will return information
+        about the VCHs in that datacenter.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/computeResource'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-list'
+        default:
+          $ref: '#/responses/error'
+    post:
+      summary: Create a VCH on the target system
+      description: A `POST` request on `/vch` under a datacenter will create a VCH
+        in that datacenter. Information about the VCH will be provided in the body
+        of the request. A portion of the request, including validation, will occur
+        synchronously, with any errors being returned using an appropriate response
+        code and status. The rest of the operation will proceed asynchronously. If
+        present, the returned task can be used to track the progress and status of
+        that asynchronous work.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        201:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/datacenter/{datacenter}/vch/{vchId}:
+    get:
+      summary: Get information about the target VCH
+      description: A `GET` request on a VCH resource will return information about
+        the VCH. Information about the VCH will be provided in the body of the response
+        in the same format as the `POST` request to create a VCH.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch'
+        default:
+          $ref: '#/responses/error'
+    put:
+      summary: Reconfigure the target VCH
+      description: A `PUT` request on a VCH resource will update that VCH's configuration.
+        Information about the VCH will be provided in the body of the request in the
+        same format as the `POST` request to create a VCH. Fields which cannot be
+        modified may appear in the body of a `PUT` as long as the value of those fields
+        match the current state of the object. When the value of a field which cannot
+        be modified does not match the current state, a `409 Conflict` will be returned.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    patch:
+      summary: Reconfigure the target VCH
+      description: A `PATCH` request on a VCH resource (with a body as described in
+        RFC 7396) will update a subset of that VCH's configuration. As `PATCH` is
+        an explicit request to update a set of fields, fields which cannot be modified
+        must not appear in the body of the `PATCH` request, even if the modification
+        would be a no-op.
+      consumes:
+      - application/merge-patch+json
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    post:
+      summary: Perform an action on the target VCH
+      description: 'A `POST` request on a VCH resource with an action of `upgrade`
+        will initiate an upgrade of the VCH. The body of the request will be a JSON
+        object containing the following optional properties: `bootstrap-iso` (a reference
+        to a known bootstrap ISO on the OVA) and `rollback` (a boolean value).'
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/vch-action'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+      tags:
+      - not-yet-implemented
+    delete:
+      summary: Delete the target VCH
+      description: A `DELETE` request on a VCH resource will delete that VCH. By default,
+        the request will fail if the VCH contains powered on Container VMs. By default,
+        volume stores will not be deleted.
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/deletion-specification'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        202:
+          $ref: '#/responses/vsphere-task'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/datacenter/{datacenter}/vch/{vchId}/certificate:
+    get:
+      summary: Access the host certificate for a VCH
+      description: A GET request on `/certificate` under a VCH resource will return
+        the certificate the VCH uses when acting as a server, which clients may wish
+        to download and add to a trust store.
+      produces:
+      - application/x-pem-file
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-certificate'
+        default:
+          $ref: '#/responses/error'
+  /target/{target}/datacenter/{datacenter}/vch/{vchId}/log:
+    get:
+      summary: Access log messages for a VCH
+      description: A `GET` request on `/log` under a VCH resource will return the
+        log messages for the creation process of that VCH.
+      produces:
+      - text/plain
+      parameters:
+      - $ref: '#/parameters/target'
+      - $ref: '#/parameters/datacenter'
+      - $ref: '#/parameters/vch-id'
+      - $ref: '#/parameters/thumbprint'
+      responses:
+        200:
+          $ref: '#/responses/vch-log'
+        default:
+          $ref: '#/responses/error-plain'
+produces:
+- application/json
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":24:{s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:7:\"Version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:55:\"^v[0-9]+.[0-9]+.[0-9]+-[a-z0-9]+-[0-9]+-[a-f0-9]{7,40}$\";}s:15:\"Bootstrap_Image\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"Bootstrap_Image_List\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/Bootstrap_Image\";}}s:6:\"Target\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:56:\"Information
+  about the current state of a vSphere target.\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"firewall\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:51:\"Information
+  about the firewall status on each host.\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"target\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:18:\"in_supported_state\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}}}s:5:\"Value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"units\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:10:\"Value_Bits\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Value\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"units\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:3:\"bit\";}}}}s:11:\"Value_Bytes\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Value\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"units\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:1:\"B\";i:1;s:3:\"KiB\";i:2;s:3:\"MiB\";i:3;s:3:\"GiB\";i:4;s:3:\"TiB\";i:5;s:3:\"PiB\";}}}}s:18:\"Value_Bytes_Metric\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Value\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"units\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:1:\"B\";i:1;s:2:\"KB\";i:2;s:2:\"MB\";i:3;s:2:\"GB\";i:4;s:2:\"TB\";i:5;s:2:\"PB\";}}}}s:11:\"Value_Hertz\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:5:\"allOf\";a:1:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Value\";}}s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"units\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:2:\"Hz\";i:1;s:3:\"KHz\";i:2;s:3:\"MHz\";i:3;s:3:\"GHz\";}}}}s:6:\"Shares\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:1;s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"number\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"high\";i:1;s:6:\"normal\";i:2;s:3:\"low\";}}}}s:14:\"Managed_Object\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:1;s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"CIDR\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"A
+  range of IP addresses in CIDR notation (like 192.0.2.0/24).\";s:7:\"pattern\";s:133:\"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$\";}s:8:\"IP_Range\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:127:\"A
+  range of IP addresses in CIDR notation (like 192.0.2.0/24) or expressed as a simple
+  range (like 198.51.100.10-198.51.100.20).\";s:7:\"pattern\";s:239:\"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2])|\\-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$\";}s:10:\"IP_Address\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:81:\"TODO:
+  see if this can just be a string with a format that captures IPv4 and IPv6?\";s:6:\"format\";s:4:\"ipv4\";}s:7:\"Gateway\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:20:\"routing_destinations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/CIDR\";}}s:7:\"address\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/IP_Address\";}}}s:7:\"Network\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"port_group\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Managed_Object\";}s:7:\"gateway\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Gateway\";}s:11:\"nameservers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/IP_Address\";}}s:6:\"static\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/CIDR\";}}}s:17:\"Container_Network\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"alias\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"firewall\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:5:{i:0;s:6:\"closed\";i:1;s:8:\"outbound\";i:2;s:5:\"peers\";i:3;s:9:\"published\";i:4;s:4:\"open\";}}s:11:\"nameservers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/IP_Address\";}}s:10:\"port_group\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Managed_Object\";}s:7:\"gateway\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Gateway\";}s:9:\"ip_ranges\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/IP_Range\";}}}}s:3:\"PEM\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:79:\"^.*-----BEGIN
+  [A-Z ]+-----\\s+[A-Za-z0-9+/\\s]+={0,2}\\s+-----END [A-Z ]+-----\\s*$\";}s:9:\"X509_Data\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:1;s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"pem\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:17:\"#/definitions/PEM\";}}}s:3:\"VCH\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Version\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"debug\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:7:\"compute\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"cpu\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"limit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Value_Hertz\";}s:11:\"reservation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Value_Hertz\";}s:6:\"shares\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Shares\";}}}s:6:\"memory\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:5:\"limit\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Value_Bytes\";}s:11:\"reservation\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Value_Bytes\";}s:6:\"shares\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Shares\";}}}s:8:\"resource\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Managed_Object\";}s:8:\"affinity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:12:\"use_vm_group\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}}s:7:\"network\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"bridge\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"ip_range\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/CIDR\";}s:13:\"network_width\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:7:\"minimum\";i:1;s:7:\"maximum\";i:30;s:7:\"default\";i:16;}s:10:\"port_group\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Managed_Object\";}}}s:6:\"client\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Network\";}s:10:\"management\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Network\";}s:6:\"public\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Network\";}s:9:\"container\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/Container_Network\";}}}}s:7:\"storage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:12:\"image_stores\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"volume_stores\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"datastore\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:15:\"base_image_size\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/Value_Bytes_Metric\";}}}s:4:\"auth\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:62:\"Either
+  `no_tls` or both `client` and `server` must be present.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"no_tls\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:6:\"client\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:13:\"minProperties\";i:1;s:13:\"maxProperties\";i:1;s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"no_tls_verify\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:23:\"certificate_authorities\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/X509_Data\";}}}}s:6:\"server\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:153:\"Either
+  `generate` or both `certificate` and `private_key` must be provided when creating
+  a VCH. Only `certificate` will be present when retrieving a VCH.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"certificate\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/X509_Data\";}s:11:\"private_key\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/X509_Data\";}s:8:\"generate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"size\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Value_Bits\";}s:12:\"organization\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"cname\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}}}s:8:\"endpoint\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:6:\"memory\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Value_Bytes\";}s:3:\"cpu\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"sockets\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:22:\"operations_credentials\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"password\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:8:\"password\";}s:4:\"user\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"grant_permissions\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}}s:8:\"registry\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:8:\"insecure\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:9:\"whitelist\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:23:\"certificate_authorities\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/X509_Data\";}}s:17:\"image_fetch_proxy\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"http\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:5:\"https\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}s:8:\"no_proxy\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";}}}}}}s:7:\"runtime\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"power_state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"upgrade_status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"admin_portal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"docker_host\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:11:\"syslog_addr\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:3:\"uri\";s:7:\"pattern\";s:14:\"^(tc|ud)p://.*\";}s:9:\"container\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:15:\"name_convention\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"pattern\";s:22:\"^.*(\\{id\\}|\\{name\\}).*\";}}}}}s:13:\"VCH_List_Item\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"parent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/Managed_Object\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"power_state\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"upgrade_status\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"admin_portal\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"docker_host\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:8:\"VCH_List\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/VCH_List_Item\";}}s:22:\"Deletion_Specification\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"containers\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"off\";i:1;s:3:\"all\";}s:7:\"default\";s:3:\"off\";}s:13:\"volume_stores\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"none\";i:1;s:3:\"all\";}s:7:\"default\";s:4:\"none\";}}}}"
+...

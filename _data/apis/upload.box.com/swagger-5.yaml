@@ -1,0 +1,470 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:11:\"description\";s:111:\"The Box Uploads
+  API allows users to add a new file or add a new file version in the same way as
+  uploading file.\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:42:\"http://www.apache.org/licenses/LICENSE-2.0\";}s:5:\"title\";s:15:\"Box
+  2.0 Uploads\";s:7:\"version\";s:3:\"2.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:5:\"cloud\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:78:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_BoxHQ_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:84:\"https://raw.githubusercontent.com/box/box-openapi/master/v2.0/upload.openapi-v2.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:7:\"box.com\";s:13:\"x-serviceName\";s:6:\"upload\";}"
+host: upload.box.com
+basePath: /api/2.0
+paths:
+  /files/content:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Use the Uploads API to allow users to add a new file.
+      externalDocs:
+        url: https://docs.box.com/reference#upload-a-file
+      operationId: uploadFile
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: File attributes
+        in: formData
+        name: attributes
+        required: true
+        type: string
+      responses:
+        201:
+          description: The upload would be successful
+          schema:
+            $ref: '#/definitions/FileList'
+        409:
+          description: Name collision occurs
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: File upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Upload File
+      tags:
+      - FileUpload
+  /files/upload_sessions:
+    post:
+      description: Use the Uploads API to create a new session to upload a new file.
+      operationId: createUploadSession
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/FileUploadSessionRequest'
+      responses:
+        201:
+          description: The upload session creation would be successful
+          schema:
+            $ref: '#/definitions/UploadSession'
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Name collision occurs.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: Preconditioned failed.
+          schema:
+            $ref: '#/definitions/Error'
+        413:
+          description: Request entity too large.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: File upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Create File Upload Session
+      tags:
+      - ChunkedUpload
+  /files/upload_sessions/{SESSION_ID}:
+    delete:
+      description: Abort the upload session and discard all data uploaded. This cannot
+        be reversed.
+      operationId: abortUploadSession
+      parameters:
+      - in: path
+        name: SESSION_ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: Abort would be successful
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Get upload session error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Abort Upload Session
+      tags:
+      - ChunkedUpload
+    get:
+      description: Return the information about this session.
+      operationId: getUploadSession
+      parameters:
+      - in: path
+        name: SESSION_ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: Get would be successful
+          schema:
+            $ref: '#/definitions/UploadSession'
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Get upload session error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Upload Session Details
+      tags:
+      - ChunkedUpload
+    put:
+      consumes:
+      - application/octet-stream
+      description: Upload a part of the file to this session.
+      operationId: uploadPart
+      parameters:
+      - in: path
+        name: SESSION_ID
+        required: true
+        type: string
+      - description: The message digest of the partbody, formatted as specified by
+          RFC 3230. The usage is sha=BASE64_ENCODED_DIGEST. Currently only SHA-1 is
+          supported.As per RFC 3230, the output from SHA-1 algorithm must be Base64
+          encoded.
+        in: header
+        name: Digest
+        required: true
+        type: string
+      - description: 'Byte range of part within overall file. E.g: bytes 8388608-16777215/445856194.
+          It must not overlap with the range of a part already uploaded to this session.'
+        in: header
+        name: Content-Range
+        required: true
+        type: string
+      - description: Part bytes
+        in: body
+        name: bytes
+        required: true
+        schema:
+          format: byte
+          type: string
+      responses:
+        200:
+          description: Part upload would be successful
+          schema:
+            $ref: '#/definitions/UploadPartResponse'
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Part conflict. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: Preconditioned failed. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        416:
+          description: Request range bit satisfiable. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Part upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Upload Part
+      tags:
+      - ChunkedUpload
+  /files/upload_sessions/{SESSION_ID}/commit:
+    post:
+      description: Create a Box file comprised of the uploaded parts.
+      operationId: commitUploadSession
+      parameters:
+      - in: path
+        name: SESSION_ID
+        required: true
+        type: string
+      - description: The message digest of the file, formatted as specified by RFC
+          3230. The usage is sha=BASE64_ENCODED_DIGEST. Currently only SHA-1 is supported.As
+          per RFC 3230, the output from SHA-1 algorithm must be Base64 encoded.
+        in: header
+        name: Digest
+        required: true
+        type: string
+      - description: This is in the u2018etagu2019 field of the file object. See https://developer.box.com/v2.0/reference#if-match
+        in: header
+        name: If-Match
+        required: false
+        type: string
+      - description: This is in the u2018etagu2019 field of the file object. See https://developer.box.com/v2.0/reference#if-match
+        in: header
+        name: If-Non-Match
+        required: false
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CommitRequest'
+      responses:
+        201:
+          description: The file has been committed successfully
+          schema:
+            $ref: '#/definitions/FileList'
+        202:
+          description: All parts have been uploaded but not yet processed. Use Get
+            Upload Session API to get more information about the progress of processing
+            the parts. Retry commit afterwards
+          headers:
+            Retry-After:
+              description: Indicates the number of seconds the client should wait
+                before attempting their commit request again.
+              type: integer
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: There is already a file with the same name in the target folder.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: The If-Match condition failed.
+          schema:
+            $ref: '#/definitions/Error'
+        413:
+          description: Request entity too large. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Part upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Commit Upload
+      tags:
+      - ChunkedUpload
+  /files/upload_sessions/{SESSION_ID}/parts:
+    get:
+      description: Return the list of parts uploaded so far for this session.
+      operationId: listParts
+      parameters:
+      - in: path
+        name: SESSION_ID
+        required: true
+        type: string
+      - description: Zero-based index of first part to return. Defaults to zero, if
+          not specified.
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - description: How many parts to return. Defaults to 1000 if not specified,
+          which is also the maximum value allowed.
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      responses:
+        200:
+          description: List would be successful
+          schema:
+            $ref: '#/definitions/PartList'
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Upload commit error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: List Parts
+      tags:
+      - ChunkedUpload
+  /files/{FILE_ID}/content:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'This method is used to upload a new version of an existing file
+        in a useru2019s account. '
+      externalDocs:
+        url: https://docs.box.com/reference#upload-a-new-version-of-a-file
+      operationId: uploadFileVersion
+      parameters:
+      - in: path
+        name: FILE_ID
+        required: true
+        type: string
+      - description: This is in the u2018etagu2019 field of the file object
+        in: header
+        name: If-Match
+        required: false
+        type: string
+      - description: File attributes
+        in: formData
+        name: attributes
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        200:
+          description: The upload would be successful
+          schema:
+            $ref: '#/definitions/FileList'
+        default:
+          description: File upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Upload File Version
+      tags:
+      - FileUpload
+  /files/{FILE_ID}/upload_sessions:
+    post:
+      description: Use the Uploads API to create a new session to upload a new version
+        of existing file.
+      operationId: createUploadSessionNewVersion
+      parameters:
+      - in: path
+        name: FILE_ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/VersionUploadSessionRequest'
+      responses:
+        201:
+          description: The upload session creation would be successful
+          schema:
+            $ref: '#/definitions/UploadSession'
+        400:
+          description: Bad request. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Name collision occurs. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: Preconditioned failed. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        413:
+          description: Request entity too large. See response body for details.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: File upload error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Create File Upload Session
+      tags:
+      - ChunkedUpload
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":24:{s:7:\"BoxFile\";O:8:\"stdClass\":4:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/FileReference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":26:{s:11:\"collections\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Collection\";}s:4:\"type\";s:5:\"array\";}s:13:\"comment_count\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"The
+  number of comments on a file.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:18:\"content_created_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"When
+  the content of this file was created (more info).\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:19:\"content_modified_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:60:\"When
+  the content of this file was last modified (more info).\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"When
+  this file was created on Box\u2019s servers.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:10:\"created_by\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/UserReference\";s:11:\"description\";s:32:\"The
+  user who first created file.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  description of this file.\";s:4:\"type\";s:6:\"string\";}s:19:\"expiring_embed_link\";O:8:\"stdClass\":2:{s:11:\"description\";s:145:\"An
+  expiring URL for an embedded preview session in an iframe. This URL will expire
+  after 60 seconds and the session will expire after 60 minutes.\";s:4:\"type\";s:6:\"string\";}s:9:\"extension\";O:8:\"stdClass\":2:{s:11:\"description\";s:173:\"Indicates
+  the suffix, when available, on the file. By default, set to an empty string. The
+  suffix usually indicates the encoding (file format) of the file contents or usage.\";s:4:\"type\";s:6:\"string\";}s:12:\"file_version\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/FileVersionReference\";}s:10:\"is_package\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Whether
+  the file is a package. Used for Mac Packages used by iWorks.\";s:4:\"type\";s:7:\"boolean\";}s:11:\"item_status\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Whether
+  this item is deleted or not.\";s:4:\"type\";s:6:\"string\";}s:4:\"lock\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Lock\";}s:11:\"modified_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"When
+  this file was last updated on the Box servers.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"modified_by\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/UserReference\";s:11:\"description\";s:36:\"The
+  user who last updated this file.\";}s:8:\"owned_by\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/UserReference\";s:11:\"description\";s:28:\"The
+  user who owns this file.\";}s:6:\"parent\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/ItemReference\";s:11:\"description\";s:32:\"The
+  folder containing this file.\";}s:15:\"path_collection\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:28:\"#/definitions/PathCollection\";s:11:\"description\";s:55:\"The
+  path of folders to this file, starting at the root.\";}s:11:\"permissions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/FilePermissions\";}s:9:\"purged_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"When
+  this file will be permanently deleted.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"shared_link\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/SharedLink\";}s:4:\"size\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"Size
+  of this file in bytes.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"All
+  tags applied to this file.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:10:\"trashed_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"When
+  this file was last moved to the trash.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:14:\"version_number\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  version number of the file.\";s:4:\"type\";s:6:\"string\";}s:14:\"watermark_info\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/WatermarkInfo\";}}}}s:11:\"description\";s:233:\"File
+  information describe file objects in Box, with attributes like who created the file,
+  when it was last modified, and other information. The actual content of the file
+  itself is accessible through the /files/{id}/content endpoint.\";s:5:\"title\";s:11:\"File
+  Object\";s:4:\"type\";s:6:\"object\";}s:10:\"Collection\";O:8:\"stdClass\":4:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Reference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":2:{s:15:\"collection_type\";O:8:\"stdClass\":3:{s:11:\"description\";s:187:\"The
+  type of the collection. This is used to determine the proper visual treatment for
+  Box-internally created collections. Initially only \u201Cfavorites\u201D collection-type
+  will be supported.\";s:4:\"enum\";a:1:{i:0;s:9:\"favorites\";}s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"The
+  name of this collection. The only collection currently available is named \u201CFavorites\u201D\";s:4:\"type\";s:6:\"string\";}}}}s:11:\"description\";s:288:\"Collections
+  contain information about the items contained inside of them, including files and
+  folders. The only collection available currently is a \u201CFavorites\u201D collection.
+  The contents of the collection are discovered in a similar way in which the contents
+  of a folder are discovered.\";s:5:\"title\";s:17:\"Collection Object\";s:4:\"type\";s:6:\"object\";}s:13:\"CommitRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"attributes\";O:8:\"stdClass\":3:{s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:11:\"description\";s:116:\"Optional.
+  An array of attributes to set on the created file. See https://box-content.readme.io/reference#file-object\";s:4:\"type\";s:6:\"object\";}s:5:\"parts\";O:8:\"stdClass\":3:{s:11:\"description\";s:51:\"An
+  arrayof Part objects. MUST be ordered by offset.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Part\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:5:\"Error\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"context_info\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:8:\"help-url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"request-id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:1:{i:0;s:5:\"error\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"FileList\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"entries\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/BoxFile\";}s:4:\"type\";s:5:\"array\";}}}}s:11:\"description\";s:19:\"A
+  collection Tasks.\";s:4:\"type\";s:6:\"object\";}s:15:\"FilePermissions\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"The
+  permissions that the current user has on the file\";s:10:\"properties\";O:8:\"stdClass\":8:{s:12:\"can_download\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:23:\"can_invite_collaborator\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"can_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"can_rename\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:20:\"can_set_share_access\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"can_share\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:10:\"can_upload\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"cand_delete\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:13:\"FileReference\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ItemReference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"sha1\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  sha1 hash of this file.\";s:4:\"type\";s:6:\"string\";}}}}s:11:\"description\";s:39:\"It
+  references either a file or a folder\";s:4:\"type\";s:6:\"object\";}s:24:\"FileUploadSessionRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"file_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Name
+  of new file\";s:4:\"type\";s:6:\"string\";}s:9:\"file_size\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"The
+  total number of bytes in the file to be uploaded\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"folder_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"The
+  ID of the folder that will contain the new file\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:20:\"FileVersionReference\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Reference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"sha1\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  sha1 hash of this file.\";s:4:\"type\";s:6:\"string\";}}}}s:11:\"description\";s:36:\"The
+  version information of the file.\";s:4:\"type\";s:6:\"object\";}s:13:\"ItemReference\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Reference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"etag\";O:8:\"stdClass\":2:{s:11:\"description\";s:107:\"A
+  unique string identifying the version of this folder.\nMay be null for some folders
+  such as root or trash.\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  name of the folder.\";s:4:\"type\";s:6:\"string\";}s:11:\"sequence_id\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"A
+  unique ID for use with the /events endpoint.\nMay be null for some folders such
+  as root or trash.\";s:4:\"type\";s:6:\"string\";}}}}s:11:\"description\";s:39:\"It
+  references either a file or a folder\";s:4:\"type\";s:6:\"object\";}s:4:\"Lock\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Reference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"created_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:10:\"created_by\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UserReference\";}s:10:\"expired_at\";O:8:\"stdClass\":2:{s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:21:\"is_download_prevented\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}}s:11:\"description\";s:26:\"The
+  lock held on the file.\";s:4:\"type\";s:6:\"object\";}s:10:\"Pagination\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"limit\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:6:\"offset\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:5:\"order\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"by\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"direction\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:4:\"Part\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"offset\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:7:\"part_id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"sha1\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"size\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:8:\"PartList\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:7:\"entries\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"An
+  array of parts\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Part\";}s:4:\"type\";s:5:\"array\";}s:5:\"limit\";O:8:\"stdClass\":3:{s:11:\"description\";s:147:\"The
+  limit that was used for these entries. This will be the same as the limit query
+  parameter unless that value exceeded the maximum value allowed.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"offset\";O:8:\"stdClass\":3:{s:11:\"description\";s:103:\"The
+  0-based offset of the first entry in this set. This will be the same as the offset
+  query parameter.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"total_count\";O:8:\"stdClass\":3:{s:11:\"description\";s:111:\"This
+  will always be equal to the number of expected parts in the session (i.e. ceiling(file
+  size / part size)).\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:14:\"PathCollection\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Pagination\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"entries\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/ItemReference\";}s:4:\"type\";s:5:\"array\";}}}}s:11:\"description\";s:42:\"The
+  path of folders, starting at the root.\";s:4:\"type\";s:6:\"object\";}s:9:\"Reference\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:28:{i:0;s:6:\"folder\";i:1;s:4:\"file\";i:2;s:4:\"user\";i:3;s:12:\"file_version\";i:4;s:4:\"lock\";i:5;s:13:\"collaboration\";i:6;s:7:\"comment\";i:7;s:4:\"task\";i:8;s:8:\"web_link\";i:9;s:10:\"collection\";i:10;s:15:\"task_assignment\";i:11;s:5:\"event\";i:12;s:15:\"realtime_server\";i:13;s:13:\"webhook_event\";i:14;s:7:\"webhook\";i:15;s:10:\"enterprise\";i:16;s:6:\"invite\";i:17;s:11:\"email_alias\";i:18;s:5:\"group\";i:19;s:16:\"group_membership\";i:20;s:13:\"device_pinner\";i:21;s:16:\"retention_policy\";i:22;s:27:\"retention_policy_assignment\";i:23;s:22:\"file_version_retention\";i:24;s:17:\"legal_hold_policy\";i:25;s:28:\"legal_hold_policy_assignment\";i:26;s:10:\"legal_hold\";i:27;s:14:\"upload_session\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:10:\"SharedLink\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":11:{s:6:\"access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"download_count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:12:\"download_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"effective_access\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"is_password_enabled\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"permissions\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/SharedLinkPermissions\";}s:13:\"preview_count\";O:8:\"stdClass\":2:{s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"unshared_at\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"vanity_url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:21:\"SharedLinkPermissions\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"can_download\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"can_preview\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:18:\"UploadPartResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"part\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Part\";}}s:4:\"type\";s:6:\"object\";}s:13:\"UploadSession\";O:8:\"stdClass\":3:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Reference\";}i:1;O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:19:\"num_parts_processed\";O:8:\"stdClass\":3:{s:11:\"description\";s:348:\"Tracks
+  Box\u2019s progress in processing all the parts that have been uploaded. Always
+  equal to 0 when creating new upload session. In other cases, this will be the number
+  of parts that have been processed by server. When all parts have been uploaded,
+  but Commit API returned 202, you can check this value == total_parts to check if
+  file was uploaded.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"part_size\";O:8:\"stdClass\":3:{s:11:\"description\";s:126:\"The
+  part size in bytes that must be used for all parts of this session. Only the last
+  part is allowed to be of a smaller size.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:17:\"session_endpoints\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/UploadSessionEndpoints\";}s:18:\"session_expires_at\";O:8:\"stdClass\":3:{s:11:\"description\";s:64:\"UTC
+  Time in RFC 3339 date timeformat: 2016-04-17T09:12:36-00:00.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"total_parts\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"The
+  total number of parts expected in this session, as determined by the file size and
+  part size.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}}}s:11:\"description\";s:15:\"Upload
+  Session.\";s:4:\"type\";s:6:\"object\";}s:22:\"UploadSessionEndpoints\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"URLs
+  for all other possible calls to this session.\";s:10:\"properties\";O:8:\"stdClass\":6:{s:5:\"abort\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  URL for abort API.\";s:4:\"type\";s:6:\"string\";}s:6:\"commit\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  URL for commit API.\";s:4:\"type\";s:6:\"string\";}s:10:\"list_parts\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  URL for list parts API.\";s:4:\"type\";s:6:\"string\";}s:9:\"log_event\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  URL for log event API.\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  URL for status API.\";s:4:\"type\";s:6:\"string\";}s:11:\"upload_part\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  URL for upload part API.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:13:\"UserReference\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"It
+  references a user\";s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Unqiue
+  string identifying this user.\";s:4:\"type\";s:6:\"string\";}s:5:\"login\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  email address this user uses to login.\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:17:\"Name
+  of this user\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"enum\";a:1:{i:0;s:4:\"user\";}s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:27:\"VersionUploadSessionRequest\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:9:\"file_name\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"Name
+  of new file\";s:4:\"type\";s:6:\"string\";}s:9:\"file_size\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"The
+  total number of bytes in the file to be uploaded\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:13:\"WatermarkInfo\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"is_watermarked\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:4:\"type\";s:5:\"array\";}}"
+...

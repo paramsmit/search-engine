@@ -1,0 +1,508 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:182:\"The Syndesis Supported
+  REST API connects to back-end services on the Syndesis and\n                      provides
+  a single entry point for the 3rd\n                      party clients.\";s:7:\"version\";s:2:\"v1\";s:5:\"title\";s:22:\"Syndesis
+  Supported API\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:22:\"The Syndesis
+  Community\";s:3:\"url\";s:20:\"https://syndesis.io/\";s:5:\"email\";s:25:\"syndesis@googlegroups.com\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:10:\"Apache
+  2.0\";s:3:\"url\";s:47:\"http://www.apache.org/licenses/LICENSE-2.0.html\";}}"
+basePath: /api/v1
+paths:
+  /extensions:
+    get:
+      tags:
+      - extensions
+      operationId: list
+      produces:
+      - application/json
+      parameters:
+      - name: sort
+        in: query
+        description: Sort the result list according to the given field value
+        required: false
+        type: string
+      - name: direction
+        in: query
+        description: Sorting direction when a 'sort' field is provided. Can be 'asc'
+          (ascending) or 'desc' (descending)
+        required: false
+        type: string
+      - name: page
+        in: query
+        description: Page number to return
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Number of records per page
+        required: false
+        type: integer
+        default: 20
+      - name: query
+        in: query
+        description: The search query to filter results on
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ListResultExtension'
+    post:
+      tags:
+      - extensions
+      operationId: upload
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - name: updatedId
+        in: query
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Extension'
+  /extensions/validation:
+    post:
+      tags:
+      - extensions
+      operationId: validate
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: All blocking validations pass
+          schema:
+            $ref: '#/definitions/Violation'
+        400:
+          description: Found violations in validation
+          schema:
+            $ref: '#/definitions/Violation'
+  /extensions/{id}:
+    get:
+      tags:
+      - extensions
+      operationId: get
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/WithIdObject'
+    delete:
+      tags:
+      - extensions
+      operationId: delete
+      consumes:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /extensions/{id}/install:
+    post:
+      tags:
+      - extensions
+      operationId: install
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: Installed
+        400:
+          description: Found violations in validation
+          schema:
+            $ref: '#/definitions/Violation'
+  /extensions/{id}/integrations:
+    get:
+      tags:
+      - extensions
+      operationId: integrations
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ResourceIdentifier'
+            uniqueItems: true
+  /extensions/{id}/validation:
+    post:
+      tags:
+      - extensions
+      operationId: validate
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: All blocking validations pass
+          schema:
+            $ref: '#/definitions/Violation'
+        400:
+          description: Found violations in validation
+          schema:
+            $ref: '#/definitions/Violation'
+  /integration-support/export.zip:
+    get:
+      tags:
+      - integration-support
+      operationId: export
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: id
+        in: query
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StreamingOutput'
+  /integration-support/generate/pom.xml:
+    post:
+      tags:
+      - integration-support
+      operationId: projectPom
+      consumes:
+      - application/json
+      produces:
+      - application/octet-stream
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+  /integration-support/import:
+    post:
+      tags:
+      - integration-support
+      operationId: importIntegration
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                $ref: '#/definitions/WithResourceId'
+  /integration-support/overviews:
+    get:
+      tags:
+      - integration-support
+      operationId: getOverviews
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ListResultIntegrationOverview'
+  /public/connections/{id}/properties:
+    post:
+      tags:
+      - public-api
+      operationId: configureConnection
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ConnectionOverview'
+  /public/environments:
+    get:
+      tags:
+      - public-api
+      operationId: getReleaseEnvironments
+      produces:
+      - application/json
+      parameters:
+      - name: withUses
+        in: query
+        required: false
+        type: boolean
+      responses:
+        default:
+          description: successful operation
+  /public/environments/{env}:
+    post:
+      tags:
+      - public-api
+      operationId: addNewEnvironment
+      parameters:
+      - name: env
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+    put:
+      tags:
+      - public-api
+      operationId: renameEnvironment
+      consumes:
+      - application/json
+      parameters:
+      - name: env
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: successful operation
+    delete:
+      tags:
+      - public-api
+      operationId: deleteEnvironment
+      parameters:
+      - name: env
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /public/integrations:
+    post:
+      tags:
+      - public-api
+      operationId: importResources
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ImportFormDataInput'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ContinuousDeliveryImportResults'
+  /public/integrations/{env}/export.zip:
+    get:
+      tags:
+      - public-api
+      operationId: exportResources
+      produces:
+      - application/octet-stream
+      parameters:
+      - name: env
+        in: path
+        required: true
+        type: string
+      - name: all
+        in: query
+        required: false
+        type: boolean
+      responses:
+        default:
+          description: successful operation
+  /public/integrations/{id}/deployments:
+    post:
+      tags:
+      - public-api
+      operationId: publishIntegration
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/IntegrationDeployment'
+  /public/integrations/{id}/deployments/stop:
+    put:
+      tags:
+      - public-api
+      operationId: stopIntegration
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+  /public/integrations/{id}/state:
+    get:
+      tags:
+      - public-api
+      operationId: getIntegrationState
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/IntegrationState'
+  /public/integrations/{id}/tags:
+    get:
+      tags:
+      - public-api
+      operationId: getReleaseTags
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/ContinuousDeliveryEnvironment'
+    put:
+      tags:
+      - public-api
+      operationId: putTagsForRelease
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/ContinuousDeliveryEnvironment'
+    patch:
+      tags:
+      - public-api
+      operationId: patchTagsForRelease
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/ContinuousDeliveryEnvironment'
+  /public/integrations/{id}/tags/{env}:
+    delete:
+      tags:
+      - public-api
+      operationId: deleteReleaseTag
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - name: env
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: successful operation
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":52:{s:6:\"Action\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:13:\"discriminator\";s:10:\"actionType\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"descriptor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/ActionDescriptor\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"actionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"pattern\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"From\";i:1;s:4:\"Pipe\";i:2;s:2:\"To\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:16:\"ActionDescriptor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:23:\"propertyDefinitionSteps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ActionDescriptorStep\";}}s:14:\"inputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}s:15:\"outputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}}}s:20:\"ActionDescriptorStep\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ConfigurationProperty\";}}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:14:\"ActionsSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:17:\"actionCountByTags\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}s:12:\"totalActions\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:21:\"ConfigurationProperty\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":23:{s:6:\"secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:3:\"raw\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"defaultValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"displayName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"deprecated\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"group\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"enum\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/PropertyValue\";}}s:9:\"generator\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"required\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"controlHint\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"connectorValue\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"multiple\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:8:\"javaType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"relation\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/PropertyRelation\";}}s:11:\"placeholder\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"labelHint\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"componentProperty\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"order\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}}}s:10:\"Connection\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":17:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"options\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"connector\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Connector\";}s:11:\"connectorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:7:\"derived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"organizationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"uses\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}}}s:23:\"ConnectionBulletinBoard\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"errors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:8:\"warnings\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:7:\"notices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:16:\"targetResourceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LeveledMessage\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:18:\"ConnectionOverview\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":18:{s:5:\"board\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/ConnectionBulletinBoard\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"options\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:12:\"organization\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/Organization\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"connector\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Connector\";}s:11:\"connectorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:7:\"derived\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:14:\"organizationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"uses\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}}}s:9:\"Connector\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:2:{i:0;s:7:\"actions\";i:1;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":18:{s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"uses\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:14:\"connectorGroup\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ConnectorGroup\";}s:16:\"connectorGroupId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"componentScheme\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"connectorFactory\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"connectorCustomizers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:14:\"actionsSummary\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/ActionsSummary\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"actions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/ConnectorAction\";}}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ConfigurationProperty\";}}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dependency\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:15:\"ConnectorAction\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"descriptor\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/ConnectorDescriptor\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"actionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dependency\";}}s:7:\"pattern\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"From\";i:1;s:4:\"Pipe\";i:2;s:2:\"To\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:19:\"ConnectorDescriptor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:17:\"camelConnectorGAV\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:15:\"componentScheme\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:16:\"connectorFactory\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"connectorCustomizers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:11:\"connectorId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"camelConnectorPrefix\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"propertyDefinitionSteps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ActionDescriptorStep\";}}s:14:\"inputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}s:15:\"outputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:14:\"ConnectorGroup\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:29:\"ContinuousDeliveryEnvironment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"releaseTag\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"lastTaggedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:14:\"lastExportedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:14:\"lastImportedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:31:\"ContinuousDeliveryImportResults\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"results\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/WithResourceId\";}}s:14:\"lastImportedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:11:\"DataManager\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:9:\"DataShape\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"exemplar\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"byte\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"variants\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"kind\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:8:{i:0;s:3:\"ANY\";i:1;s:4:\"JAVA\";i:2;s:11:\"JSON_SCHEMA\";i:3;s:13:\"JSON_INSTANCE\";i:4;s:10:\"XML_SCHEMA\";i:5;s:20:\"XML_SCHEMA_INSPECTED\";i:6;s:12:\"XML_INSTANCE\";i:7;s:4:\"NONE\";}}s:14:\"collectionType\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:19:\"collectionClassName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:13:\"specification\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:10:\"Dependency\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:5:\"MAVEN\";i:1;s:9:\"EXTENSION\";i:2;s:13:\"EXTENSION_TAG\";i:3;s:4:\"ICON\";}}}}s:11:\"Environment\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Extension\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:4:{i:0;s:7:\"actions\";i:1;s:13:\"extensionType\";i:2;s:4:\"name\";i:3;s:13:\"schemaVersion\";}s:10:\"properties\";O:8:\"stdClass\":19:{s:13:\"schemaVersion\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"icon\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"extensionId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"actions\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dependency\";}}s:11:\"lastUpdated\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:5:\"Draft\";i:1;s:9:\"Installed\";i:2;s:7:\"Deleted\";}}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"createdDate\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:13:\"extensionType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:5:\"Steps\";i:1;s:10:\"Connectors\";i:2;s:9:\"Libraries\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ConfigurationProperty\";}}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"uses\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:8:\"readOnly\";b:1;}}}s:4:\"Flow\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:7:\"PRIMARY\";i:1;s:12:\"API_PROVIDER\";i:2;s:9:\"ALTERNATE\";}}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"connections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Connection\";}}s:9:\"scheduler\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Scheduler\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"steps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Step\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:24:\"ImmutableConnectorAction\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":9:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:10:\"descriptor\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:33:\"#/definitions/ConnectorDescriptor\";}s:4:\"tags\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"actionType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dependency\";}}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"readOnly\";b:1;s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"pattern\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"enum\";a:3:{i:0;s:4:\"From\";i:1;s:4:\"Pipe\";i:2;s:2:\"To\";}}}}}}s:19:\"ImmutableStepAction\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:10:\"descriptor\";O:8:\"stdClass\":2:{s:8:\"readOnly\";b:1;s:4:\"$ref\";s:28:\"#/definitions/StepDescriptor\";}s:4:\"tags\";O:8:\"stdClass\":4:{s:4:\"type\";s:5:\"array\";s:8:\"readOnly\";b:1;s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:10:\"actionType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;}s:8:\"metadata\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"readOnly\";b:1;s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"pattern\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:8:\"readOnly\";b:1;s:4:\"enum\";a:3:{i:0;s:4:\"From\";i:1;s:4:\"Pipe\";i:2;s:2:\"To\";}}}}}}s:19:\"ImportFormDataInput\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/InputStream\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/InputStream\";}s:11:\"environment\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"deploy\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}}s:11:\"InputStream\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:11:\"Integration\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":15:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"flows\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Flow\";}}s:5:\"steps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Step\";}}s:7:\"deleted\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"connections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Connection\";}}s:23:\"continuousDeliveryState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ContinuousDeliveryEnvironment\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ConfigurationProperty\";}}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"resources\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ResourceIdentifier\";}}}}s:24:\"IntegrationBulletinBoard\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"errors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:8:\"warnings\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:7:\"notices\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/OptionalInt\";}s:16:\"targetResourceId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:8:\"messages\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/LeveledMessage\";}}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:21:\"IntegrationDeployment\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:4:\"spec\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Integration\";}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/IntegrationDeploymentError\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"stepsDone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"statusMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"currentState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:11:\"targetState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:26:\"IntegrationDeploymentError\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:29:\"IntegrationDeploymentOverview\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:5:\"error\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/IntegrationDeploymentError\";}s:6:\"userId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"stepsDone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"statusMessage\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"currentState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:11:\"targetState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}}}s:33:\"IntegrationDeploymentStateDetails\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:9:\"namespace\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:17:\"deploymentVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:13:\"detailedState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:10:\"ASSEMBLING\";i:1;s:8:\"BUILDING\";i:2;s:9:\"DEPLOYING\";i:3;s:8:\"STARTING\";}}s:7:\"podName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"linkType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"EVENTS\";i:1;s:4:\"LOGS\";}}s:13:\"integrationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:19:\"IntegrationOverview\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":22:{s:3:\"url\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"board\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/IntegrationBulletinBoard\";}s:17:\"deploymentVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:11:\"deployments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/IntegrationDeploymentOverview\";}}s:5:\"draft\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:12:\"currentState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:11:\"targetState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"flows\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Flow\";}}s:5:\"steps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Step\";}}s:7:\"deleted\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:11:\"connections\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Connection\";}}s:23:\"continuousDeliveryState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/ContinuousDeliveryEnvironment\";}}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/ConfigurationProperty\";}}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:9:\"createdAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:9:\"updatedAt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";}s:4:\"tags\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"uniqueItems\";b:1;s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"resources\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/ResourceIdentifier\";}}}}s:16:\"IntegrationState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"currentState\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:4:{i:0;s:9:\"Published\";i:1;s:11:\"Unpublished\";i:2;s:5:\"Error\";i:3;s:7:\"Pending\";}}s:12:\"stateDetails\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/IntegrationDeploymentStateDetails\";}}}s:14:\"LeveledMessage\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"level\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"INFO\";i:1;s:4:\"WARN\";i:2;s:5:\"ERROR\";}}s:6:\"detail\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:13:{i:0;s:11:\"SYNDESIS000\";i:1;s:11:\"SYNDESIS001\";i:2;s:11:\"SYNDESIS002\";i:3;s:11:\"SYNDESIS003\";i:4;s:11:\"SYNDESIS004\";i:5;s:11:\"SYNDESIS005\";i:6;s:11:\"SYNDESIS006\";i:7;s:11:\"SYNDESIS007\";i:8;s:11:\"SYNDESIS008\";i:9;s:11:\"SYNDESIS009\";i:10;s:11:\"SYNDESIS010\";i:11;s:11:\"SYNDESIS011\";i:12;s:11:\"SYNDESIS012\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:10:\"ListResult\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:19:\"ListResultExtension\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Extension\";}}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:29:\"ListResultIntegrationOverview\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/IntegrationOverview\";}}s:10:\"totalCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:11:\"OptionalInt\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"present\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:5:\"asInt\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:12:\"Organization\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"name\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"users\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/User\";}}s:12:\"environments\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Environment\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:16:\"PropertyRelation\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"when\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/When\";}}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:13:\"PropertyValue\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:18:\"ResourceIdentifier\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:4:\"kind\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:27:{i:0;s:6:\"action\";i:1;s:10:\"connection\";i:2;s:19:\"connection-overview\";i:3;s:9:\"connector\";i:4;s:16:\"connector-action\";i:5;s:15:\"connector-group\";i:6;s:18:\"connector-template\";i:7;s:4:\"icon\";i:8;s:11:\"environment\";i:9;s:16:\"environment-type\";i:10;s:9:\"extension\";i:11;s:11:\"step-action\";i:12;s:12:\"organization\";i:13;s:11:\"integration\";i:14;s:20:\"integration-overview\";i:15;s:22:\"integration-deployment\";i:16;s:36:\"integration-deployment-state-details\";i:17;s:27:\"integration-metrics-summary\";i:18;s:19:\"integration-runtime\";i:19;s:20:\"integration-endpoint\";i:20;s:4:\"step\";i:21;s:10:\"permission\";i:22;s:4:\"role\";i:23;s:4:\"user\";i:24;s:25:\"connection-bulletin-board\";i:25;s:26:\"integration-bulletin-board\";i:26;s:8:\"open-api\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Scheduler\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:5:\"timer\";i:1;s:4:\"cron\";}}s:10:\"expression\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:4:\"Step\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"extension\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Extension\";}s:10:\"connection\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Connection\";}s:6:\"action\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Action\";}s:8:\"stepKind\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:12:{i:0;s:8:\"endpoint\";i:1;s:9:\"connector\";i:2;s:16:\"expressionFilter\";i:3;s:10:\"ruleFilter\";i:4;s:9:\"extension\";i:5;s:6:\"mapper\";i:6;s:6:\"choice\";i:7;s:5:\"split\";i:8;s:9:\"aggregate\";i:9;s:3:\"log\";i:10;s:7:\"headers\";i:11;s:8:\"template\";}}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:20:\"configuredProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:12:\"dependencies\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/Dependency\";}}s:8:\"metadata\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:14:\"StepDescriptor\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"resource\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"kind\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:4:\"STEP\";i:1;s:4:\"BEAN\";i:2;s:8:\"ENDPOINT\";}}s:10:\"entrypoint\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:23:\"propertyDefinitionSteps\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/ActionDescriptorStep\";}}s:14:\"inputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}s:15:\"outputDataShape\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/DataShape\";}}}s:15:\"StreamingOutput\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":9:{s:8:\"fullName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:14:\"organizationId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:12:\"integrations\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/Integration\";}}s:6:\"roleId\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:9:\"Validator\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:9:\"Violation\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"When\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"value\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:6:\"WithId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:12:\"WithIdObject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}s:14:\"WithResourceId\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

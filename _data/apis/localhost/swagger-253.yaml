@@ -1,0 +1,931 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:22:\"Movies Application API\";s:7:\"version\";s:5:\"1.0.0\";s:11:\"description\";s:1414:\"##
+  API of Movies Application\n\nThis specification describes the endpoints, request/response
+  model for Movie Application. This API provides REST resources to manage  movies
+  of Movies application.\n\nThe resources should only be used over HTTPS (SSL) and
+  can be accessed via the following base URL:\n\n```\n  http://localhost:8080/api/v1/\n```\n\n##
+  API usage guidelines\n\nThis section describes general rules and guidelines for
+  using REST based services offered by Movies Application.\n\n  * All resources can
+  only be accessed via HTTPS and a respective HTTP Basic Authentication header is
+  also required.\n  * Movies Application reserves the right to add new parameters
+  without further notice (in request and response).\n  * Movies Application reserves
+  the right to add new error codes without further notice. Movies Application will
+  thereby stick to the HTTP STATUS CODES as defined by W3C.\n  * Movies Application
+  reserves the right to enhance enumerations by new values.\n  * Movies Application
+  reserves the right to increase the \"maxItem\" settings of arrays without further
+  notice.\n\nEach consumer needs to tolerant about changes to the API as much as possible
+  ([see Tolerant Reader Pattern](http://martinfowler.com/bliki/TolerantReader.html))\n\n##
+  Business definitions\nMovie APIs are called by an authorized application to view
+  data on movies, artists, theatres, shows and bookings.\n## Release Notes\n### 1.0.0\n*
+  Initial version\n\";}"
+host: localhost:8080
+basePath: /api/v1
+paths:
+  /movies:
+    get:
+      operationId: getMovies
+      tags:
+      - API#005 Movies
+      summary: Movie Application - Get all Movies
+      description: API to get all movies of Movies applicationn
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: page
+        type: integer
+        required: false
+        description: query to set the position of the records to be fetched from
+      - in: query
+        name: limit
+        type: integer
+        required: false
+        description: query to limit the number of records per fetch
+      - in: query
+        name: status
+        type: string
+        enum:
+        - PUBLISHED
+        - RELEASED
+        - DELETED
+        required: false
+        description: query to filter the results based on specified status(es) (comma
+          separated)
+      - in: query
+        name: start_date
+        type: string
+        required: false
+        description: query to filter the movies whose release date is equal or after
+          the specified start date (e.g. 2018-07-01)
+      - in: query
+        name: end_date
+        type: string
+        required: false
+        description: query to filter the movies whose release date is equal or before
+          the specified start date (e.g. 2018-07-30)
+      - in: query
+        name: artist_name
+        type: string
+        required: false
+        description: query to filter the results based on specified artist name
+      - in: query
+        name: genre
+        type: string
+        required: false
+        description: query to filter the movies based on specified genre(s) (comma
+          separated)
+      - in: query
+        name: min_rating
+        type: number
+        format: float
+        required: false
+        description: query to filter the movies whose rating is greater than or equal
+          to the specified value (e.g. 3.0)
+      - in: query
+        name: max_rating
+        type: number
+        format: float
+        required: false
+        description: query to filter the movies whose rating is lesser than or equal
+          to the specified value (e.g. 5.0)
+      - in: query
+        name: sortBy
+        type: string
+        enum:
+        - RATING
+        - RELEASE_DATE
+        required: false
+        description: query to sort the results based on specified key(s)
+      responses:
+        200:
+          description: OK - Fetched all movies
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/MoviesSummaryResponse'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        422:
+          description: UNPROCESSABLE ENTITY - request was well-formed but server unable
+            to process due to semantic errors
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /movies/{movie_id}:
+    get:
+      operationId: getMovie
+      tags:
+      - API#005 Movies
+      summary: Movie Management - Get an existing Movie
+      description: API to get an existing Movie detalis of Movies applicationn
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/MovieId'
+      responses:
+        200:
+          description: OK - Fetched movie details
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/MovieSummaryType'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        404:
+          description: NOT FOUND - Movie (resource) does not exist
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /movies/{movie_id}/artists:
+    get:
+      operationId: getMovieArtists
+      tags:
+      - API#005 Movies
+      summary: Movie Management - List of artists belonging to the Movie
+      description: API to get an existing artists of the Movien
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/MovieId'
+      responses:
+        200:
+          description: OK - Fetched list of Movie artists
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/ArtistsSummaryResponse'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /movies/{movie_id}/artists/{artist_id}:
+    get:
+      operationId: getMovieArtistDetails
+      tags:
+      - API#005 Movies
+      summary: Movie Management - Get an existing details of the Movie
+      description: API to get an existing details of the Movien
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/MovieId'
+      - $ref: '#/parameters/ArtistId'
+      responses:
+        200:
+          description: OK - Fetched artist details
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/ArtistType'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        404:
+          description: NOT FOUND - Artist (resource) does not exist
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /movies/{movie_id}/shows:
+    get:
+      operationId: getMovieShows
+      tags:
+      - API#005 Movies
+      summary: Movie Application - List of shows belonging to the Movie
+      description: API to get an existing shows of the Movien
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/MovieId'
+      - $ref: '#/parameters/Authorization'
+      - in: query
+        name: page
+        type: integer
+        required: false
+        description: query to set the position of the records to be fetched from
+      - in: query
+        name: limit
+        type: integer
+        required: false
+        description: query to limit the number of records per fetch
+      - in: query
+        name: title
+        type: string
+        required: false
+        description: query to filter the results based on specified movie title
+      - in: query
+        name: genre
+        type: string
+        required: false
+        description: query to filter the movies based on specified genre(s) (comma
+          separated)
+      - in: query
+        name: ticket_availability
+        type: integer
+        required: false
+        description: query to filter the movies based on the specified number of ticket
+          availability
+      - in: query
+        name: city_code
+        type: string
+        required: false
+        description: query to filter the results based on specified city code
+      - in: query
+        name: language
+        type: string
+        required: false
+        description: query to filter the results based on specified language
+      - in: query
+        name: start_time
+        type: string
+        required: false
+        description: query to filter the shows whose show timing is equal or after
+          the specified start date time (e.g. 2018-07-01 11:30)
+      - in: query
+        name: end_time
+        type: string
+        required: false
+        description: query to filter the shows whose show timing is equal or before
+          the specified start date time (e.g. 2018-07-01 15:30)
+      - in: query
+        name: min_price
+        type: number
+        format: double
+        required: false
+        description: query to filter the shows whose unit price is greater than or
+          equal to the specified value (e.g. 100.00)
+      - in: query
+        name: max_price
+        type: number
+        format: double
+        required: false
+        description: query to filter the shows whose unit price is lesser than or
+          equal to the specified value (e.g. 300.00)
+      responses:
+        200:
+          description: OK - fetched list of movie shows
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/MovieShowsSummaryResponse'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /movies/{movie_id}/shows/{show_id}:
+    get:
+      operationId: getShowDetails
+      tags:
+      - API#005 Movies
+      summary: Movie Application - Get an existing show details
+      description: API to get an existing show details of Movies applicationn
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/MovieId'
+      - $ref: '#/parameters/ShowId'
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: OK - fetched show details
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/MovieShowType'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        404:
+          description: NOT FOUND - Show (resource) does not exist
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /coupons:
+    get:
+      operationId: getCoupons
+      tags:
+      - API#005 Movies
+      security:
+      - Authorization: []
+      summary: Movie Application - List of coupons available
+      description: API to get an existing coupons available in the databasen
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - in: query
+        name: page
+        type: integer
+        required: false
+        description: query to set the position of the records to be fetched from
+      - in: query
+        name: limit
+        type: integer
+        required: false
+        description: query to limit the number of records per fetch
+      responses:
+        200:
+          description: OK - fetched list of coupons
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/CouponsSummaryResponse'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /bookings:
+    post:
+      operationId: bookShow
+      tags:
+      - API#005 Movies
+      security:
+      - Authorization: []
+      summary: Movie Application - Book the show
+      description: API to book the shown
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - in: body
+        name: ShowBookingRequest
+        description: Request containing booking details
+        required: true
+        schema:
+          $ref: '#/definitions/BookingRequest'
+      responses:
+        201:
+          description: CREATED - Show has been booked successfully by the customer
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+            location:
+              type: string
+              description: Location of the new resource which was created by this
+                request
+          schema:
+            $ref: '#/definitions/BookingType'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        422:
+          description: UNPROCESSABLE ENTITY - request was well-formed but server unable
+            to process due to semantic errors
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+    get:
+      operationId: getBookings
+      tags:
+      - API#005 Movies
+      security:
+      - Authorization: []
+      summary: Movie Application - List of bookings belonging to the Customer
+      description: API to get an existing bookings of the Customern
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - in: query
+        name: page
+        type: integer
+        required: false
+        description: query to set the position of the records to be fetched from
+      - in: query
+        name: limit
+        type: integer
+        required: false
+        description: query to limit the number of records per fetch
+      - in: query
+        name: status
+        type: string
+        enum:
+        - CONFIRMED
+        - CANCELLED
+        required: false
+        description: query to filter the results based on specified status
+      responses:
+        200:
+          description: OK - fetched list of bookings
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/BookingsSummaryResponse'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+  /bookings/{booking_id}:
+    get:
+      operationId: getBookingDetails
+      tags:
+      - API#005 Movies
+      summary: Movie Application - Get an existing booking details
+      description: API to get an existing booking details of Movies applicationn
+      produces:
+      - application/json
+      parameters:
+      - $ref: '#/parameters/BookingId'
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: OK - fetched booking details
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+          schema:
+            $ref: '#/definitions/BookingType'
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        404:
+          description: NOT FOUND - Booking (resource) does not exist
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+    delete:
+      operationId: cancelBooking
+      tags:
+      - API#005 Movies
+      security:
+      - Authorization: []
+      summary: Movie Application - Mark an existing Booking as CANCELLED
+      description: API to cancel an existing Bookingn
+      parameters:
+      - $ref: '#/parameters/BookingId'
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: OK - Booking status has been set to CANCELLED
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        400:
+          description: BAD REQUEST - server cannot or will not process the request
+            due to something that is perceived to be a client error (e.g., malformed
+            request syntax, mandatory elements are missing)
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        401:
+          description: UNAUTHORIZED - user has provided wrong credentials
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        403:
+          description: FORBIDDEN - request has not been applied because client application
+            has no permission to perform action
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        404:
+          description: NOT FOUND - Booking (resource) does not exist
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+        500:
+          description: INTERNAL SERVER ERROR - server encountered an unexpected condition
+            that prevented it from fulfilling the request.
+          headers:
+            request-id:
+              type: string
+              description: Used as correlation id while tracing for the request in
+                the backend
+schemes:
+- http
+- https
+definitions: !php/object "O:8:\"stdClass\":25:{s:21:\"MoviesSummaryResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"page
+  or position of the fetched movies\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:41:\"number
+  of movies fetched per this request\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:38:\"total
+  number of movies in the database\";}s:6:\"movies\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:30:\"#/definitions/MovieSummaryType\";}s:11:\"description\";s:14:\"List
+  of movies\";}}s:8:\"required\";a:4:{i:0;s:4:\"page\";i:1;s:5:\"limit\";i:2;s:11:\"total_count\";i:3;s:6:\"movies\";}s:7:\"example\";O:8:\"stdClass\":4:{s:4:\"page\";i:1;s:5:\"limit\";i:10;s:11:\"total_count\";i:33;s:6:\"movies\";a:2:{i:0;O:8:\"stdClass\":12:{s:2:\"id\";s:36:\"7d174a25-ba31-45a8-85b4-b06ffc9d5f8f\";s:5:\"title\";s:12:\"Sample
+  Movie\";s:9:\"storyline\";s:22:\"This is a sample movie\";s:6:\"genres\";a:2:{i:0;s:5:\"Drama\";i:1;s:8:\"Romantic\";}s:8:\"duration\";i:120;s:10:\"poster_url\";s:26:\"www.samplemovie.com/poster\";s:11:\"trailer_url\";s:27:\"www.samplemovie.com/trailer\";s:8:\"wiki_url\";s:29:\"www.wikipedia.com/samplemovie\";s:12:\"release_date\";s:10:\"2018-07-07\";s:19:\"censor_board_rating\";s:1:\"U\";s:6:\"rating\";d:4;s:6:\"status\";s:8:\"RELEASED\";}i:1;O:8:\"stdClass\":12:{s:2:\"id\";s:36:\"8d174a25-da31-55a8-85b4-c06ffc9d5f8f\";s:5:\"title\";s:20:\"Another
+  Sample Movie\";s:9:\"storyline\";s:28:\"This is another sample movie\";s:6:\"genres\";a:1:{i:0;s:6:\"Comedy\";}s:8:\"duration\";i:160;s:10:\"poster_url\";s:33:\"www.anothersamplemovie.com/poster\";s:11:\"trailer_url\";s:34:\"www.anothersamplemovie.com/trailer\";s:8:\"wiki_url\";s:36:\"www.wikipedia.com/anothersamplemovie\";s:12:\"release_date\";s:10:\"2018-08-07\";s:19:\"censor_board_rating\";s:1:\"U\";s:6:\"rating\";d:3;s:6:\"status\";s:9:\"PUBLISHED\";}}}}s:16:\"MovieSummaryType\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":13:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:56:\"Unique
+  identifier of the movie in a standard UUID format\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Title
+  of the movie\";}s:9:\"storyline\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Storyline
+  of the movie\";}s:6:\"genres\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:19:\"Genres
+  of the movie\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"Duration
+  (in minutes) of the movie\";}s:10:\"poster_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Poster
+  URL of the movie\";}s:11:\"trailer_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Trailer
+  URL of the movie\";}s:8:\"wiki_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Wiki
+  URL of the movie\";}s:12:\"release_date\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"Release
+  date of the movie\";s:4:\"$ref\";s:26:\"#/definitions/FullDateType\";}s:19:\"censor_board_rating\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/CensorBoardRatingType\";}s:6:\"rating\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:19:\"Rating
+  of the movie\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:29:\"#/definitions/MovieStatusType\";}s:7:\"artists\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/ArtistType\";}s:11:\"description\";s:15:\"List
+  of artists\";}}s:8:\"required\";a:10:{i:0;s:5:\"title\";i:1;s:9:\"storyline\";i:2;s:6:\"genres\";i:3;s:8:\"duration\";i:4;s:10:\"poster_url\";i:5;s:11:\"trailer_url\";i:6;s:12:\"release_date\";i:7;s:19:\"censor_board_rating\";i:8;s:6:\"rating\";i:9;s:6:\"status\";}s:7:\"example\";O:8:\"stdClass\":11:{s:5:\"title\";s:12:\"Sample
+  Movie\";s:9:\"storyline\";s:22:\"This is a sample movie\";s:6:\"genres\";a:2:{i:0;s:5:\"Drama\";i:1;s:8:\"Romantic\";}s:8:\"duration\";i:120;s:10:\"poster_url\";s:26:\"www.samplemovie.com/poster\";s:11:\"trailer_url\";s:27:\"www.samplemovie.com/trailer\";s:8:\"wiki_url\";s:29:\"www.wikipedia.com/samplemovie\";s:12:\"release_date\";s:10:\"2018-07-07\";s:19:\"censor_board_rating\";s:1:\"U\";s:6:\"rating\";d:4;s:6:\"status\";s:8:\"RELEASED\";}}s:10:\"ArtistType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:89:\"Unique
+  identifier of the movie artists in a standard UUID format generated by API backend\";}s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"First
+  name of an artist\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:22:\"Last
+  name of an artist\";}s:9:\"role_type\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Role
+  of an artist\";s:4:\"$ref\";s:28:\"#/definitions/ArtistRoleType\";}s:19:\"profile_description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Profile
+  description of an artist\";}s:11:\"profile_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Profile
+  URL of an artist\";}s:8:\"wiki_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"Wikipedia
+  URL of an artist\";}}}s:22:\"ArtistsSummaryResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:39:\"page
+  or position of the fetched artists\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:42:\"number
+  of artists fetched per this request\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"total
+  number of artists in the movie\";}s:7:\"artists\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/ArtistType\";}s:11:\"description\";s:15:\"List
+  of artists\";}}s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:7:\"artists\";}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"total_count\";i:8;s:7:\"artists\";a:1:{i:0;O:8:\"stdClass\":7:{s:2:\"id\";s:36:\"7d174a25-ba31-45a8-85b4-b06ffc9d5f8f\";s:10:\"first_name\";s:5:\"Movie\";s:9:\"last_name\";s:8:\"Director\";s:9:\"role_rype\";s:8:\"DIRECTOR\";s:19:\"profile_description\";s:21:\"Director
+  of the movie\";s:11:\"profile_url\";s:31:\"www.artistsprofile.com/director\";s:8:\"wiki_url\";s:26:\"www.wikipedia.com/director\";}}}}s:25:\"MovieShowsSummaryResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:37:\"page
+  or position of the fetched shows\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:40:\"number
+  of shows fetched per this request\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:34:\"total
+  number of shows in the movie\";}s:5:\"shows\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:27:\"#/definitions/MovieShowType\";}s:11:\"description\";s:13:\"List
+  of shows\";}}s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:5:\"shows\";}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"total_count\";i:8;s:5:\"shows\";a:2:{i:0;O:8:\"stdClass\":7:{s:2:\"id\";s:36:\"7d174a25-ba31-45a8-85b4-b06ffc9d5f8f\";s:7:\"theatre\";O:8:\"stdClass\":6:{s:2:\"id\";s:36:\"b66c889c-927f-48bc-b130-06d5e5abaa1d\";s:4:\"name\";s:12:\"Inox
+  Cinemas\";s:14:\"postal_address\";s:24:\"Garuda Mall, Koramangala\";s:9:\"city_code\";s:3:\"BLR\";s:4:\"city\";s:9:\"Bengaluru\";s:6:\"status\";s:6:\"ACTIVE\";}s:11:\"show_timing\";s:16:\"2018-08-21T14:30\";s:8:\"language\";s:7:\"ENGLISH\";s:10:\"unit_price\";d:200;s:11:\"total_seats\";i:125;s:15:\"available_seats\";i:75;}i:1;O:8:\"stdClass\":7:{s:2:\"id\";s:36:\"8d174a25-ba31-45a8-85b4-b06ffc9d5f89\";s:7:\"theatre\";O:8:\"stdClass\":6:{s:2:\"id\";s:36:\"48076d24-bffa-4e51-bd91-e125e03671e3\";s:4:\"name\";s:11:\"PVR
+  Cinemas\";s:14:\"postal_address\";s:23:\"Forum Mall, Koramangala\";s:9:\"city_code\";s:3:\"BLR\";s:4:\"city\";s:9:\"Bengaluru\";s:6:\"status\";s:6:\"ACTIVE\";}s:11:\"show_timing\";s:16:\"2018-08-21T16:20\";s:8:\"language\";s:7:\"ENGLISH\";s:10:\"unit_price\";d:250;s:11:\"total_seats\";i:150;s:15:\"available_seats\";i:5;}}}}s:13:\"MovieShowType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:55:\"Unique
+  identifier of the show in a standard UUID format\";}s:7:\"theatre\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:32:\"#/definitions/TheatreSummaryType\";}s:11:\"show_timing\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:30:\"#/definitions/FullDateTimeType\";s:11:\"description\";s:38:\"Show
+  timing in yyyy-MM-ddTHH:MM format\";}s:8:\"language\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/LanguageType\";}s:10:\"unit_price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UnitPriceType\";}s:11:\"total_seats\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:36:\"Total
+  number that this show can host\";}s:15:\"available_seats\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:46:\"Total
+  available seats that this show still has\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/MovieShowStatusType\";}}}s:18:\"TheatreSummaryType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:58:\"Unique
+  identifier of the theatre in a standard UUID format\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Name
+  of the theatre\";}s:14:\"postal_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Postal
+  address of the theatre\";}s:9:\"city_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"City
+  code of the theatre\";}s:4:\"city\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"City
+  of the theatre\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/TheatreStatusType\";}}}s:22:\"CouponsSummaryResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:23:\"total
+  number of coupons\";}s:7:\"coupons\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/CouponType\";}s:11:\"description\";s:15:\"List
+  of coupons\";}}s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:7:\"coupons\";}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"total_count\";i:8;s:7:\"coupons\";a:2:{i:0;O:8:\"stdClass\":3:{s:4:\"code\";s:6:\"abc123\";s:5:\"value\";i:10;s:11:\"description\";s:12:\"10%
+  discount\";}i:1;O:8:\"stdClass\":3:{s:4:\"code\";s:6:\"xyz123\";s:5:\"value\";i:12;s:11:\"description\";s:12:\"12%
+  discount\";}}}}s:10:\"CouponType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Coupon
+  code\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:15:\"Value
+  of coupon\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Description
+  of the coupon\";}}}s:23:\"BookingsSummaryResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"page\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:40:\"page
+  or position of the fetched bookings\";}s:5:\"limit\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:43:\"number
+  of bookings fetched per this request\";}s:11:\"total_count\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:24:\"total
+  number of bookings\";}s:8:\"bookings\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:25:\"#/definitions/BookingType\";}s:11:\"description\";s:15:\"List
+  of bookins\";}}s:8:\"required\";a:2:{i:0;s:11:\"total_count\";i:1;s:7:\"bookins\";}s:7:\"example\";O:8:\"stdClass\":2:{s:11:\"total_count\";i:8;s:8:\"bookings\";a:2:{i:0;O:8:\"stdClass\":10:{s:2:\"id\";s:36:\"7d174a25-ba31-45a8-85b4-b06ffc9d5f8f\";s:16:\"reference_number\";s:6:\"abc123\";s:11:\"movie_title\";s:16:\"Some
+  movie title\";s:11:\"show_timing\";s:16:\"2018-08-21 14:30\";s:8:\"language\";s:7:\"ENGLISH\";s:7:\"theatre\";O:8:\"stdClass\":6:{s:2:\"id\";s:36:\"b66c889c-927f-48bc-b130-06d5e5abaa1d\";s:4:\"name\";s:12:\"Inox
+  Cinemas\";s:14:\"postal_address\";s:24:\"Garuda Mall, Koramangala\";s:9:\"city_code\";s:3:\"BLR\";s:4:\"city\";s:9:\"Bengaluru\";s:6:\"status\";s:6:\"ACTIVE\";}s:13:\"total_tickets\";i:2;s:11:\"total_price\";d:500;s:7:\"tickets\";a:2:{i:0;s:3:\"J12\";i:1;s:3:\"J13\";}s:6:\"status\";s:9:\"CONFIRMED\";}i:1;O:8:\"stdClass\":10:{s:2:\"id\";s:36:\"8d174a25-ba31-45a8-85b4-b06ffc9d5f89\";s:16:\"reference_number\";s:6:\"abc123\";s:11:\"movie_title\";s:16:\"Some
+  movie title\";s:11:\"show_timing\";s:16:\"2017-05-13 14:30\";s:8:\"language\";s:7:\"ENGLISH\";s:7:\"theatre\";O:8:\"stdClass\":6:{s:2:\"id\";s:36:\"b66c889c-927f-48bc-b130-06d5e5abaa1d\";s:4:\"name\";s:12:\"Inox
+  Cinemas\";s:14:\"postal_address\";s:24:\"Garuda Mall, Koramangala\";s:9:\"city_code\";s:3:\"BLR\";s:4:\"city\";s:9:\"Bengaluru\";s:6:\"status\";s:6:\"ACTIVE\";}s:13:\"total_tickets\";i:2;s:11:\"total_price\";d:500;s:7:\"tickets\";a:2:{i:0;s:2:\"A2\";i:1;s:2:\"A3\";}s:6:\"status\";s:9:\"CANCELLED\";}}}}s:14:\"BookingRequest\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:7:\"show_id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:55:\"Unique
+  identifier of the show in a standard UUID format\";}s:11:\"coupon_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:33:\"Coupon
+  code applied while booking\";}s:7:\"tickets\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:36:\"Selected
+  ticket numbers for the show\";}}s:8:\"required\";a:2:{i:0;s:7:\"show_id\";i:1;s:7:\"tickets\";}s:7:\"example\";O:8:\"stdClass\":3:{s:7:\"show_id\";s:36:\"b66c889c-927f-48bc-b130-06d5e5abaa1d\";s:11:\"coupon_code\";s:6:\"abc123\";s:7:\"tickets\";a:2:{i:0;s:3:\"J12\";i:1;s:3:\"J13\";}}}s:11:\"BookingType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":12:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:4:\"uuid\";s:11:\"description\";s:58:\"Unique
+  identifier of the booking in a standard UUID format\";}s:16:\"reference_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Booking
+  reference number\";}s:11:\"movie_title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Movie
+  title\";}s:11:\"coupon_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:11:\"Coupon
+  code\";}s:11:\"show_timing\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/FullDateTimeType\";}s:8:\"language\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Language
+  of the movie\";}s:7:\"theatre\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/TheatreSummaryType\";}s:13:\"total_tickets\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:30:\"Total
+  number of tickets booked\";}s:11:\"total_price\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/UnitPriceType\";}s:7:\"tickets\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:36:\"Selected
+  ticket numbers for the show\";}s:9:\"booked_by\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:37:\"#/definitions/BookingCustomerInfoType\";}s:6:\"status\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/BookingStatusType\";}}s:8:\"required\";a:8:{i:0;s:16:\"reference_number\";i:1;s:11:\"movie_title\";i:2;s:8:\"language\";i:3;s:11:\"show_timing\";i:4;s:7:\"theatre\";i:5;s:11:\"total_price\";i:6;s:13:\"total_tickets\";i:7;s:7:\"tickets\";}}s:23:\"BookingCustomerInfoType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:26:\"First
+  name of the new user\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Last
+  name of the new user\";}s:13:\"email_address\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Email
+  address of the new user\";}s:13:\"mobile_number\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"Mobile
+  number of the new user\";}}}s:16:\"FullDateTimeType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:11:\"description\";s:40:\"Full
+  date-time format (yyyy-MM-dd HH:mm)\";}s:12:\"FullDateType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"full-date\";s:11:\"description\";s:16:\"Full
+  date format\";}s:15:\"MovieStatusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:9:\"PUBLISHED\";i:1;s:8:\"RELEASED\";i:2;s:7:\"DELETED\";}s:11:\"description\";s:19:\"Status
+  of the movie\";}s:17:\"TheatreStatusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"ACTIVE\";i:1;s:8:\"INACTIVE\";}s:11:\"description\";s:21:\"Status
+  of the theatre\";}s:14:\"ArtistRoleType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:8:\"DIRECTOR\";i:1;s:8:\"PRODUCER\";i:2;s:5:\"ACTOR\";i:3;s:15:\"CINEMATOGRAPHER\";i:4;s:8:\"MUSICIAN\";i:5;s:8:\"STUNTMAN\";}s:11:\"description\";s:18:\"Status
+  of the task\";}s:16:\"ArtistStatusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"ACTIVE\";i:1;s:8:\"INACTIVE\";}s:11:\"description\";s:19:\"Status
+  of an artist\";}s:21:\"CensorBoardRatingType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:3:{i:0;s:1:\"U\";i:1;s:1:\"A\";i:2;s:2:\"UA\";}s:11:\"description\";s:19:\"Censor
+  board rating\";}s:19:\"MovieShowStatusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:6:\"ACTIVE\";i:1;s:8:\"INACTIVE\";}s:11:\"description\";s:18:\"Status
+  of the show\";}s:12:\"LanguageType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:9:{i:0;s:7:\"ENGLISH\";i:1;s:5:\"HINDI\";i:2;s:7:\"KANNADA\";i:3;s:7:\"MARATHI\";i:4;s:6:\"TELUGU\";i:5;s:5:\"TAMIL\";i:6;s:9:\"MALAYALAM\";i:7;s:7:\"BENGALI\";i:8;s:7:\"PUNJABI\";}s:11:\"description\";s:47:\"Language
+  of the movie to be mapped to this show\";}s:13:\"UnitPriceType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:6:\"double\";s:11:\"description\";s:41:\"Unit
+  price of the movie (for e.g. 200.00)\";}s:17:\"BookingStatusType\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:9:\"CONFIRMED\";i:1;s:9:\"CANCELLED\";}s:11:\"description\";s:21:\"Status
+  of the booking\";}s:13:\"ErrorResponse\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:40:\"Application
+  specific standard error code\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:32:\"Error
+  message stating the reason\";}s:10:\"root_cause\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Root
+  cause of the Error\";}}s:8:\"required\";a:2:{i:0;s:4:\"code\";i:1;s:7:\"message\";}s:7:\"example\";O:8:\"stdClass\":2:{s:4:\"code\";s:7:\"MVI-001\";s:7:\"message\";s:36:\"Movie
+  with identifier does not exist\";}}}"
+...

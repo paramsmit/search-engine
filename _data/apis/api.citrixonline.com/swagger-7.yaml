@@ -1,0 +1,1033 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":12:{s:7:\"contact\";O:8:\"stdClass\":3:{s:5:\"email\";s:34:\"developer-support@citrixonline.com\";s:4:\"name\";s:17:\"Developer
+  Support\";s:3:\"url\";s:34:\"https://developer.citrixonline.com\";}s:11:\"description\";s:914:\"<br>The
+  GoToMeeting API provides seamless integration of GoToMeeting provisioning and meeting
+  management into your existing infrastructure or third party applications.<br><br>For
+  customers, the ability to add, suspend or delete an organizer in your GoToMeeting
+  Corporate account from within your primary management systems simplifies and streamlines
+  the entire process of account management. The ability to monitor meeting schedules,
+  history and active meeting status allows managers to leverage GoToMeeting activities
+  through your primary applications.<br><br>For third parties, the ability to create,
+  update or delete a meeting from within your application makes real-time collaboration
+  possible for your customers. The ability to update meeting schedules, view history
+  and scheduled meetings, and view attendees from past meetings allows you to enhance
+  your users' experience and the value of your applications.\";s:14:\"termsOfService\";s:44:\"https://developer.citrixonline.com/terms-use\";s:5:\"title\";s:11:\"GoToMeeting\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:13:\"collaboration\";}s:6:\"x-logo\";O:8:\"stdClass\":2:{s:15:\"backgroundColor\";s:7:\"#5F6166\";s:3:\"url\";s:79:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_citrix_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:90:\"https://developer.citrixonline.com/sites/default/files/citrix/citrix-apis/gotomeeting.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:16:\"citrixonline.com\";s:13:\"x-serviceName\";s:11:\"gotomeeting\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:18:\"citrix_gotomeeting\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.citrixonline.com
+basePath: /G2M/rest
+paths:
+  /groups:
+    get:
+      description: List all groups for an account. This API call is only available
+        to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Group'
+            type: array
+        403:
+          description: Forbidden
+      summary: Get groups
+      tags:
+      - Groups
+      operationId: groups.get
+  /groups/{groupKey}/attendees:
+    get:
+      description: Returns all attendees for all meetings within specified date range
+        held by organizers within the specified group. This API call is only available
+        to users with the admin role. This API call can be used only for groups with
+        maximum 50 organizers.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      - description: Start of date range, in ISO8601 UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        type: string
+      - description: End of date range, in ISO8601 UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/AttendeeByGroup'
+            type: array
+        400:
+          description: Bad Request
+      summary: Get attendees by group
+      tags:
+      - Groups
+      operationId: groups.groupKey.attendees.get
+  /groups/{groupKey}/historicalMeetings:
+    get:
+      description: 'Get historical meetings for the specified group that started within
+        the specified date/time range. This API call is only available to users with
+        the admin role. This API call is restricted to groups with a maximum of 50
+        organizers. Remark: Meetings which are still ongoing at the time of the request
+        are NOT contained in the result array.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      - description: Required start of date range, in ISO8601 UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Required end of date range, in ISO8601 UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HistoricalMeetingByGroup'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+      summary: Get historical meetings by group
+      tags:
+      - Groups
+      operationId: groups.groupKey.historicalMeetings.get
+  /groups/{groupKey}/meetings:
+    get:
+      deprecated: true
+      description: 'DEPRECATED: Please use the new API calls ''Get historical meetings
+        by group'' and ''Get upcoming meetings by group''. Get meetings for a specified
+        group. Additional filters can be used to view only meetings within a specified
+        date range. This API call is only available to users with the admin role.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      - description: When 'true', returns all past meetings within date range
+        in: query
+        name: history
+        required: true
+        type: boolean
+      - description: If history=true, required start of date range, in ISO8601 UTC
+          format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: If history=true, required end of date range, in ISO8601 UTC format,
+          e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HistoryMeetingByGroup'
+            type: array
+        400:
+          description: Bad Request
+      summary: 'DEPRECATED: Get historical meetings by group'
+      tags:
+      - Groups
+      operationId: groups.groupKey.meetings.get
+  /groups/{groupKey}/organizers:
+    get:
+      description: Returns all the organizers within a specific group. This API call
+        is only available to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/OrganizerByGroup'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+      summary: Get organizers by group
+      tags:
+      - Groups
+      operationId: groups.groupKey.organizers.get
+    post:
+      description: Creates a new organizer and sends an email to the email address
+        defined in request. This API call is only available to users with the admin
+        role. You may also pass 'G2W' or 'G2T' or 'OPENVOICE' as productType variables,
+        creating organizers for those products. A G2W or G2T organizer will also have
+        access to G2M.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      - description: The details of the organizer to be created
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/OrganizerReq'
+      responses:
+        201:
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/OrganizerShort'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Server Error
+        409:
+          description: Conflict
+      summary: Create organizer in group
+      tags:
+      - Groups
+      operationId: groups.groupKey.organizers.post
+  /groups/{groupKey}/upcomingMeetings:
+    get:
+      description: Get upcoming meetings for a specified group. This API call is only
+        available to users with the admin role. This API call can be used only for
+        groups with maximum 50 organizers.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/groupKey'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/UpcomingMeetingByGroup'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+      summary: Get upcoming meetings by group
+      tags:
+      - Groups
+      operationId: groups.groupKey.upcomingMeetings.get
+  /historicalMeetings:
+    get:
+      description: 'Get historical meetings for the currently authenticated organizer
+        that started within the specified date/time range. Remark: Meetings which
+        are still ongoing at the time of the request are NOT contained in the result
+        array.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: Required start of date range, in ISO8601 UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Required end of date range, in ISO8601 UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HistoricalMeeting'
+            type: array
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Get historical meetings
+      tags:
+      - Meetings
+      operationId: historicalMeetings.get
+  /meetings:
+    get:
+      deprecated: true
+      description: 'DEPRECATED: Please use the new API calls ''Get historical meetings''
+        and ''Get upcoming meetings''.  Gets historical meetings for the current authenticated
+        organizer. Requires date range for filtering results to only meetings within
+        specified dates. History searches will contain the parameter ''meetingInstanceKey''
+        which is used in conjunction with the call ''Get Attendees by Meeting'' to
+        get attendee information for a past meeting.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: When 'true', returns all past meetings within date range
+        enum:
+        - true
+        in: query
+        name: history
+        type: boolean
+      - description: If history=true, required start of date range, in ISO8601 UTC
+          format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        type: string
+      - description: If history=true, required end of date range, in ISO8601 UTC format,
+          e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/MeetingHistory'
+            type: array
+      summary: 'DEPRECATED: Get historical meetings'
+      tags:
+      - Meetings
+      operationId: meetings.get
+    post:
+      description: Create a new meeting based on the parameters specified.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: The meeting details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/MeetingReqCreate'
+      responses:
+        201:
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/MeetingCreated'
+            type: array
+        400:
+          description: Bad Request
+      summary: Create meeting
+      tags:
+      - Meetings
+      operationId: meetings.post
+  /meetings/{meetingId}:
+    delete:
+      description: Deletes the meeting identified by the meetingId.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/meetingId'
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not found
+      summary: Delete meeting
+      tags:
+      - Meetings
+      operationId: meetings.meetingId.delete
+    get:
+      description: Returns the meeting details for the specified meeting.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/meetingId'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/MeetingById'
+            type: array
+        404:
+          description: Not found
+      summary: Get meeting
+      tags:
+      - Meetings
+      operationId: meetings.meetingId.get
+    put:
+      description: Updates an existing meeting specified by meetingId.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/meetingId'
+      - description: The meeting details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/MeetingReqUpdate'
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not found
+      summary: Update meeting
+      tags:
+      - Meetings
+      operationId: meetings.meetingId.put
+  /meetings/{meetingId}/attendees:
+    get:
+      description: List all attendees for specified meetingId of historical meeting.
+        The historical meetings can be fetched using 'Get historical meetings', 'Get
+        historical meetings by organizer', and 'Get historical meetings by group'.
+        For users with the admin role this call returns attendees for any meeting.
+        For any other user the call will return attendees for meetings on which the
+        user is a valid organizer.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: The meeting ID
+        format: int64
+        in: path
+        name: meetingId
+        required: true
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/AttendeeByMeeting'
+            type: array
+        404:
+          description: Not found
+      summary: Get attendees by meeting
+      tags:
+      - Meetings
+      operationId: meetings.meetingId.attendees.get
+  /meetings/{meetingId}/start:
+    get:
+      description: Returns a host URL that can be used to start a meeting. When this
+        URL is opened in a web browser, the GoToMeeting client will be downloaded
+        and launched and the meeting will start. The end user is not required to login
+        to a client.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/meetingId'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/StartUrl'
+      summary: Start meeting
+      tags:
+      - Meetings
+      operationId: meetings.meetingId.start.get
+  /organizers:
+    delete:
+      description: Deletes the individual organizer specified by the email address.
+        This API call is only available to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: The email address of the organizer
+        in: query
+        name: email
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+      summary: Delete organizer by email
+      tags:
+      - Organizers
+      operationId: organizers.delete
+    get:
+      description: Gets the individual organizer specified by the organizer's email
+        address. If an email address is not specified, all organizers are returned.
+        This API call is only available to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: The email address of the organizer
+        in: query
+        name: email
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Organizer'
+            type: array
+        404:
+          description: Not found
+      summary: Get organizer by email / Get all organizers
+      tags:
+      - Organizers
+      operationId: organizers.get
+    post:
+      description: Creates a new organizer and sends an email to the email address
+        defined in the request. This API call is only available to users with the
+        admin role. You may also pass 'G2W' or 'G2T' or 'OPENVOICE' as productType
+        variables, creating organizers for those products. A G2W or G2T organizer
+        will also have access to G2M.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - description: The details of the organizer to be created
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/OrganizerReq'
+      responses:
+        201:
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/OrganizerShort'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Server Error
+        409:
+          description: Conflict
+      summary: Create organizer
+      tags:
+      - Organizers
+      operationId: organizers.post
+  /organizers/{organizerKey}:
+    delete:
+      description: Deletes the individual organizer specified by the organizer key.
+        This API call is only available to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      responses:
+        204:
+          description: No Content
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Delete organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.delete
+    get:
+      description: Returns the individual organizer specified by the key. This API
+        call is only available to users with the admin role. Non-admin users can only
+        make this call for their own organizerKey.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Organizer'
+            type: array
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Get organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.get
+    put:
+      description: Updates the products of the specified organizer. To add a product
+        (G2M, G2W, G2T, OPENVOICE) for the organizer, the call must be sent once for
+        each product you want to add. To remove all products for the organizer, set
+        status to 'suspended'. The call is limited to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      - description: The organizer's status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/OrganizerStatus'
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Update organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.put
+  /organizers/{organizerKey}/attendees:
+    get:
+      description: Lists all attendees for all meetings within a specified date range
+        for a specified organizer. This API call is only available to users with the
+        admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      - description: A required start of date range in ISO8601 UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: A required end of date range in ISO8601 UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/AttendeeByOrganizer'
+            type: array
+        400:
+          description: Bad Request
+        404:
+          description: Not found
+      summary: Get attendees by organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.attendees.get
+  /organizers/{organizerKey}/historicalMeetings:
+    get:
+      description: 'Get historical meetings for the specified organizer that started
+        within the specified date/time range. Remark: Meetings which are still ongoing
+        at the time of the request are NOT contained in the result array.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      - description: Required start of date range, in ISO8601 UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Required end of date range, in ISO8601 UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HistoricalMeeting'
+            type: array
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Get historical meetings by organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.historicalMeetings.get
+  /organizers/{organizerKey}/meetings:
+    get:
+      deprecated: true
+      description: 'DEPRECATED: Please use the new API calls ''Get historical meetings
+        by organizer'' and ''Get upcoming meetings by organizer''. Gets future (scheduled)
+        or past (history) meetings for a specified organizer. Include ''history=true''
+        and the past start and end dates in the URL to retrieve past meetings. Enter
+        ''scheduled=true'' (without dates) to get scheduled meetings.'
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      - description: When 'true', returns all future meetings. Date range not supported.
+        in: query
+        name: scheduled
+        type: boolean
+      - description: When 'true', returns all past meetings within date range
+        in: query
+        name: history
+        type: boolean
+      - description: If history is 'true', required start of date range, in ISO8601
+          UTC format, e.g. 2015-07-01T22:00:00Z
+        format: date-time
+        in: query
+        name: startDate
+        type: string
+      - description: If history is 'true', required end of date range, in ISO8601
+          UTC format, e.g. 2015-07-01T23:00:00Z
+        format: date-time
+        in: query
+        name: endDate
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/MeetingByOrganizer'
+            type: array
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: 'DEPRECATED: Get meetings by organizer'
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.meetings.get
+  /organizers/{organizerKey}/upcomingMeetings:
+    get:
+      description: Get upcoming meetings for a specified organizer. This API call
+        is only available to users with the admin role.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      - $ref: '#/parameters/organizerKey'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/UpcomingMeeting'
+            type: array
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+      summary: Get upcoming meetings by organizer
+      tags:
+      - Organizers
+      operationId: organizers.organizerKey.upcomingMeetings.get
+  /upcomingMeetings:
+    get:
+      description: Gets upcoming meetings for the current authenticated organizer.
+      parameters:
+      - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/UpcomingMeeting'
+            type: array
+        403:
+          description: Forbidden
+      summary: Get upcoming meetings
+      tags:
+      - Meetings
+      operationId: upcomingMeetings.get
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":27:{s:15:\"AttendeeByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"Describes
+  an attendee of a meeting instance held by an organizer within a specified group.\";s:10:\"properties\";O:8:\"stdClass\":19:{s:13:\"attendeeEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  attendee's email address\";s:4:\"type\";s:6:\"string\";}s:12:\"attendeeName\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  full name of the attendee\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Audio
+  options for the attended meeting\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  duration of attendance in minutes\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  email address of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"The
+  first name of the organizer of the attended meeting\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the group\";s:4:\"type\";s:6:\"string\";}s:8:\"joinTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"The
+  time the attendee joined the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"leaveTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  time the attendee left the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:18:\"meetingInstanceKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"The
+  key of the attended meeting instance\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"numAttendees\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"The
+  number of attendees at the attended meeting instance\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:84:\"The
+  key of the meeting organizer. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  time the meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  subject of the attended meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:19:{i:0;s:8:\"lastName\";i:1;s:9:\"groupName\";i:2;s:12:\"numAttendees\";i:3;s:12:\"attendeeName\";i:4;s:7:\"subject\";i:5;s:7:\"endTime\";i:6;s:18:\"conferenceCallInfo\";i:7;s:12:\"organizerkey\";i:8;s:9:\"startTime\";i:9;s:18:\"meetingInstanceKey\";i:10;s:8:\"duration\";i:11;s:8:\"joinTime\";i:12;s:5:\"email\";i:13;s:9:\"leaveTime\";i:14;s:13:\"attendeeEmail\";i:15;s:12:\"organizerKey\";i:16;s:9:\"meetingId\";i:17;s:11:\"meetingType\";i:18;s:9:\"firstName\";}}s:17:\"AttendeeByMeeting\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"Describes
+  an attendee of a specified meeting instance.\";s:10:\"properties\";O:8:\"stdClass\":19:{s:13:\"attendeeEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  attendee's email address\";s:4:\"type\";s:6:\"string\";}s:12:\"attendeeName\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  attendee's full name\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"The
+  meeting duration in minutes\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  email address of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:39:\"The
+  ending time of the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"The
+  first name of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"DEPRECATED.
+  Returns 'NA'\";s:4:\"type\";s:6:\"string\";}s:8:\"joinTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"The
+  time the attendee joined the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"leaveTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  time the attendee left the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:18:\"meetingInstanceKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"The
+  key of the unique meeting instance\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  attendee's full name\";s:4:\"type\";s:6:\"string\";}s:12:\"numAttendees\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  number of attendees at the meeting instance\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"The
+  starting time of the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:19:{i:0;s:8:\"lastName\";i:1;s:9:\"groupName\";i:2;s:12:\"numAttendees\";i:3;s:12:\"attendeeName\";i:4;s:7:\"subject\";i:5;s:7:\"endTime\";i:6;s:18:\"conferenceCallInfo\";i:7;s:12:\"organizerkey\";i:8;s:9:\"startTime\";i:9;s:18:\"meetingInstanceKey\";i:10;s:8:\"duration\";i:11;s:5:\"email\";i:12;s:8:\"joinTime\";i:13;s:4:\"name\";i:14;s:9:\"leaveTime\";i:15;s:13:\"attendeeEmail\";i:16;s:9:\"meetingId\";i:17;s:11:\"meetingType\";i:18;s:9:\"firstName\";}}s:19:\"AttendeeByOrganizer\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"Describes
+  an attendee of a meeting instance held by a specified organizer.\";s:10:\"properties\";O:8:\"stdClass\":20:{s:13:\"attendeeEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  attendee's email address\";s:4:\"type\";s:6:\"string\";}s:12:\"attendeeName\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  full name of the attendee\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Audio
+  options for the attended meeting\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  duration of attendance in minutes\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  email address of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"The
+  first name of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  name of the group the organizer is assigned to\";s:4:\"type\";s:6:\"string\";}s:8:\"joinTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:49:\"The
+  time the attendee joined the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"leaveTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  time the attendee left the meeting instance\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:18:\"meetingInstanceKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"The
+  key of the attended meeting instance\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  full name of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:12:\"newMeetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"The
+  formatted meeting ID\";s:4:\"type\";s:6:\"string\";}s:12:\"numAttendees\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"The
+  number of attendees at the attended meeting instance\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:84:\"The
+  key of the meeting organizer. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  time the meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"The
+  subject of the attended meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:20:{i:0;s:8:\"lastName\";i:1;s:9:\"groupName\";i:2;s:12:\"numAttendees\";i:3;s:12:\"attendeeName\";i:4;s:7:\"subject\";i:5;s:7:\"endTime\";i:6;s:18:\"conferenceCallInfo\";i:7;s:12:\"organizerkey\";i:8;s:9:\"startTime\";i:9;s:18:\"meetingInstanceKey\";i:10;s:8:\"duration\";i:11;s:12:\"newMeetingId\";i:12;s:5:\"email\";i:13;s:8:\"joinTime\";i:14;s:4:\"name\";i:15;s:9:\"leaveTime\";i:16;s:13:\"attendeeEmail\";i:17;s:9:\"meetingId\";i:18;s:11:\"meetingType\";i:19;s:9:\"firstName\";}}s:5:\"Group\";O:8:\"stdClass\":3:{s:11:\"description\";s:129:\"Describes
+  a collection of organizers categorized by department or job function, for example.
+  Can be a subgroup of a larger group.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  name of this group\";s:4:\"type\";s:6:\"string\";}s:8:\"groupkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:21:\"The
+  key of this group\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:13:\"numOrganizers\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  number of organizers assigned to this group\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"parentKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:110:\"The
+  key of the parent group this group belongs to. Identical with the groupkey if this
+  group is not a subgroup\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Status\";s:11:\"description\";s:94:\"The
+  status of this group, i.e. whether the organizers assigned to it are able to host
+  meetings\";}}s:8:\"required\";a:5:{i:0;s:8:\"groupkey\";i:1;s:9:\"groupName\";i:2;s:9:\"parentKey\";i:3;s:6:\"status\";i:4;s:13:\"numOrganizers\";}}s:17:\"HistoricalMeeting\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"Describes
+  a historical meeting within specified dates.\";s:10:\"properties\";O:8:\"stdClass\":15:{s:10:\"accountKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  key of the company account\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  duration of the meeting session in minutes\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  meeting organizer's email address\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  meeting organizer's first name\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"The
+  current language setting of the organizer in the web portal\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"numAttendees\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  number of attendees at the meeting instance\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"sessionId\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  ID of the meeting session\";s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  time the meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:15:{i:0;s:9:\"startTime\";i:1;s:8:\"lastName\";i:2;s:8:\"duration\";i:3;s:12:\"numAttendees\";i:4;s:10:\"accountKey\";i:5;s:5:\"email\";i:6;s:9:\"sessionId\";i:7;s:7:\"subject\";i:8;s:6:\"locale\";i:9;s:12:\"organizerKey\";i:10;s:9:\"meetingId\";i:11;s:11:\"meetingType\";i:12;s:9:\"firstName\";i:13;s:7:\"endTime\";i:14;s:18:\"conferenceCallInfo\";}}s:24:\"HistoricalMeetingByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:76:\"Describes
+  a historical meeting within specified dates for a specified group.\";s:10:\"properties\";O:8:\"stdClass\":14:{s:10:\"accountKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  key of the company account\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  duration of the meeting session in minutes\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  meeting organizer's email address\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  meeting organizer's first name\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the group\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"The
+  current language setting of the organizer in the web portal\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"numAttendees\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  number of attendees at the meeting instance\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  time the meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:14:{i:0;s:9:\"startTime\";i:1;s:8:\"lastName\";i:2;s:8:\"duration\";i:3;s:12:\"numAttendees\";i:4;s:10:\"accountKey\";i:5;s:5:\"email\";i:6;s:7:\"subject\";i:7;s:6:\"locale\";i:8;s:12:\"organizerKey\";i:9;s:9:\"meetingId\";i:10;s:11:\"meetingType\";i:11;s:9:\"firstName\";i:12;s:7:\"endTime\";i:13;s:9:\"groupName\";}}s:21:\"HistoryMeetingByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:81:\"Describes
+  past meeting instance(s) held by an organizer within a specified group.\";s:10:\"properties\";O:8:\"stdClass\":15:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"The
+  duration of this meeting instance in minutes\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"The
+  email address of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"The
+  time this meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"The
+  first name of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the group\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:18:\"meetingInstanceKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"The
+  key of this meeting instance\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"numAttendees\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"The
+  number of attendees at this meeting instance\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:84:\"The
+  key of the meeting organizer. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"The
+  time this meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:15:{i:0;s:8:\"lastName\";i:1;s:9:\"groupName\";i:2;s:12:\"numAttendees\";i:3;s:7:\"subject\";i:4;s:7:\"endTime\";i:5;s:18:\"conferenceCallInfo\";i:6;s:12:\"organizerkey\";i:7;s:9:\"startTime\";i:8;s:18:\"meetingInstanceKey\";i:9;s:8:\"duration\";i:10;s:5:\"email\";i:11;s:12:\"organizerKey\";i:12;s:9:\"meetingId\";i:13;s:11:\"meetingType\";i:14;s:9:\"firstName\";}}s:11:\"MeetingById\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"Describes
+  a given meeting.\";s:10:\"properties\";O:8:\"stdClass\":13:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Audio
+  options of the meeting\";s:4:\"type\";s:6:\"string\";}s:10:\"createTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"DEPRECATED.
+  Returns an empty string ''\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"The
+  duration of the meeting in minutes\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  ending time of the meeting\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:15:\"maxParticipants\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"The
+  maximum number of participants allowed at the meeting\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"meetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"meetingKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"The
+  meeting ID. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"Indicates
+  whether a password is required to join the meeting\";s:4:\"type\";s:7:\"boolean\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"The
+  meeting starting time\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/MeetingStatus\";s:11:\"description\";s:61:\"The
+  meeting status, i.e whether the meeting is running or not\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}s:15:\"uniqueMeetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"The
+  meeting ID. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:13:{i:0;s:10:\"createTime\";i:1;s:16:\"passwordRequired\";i:2;s:6:\"status\";i:3;s:7:\"subject\";i:4;s:7:\"endTime\";i:5;s:18:\"conferenceCallInfo\";i:6;s:9:\"startTime\";i:7;s:8:\"duration\";i:8;s:15:\"maxParticipants\";i:9;s:9:\"meetingId\";i:10;s:10:\"meetingKey\";i:11;s:11:\"meetingType\";i:12;s:15:\"uniqueMeetingId\";}}s:18:\"MeetingByOrganizer\";O:8:\"stdClass\":3:{s:11:\"description\";s:54:\"Describes
+  a meeting scheduled by a specified organizer\";s:10:\"properties\";O:8:\"stdClass\":11:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:10:\"createTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"DEPRECATED.
+  Returns an empty string ''\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"The
+  ending time of the meeting\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:15:\"maxParticipants\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"The
+  maximum number of participants allowed at the meeting\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:9:\"meetingid\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:60:\"Indicates
+  whether a password is required to join the meeting\";s:4:\"type\";s:7:\"boolean\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"The
+  starting time of the meeting\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/MeetingStatus\";s:11:\"description\";s:61:\"The
+  meeting status, i.e whether the meeting is running or not\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}s:15:\"uniqueMeetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:27:\"A
+  unique ID for the meeting\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:11:{i:0;s:9:\"startTime\";i:1;s:10:\"createTime\";i:2;s:9:\"meetingid\";i:3;s:15:\"maxParticipants\";i:4;s:16:\"passwordRequired\";i:5;s:6:\"status\";i:6;s:7:\"subject\";i:7;s:11:\"meetingType\";i:8;s:7:\"endTime\";i:9;s:15:\"uniqueMeetingId\";i:10;s:18:\"conferenceCallInfo\";}}s:14:\"MeetingCreated\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"Describes
+  a newly created meeting.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:7:\"joinURL\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"The
+  URL the meeting participants will use to join the meeting\";s:4:\"type\";s:6:\"string\";}s:15:\"maxParticipants\";O:8:\"stdClass\":3:{s:11:\"description\";s:57:\"The
+  maximum number of participants allowed in the meeting\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:9:\"meetingid\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:15:\"uniqueMeetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"The
+  meeting ID. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:5:{i:0;s:7:\"joinURL\";i:1;s:9:\"meetingid\";i:2;s:15:\"maxParticipants\";i:3;s:15:\"uniqueMeetingId\";i:4;s:18:\"conferenceCallInfo\";}}s:14:\"MeetingHistory\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Describes
+  a unique past meeting instance.\";s:10:\"properties\";O:8:\"stdClass\":23:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:4:\"date\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"The
+  time the meeting instance started. Field retained for backwards compatibility reasons\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:8:\"duration\";O:8:\"stdClass\":3:{s:11:\"description\";s:46:\"The
+  duration of the meeting session in minutes\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  meeting organizer's email address\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  meeting organizer's first name\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"DEPRECATED.
+  An empty string '' is returned\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:18:\"meetingInstanceKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"The
+  key of the unique meeting instance\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"meetingKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"The
+  meeting ID. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"newMeetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"Formatted
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:15:\"newOrganizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:76:\"The
+  key of the meeting organizer. Field introduced for compatibility reasons\";s:4:\"type\";s:6:\"string\";}s:12:\"numAttendees\";O:8:\"stdClass\":3:{s:11:\"description\";s:47:\"The
+  number of attendees at the meeting instance\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerkey\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"The
+  key of the meeting organizer. Field retained for backwards compatibility reasons\";s:4:\"type\";s:6:\"string\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"DEPRECATED.
+  An empty string '' is returned\";s:4:\"type\";s:7:\"boolean\";}s:9:\"sessionId\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"The
+  ID of the meeting session\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  time the meeting instance started\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"DEPRECATED.
+  An empty string '' is returned\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}s:15:\"uniqueMeetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:66:\"The
+  meeting ID. Field retained for backwards compatibility reasons\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:23:{i:0;s:8:\"lastName\";i:1;s:9:\"groupName\";i:2;s:12:\"numAttendees\";i:3;s:16:\"passwordRequired\";i:4;s:6:\"status\";i:5;s:7:\"subject\";i:6;s:7:\"endTime\";i:7;s:4:\"date\";i:8;s:18:\"conferenceCallInfo\";i:9;s:9:\"startTime\";i:10;s:12:\"organizerkey\";i:11;s:18:\"meetingInstanceKey\";i:12;s:15:\"newOrganizerKey\";i:13;s:8:\"duration\";i:14;s:12:\"newMeetingId\";i:15;s:9:\"sessionId\";i:16;s:5:\"email\";i:17;s:9:\"meetingId\";i:18;s:12:\"organizerKey\";i:19;s:10:\"meetingKey\";i:20;s:11:\"meetingType\";i:21;s:9:\"firstName\";i:22;s:15:\"uniqueMeetingId\";}}s:16:\"MeetingReqCreate\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"Describes
+  the information required to create a meeting.\";s:10:\"properties\";O:8:\"stdClass\":7:{s:18:\"conferencecallinfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:302:\"A
+  required string. Can be one of the following options: <br>PSTN (PSTN only), <br>Free
+  (PSTN and VoIP), <br>Hybrid, (PSTN and VoIP), <br>Private (you provide numbers and
+  access code), or <br>VoIP (VoIP only). <br>You may also enter plain text for numbers
+  and access codes with a limit of 255 characters\";s:4:\"type\";s:6:\"string\";}s:7:\"endtime\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"The
+  ending time of the meeting. Required ISO8601 UTC string, e.g. 2015-07-01T23:00:00Z\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingtype\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:16:\"passwordrequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"Indicates
+  whether a password is required to join the meeting. Required parameter\";s:4:\"type\";s:7:\"boolean\";}s:9:\"starttime\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"The
+  starting time of the meeting. Required ISO8601 UTC string, e.g. 2015-07-01T22:00:00Z\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:209:\"The
+  subject of the meeting. 100 characters maximum. The characters '&gt;' and '&lt;'
+  have to be replaced with the corresponding html character code (&amp;gt; for &#39;&gt;&#39;
+  and &amp;lt; for &#39;&lt;&#39;)\";s:4:\"type\";s:6:\"string\";}s:11:\"timezonekey\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"DEPRECATED.
+  Must be provided and set to empty string ''\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:7:\"subject\";i:1;s:9:\"starttime\";i:2;s:7:\"endtime\";i:3;s:16:\"passwordrequired\";i:4;s:18:\"conferencecallinfo\";i:5;s:11:\"timezonekey\";i:6;s:11:\"meetingtype\";}}s:16:\"MeetingReqUpdate\";O:8:\"stdClass\":3:{s:11:\"description\";s:55:\"Describes
+  the information required to update a meeting.\";s:10:\"properties\";O:8:\"stdClass\":7:{s:18:\"conferencecallinfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:302:\"A
+  required string. Can be one of the following options: <br>PSTN (PSTN only), <br>Free
+  (PSTN and VoIP), <br>Hybrid, (PSTN and VoIP), <br>Private (you provide numbers and
+  access code), or <br>VoIP (VoIP only). <br>You may also enter plain text for numbers
+  and access codes with a limit of 255 characters\";s:4:\"type\";s:6:\"string\";}s:7:\"endtime\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"The
+  ending time of the meeting. A required ISO8601 UTC string, e.g. 2015-07-01T22:00:00Z\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingtype\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:16:\"passwordrequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:80:\"Indicates
+  whether a password is required to join the meeting. Required parameter\";s:4:\"type\";s:7:\"boolean\";}s:9:\"starttime\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"The
+  starting time of the meeting. A required ISO8601 UTC string, e.g. 2015-07-01T22:00:00Z\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:211:\"A
+  description of the meeting. 100 characters maximum. The characters '&gt;' and '&lt;'
+  have to be replaced with the corresponding html character code (&amp;gt; for &#39;&gt;&#39;
+  and &amp;lt; for &#39;&lt;&#39;)\";s:4:\"type\";s:6:\"string\";}s:11:\"timezonekey\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"DEPRECATED.
+  Must be provided and set to empty string ''\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:7:{i:0;s:7:\"subject\";i:1;s:9:\"starttime\";i:2;s:7:\"endtime\";i:3;s:16:\"passwordrequired\";i:4;s:18:\"conferencecallinfo\";i:5;s:11:\"timezonekey\";i:6;s:11:\"meetingtype\";}}s:16:\"MeetingScheduled\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Describes
+  a scheduled meeting.\";s:10:\"properties\";O:8:\"stdClass\":11:{s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Audio
+  options for the meeting.\";s:4:\"type\";s:6:\"string\";}s:10:\"createTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"The
+  time the meeting was created.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:31:\"The
+  ending time of the meeting.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:15:\"maxParticipants\";O:8:\"stdClass\":3:{s:11:\"description\";s:58:\"The
+  maximum number of participants allowed at the meeting.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:9:\"meetingid\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"The
+  meeting ID.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Indicates
+  whether a password is required to join the meeting.\";s:4:\"type\";s:7:\"boolean\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"The
+  starting time of the meeting.\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/MeetingStatus\";s:11:\"description\";s:61:\"The
+  meeting status, i.e whether the meeting is running or not\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  subject of the meeting.\";s:4:\"type\";s:6:\"string\";}s:15:\"uniqueMeetingId\";O:8:\"stdClass\":3:{s:11:\"description\";s:67:\"The
+  meeting ID. Field retained for backwards compatibility reasons.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:11:{i:0;s:9:\"startTime\";i:1;s:10:\"createTime\";i:2;s:9:\"meetingid\";i:3;s:15:\"maxParticipants\";i:4;s:16:\"passwordRequired\";i:5;s:6:\"status\";i:6;s:7:\"subject\";i:7;s:11:\"meetingType\";i:8;s:7:\"endTime\";i:9;s:15:\"uniqueMeetingId\";i:10;s:18:\"conferenceCallInfo\";}}s:13:\"MeetingStatus\";O:8:\"stdClass\":3:{s:11:\"description\";s:61:\"The
+  meeting status, i.e whether the meeting is running or not\";s:4:\"enum\";a:2:{i:0;s:6:\"ACTIVE\";i:1;s:8:\"INACTIVE\";}s:4:\"type\";s:6:\"string\";}s:11:\"MeetingType\";O:8:\"stdClass\":3:{s:11:\"description\";s:16:\"The
+  meeting type\";s:4:\"enum\";a:3:{i:0;s:9:\"immediate\";i:1;s:9:\"recurring\";i:2;s:9:\"scheduled\";}s:4:\"type\";s:6:\"string\";}s:9:\"Organizer\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"Describes
+  an organizer.\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  organizer's email address\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  organizer's first name\";s:4:\"type\";s:6:\"string\";}s:7:\"groupId\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"The
+  key of the group this organizer is assigned to\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"The
+  name of the group this organizer is assigned to\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  organizer's surname\";s:4:\"type\";s:6:\"string\";}s:22:\"maxNumAttendeesAllowed\";O:8:\"stdClass\":3:{s:11:\"description\";s:77:\"The
+  maximum number of attendees allowed at sessions hosted by this organizer.\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  key of the organizer\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"products\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  products the organizer has access to, can be 'G2M', 'G2W', 'G2T' or 'OPENVOICE'\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Product\";}s:4:\"type\";s:5:\"array\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Status\";s:11:\"description\";s:80:\"The
+  status of the organizer, i.e. whether the organizer is able to host meetings\";}}s:8:\"required\";a:9:{i:0;s:8:\"lastName\";i:1;s:7:\"groupId\";i:2;s:9:\"groupName\";i:3;s:6:\"status\";i:4;s:5:\"email\";i:5;s:12:\"organizerKey\";i:6;s:9:\"firstName\";i:7;s:8:\"products\";i:8;s:22:\"maxNumAttendeesAllowed\";}}s:16:\"OrganizerByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:48:\"Describes
+  an organizer within a specified group.\";s:10:\"properties\";O:8:\"stdClass\":9:{s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  organizer's email address\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  organizer's first name\";s:4:\"type\";s:6:\"string\";}s:7:\"groupId\";O:8:\"stdClass\":3:{s:11:\"description\";s:20:\"The
+  key of the group\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:21:\"The
+  name of the group\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  organizer's surname\";s:4:\"type\";s:6:\"string\";}s:22:\"maxNumAttendeesAllowed\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"The
+  maximum number of attendees allowed at sessions held by this organizer\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:12:\"organizerKey\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  key of the organizer\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:8:\"products\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  products the organizer has access to, can be 'G2M', 'G2W', 'G2T' or 'OPENVOICE'\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:21:\"#/definitions/Product\";}s:4:\"type\";s:5:\"array\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:20:\"#/definitions/Status\";s:11:\"description\";s:80:\"The
+  status of the organizer, i.e. whether the organizer is able to host meetings\";}}s:8:\"required\";a:9:{i:0;s:8:\"lastName\";i:1;s:7:\"groupId\";i:2;s:9:\"groupName\";i:3;s:6:\"status\";i:4;s:5:\"email\";i:5;s:12:\"organizerKey\";i:6;s:9:\"firstName\";i:7;s:8:\"products\";i:8;s:22:\"maxNumAttendeesAllowed\";}}s:12:\"OrganizerReq\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"Describes
+  the information required to create an organizer, with or without assigning a group.\";s:10:\"properties\";O:8:\"stdClass\":4:{s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  first name of the organizer\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"The
+  surname of the organizer\";s:4:\"type\";s:6:\"string\";}s:14:\"organizerEmail\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  email address of the organizer\";s:4:\"type\";s:6:\"string\";}s:11:\"productType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Product\";s:11:\"description\";s:80:\"A
+  product the organizer has access to, can be 'G2M', 'G2W', 'G2T' or 'OPENVOICE'\";}}s:8:\"required\";a:4:{i:0;s:14:\"organizerEmail\";i:1;s:9:\"firstName\";i:2;s:8:\"lastName\";i:3;s:11:\"productType\";}}s:14:\"OrganizerShort\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"Describes
+  a newly created organizer.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  organizer's email address\";s:4:\"type\";s:6:\"string\";}s:3:\"key\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"The
+  organizer's key\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:8:\"required\";a:2:{i:0;s:3:\"key\";i:1;s:5:\"email\";}}s:15:\"OrganizerStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Describes
+  the status of an organizer, i.e. whether they are able to host meetings.\";s:10:\"properties\";O:8:\"stdClass\":2:{s:11:\"productType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:21:\"#/definitions/Product\";s:11:\"description\";s:105:\"The
+  product you want to add to the organizer. The call must be sent once for each product
+  you want to add\";}s:6:\"status\";O:8:\"stdClass\":3:{s:11:\"description\";s:240:\"The
+  status of the organizer can be set to. Use 'suspended' to remove all products. The
+  formerly used status 'active' is now DEPRECATED for this call. To activate the organizer
+  please assign a product. In this case do not pass this parameter\";s:4:\"enum\";a:1:{i:0;s:9:\"suspended\";}s:4:\"type\";s:6:\"string\";}}}s:7:\"Product\";O:8:\"stdClass\":3:{s:11:\"description\";s:83:\"The
+  products the organizer has access to, can be 'G2M', 'G2W', 'G2T' or 'OPENVOICE'\";s:4:\"enum\";a:4:{i:0;s:3:\"G2M\";i:1;s:3:\"G2T\";i:2;s:3:\"G2W\";i:3;s:9:\"OPENVOICE\";}s:4:\"type\";s:6:\"string\";}s:23:\"ScheduledMeetingByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:71:\"Describes
+  a meeting scheduled by an organizer within a specified group.\";s:10:\"properties\";O:8:\"stdClass\":12:{s:9:\"attendees\";O:8:\"stdClass\":2:{s:11:\"description\";s:11:\"Not
+  in use.\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Audio
+  options for the meeting.\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"The
+  email address of the meeting organizer.\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  first name of the meeting organizer.\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  name of the group.\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  surname of the meeting organizer.\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"The
+  meeting ID.\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"The
+  key of the meeting organizer.\";s:4:\"type\";s:6:\"string\";}s:12:\"organizerkey\";O:8:\"stdClass\":3:{s:11:\"description\";s:85:\"The
+  key of the meeting organizer. Field retained for backwards compatibility reasons.\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Indicates
+  whether a password is required to join the meeting.\";s:4:\"type\";s:7:\"boolean\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  subject of the meeting.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:12:{i:0;s:12:\"organizerkey\";i:1;s:9:\"attendees\";i:2;s:8:\"lastName\";i:3;s:9:\"groupName\";i:4;s:16:\"passwordRequired\";i:5;s:5:\"email\";i:6;s:7:\"subject\";i:7;s:9:\"meetingId\";i:8;s:12:\"organizerKey\";i:9;s:11:\"meetingType\";i:10;s:9:\"firstName\";i:11;s:18:\"conferenceCallInfo\";}}s:8:\"StartUrl\";O:8:\"stdClass\":3:{s:11:\"description\";s:44:\"Host
+  URL that can be used to start a meeting\";s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"hostURL\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"The
+  host URL that can be used to start a meeting.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:7:\"hostURL\";}}s:6:\"Status\";O:8:\"stdClass\":3:{s:11:\"description\";s:134:\"The
+  status of an organizer (or group), i.e. whether the organizer (or the members of
+  the group respectively) are able to host meetings\";s:4:\"enum\";a:2:{i:0;s:6:\"active\";i:1;s:9:\"suspended\";}s:4:\"type\";s:6:\"string\";}s:15:\"UpcomingMeeting\";O:8:\"stdClass\":3:{s:11:\"description\";s:30:\"Describes
+  an upcoming meeting.\";s:10:\"properties\";O:8:\"stdClass\":14:{s:10:\"accountKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  key of the company account\";s:4:\"type\";s:6:\"string\";}s:18:\"conferenceCallInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"Audio
+  options for the meeting\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  meeting organizer's email address\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  meeting organizer's first name\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"The
+  current language setting of the organizer in the web portal\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"Indicates
+  whether a password is required to join the meeting or not\";s:4:\"type\";s:7:\"boolean\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"The
+  time the meeting instance will start\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/MeetingStatus\";s:11:\"description\";s:61:\"The
+  meeting status, i.e whether the meeting is running or not\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:14:{i:0;s:9:\"startTime\";i:1;s:8:\"lastName\";i:2;s:10:\"accountKey\";i:3;s:16:\"passwordRequired\";i:4;s:5:\"email\";i:5;s:6:\"status\";i:6;s:7:\"subject\";i:7;s:6:\"locale\";i:8;s:12:\"organizerKey\";i:9;s:9:\"meetingId\";i:10;s:11:\"meetingType\";i:11;s:9:\"firstName\";i:12;s:7:\"endTime\";i:13;s:18:\"conferenceCallInfo\";}}s:22:\"UpcomingMeetingByGroup\";O:8:\"stdClass\":3:{s:11:\"description\";s:41:\"Describes
+  an upcoming meeting of a group.\";s:10:\"properties\";O:8:\"stdClass\":14:{s:10:\"accountKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  key of the company account\";s:4:\"type\";s:6:\"string\";}s:5:\"email\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  meeting organizer's email address\";s:4:\"type\";s:6:\"string\";}s:7:\"endTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  time the meeting instance ended\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"The
+  meeting organizer's first name\";s:4:\"type\";s:6:\"string\";}s:9:\"groupName\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"The
+  name of the group the meeting belongs to\";s:4:\"type\";s:6:\"string\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"The
+  surname of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:6:\"locale\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"The
+  current language setting of the organizer in the web portal\";s:4:\"type\";s:6:\"string\";}s:9:\"meetingId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  meeting ID\";s:4:\"type\";s:6:\"string\";}s:11:\"meetingType\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:25:\"#/definitions/MeetingType\";s:11:\"description\";s:16:\"The
+  meeting type\";}s:12:\"organizerKey\";O:8:\"stdClass\":2:{s:11:\"description\";s:32:\"The
+  key of the meeting organizer\";s:4:\"type\";s:6:\"string\";}s:16:\"passwordRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:67:\"Indicates
+  whether a password is required to join the meeting or not\";s:4:\"type\";s:7:\"boolean\";}s:9:\"startTime\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"The
+  time the meeting instance will start\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"status\";O:8:\"stdClass\":2:{s:4:\"$ref\";s:27:\"#/definitions/MeetingStatus\";s:11:\"description\";s:108:\"DEPRECATED.
+  This status flag is always set to 'INACTIVE'. It exists for backwards compatibility
+  reasons only\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  subject of the meeting\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:13:{i:0;s:9:\"startTime\";i:1;s:8:\"lastName\";i:2;s:10:\"accountKey\";i:3;s:16:\"passwordRequired\";i:4;s:5:\"email\";i:5;s:7:\"subject\";i:6;s:6:\"locale\";i:7;s:12:\"organizerKey\";i:8;s:9:\"meetingId\";i:9;s:11:\"meetingType\";i:10;s:9:\"firstName\";i:11;s:7:\"endTime\";i:12;s:9:\"groupName\";}}}"
+...

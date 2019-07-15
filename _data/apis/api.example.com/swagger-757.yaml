@@ -1,0 +1,141 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":2:{s:7:\"version\";s:3:\"2.0\";s:5:\"title\";s:19:\"LUIS
+  Runtime Client\";}"
+paths:
+  /apps/{appId}:
+    post:
+      description: Gets predictions for a given utterance, in the form of intents
+        and entities. The current maximum query size is 500 characters.
+      operationId: Prediction_Resolve
+      parameters:
+      - name: appId
+        in: path
+        type: string
+        format: uuid
+        required: true
+        description: The LUIS application ID (Guid).
+      - name: q
+        x-ms-client-name: query
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Q'
+        description: The utterance to predict.
+      - name: timezoneOffset
+        in: query
+        type: number
+        description: The timezone offset for the location of the request.
+      - name: verbose
+        in: query
+        type: boolean
+        description: If true, return all intents instead of just the top scoring intent.
+      - name: staging
+        in: query
+        type: boolean
+        description: Use the staging endpoint slot.
+      - name: spellCheck
+        in: query
+        type: boolean
+        description: Enable spell checking.
+      - name: bing-spell-check-subscription-key
+        in: query
+        description: The subscription key to use when enabling Bing spell check
+        type: string
+      - name: log
+        in: query
+        description: Log query (default is true)
+        type: boolean
+      consumes:
+      - application/json
+      responses:
+        200:
+          description: Prediction, based on the input query, containing intent(s)
+            and entities.
+          schema:
+            $ref: '#/definitions/LuisResult'
+        default:
+          description: Error response.
+          schema:
+            $ref: '#/definitions/APIError'
+      produces:
+      - application/json
+      x-ms-examples:
+        Successful Get Predictions From Endpoint Via Post request:
+          parameters:
+            Endpoint: '{Endpoint}'
+            Ocp-Apim-Subscription-Key: '{Subscription Key}'
+            appId: '{Application Id}'
+            q: forward to frank 30 dollars through HSBC
+          responses:
+            200:
+              headers: []
+              body:
+                query: forward to frank 30 dollars through HSBC
+                topScoringIntent:
+                  intent: give
+                  score: 0.396412
+                entities:
+                - entity: "30"
+                  type: builtin.number
+                  startIndex: 17
+                  endIndex: 18
+                  resolution:
+                    value: "30"
+                - entity: frank
+                  type: frank
+                  startIndex: 11
+                  endIndex: 15
+                  score: 0.935219
+                - entity: 30 dollars
+                  type: builtin.currency
+                  startIndex: 17
+                  endIndex: 26
+                  resolution:
+                    unit: Dollar
+                    value: "30"
+                - entity: hsbc
+                  type: Bank
+                  startIndex: 36
+                  endIndex: 39
+                  resolution:
+                    values:
+                    - BankeName
+                sentimentAnalysis:
+                  label: positive
+                  score: 0.916306
+definitions: !php/object "O:8:\"stdClass\":10:{s:1:\"Q\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:9:\"maxLength\";i:500;s:11:\"description\";s:25:\"The
+  utterance to predict.\";s:7:\"example\";s:42:\"\"forward to frank 30 dollars through
+  HSBC\"\";}s:10:\"LuisResult\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:72:\"Prediction,
+  based on the input query, containing intent(s) and entities.\";s:10:\"properties\";O:8:\"stdClass\":8:{s:5:\"query\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  input utterance that was analyzed.\";s:4:\"type\";s:6:\"string\";}s:12:\"alteredQuery\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:58:\"The
+  corrected utterance (when spell checking was enabled).\";}s:16:\"topScoringIntent\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/IntentModel\";}s:7:\"intents\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:68:\"All
+  the intents (and their score) that were detected from utterance.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/IntentModel\";}}s:8:\"entities\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:42:\"The
+  entities extracted from the utterance.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/EntityModel\";}}s:17:\"compositeEntities\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:52:\"The
+  composite entities extracted from the utterance.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:34:\"#/definitions/CompositeEntityModel\";}}s:17:\"sentimentAnalysis\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:23:\"#/definitions/Sentiment\";}s:22:\"connectedServiceResult\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:24:\"#/definitions/LuisResult\";}}}s:20:\"CompositeEntityModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:22:\"LUIS
+  Composite Entity.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":3:{s:10:\"parentType\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Type/name
+  of parent entity.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Value
+  for composite entity extracted by LUIS.\";}s:8:\"children\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:15:\"Child
+  entities.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/CompositeChildModel\";}}}s:8:\"required\";a:3:{i:0;s:10:\"parentType\";i:1;s:5:\"value\";i:2;s:8:\"children\";}}s:19:\"CompositeChildModel\";O:8:\"stdClass\":4:{s:11:\"description\";s:40:\"Child
+  entity in a LUIS Composite Entity.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Type
+  of child entity.\";}s:5:\"value\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Value
+  extracted by LUIS.\";}}s:8:\"required\";a:2:{i:0;s:4:\"type\";i:1;s:5:\"value\";}}s:11:\"IntentModel\";O:8:\"stdClass\":3:{s:11:\"description\";s:38:\"An
+  intent detected from the utterance.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:6:\"intent\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Name
+  of the intent, as defined in LUIS.\";}s:5:\"score\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;s:11:\"description\";s:51:\"Associated
+  prediction score for the intent (float).\";}}}s:11:\"EntityModel\";O:8:\"stdClass\":5:{s:11:\"description\";s:39:\"An
+  entity extracted from the utterance.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"entity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Name
+  of the entity, as defined in LUIS.\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Type
+  of the entity, as defined in LUIS.\";}s:10:\"startIndex\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:79:\"The
+  position of the first character of the matched entity within the utterance.\";}s:8:\"endIndex\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:78:\"The
+  position of the last character of the matched entity within the utterance.\";}}s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:100:\"List
+  of additional properties. For example, score and resolution values for pre-built
+  LUIS entities.\";}s:8:\"required\";a:4:{i:0;s:6:\"entity\";i:1;s:4:\"type\";i:2;s:10:\"startIndex\";i:3;s:8:\"endIndex\";}}s:15:\"EntityWithScore\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/EntityModel\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"score\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"number\";s:7:\"minimum\";i:0;s:7:\"maximum\";i:1;s:11:\"description\";s:51:\"Associated
+  prediction score for the intent (float).\";}}s:8:\"required\";a:1:{i:0;s:5:\"score\";}}}}s:20:\"EntityWithResolution\";O:8:\"stdClass\":1:{s:5:\"allOf\";a:2:{i:0;O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/EntityModel\";}i:1;O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"resolution\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:46:\"Resolution
+  values for pre-built LUIS entities.\";}}s:8:\"required\";a:1:{i:0;s:10:\"resolution\";}}}}s:8:\"APIError\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:11:\"description\";s:37:\"Error
+  information returned by the API\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"statusCode\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"HTTP
+  Status code\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Cause
+  of the error.\";}}}s:9:\"Sentiment\";O:8:\"stdClass\":3:{s:11:\"description\";s:33:\"Sentiment
+  of the input utterance.\";s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:68:\"The
+  polarity of the sentiment, can be positive, neutral or negative.\";}s:5:\"score\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:75:\"Score
+  of the sentiment, ranges from 0 (most negative) to 1 (most positive).\";}}}}"
+...

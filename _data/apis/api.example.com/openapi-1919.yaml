@@ -1,0 +1,133 @@
+---
+openapi: 3.0.1
+info: !php/object "O:8:\"stdClass\":6:{s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:17:\"support@cozify.fi\";}s:11:\"description\";s:11824:\"\nThis
+  document describes the command api of Cozify Hub.<br>\nIn following examples http://10.0.1.3:8893
+  is the address of the Hub.\n\nThe hub serves the description of the command api
+  as an OpenAPI document at\n<pre>\nhttp://10.0.1.3:8893/apidoc\n</pre>\n\nFor more
+  information about OpenAPI see \n\n[OpenAPI specification]: https://github.com/OAI/OpenAPI-Specification\n[OpenAPI
+  specification]\n\n# Hub discovery\n\nIn order to communicate with the Hub in a LAN
+  we need to find out Hub's ip address.\n\nThere are several methods for doing that\n\n-
+  Check routers admin interface for connected devices and guess which one is the Hub.\n-
+  Hub can be found in the LAN using Apple Zeroconf/Bonjour browser like [Discovery
+  - DNS-SD Browser](https://itunes.apple.com/us/app/discovery-dns-sd-browser/id1381004916?mt=12)\n-
+  Ask Cozify Server for ip addresses of hubs which are connected from your public
+  ip address. You get a list of LAN ip addresses as response\n<pre>\n$ curl -k -X
+  GET https://api.cozify.fi/ui/0.2/hub/lan_ip\n[\"http://10.0.1.3:8893\"]\n</pre>\n\n#
+  Version and paths\n\nMost of request paths of the Hub are versioned with api version.\nTypical
+  versioned path is e.g.\n<pre>\nhttp://10.0.1.3:8893/cc/<b>1.11</b>/devices\n</pre>\n\nwhere
+  the apiversion is 1.11.\n\nSo in order to command hub we need to know the api version.
+  Fortunately that information is present in the \nversion number of the hub which
+  together with other meta data of the hub can be retrieved like this:\n<pre>\n    curl
+  -k -X GET http://10.0.1.3:8893/hub\n</pre>\n \nThe call is documented below in detail
+  at General hub operations section.\n \nThe result is a json dictionary containing
+  the hub version:\n<pre>\n{\n...\n  \"hubId\": \"b40a33b4-23b4-14e5-925a-78c90baba039\",\n
+  \ \"version\": \"1.11.3.1\"\n...\n}\n</pre>\n \nApi version is the first two elements
+  of the version string i.e. 1.11.\n \n# User Authentication\n\nAlmost all api requests
+  need to be made as an authenticated user. This requires that\n- the user has authenticated
+  herself at Cozify Server\n- the user has a user role in the Hub\n- the user has
+  fetched a hubkey from Cozify Server. Hubkey is used as an authentication token when
+  making requests to the Hub.\n\n### Authentication at server\n\nNormally users authenticate
+  themselves by requesting a onetime temporary password delivered in email and then
+  using that to log into the server.\n\nRequest password:\n<pre>\ncurl -k -X POST
+  https://api.cozify.fi:/ui/0.2/user/requestlogin?email=user@cozify.fi  \n</pre>\n\nWhen
+  the password is received as an email, it may be used to login like this\n<pre>\ncurl
+  -k -X POST -H \"Content-Type: application/json\" -d '{\"email\": \"user@cozify.fi\",
+  \"password\": \"P7BQ8E\"}' https://api.cozify.fi/ui/0.2/user/emaillogin\n</pre>\n\nThe
+  response body contains a token called <b>*cloudtoken*</b>, which is used as authentication
+  information when communicating \nwith the Cozify Server. The token is valid for
+  4 weeks. Following examples assume that the token is stored in environment variable
+  TOKEN.\n\n<b>\n*NOTE: Please take good care of your cloudtokens. If someone gets
+  hold of your cloudtoken he can do everything you can do (including remote control
+  of hubs).*  \n</b>\n\nWhen you are done with the cloudtoken, you can invalidate
+  it with\n<pre>\ncurl -k -X PUT -H \"Authorization: $TOKEN\" https://api.cozify.fi/ui/0.2/user/logout\n</pre>\n\nAfter
+  this call the server has no way of validating the cloudtoken anymore, so it is useless
+  and can be discarded.\n\n### <b>User's role on a Hub</b>\n\nHub role is normally
+  granted by the owner of the hub. A user can have following roles on a Hub\n\n- <b>Owner</b>,
+  the one and only owner of a claimed hub\n- <b>User Admin</b>, Full access but not
+  the owner\n- <b>Identified User</b>, Restricted access\n- <b>Guest</b>, Even more
+  restricted access\n    \nEach request is authorized with user's role and the required
+  minimum role is documented in api call's documentation.\n\n### <b>Getting hubkeys</b>\n\nWhen
+  the user has the cloudtoken, she can fetch her hubkeys from the Cozify Server.\n<pre>\ncurl
+  -k -X GET -H \"Authorization: $TOKEN\" https://api.cozify.fi/ui/0.2/user/hubkeys\n</pre>\n\nThe
+  result is a mapping with hub id as key and hubkey as value.\n\n<pre>\n{\n  \"b40a33b4-23b4-14e5-925a-78c90baba039\":
+  \"eyJ0eXAiOiLKV1Q...\"\n}\n</pre>\n\nFollowing examples assume that the hubkey is
+  stored in environment variable HUBKEY.\n\nNow we have all the information needed
+  to make a request to a hub. For local requests i.e. the client is in the same LAN
+  as the Hub:\n\n<pre>\ncurl -k -X GET -H \"Authorization: $HUBKEY\" http://10.0.1.3:8893/cc/1.11/devices\n</pre>\n\nIt
+  is also possible to make a remote call to the Hub. This means that the request is
+  sent to Cozify Server which \nthen dispatches it to the Hub which needs to be connected
+  to the server. In order to do that:\n- Authorization header contains cloudtoken\n-
+  Special header called X-Hub-Key contains the hubkey\n- http://10.0.1.3:8893 is replaced
+  with https://api.cozify.fi/ui/0.2/hub/remote in the request's path\n\n<pre>\ncurl
+  -k -X GET -H \"Authorization: $TOKEN\" -H \"X-Hub-Key: $HUBKEY\" https://api.cozify.fi/ui/0.2/hub/remote/cc/1.11/devices\n</pre>\n\n#
+  Devices and capabilities\n\nWhen handling devices it is of course important to know
+  the type of the device and what the device can do.\nThe general type of the device
+  can be checked from device's type attribute:\n \n<table>\n<thead><tr><th>Device
+  type attribute</th><th>Device type</th></tr></thead>\n<tr><td>MOTION</td><td>Motion
+  sensor</td></tr>\n<tr><td>LIGHT</td><td>Lamp</td></tr>\n<tr><td>POWER_SOCKET</td><td>Power
+  socket</td></tr>\n<tr><td>MULTI_SENSOR</td><td>Thermometer/Hygrometer</td></tr>\n<tr><td>CONTACT</td><td>Door/window
+  sensor</td></tr>\n<tr><td>SMOKE_ALARM</td><td>Smoke/Fire sensor</td></tr>\n<tr><td>MOISTURE</td><td>Waterleak
+  sensor</td></tr>\n<tr><td>CO</td><td>Carbon monoxide sensor</td></tr>\n<tr><td>CO2_SENSOR</td><td>Carbon
+  dioxide sensor</td></tr>\n<tr><td>TWILIGHT</td><td>Twilight sensor</td></tr>\n<tr><td>UI_DEVICE</td><td>Phone/Tablet</td></tr>\n<tr><td>CAMERA</td><td>Videocamera</td></tr>\n<tr><td>REMOTE_CONTROL</td><td>Remote
+  control</td></tr>\n<tr><td>MEDIA_RENDERER</td><td>Media player</td></tr>\n</table>\n\nWhile
+  this information can be used to e.g. select an appropriate icon for the device it
+  really does not tell\nenough about the device. Consider a lamp; if you know that
+  the device is a lamp you know that you can probably turn it\non and off but you
+  can not tell if it supports dimming or colour? Some devices can also detect multiple
+  things e.g. \na motion sensor might measure temperature while a lamp might detect
+  motion. \n\nFor more precise information about what a device can do it has an attribute
+  called capabilities which lists what \nthe device can do. When a device has a certain
+  capability it can handle certain commands and usually has capability \nspecific
+  attributes. Capabilities are also used to select devices for different rules.\n\nPlease
+  note that while device type attribute and capability might have same serialization
+  representation, \nthey are two different things.\n\nAll devices can handle a DeviceCommand,
+  which has target state for the device.\nThe device might not be able to do anything
+  on the command, but it can still receive it.  \n\n<table>\n<thead><tr><th>Capability</th><th>Description</th><th>State
+  attributes</th><th>Commands</th></tr></thead>\n<tr><td>DEVICE</td><td>Common capability
+  for all devices</td><td>state.lastSeen<br>state.reachable</td><td></td></tr>\n<tr><td>ON_OFF</td><td>Device
+  can be turned on/off</td><td>state.isOn</td><td>DeviceOnCommand<br>DeviceOffCommand</td></tr>\n<tr><td>CONTROL_POWER</td><td>Device
+  can control power, typically a power socket</td><td></td><td></td></tr>\n<tr><td>CONTROL_LIGHT</td><td>Device
+  can control light, typically a lamp.</td><td></td><td></td></tr>\n<tr><td>BRIGHTNESS</td><td>Device
+  can control it's output power, e.g. dimming for a lamp</td><td>state.brightness</td><td></td></tr>\n<tr><td>COLOR_HS</td><td>Lamp
+  uses hue/saturation for handling color</td><td>state.hue<br>state.saturation<br>state.colorMode</td><td></td></tr>\n<tr><td>COLOR_TEMP</td><td>Lamp
+  can control temperature of white color</td><td>state.temperature<br>state.minTemperature<br>state.maxTemperature<br>state.colorMode</td><td></td></tr>\n<tr><td>TRANSITION</td><td>Lamp
+  can control the time for state change</td><td>state.transitionMsec</td><td></td></tr>\n<tr><td>MOTION</td><td>Device
+  detects motion</td><td>state.motion<br>state.lastMotion</td><td></td></tr>\n<tr><td>TEMPERATURE</td><td>Device
+  can measure temperature</td><td>state.temperature</td><td></td></tr>\n<tr><td>HUMIDITY</td><td>Device
+  can measure humidity</td><td>state.humidity</td><td></td></tr>\n<tr><td>MOISTURE</td><td>Device
+  detects water leaks</td><td>state.moisture<br>state.moistureAt</td><td></td></tr>\n<tr><td>CONTACT</td><td>Device
+  detects contact (door/window)</td><td>state.open<br>state.lastChange</td><td></td></tr>\n<tr><td>TWILIGHT</td><td>Device
+  detects twilight</td><td>state.twilight<br>state.twilightStart<br>state.twilightStop</td><td></td></tr>\n<tr><td>LUX</td><td>Device
+  can measure light levels.</td><td>state.lux</td><td></td></tr>\n<tr><td>SMOKE</td><td>Device
+  detects smoke/fire</td><td>state.alert<br>state.alertStartAt<br>state.alertAt</td><td></td></tr>\n<tr><td>CO2</td><td>Device
+  can measure CO2 concentration</td><td>state.co2Ppm</td><td></td></tr>\n<tr><td>CO</td><td>Device
+  can detect carbon monoxide</td><td>state.coDetected<br>state.coStartAt<br>state.coAt</td><td></td></tr>\n<tr><td>VOLUME</td><td>Media
+  renderer supports volume control</td><td>state.rcData.volume</td><td></td></tr>\n<tr><td>MUTE</td><td>Media
+  renderer supports mute</td><td>state.rcData.mute</td><td></td></tr>\n<tr><td>BASS</td><td>Media
+  renderer supports bass control</td><td>state.rcData.bass</td><td></td></tr>\n<tr><td>TREBLE</td><td>Media
+  renderer supports treble control</td><td>state.rcData.treble</td><td></td></tr>\n<tr><td>LOUDNESS</td><td>Media
+  renderer supports loudness control</td><td>state.rcData.loudness</td><td></td></tr>\n<tr><td>ONVIF_API</td><td>Videocamera
+  supports onvif api</td><td></td><td></td></tr>\n<tr><td>FOSCAM_API</td><td>Videocamera
+  supports foscam api</td><td></td><td></td></tr>\n<tr><td>LIVE_FEED</td><td>Videocamera
+  supports live view</td><td>state.viewerCount</td><td></td></tr>\n<tr><td>RECORD_VIDEO</td><td>Videocamera
+  can record video</td><td>state.recording</td><td></td></tr>\n<tr><td>RECORD_AUDIO</td><td>Videocamera
+  can record audio</td><td>state.recording</td><td></td></tr>\n<tr><td>USER_PRESENCE</td><td>Device
+  supports indication of user presence</td><td>state.reachable</td><td></td></tr>\n<tr><td>REMOTE_CONTROL</td><td>Device
+  is a remote control</td><td></td><td></td></tr>\n<tr><td>BATTERY_U</td><td>Device
+  can report battery levels</td><td>state.batteryV<br>state.batteryLow</td><td></td></tr>\n</table>\n\nHere
+  are some examples of commands:\n\nPut a device with on/off capability on:\n\n<pre>\nDATA=[{\"id\":\"8afe8937-5e5d-4c5a-8597-b7c27b1721cb\",
+  \"type\": \"CMD_DEVICE_ON\"}]\ncurl -k -X PUT -H \"Authorization: $HUBKEY\" -H \"Content-Type:
+  application/json\" -d '$DATA' http://10.0.1.3:8893/cc/1.11/devices/command\n</pre>\n\nChange
+  lamp's brightness to 50%, color temperature to 3500K.\n\n<pre>\nDATA=[{\"id\":\"600e67b6-4bb6-4136-aabd-e89fca0ff619\",
+  \n        \"type\": \"CMD_DEVICE\", \n        \"state\":{\"type\": \"STATE_LIGHT\",
+  \n                  \"brightness\": 0.5, \"colorMode\": \"ct\", \"temperature\":
+  3500}}]\ncurl -k -X PUT -H \"Authorization: $HUBKEY\" -H \"Content-Type: application/json\"
+  -d '$DATA' http://10.0.1.3:8893/cc/1.11/devices/command\n</pre>\n\nFull bass.\n\n<pre>\nDATA=[{\"id\":\"8afe8935-5e5d-4c5a-8597-b7c27b1721cb\",
+  \n        \"type\": \"CMD_DEVICE\", \n        \"state\":{\"type\": \"STATE_MEDIA_RENDERER\",
+  \n                  \"rcData\": {\"type\": \"MR_RC_DATA\", \"bass\": 10}}}]\ncurl
+  -k -X PUT -H \"Authorization: $HUBKEY\" -H \"Content-Type: application/json\" -d
+  '$DATA' http://10.0.1.3:8893/cc/1.11/devices/command\n</pre>\n\n\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:14:\"Cozify
+  License\";s:3:\"url\";s:29:\"https://cozify.fi/license/xxx\";}s:14:\"termsOfService\";s:17:\"https://cozify.fi\";s:5:\"title\";s:22:\"Cozify
+  Hub Command API\";s:7:\"version\";s:4:\"1.11\";}"
+paths: []
+...

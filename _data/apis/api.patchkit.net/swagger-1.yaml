@@ -1,0 +1,1112 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:7:\"version\";s:5:\"0.9.0\";s:5:\"title\";s:12:\"PatchKit
+  API\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:11:\"API Support\";s:3:\"url\";s:27:\"http://patchkit.net/contact\";s:5:\"email\";s:20:\"contact@patchkit.net\";}}"
+host: api.patchkit.net
+basePath: /1
+paths:
+  /apps/{app_secret}:
+    get:
+      summary: Get application info
+      description: Gets detailes app info
+      tags:
+      - App
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/App'
+        404:
+          description: Application not found.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /apps/{app_secret}/changelog:
+    get:
+      summary: Gets app changelog
+      description: Gets a complete changelog of an application.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      tags:
+      - App
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                version_id:
+                  type: integer
+                  format: int32
+                  description: Version id.
+                  minimum: 1
+                version_label:
+                  type: string
+                  description: Human readable label.
+                changes:
+                  type: string
+                  description: Changes description.
+        404:
+          description: Application not found.
+  /apps/{app_secret}/versions:
+    get:
+      summary: Gets app version list
+      description: Gets the basic information for all published versions. When API
+        Key is provided, draft version information is included if draft version exists.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      tags:
+      - App
+      - Version
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AppVersion'
+    post:
+      summary: Creates app version
+      description: Creates a new version if there's no draft version yet.
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key.
+      - name: label
+        in: formData
+        required: true
+        type: string
+        description: New version label.
+      - name: changelog
+        in: formData
+        required: false
+        type: string
+        description: Description of changes.
+      tags:
+      - App
+      - Version
+      responses:
+        201:
+          description: Version created successfully.
+          schema:
+            $ref: '#/definitions/AppVersion'
+        403:
+          description: API key invalid or draft version already exists.
+        404:
+          description: Application not found.
+  /apps/{app_secret}/versions/latest:
+    get:
+      summary: Gets app latest app version
+      description: Gets latest application version object.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppVersion'
+  /apps/{app_secret}/versions/latest/id:
+    get:
+      summary: Gets app latest app version id
+      description: Gets latest application version id.
+      tags:
+      - Version
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppVersionId'
+  /apps/{app_secret}/versions/{version_id}:
+    get:
+      summary: Gets app version
+      description: Gets selected version object. If API key is provided, can get the
+        information about draft version.
+      tags:
+      - Version
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppVersion'
+        403:
+          description: Invalid API key.
+        404:
+          description: Version not found.
+    patch:
+      summary: Updates app version
+      description: Updates selected version properties. You can update any number
+        of properties, because you're not required to pass all of them. Omited properties
+        will remain unchanged.
+      tags:
+      - Version
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key.
+      - name: label
+        in: formData
+        required: false
+        type: string
+        description: Version label.
+      - name: changelog
+        in: formData
+        required: false
+        type: string
+        description: Description of changes.
+      - name: publish_when_processed
+        in: formData
+        required: false
+        type: boolean
+        description: Change if version should be published when processing is done.
+      responses:
+        200:
+          description: Version updated successfully.
+          schema:
+            $ref: '#/definitions/Job'
+        403:
+          description: Invalid API key.
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/content_summary:
+    get:
+      summary: Gets app version content summary
+      description: Gets selected version content summary.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppContentSummary'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/diff_summary:
+    get:
+      summary: Gets app version diff summary
+      description: Gets selected version diff summary.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppDiffSummary'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/content_torrent_url:
+    get:
+      summary: Gets app version content torrent url
+      description: Gets selected application version content torrent url.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: key_secret
+        in: query
+        type: string
+        required: false
+        description: Key secret provided by key server. This value is optional and
+          is needed only if application is secured by license keys.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppContentTorrentUrl'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/diff_torrent_url:
+    get:
+      summary: Gets app version diff torrent url
+      description: Gets selected application version diff torrent url.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: key_secret
+        in: query
+        type: string
+        required: false
+        description: Key secret provided by key server. This value is optional and
+          is needed only if application is secured by license keys.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AppDiffTorrentUrl'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/content_urls:
+    get:
+      summary: Gets app version content urls
+      description: Gets selected application version content urls.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: country
+        in: query
+        description: Country iso code
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ResourceUrl'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/diff_urls:
+    get:
+      summary: Gets app version diff urls
+      description: Gets selected application version diff urls.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Version id.
+        required: true
+        type: integer
+        format: int32
+      - name: country
+        in: query
+        description: Country iso code
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ResourceUrl'
+        404:
+          description: Version not found.
+  /apps/{app_secret}/versions/{version_id}/content_file:
+    put:
+      summary: Updates app version content file
+      description: Updates the draft version with given content file. Version needs
+        to be processed afterwards, so a job guid is returned. Should file or upload_id
+        be passed.
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Draft version id.
+        required: true
+        type: integer
+        format: int32
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key.
+      - name: file
+        in: formData
+        required: false
+        type: file
+        description: Zip file with application content.
+      - name: upload_id
+        in: formData
+        required: false
+        type: integer
+        description: Id of upload entity.
+      responses:
+        200:
+          description: File queued to be processed.
+          schema:
+            $ref: '#/definitions/Job'
+        403:
+          description: Invalid secret or version is not a draft version.
+        404:
+          description: Version not found
+      tags:
+      - App
+      - Version
+  /apps/{app_secret}/versions/{version_id}/diff_file:
+    put:
+      summary: Updates version diff file
+      description: Updates the draft version with given diff file. Version needs to
+        be processed afterwards, so a job guid is returned. Should file or upload_id
+        be passed.
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Draft version id.
+        required: true
+        type: integer
+        format: int32
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key.
+      - name: file
+        in: formData
+        required: false
+        type: file
+        description: Zip file with application binary diffs.
+      - name: upload_id
+        in: formData
+        required: false
+        type: integer
+        description: Id of upload entity.
+      - name: diff_summary
+        in: formData
+        required: false
+        type: string
+        description: Required when diff_file is set. Using diff summary format.
+      responses:
+        200:
+          description: File queued to be processed.
+          schema:
+            $ref: '#/definitions/Job'
+        403:
+          description: Invalid secret or version is not a draft version.
+        404:
+          description: version not found
+      tags:
+      - App
+      - Version
+  /apps/{app_secret}/versions/{version_id}/publish:
+    put:
+      summary: Publishes version
+      description: Publishes selected version. Given version should be a draft version.
+      parameters:
+      - name: app_secret
+        in: path
+        description: Secret of an application.
+        required: true
+        type: string
+      - name: version_id
+        in: path
+        description: Draft version id.
+        required: true
+        type: integer
+        format: int32
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: Version published sucessfully.
+      tags:
+      - App
+      - Version
+  /apps/{app_secret}/logs:
+    post:
+      summary: Uploads new log
+      description: Uploads a new log from application.
+      consumes:
+      - multipart/form-data
+      tags:
+      - App
+      - Logs
+      parameters:
+      - name: app_secret
+        type: string
+        in: path
+        required: true
+      - name: kind
+        description: Log class. Used to determine origin and intent.
+        type: integer
+        in: formData
+        required: true
+      - name: version
+        description: Version of the application that produced this log.
+        type: string
+        in: formData
+        required: true
+      - name: file_guid
+        type: string
+        description: Unique file GUID of this log. Using the same guid will replace
+          the previous log file.
+        in: formData
+        required: true
+      - name: content
+        type: file
+        description: Log content as a file.
+        in: formData
+        required: true
+      - name: compression
+        type: string
+        description: Compression method used for the log file.
+        in: formData
+        required: true
+        enum:
+        - gzip
+      responses:
+        201:
+          description: Created
+        422:
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys/mark_distributed:
+    post:
+      summary: Marks keys as distributed
+      description: Marks multiple keys as distributed.
+      tags:
+      - Keys
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: ids
+        type: string
+        description: Identifiers delimited by coma character ','
+        required: true
+        in: formData
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: One or more keys not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys/mark_not_distributed:
+    post:
+      summary: Marks keys as not distributed
+      description: Marks multiple keys as not distributed.
+      tags:
+      - Keys
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: ids
+        type: string
+        description: Identifiers delimited by coma character ','
+        required: true
+        in: formData
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: One or more keys not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys/block:
+    post:
+      summary: Blocks keys
+      description: Blocks multiple keys
+      tags:
+      - Keys
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: ids
+        type: string
+        description: Identifiers delimited by coma character ','
+        required: true
+        in: formData
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: One or more keys not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys/unblock:
+    post:
+      summary: Unblocks keys
+      description: Unblocks multiple keys.
+      tags:
+      - Keys
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: ids
+        type: string
+        description: Identifiers delimited by coma character ','
+        required: true
+        in: formData
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key.
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: One or more keys not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys_collections/{id}/mark_distributed:
+    post:
+      summary: Marks collection as distributed
+      description: Marks all keys from collection invividually as ditributed. Keys
+        already marked as distributed wouldn't be changed.
+      tags:
+      - Keys
+      parameters:
+      - name: id
+        type: integer
+        description: Collection id
+        required: true
+        in: path
+      - name: api_key
+        type: string
+        description: Application owner API key.
+        required: false
+        in: query
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: Collection not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys_collections/{id}/mark_not_distributed:
+    post:
+      summary: Marks collection as distributed
+      description: Marks all keys from collection invividually as ditributed. Keys
+        already marked as distributed wouldn't be changed.
+      tags:
+      - Keys
+      parameters:
+      - name: id
+        type: integer
+        description: Collection id
+        required: true
+        in: path
+      - name: api_key
+        type: string
+        description: Application owner API key.
+        required: false
+        in: query
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: Collection not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys_collections/{id}/block:
+    post:
+      summary: Blocks collection
+      description: Blocks all keys from collection invidually.
+      tags:
+      - Keys
+      parameters:
+      - name: id
+        type: integer
+        description: Collection id
+        required: true
+        in: path
+      - name: api_key
+        type: string
+        description: Application owner API key.
+        required: false
+        in: query
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: Collection not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /keys_collections/{id}/unblock:
+    post:
+      summary: Unblocks collection
+      description: Unblocks all keys from collection individually.
+      tags:
+      - Keys
+      parameters:
+      - name: id
+        type: integer
+        description: Collection id
+        required: true
+        in: path
+      - name: api_key
+        type: string
+        description: Application owner API key.
+        required: false
+        in: query
+      responses:
+        200:
+          description: OK
+        403:
+          description: Not authorized
+        404:
+          description: Collection not found
+        default:
+          description: Unknown error
+          schema:
+            $ref: '#/definitions/Error'
+  /uploads:
+    post:
+      summary: Creates a new upload
+      tags:
+      - Upload
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: total_size_bytes
+        type: integer
+        in: formData
+        required: true
+      - name: api_key
+        in: query
+        required: false
+        type: string
+        description: Application owner API key. Required when not using a session.
+      - name: upload_token
+        in: query
+        required: false
+        type: string
+        description: Version upload token. It can be used instead of api_key or sessions.
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Upload'
+        400:
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Not authenticated. If using upload_token, it can be invalid
+            or expired.
+        403:
+          description: Not authorized
+  /uploads/{id}/chunk:
+    post:
+      summary: Uploads a chunk
+      tags:
+      - Upload
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: id
+        type: integer
+        in: path
+        required: true
+      - name: chunk
+        type: file
+        in: formData
+        required: true
+      - name: md5
+        type: string
+        in: formData
+        required: false
+        description: Optional MD5 sum of given chunk. If given, server will perform
+          chunk validation before accepting it. In case of invalid MD5 sum, a precognition
+          failed (412) http code is returned.
+      - name: api_key
+        in: query
+        required: true
+        type: string
+        description: Application owner API key. Required when not using a session.
+      - name: upload_token
+        in: query
+        required: false
+        type: string
+        description: Version upload token. It can be used instead of api_key or sessions.
+      - name: Content-Range
+        in: header
+        required: true
+        type: string
+        description: RFC2616 Content-Range
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Upload'
+        401:
+          description: Not authenticated
+        403:
+          description: Not authorized
+        412:
+          description: Validation of chunk has failed. Try sending it again.
+  /users/{user_id}/subscriptions/{subscription_id}/subscribe:
+    post:
+      summary: Subscribes user to e-mail subscription.
+      description: Need to be an adminsitrator to do that.
+      tags:
+      - User
+      parameters:
+      - name: user_id
+        type: integer
+        in: path
+        required: true
+      - name: subscription_id
+        type: integer
+        in: path
+        required: true
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/{user_id}/subscriptions/{subscription_id}/unsubscribe:
+    post:
+      summary: Unsubscribes user from e-mail subscription
+      description: Neet to be an administrator
+      tags:
+      - User
+      parameters:
+      - name: user_id
+        type: integer
+        in: path
+        required: true
+      - name: subscription_id
+        type: integer
+        in: path
+        required: true
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /me/subscriptions/{subscription_id}/subscribe:
+    post:
+      summary: Subscribes to e-mail subscription
+      description: This call can be only executed in the web browser.
+      tags:
+      - User
+      parameters:
+      - name: subscription_id
+        type: integer
+        in: path
+        required: true
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /me/subscriptions/{subscription_id}/unsubscribe:
+    post:
+      summary: Unsubscribes from e-mail subscription
+      description: This call can be only executed in the web browser.
+      tags:
+      - User
+      parameters:
+      - name: subscription_id
+        type: integer
+        in: path
+        required: true
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /launchers/{platform}:
+    put:
+      summary: Publishes a new launcher
+      tags:
+      - Launchers
+      - Admin
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: platform
+        in: path
+        required: true
+        type: string
+        description: Platform
+        enum:
+        - windows_x86
+        - windows_x86_64
+        - mac_x86
+        - mac_x86_64
+        - linux_x86
+        - linux_x86_64
+      - name: file
+        in: formData
+        required: true
+        type: file
+        description: Zip file with application content.
+      - name: api_key
+        in: query
+        description: Admin API key.
+        type: string
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Processing error
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: API key missing
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+  /system/patchers:
+    get:
+      summary: Gets default system patchers.
+      description: Gets the list of default system patchers. If there's no default
+        patcher set for specified platform, secret will be null.
+      tags:
+      - Other
+      - Public
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SystemPatchers'
+definitions: !php/object "O:8:\"stdClass\":14:{s:5:\"Error\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Human-readable
+  error message\";}s:6:\"symbol\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:12:\"Error
+  symbol\";s:4:\"enum\";a:1:{i:0;s:18:\"INVALID_KEY_SECRET\";}}}}s:3:\"Job\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"job_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Job
+  GUID to be used with Jobs API.\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:8:\"job_guid\";s:36:\"5776de94-56dc-4e8a-8992-1c1d9da1410c\";}}s:3:\"App\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:1;s:11:\"description\";s:15:\"Initial
+  app id.\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:16:\"Application
+  name\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Application
+  display name.\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Application
+  author.\";}s:14:\"patcher_secret\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"The
+  secret of patcher to use.\";}s:8:\"use_keys\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:102:\"If
+  set to true, application needs to contact keys server to get valid key_secret for
+  content download.\";}s:14:\"publish_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:3:\"all\";i:1;s:9:\"http_only\";}}}}s:10:\"AppVersion\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":18:{s:2:\"id\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:1;s:11:\"description\";s:19:\"Initial
+  version id.\";}s:5:\"label\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:14:\"Version
+  label.\";}s:9:\"changelog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Description
+  of changes.\";}s:12:\"publish_date\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:31:\"Unix
+  timestamp of publish date.\";}s:12:\"content_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:21:\"Guid
+  of content file.\";}s:17:\"content_meta_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:39:\"Guid
+  of content meta file if available.\";}s:9:\"diff_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:45:\"Guid
+  of diff file or null if there's no diff.\";}s:14:\"diff_meta_guid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:36:\"Guid
+  of diff meta file if available.\";}s:5:\"draft\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:47:\"Set
+  to true if this version is a draft version.\";}s:15:\"pending_publish\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:9:\"published\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}s:16:\"publish_progress\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"float\";s:11:\"description\";s:78:\"If
+  pending_publish is true, this number will indicate the publishing progress.\";}s:15:\"main_executable\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:61:\"Main
+  executable relative path without slash at the beginning.\";}s:20:\"main_executable_args\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:25:\"Main
+  executable arguments\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:13:\"ignored_files\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:73:\"Relative
+  list of paths that should be ignored for local data consistency.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:22:\"publish_when_processed\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:11:\"description\";s:70:\"Set
+  to true if version will be published after successfull processing.\";}s:21:\"processing_started_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}s:22:\"processing_finished_at\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";}}}s:12:\"AppVersionId\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":4:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"minimum\";i:1;s:11:\"description\";s:11:\"Version
+  id.\";}}s:7:\"example\";O:8:\"stdClass\":1:{s:2:\"id\";i:1;}}s:17:\"AppContentSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":8:{s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"Version
+  string. Format: MAJOR.MINOR. Present in >= 2.4\";}s:4:\"size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:13:\"Content
+  size.\";}s:17:\"uncompressed_size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:45:\"Uncompressed
+  archive size. Present in >= 2.4.\";}s:17:\"encryption_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Encryption
+  method.\";}s:18:\"compression_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Compression
+  method.\";}s:5:\"files\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:35:\"#/definitions/AppContentSummaryFile\";}s:11:\"description\";s:22:\"List
+  of content files.\";}s:9:\"hash_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"chunks\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Chunks\";}}}s:21:\"AppContentSummaryFile\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"path\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"File
+  path.\";}s:4:\"hash\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:10:\"File
+  hash.\";}s:4:\"size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:50:\"Uncompressed
+  file size in bytes. Present in >= 2.3\";}s:5:\"flags\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:29:\"File
+  flags, present in >= 2.3\";s:4:\"enum\";a:2:{i:0;s:10:\"executable\";i:1;s:6:\"ignore\";}}}}s:14:\"AppDiffSummary\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":10:{s:7:\"version\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:54:\"Version
+  string. Format: MAJOR.MINOR. Present in >= 2.4\";}s:4:\"size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:10:\"Diff
+  size.\";}s:17:\"uncompressed_size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:45:\"Uncompressed
+  archive size. Present in >= 2.4.\";}s:17:\"encryption_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:18:\"Encryption
+  method.\";}s:18:\"compression_method\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:19:\"Compression
+  method.\";}s:11:\"added_files\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:20:\"List
+  of added files.\";}s:14:\"modified_files\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:23:\"List
+  of modified files.\";}s:13:\"removed_files\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"description\";s:22:\"List
+  of removed files.\";}s:9:\"hash_code\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"chunks\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:20:\"#/definitions/Chunks\";}}}s:6:\"Chunks\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"size\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}s:6:\"hashes\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}s:20:\"AppContentTorrentUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Url
+  to content torrent file.\";}}}s:17:\"AppDiffTorrentUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:25:\"Url
+  to diff torrent file.\";}}}s:11:\"ResourceUrl\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":4:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:17:\"Url
+  to diff file.\";}s:8:\"meta_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Url
+  to meta file if available.\";}s:7:\"country\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"ISO
+  code of origin country.\";}s:9:\"part_size\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int64\";s:11:\"description\";s:372:\"Size
+  of single file part. If set to 0 then file is distributed within a single part (default).
+  Part URLs can be evaluated from first part URL - second and following parts have
+  '.INDEX' names. For instance ../c49fde98-a07c-11e7-8919-33f7211dd1c0 is first part,
+  then ../c49fde98-a07c-11e7-8919-33f7211dd1c0.1 is second and ../c49fde98-a07c-11e7-8919-33f7211dd1c0.2
+  is third.\";}}}s:6:\"Upload\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":1:{s:2:\"id\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"integer\";}}}s:14:\"SystemPatchers\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"platform\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:6:{i:0;s:11:\"windows_x86\";i:1;s:14:\"windows_x86_64\";i:2;s:7:\"mac_x86\";i:3;s:10:\"mac_x86_64\";i:4;s:9:\"linux_x86\";i:5;s:12:\"linux_x86_64\";}}s:6:\"secret\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}}"
+...

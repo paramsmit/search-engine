@@ -1,0 +1,978 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:11:\"description\";s:1908:\"The GeoDB API
+  focuses on getting global city and region data. Easily obtain country, region, and
+  city data for use in your apps! <ul><li>Filter cities by name prefix, country, location,
+  time-zone, and even minimum population.</li><li>Sort cities by name, country code,
+  elevation, and population - or any combination of these.</li> <li>Get all country
+  regions.</li> <li>Get all cities in a given region.</li><li>Display results in multiple
+  languages.</li> <li>RESTful API adheres to industry best-practices, including HATEOAS-style
+  links to facilitate paging results.</li> <li>Backed by cloud-based load-balanced
+  infrastructure for resiliency and performance!</li> <li>Data is periodically refreshed
+  from GeoNames and WikiData.</li></ul><p>Notes:<ul><li>All endpoints implicitly support
+  JSONP-style invocation via an optional <tt>callback</tt> param.</li><li>Since the
+  database is periodically updated, this may <strong>very rarely</strong> result in
+  certain cities being marked deleted (e.g., duplicates removed). By default, endpoints
+  returning city data will exclude cities marked deleted. However, in the unlikely
+  event that this occurs while your app is paging through a set of affected results
+  - and you care about the paged results suddenly changing underneath - specify <tt>includeDeleted=SINCE_YESTERDAY</tt>
+  (or <tt>SINCE_LAST_WEEK</tt> if you're really paranoid!).</li></ul><hr/><h3>Useful
+  Resources</h3><ul><li>SDKs<ul><li><a href='https://www.npmjs.com/package/wft-geodb-angular-client'>Angular</a>,
+  <a href='https://github.com/wirefreethought/geo-db-sample-angular-app'>Sample App</a></li><li><a
+  href='https://github.com/wirefreethought/geo-db-java-client'>Java</a></li><li><a
+  href='https://www.npmjs.com/package/wft-geodb-js-client'>JavaScript</a></li></ul><li><a
+  href='swagger.json'>Swagger Docs</a></li><li><a href='http://creativecommons.org/licenses/by/3.0/'>Usage
+  License</a></i></li></ul>\";s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:32:\"Creative
+  Commons Attribution 3.0\";s:3:\"url\";s:43:\"http://creativecommons.org/licenses/by/3.0/\";}s:5:\"title\";s:5:\"GeoDB\";s:7:\"version\";s:5:\"1.0.0\";s:21:\"x-apisguru-categories\";a:2:{i:0;s:15:\"developer_tools\";i:1;s:8:\"location\";}s:6:\"x-logo\";O:8:\"stdClass\":2:{s:15:\"backgroundColor\";s:7:\"#FFFFFF\";s:3:\"url\";s:128:\"https://api.apis.guru/v2/cache/logo/https_raw.githubusercontent.com_wirefreethought_geodb-cities-api-docs_master_images_logo.png\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:67:\"https://wirefreethought.github.io/geo-db-city-api-docs/swagger.json\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:11:\"mashape.com\";s:13:\"x-serviceName\";s:5:\"geodb\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:13:\"mashape_geodb\";s:4:\"type\";s:7:\"openapi\";}}"
+host: wft-geo-db.p.mashape.com
+basePath: /
+paths:
+  /v1/geo/cities:
+    get:
+      consumes:
+      - application/json
+      description: Find cities, filtering by optional criteria. If no criteria are
+        set, you will get back all known cities.
+      operationId: findCitiesUsingGET
+      parameters:
+      - description: Only cities whose names start with this prefix. If languageCode
+          is set, the prefix will be matched on the name as it appears in that language.
+        in: query
+        name: namePrefix
+        required: false
+        type: string
+      - description: Only cities in these countries (comma-delimited country codes
+          or WikiData ids)
+        in: query
+        name: countryIds
+        required: false
+        type: string
+      - description: Only cities NOT in these countries (comma-delimited country codes
+          or WikiData ids)
+        in: query
+        name: excludedCountryIds
+        required: false
+        type: string
+      - description: Only cities having at least this population
+        format: int32
+        in: query
+        name: minPopulation
+        required: false
+        type: integer
+      - description: 'Only cities near this location. Latitude/longitude in ISO-6709
+          format: u00b1DD.DDDDu00b1DDD.DDDD'
+        in: query
+        name: location
+        required: false
+        type: string
+      - description: The location radius within which to find cities
+        format: int32
+        in: query
+        name: radius
+        required: false
+        type: integer
+      - default: MI
+        description: 'The unit of distance: MI | KM'
+        in: query
+        name: distanceUnit
+        required: false
+        type: string
+      - description: Only cities in these time-zones
+        in: query
+        name: timeZoneIds
+        required: false
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - description: 'How to sort the results. Format: u00b1SORT_FIELD,u00b1SORT_FIELD
+          where SORT_FIELD = countryCode | elevation | name | population'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: NONE
+        description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+          | SINCE_LAST_WEEK | NONE'
+        in: query
+        name: includeDeleted
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CitiesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find cities
+      tags:
+      - Geo
+  /v1/geo/cities/{cityId}:
+    get:
+      consumes:
+      - application/json
+      description: Get the details for a specific city, including location coordinates,
+        population, and elevation above sea-level (if available).
+      operationId: getCityUsingGET
+      parameters:
+      - description: The city id (either native 'id' or 'wikiDataId')
+        in: path
+        name: cityId
+        required: true
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CityResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get city details
+      tags:
+      - Geo
+  /v1/geo/cities/{cityId}/dateTime:
+    get:
+      consumes:
+      - application/json
+      description: Get city date-time
+      operationId: getCityDateTimeUsingGET
+      parameters:
+      - description: The city id (either native 'id' or 'wikiDataId')
+        in: path
+        name: cityId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DateTimeResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get city date-time
+      tags:
+      - Geo
+  /v1/geo/cities/{cityId}/distance:
+    get:
+      consumes:
+      - application/json
+      description: Get distance to the given city
+      operationId: getCityDistanceUsingGET
+      parameters:
+      - description: The city id (either native 'id' or 'wikiDataId')
+        in: path
+        name: cityId
+        required: true
+        type: string
+      - description: Distance from this city
+        in: query
+        name: fromCityId
+        required: true
+        type: string
+      - default: MI
+        description: 'The unit of distance: MI | KM'
+        in: query
+        name: distanceUnit
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DistanceResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get city distance
+      tags:
+      - Geo
+  /v1/geo/cities/{cityId}/nearbyCities:
+    get:
+      consumes:
+      - application/json
+      description: Find cities near the given origin city, filtering by optional criteria.
+        If no criteria are set, you will get back all known cities.
+      operationId: findCitiesNearCityUsingGET
+      parameters:
+      - description: The city id (either native 'id' or 'wikiDataId')
+        in: path
+        name: cityId
+        required: true
+        type: string
+      - description: Only cities having at least this population
+        format: int32
+        in: query
+        name: minPopulation
+        required: false
+        type: integer
+      - description: The location radius within which to find cities
+        format: int32
+        in: query
+        name: radius
+        required: false
+        type: integer
+      - default: MI
+        description: 'The unit of distance: MI | KM'
+        in: query
+        name: distanceUnit
+        required: false
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - description: 'How to sort the results. Format: u00b1SORT_FIELD,u00b1SORT_FIELD
+          where SORT_FIELD = countryCode | elevation | name | population'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: NONE
+        description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+          | SINCE_LAST_WEEK | NONE'
+        in: query
+        name: includeDeleted
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CitiesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find cities near city
+      tags:
+      - Geo
+  /v1/geo/cities/{cityId}/time:
+    get:
+      consumes:
+      - application/json
+      description: Get city time
+      operationId: getCityTimeUsingGET
+      parameters:
+      - description: The city id (either native 'id' or 'wikiDataId')
+        in: path
+        name: cityId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TimeResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get city time
+      tags:
+      - Geo
+  /v1/geo/countries:
+    get:
+      consumes:
+      - application/json
+      description: Find countries, filtering by optional criteria. If no criteria
+        are set, you will get back all known countries.
+      operationId: getCountriesUsingGET
+      parameters:
+      - description: Only countries whose names start with this prefix. If languageCode
+          is set, the prefix will be matched on the name as it appears in that language.
+        in: query
+        name: namePrefix
+        required: false
+        type: string
+      - description: Only countries supporting this currency
+        in: query
+        name: currencyCode
+        required: false
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CountriesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find countries
+      tags:
+      - Geo
+  /v1/geo/countries/{countryId}:
+    get:
+      consumes:
+      - application/json
+      description: Get the details for a specific country, including number of regions.
+      operationId: getCountryUsingGET
+      parameters:
+      - description: An ISO-3166 country code or WikiData id
+        in: path
+        name: countryId
+        required: true
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CountryResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get country details
+      tags:
+      - Geo
+  /v1/geo/countries/{countryId}/regions:
+    get:
+      consumes:
+      - application/json
+      description: Get all regions in a specific country. These could be states, provinces,
+        districts, or otherwise major political divisions.
+      operationId: getRegionsUsingGET
+      parameters:
+      - description: An ISO-3166 country code or WikiData id
+        in: path
+        name: countryId
+        required: true
+        type: string
+      - description: Only regions whose names start with this prefix. If languageCode
+          is set, the prefix will be matched on the name as it appears in that language.
+        in: query
+        name: namePrefix
+        required: false
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RegionsResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find country regions
+      tags:
+      - Geo
+  /v1/geo/countries/{countryId}/regions/{regionCode}:
+    get:
+      consumes:
+      - application/json
+      description: Get the details of a specific country region, including number
+        of cities.
+      operationId: getRegionUsingGET
+      parameters:
+      - description: An ISO-3166 country code or WikiData id
+        in: path
+        name: countryId
+        required: true
+        type: string
+      - description: An ISO-3166 or FIPS region code
+        in: path
+        name: regionCode
+        required: true
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RegionResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get region details
+      tags:
+      - Geo
+  /v1/geo/countries/{countryId}/regions/{regionCode}/cities:
+    get:
+      consumes:
+      - application/json
+      description: Get the cities in a specific country region. The country and region
+        info is omitted in the response.
+      operationId: findRegionCitiesUsingGET
+      parameters:
+      - description: An ISO-3166 country code or WikiData id
+        in: path
+        name: countryId
+        required: true
+        type: string
+      - description: An ISO-3166 or FIPS region code
+        in: path
+        name: regionCode
+        required: true
+        type: string
+      - description: Only cities having at least this population
+        format: int32
+        in: query
+        name: minPopulation
+        required: false
+        type: integer
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - description: 'How to sort the results. Format: u00b1SORT_FIELD,u00b1SORT_FIELD
+          where SORT_FIELD = elevation | name | population'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: NONE
+        description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+          | SINCE_LAST_WEEK | NONE'
+        in: query
+        name: includeDeleted
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CitiesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find country region cities
+      tags:
+      - Geo
+  /v1/geo/locations/{locationId}/nearbyCities:
+    get:
+      consumes:
+      - application/json
+      description: Find cities near the given location, filtering by optional criteria.
+        If no criteria are set, you will get back all known cities.
+      operationId: findCitiesNearLocationUsingGET
+      parameters:
+      - description: 'Only cities near this location. Latitude/longitude in ISO-6709
+          format: u00b1DD.DDDDu00b1DDD.DDDD'
+        in: path
+        name: locationId
+        required: true
+        type: string
+      - description: Only cities having at least this population
+        format: int32
+        in: query
+        name: minPopulation
+        required: false
+        type: integer
+      - description: The location radius within which to find cities
+        format: int32
+        in: query
+        name: radius
+        required: false
+        type: integer
+      - default: MI
+        description: 'The unit of distance: MI | KM'
+        in: query
+        name: distanceUnit
+        required: false
+        type: string
+      - default: false
+        description: Display results using ASCII characters
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: Display results in this language
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - default: 5
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      - description: 'How to sort the results. Format: u00b1SORT_FIELD,u00b1SORT_FIELD
+          where SORT_FIELD = countryCode | elevation | name | population'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - default: NONE
+        description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+          | SINCE_LAST_WEEK | NONE'
+        in: query
+        name: includeDeleted
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CitiesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find cities near location
+      tags:
+      - Geo
+  /v1/locale/currencies:
+    get:
+      consumes:
+      - application/json
+      description: Find currencies, filtering by optional criteria. If no criteria
+        are set, you will get back all known currencies.
+      operationId: getCurrenciesUsingGET
+      parameters:
+      - description: Only currencies supported by this country
+        in: query
+        name: countryId
+        required: false
+        type: string
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CurrenciesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Find currencies
+      tags:
+      - Locale
+  /v1/locale/languages:
+    get:
+      description: Get all supported languages
+      operationId: getLanguagesUsingGET
+      parameters:
+      - default: 5
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/LanguagesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get languages
+      tags:
+      - Locale
+  /v1/locale/locales:
+    get:
+      consumes:
+      - application/json
+      description: Get all known locales
+      operationId: getLocalesUsingGET
+      parameters:
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/LocalesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get locales
+      tags:
+      - Locale
+  /v1/locale/timezones:
+    get:
+      consumes:
+      - application/json
+      description: Get all known time-zones
+      operationId: getTimezonesUsingGET
+      parameters:
+      - default: 10
+        description: The maximum number of results to retrieve
+        format: int32
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - default: 0
+        description: The zero-ary offset index into the results
+        format: int32
+        in: query
+        name: offset
+        required: false
+        type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TimeZonesResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get time-zones
+      tags:
+      - Locale
+  /v1/locale/timezones/{zoneId}/dateTime:
+    get:
+      consumes:
+      - application/json
+      description: Get time-zone date-time
+      operationId: getTimeZoneDateTimeUsingGET
+      parameters:
+      - description: The time-zone id
+        in: path
+        name: zoneId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DateTimeResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get time-zone date-time
+      tags:
+      - Locale
+  /v1/locale/timezones/{zoneId}/time:
+    get:
+      consumes:
+      - application/json
+      description: Get time-zone time
+      operationId: getTimeZoneTimeUsingGET
+      parameters:
+      - description: The time-zone id
+        in: path
+        name: zoneId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TimeResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+      summary: Get time-zone time
+      tags:
+      - Locale
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":27:{s:14:\"CitiesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:23:\"A
+  list of CitySummaries\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CitySummary\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"A
+  list of Links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:11:\"CityDetails\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":13:{s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  city name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  country name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:7:\"deleted\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"If
+  this city has been soft-deleted\";s:4:\"type\";s:7:\"boolean\";}s:15:\"elevationMeters\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"The
+  city elevation (meters) above sea level\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  city GeoDB native id\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"The
+  city latittude (-90.0 to 90.0)\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"The
+  city longitude (-180.0 to 180.0)\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:10:\"population\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"The
+  city population\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:6:\"region\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  region name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:10:\"regionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  ISO or FIPS region code\";s:4:\"type\";s:6:\"string\";}s:8:\"timezone\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  city timezone id\";s:4:\"type\";s:6:\"string\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  city WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"CityResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/CityDetails\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:11:\"CitySummary\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":10:{s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"The
+  city name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  country name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:8:\"distance\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"Included
+  if this is the result of a distance query\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:2:\"id\";O:8:\"stdClass\":3:{s:11:\"description\";s:24:\"The
+  city GeoDB native id\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:8:\"latitude\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"The
+  city latittude (-90.0 to 90.0)\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:9:\"longitude\";O:8:\"stdClass\":3:{s:11:\"description\";s:36:\"The
+  city longitude (-180.0 to 180.0)\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:6:\"region\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  region name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:10:\"regionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"The
+  ISO or FIPS region code\";s:4:\"type\";s:6:\"string\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:20:\"The
+  city WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:17:\"CountriesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"A
+  list of CountrySummarys\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CountrySummary\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"A
+  list of Links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:14:\"CountryDetails\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":6:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:13:\"currencyCodes\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"A
+  list of supported ISO-4217 currency codes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:12:\"flagImageUri\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  country flag image\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  country name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:10:\"numRegions\";O:8:\"stdClass\":3:{s:11:\"description\";s:37:\"The
+  number of regions in this country\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  country WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"CountryResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/CountryDetails\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:14:\"CountrySummary\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:13:\"currencyCodes\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"A
+  list of supported ISO-4217 currency codes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"The
+  country name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  country WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:18:\"CurrenciesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"A
+  list of CurrencyDescriptors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/CurrencyDescriptor\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"A
+  list of Links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:18:\"CurrencyDescriptor\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"A
+  ISO-4217 currency code\";s:4:\"type\";s:6:\"string\";}s:12:\"countryCodes\";O:8:\"stdClass\":3:{s:11:\"description\";s:32:\"A
+  list of ISO-3166 country codes\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:16:\"DateTimeResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:52:\"The
+  date-time in ISO-6801 format: yyyyMMdd'T'HHmmssZ\";s:6:\"format\";s:9:\"date-time\";s:4:\"type\";s:6:\"string\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:16:\"DistanceResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:74:\"The
+  distance in units as set by the distanceUnit param (defaults to miles)\";s:6:\"format\";s:6:\"double\";s:4:\"type\";s:6:\"number\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:18:\"LanguageDescriptor\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"enum\";a:185:{i:0;s:9:\"undefined\";i:1;s:2:\"aa\";i:2;s:2:\"ab\";i:3;s:2:\"ae\";i:4;s:2:\"af\";i:5;s:2:\"ak\";i:6;s:2:\"am\";i:7;s:2:\"an\";i:8;s:2:\"ar\";i:9;s:2:\"as\";i:10;s:2:\"av\";i:11;s:2:\"ay\";i:12;s:2:\"az\";i:13;s:2:\"ba\";i:14;s:2:\"be\";i:15;s:2:\"bg\";i:16;s:2:\"bh\";i:17;s:2:\"bi\";i:18;s:2:\"bm\";i:19;s:2:\"bn\";i:20;s:2:\"bo\";i:21;s:2:\"br\";i:22;s:2:\"bs\";i:23;s:2:\"ca\";i:24;s:2:\"ce\";i:25;s:2:\"ch\";i:26;s:2:\"co\";i:27;s:2:\"cr\";i:28;s:2:\"cs\";i:29;s:2:\"cu\";i:30;s:2:\"cv\";i:31;s:2:\"cy\";i:32;s:2:\"da\";i:33;s:2:\"de\";i:34;s:2:\"dv\";i:35;s:2:\"dz\";i:36;s:2:\"ee\";i:37;s:2:\"el\";i:38;s:2:\"en\";i:39;s:2:\"eo\";i:40;s:2:\"es\";i:41;s:2:\"et\";i:42;s:2:\"eu\";i:43;s:2:\"fa\";i:44;s:2:\"ff\";i:45;s:2:\"fi\";i:46;s:2:\"fj\";i:47;s:2:\"fo\";i:48;s:2:\"fr\";i:49;s:2:\"fy\";i:50;s:2:\"ga\";i:51;s:2:\"gd\";i:52;s:2:\"gl\";i:53;s:2:\"gn\";i:54;s:2:\"gu\";i:55;s:2:\"gv\";i:56;s:2:\"ha\";i:57;s:2:\"he\";i:58;s:2:\"hi\";i:59;s:2:\"ho\";i:60;s:2:\"hr\";i:61;s:2:\"ht\";i:62;s:2:\"hu\";i:63;s:2:\"hy\";i:64;s:2:\"hz\";i:65;s:2:\"ia\";i:66;s:2:\"id\";i:67;s:2:\"ie\";i:68;s:2:\"ig\";i:69;s:2:\"ii\";i:70;s:2:\"ik\";i:71;s:2:\"io\";i:72;s:2:\"is\";i:73;s:2:\"it\";i:74;s:2:\"iu\";i:75;s:2:\"ja\";i:76;s:2:\"jv\";i:77;s:2:\"ka\";i:78;s:2:\"kg\";i:79;s:2:\"ki\";i:80;s:2:\"kj\";i:81;s:2:\"kk\";i:82;s:2:\"kl\";i:83;s:2:\"km\";i:84;s:2:\"kn\";i:85;s:2:\"ko\";i:86;s:2:\"kr\";i:87;s:2:\"ks\";i:88;s:2:\"ku\";i:89;s:2:\"kv\";i:90;s:2:\"kw\";i:91;s:2:\"ky\";i:92;s:2:\"la\";i:93;s:2:\"lb\";i:94;s:2:\"lg\";i:95;s:2:\"li\";i:96;s:2:\"ln\";i:97;s:2:\"lo\";i:98;s:2:\"lt\";i:99;s:2:\"lu\";i:100;s:2:\"lv\";i:101;s:2:\"mg\";i:102;s:2:\"mh\";i:103;s:2:\"mi\";i:104;s:2:\"mk\";i:105;s:2:\"ml\";i:106;s:2:\"mn\";i:107;s:2:\"mr\";i:108;s:2:\"ms\";i:109;s:2:\"mt\";i:110;s:2:\"my\";i:111;s:2:\"na\";i:112;s:2:\"nb\";i:113;s:2:\"nd\";i:114;s:2:\"ne\";i:115;s:2:\"ng\";i:116;s:2:\"nl\";i:117;s:2:\"nn\";i:118;s:2:\"no\";i:119;s:2:\"nr\";i:120;s:2:\"nv\";i:121;s:2:\"ny\";i:122;s:2:\"oc\";i:123;s:2:\"oj\";i:124;s:2:\"om\";i:125;s:2:\"or\";i:126;s:2:\"os\";i:127;s:2:\"pa\";i:128;s:2:\"pi\";i:129;s:2:\"pl\";i:130;s:2:\"ps\";i:131;s:2:\"pt\";i:132;s:2:\"qu\";i:133;s:2:\"rm\";i:134;s:2:\"rn\";i:135;s:2:\"ro\";i:136;s:2:\"ru\";i:137;s:2:\"rw\";i:138;s:2:\"sa\";i:139;s:2:\"sc\";i:140;s:2:\"sd\";i:141;s:2:\"se\";i:142;s:2:\"sg\";i:143;s:2:\"si\";i:144;s:2:\"sk\";i:145;s:2:\"sl\";i:146;s:2:\"sm\";i:147;s:2:\"sn\";i:148;s:2:\"so\";i:149;s:2:\"sq\";i:150;s:2:\"sr\";i:151;s:2:\"ss\";i:152;s:2:\"st\";i:153;s:2:\"su\";i:154;s:2:\"sv\";i:155;s:2:\"sw\";i:156;s:2:\"ta\";i:157;s:2:\"te\";i:158;s:2:\"tg\";i:159;s:2:\"th\";i:160;s:2:\"ti\";i:161;s:2:\"tk\";i:162;s:2:\"tl\";i:163;s:2:\"tn\";i:164;s:2:\"to\";i:165;s:2:\"tr\";i:166;s:2:\"ts\";i:167;s:2:\"tt\";i:168;s:2:\"tw\";i:169;s:2:\"ty\";i:170;s:2:\"ug\";i:171;s:2:\"uk\";i:172;s:2:\"ur\";i:173;s:2:\"uz\";i:174;s:2:\"ve\";i:175;s:2:\"vi\";i:176;s:2:\"vo\";i:177;s:2:\"wa\";i:178;s:2:\"wo\";i:179;s:2:\"xh\";i:180;s:2:\"yi\";i:181;s:2:\"yo\";i:182;s:2:\"za\";i:183;s:2:\"zh\";i:184;s:2:\"zu\";}s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:5:\"title\";s:18:\"LanguageDescriptor\";s:4:\"type\";s:6:\"object\";}s:17:\"LanguagesResponse\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/LanguageDescriptor\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:5:\"title\";s:17:\"LanguagesResponse\";s:4:\"type\";s:6:\"object\";}s:4:\"Link\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"href\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:3:\"rel\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:16:\"LocaleDescriptor\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:15:\"The
+  locale code\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"LocalesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:26:\"A
+  list of LocalDescriptors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/LocaleDescriptor\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"A
+  list of Links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:8:\"Metadata\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:13:\"currentOffset\";O:8:\"stdClass\":3:{s:11:\"description\";s:60:\"The
+  zero-ary offset into the results (0 is the first result)\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}s:10:\"totalCount\";O:8:\"stdClass\":3:{s:11:\"description\";s:40:\"The
+  total number of results across pages\";s:6:\"format\";s:5:\"int64\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:13:\"RegionDetails\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":7:{s:7:\"capital\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"The
+  region's capital city (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:11:\"countryCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"An
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:8:\"fipsCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  FIPS 10-4 region code\";s:4:\"type\";s:6:\"string\";}s:7:\"isoCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"The
+  ISO region code\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  region name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:9:\"numCities\";O:8:\"stdClass\":3:{s:11:\"description\";s:35:\"The
+  number of cities in this region\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  region WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:14:\"RegionResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/RegionDetails\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:13:\"RegionSummary\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":5:{s:11:\"countryCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:24:\"An
+  ISO-3166 country code\";s:4:\"type\";s:6:\"string\";}s:8:\"fipsCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:25:\"The
+  FIPS 10-4 region code\";s:4:\"type\";s:6:\"string\";}s:7:\"isoCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:19:\"The
+  ISO region code\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  region name (varies by languageCode)\";s:4:\"type\";s:6:\"string\";}s:10:\"wikiDataId\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  region WikiData id\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:15:\"RegionsResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":3:{s:11:\"description\";s:25:\"A
+  list of RegionSummaries\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:27:\"#/definitions/RegionSummary\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":3:{s:11:\"description\";s:19:\"A
+  list of WftErrors\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"A
+  list of Links\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:12:\"TimeResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"The
+  time in ISO-8601 format: HHmmss.SSSZ\";s:4:\"type\";s:6:\"string\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:18:\"TimeZoneDescriptor\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":2:{s:11:\"description\";s:16:\"The
+  time-zone id\";s:4:\"type\";s:6:\"string\";}s:4:\"name\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  time-zone name\";s:4:\"type\";s:6:\"string\";}s:17:\"rawUtcOffsetHours\";O:8:\"stdClass\":3:{s:11:\"description\";s:53:\"The
+  number of hours this time-zone is offset from UTC\";s:6:\"format\";s:5:\"int32\";s:4:\"type\";s:7:\"integer\";}}s:4:\"type\";s:6:\"object\";}s:17:\"TimeZonesResponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":4:{s:4:\"data\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/TimeZoneDescriptor\";}s:4:\"type\";s:5:\"array\";}s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/WftError\";}s:4:\"type\";s:5:\"array\";}s:5:\"links\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Link\";}s:4:\"type\";s:5:\"array\";}s:8:\"metadata\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:22:\"#/definitions/Metadata\";}}s:4:\"type\";s:6:\"object\";}s:8:\"WftError\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/WftErrorCode\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"WftErrorCode\";O:8:\"stdClass\":2:{s:4:\"enum\";a:5:{i:0;s:13:\"ACCESS_DENIED\";i:1;s:16:\"ENTITY_NOT_FOUND\";i:2;s:12:\"INCOMPATIBLE\";i:3;s:13:\"PARAM_INVALID\";i:4;s:25:\"PARAMS_MUTUALLY_EXCLUSIVE\";}s:4:\"type\";s:6:\"string\";}}"
+...

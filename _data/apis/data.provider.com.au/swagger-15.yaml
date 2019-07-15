@@ -1,0 +1,189 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:61:\"Data Holder Consumer
+  Data Standards Administration End Points\";s:7:\"version\";s:5:\"0.1.1\";s:5:\"title\";s:49:\"Consumer
+  Data Standards Administration End Points\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:49:\"Consumer
+  Data Standards Administration End Points\";s:3:\"url\";s:37:\"https://consumerdatastandards.org.au/\";s:5:\"email\";s:19:\"cdr-data61@csiro.au\";}s:7:\"license\";O:8:\"stdClass\":2:{s:4:\"name\";s:11:\"MIT
+  License\";s:3:\"url\";s:35:\"https://opensource.org/licenses/MIT\";}}"
+host: data.provider.com.au
+basePath: /cds-au/v1
+paths:
+  /admin/registry/metadata:
+    post:
+      tags:
+      - Admin
+      - Register
+      summary: Metadata Update
+      description: Indicate that a critical update to the metadata for Accredited
+        Data Recipients has been made and should be obtained
+      operationId: metadataUpdate
+      parameters:
+      - in: body
+        name: action
+        required: true
+        schema:
+          $ref: '#/definitions/RequestMetaDataUpdate'
+      - name: x-v
+        in: header
+        description: Version of the API end point requested by the client. Must be
+          set to a positive integer. If the version(s) requested is not supported
+          then the provider should respond with a 406 Not Acceptable. See [here](##request-headers)
+        required: true
+        type: string
+      - name: x-min-v
+        in: header
+        description: Minimum version of the API end point requested by the client.
+          Must be set to a positive integer if provided. The provider should respond
+          with the highest supported version between [x-min-v](##request-headers)
+          and [x-v](##request-headers). If all versions requested are not supported
+          then the provider should respond with a 406 Not Acceptable.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          headers:
+            x-v:
+              type: string
+              description: The [version](##response-headers) of the API end point
+                that the provider has responded with.
+      x-version: "1"
+  /admin/metrics:
+    get:
+      tags:
+      - Admin
+      - Metrics
+      summary: Get Metrics
+      description: This end point allows the ACCC to obtain operational statistics
+        from the Data Holder on the operation of their CDR compliant implementation.
+        The statistics obtainable from this end point are determined by the non-functional
+        requirements for the CDR regime.
+      operationId: getMetrics
+      parameters:
+      - name: period
+        in: query
+        description: The period of metrics to be requested. Values can be CURRENT_DAY
+          (meaning metrics for current day), HISTORIC (meaning metrics for previous
+          days or months) or ALL. If absent the default is ALL.
+        required: false
+        type: string
+        default: ALL
+        enum:
+        - CURRENT
+        - CURRENT_DAY
+        - HISTORIC
+        - ALL
+      - name: x-v
+        in: header
+        description: Version of the API end point requested by the client. Must be
+          set to a positive integer. If the version(s) requested is not supported
+          then the provider should respond with a 406 Not Acceptable. See [here](##request-headers)
+        required: true
+        type: string
+      - name: x-min-v
+        in: header
+        description: Minimum version of the API end point requested by the client.
+          Must be set to a positive integer if provided. The provider should respond
+          with the highest supported version between [x-min-v](##request-headers)
+          and [x-v](##request-headers). If all versions requested are not supported
+          then the provider should respond with a 406 Not Acceptable.
+        required: false
+        type: string
+      responses:
+        200:
+          description: Success
+          headers:
+            x-v:
+              type: string
+              description: The [version](##response-headers) of the API end point
+                that the provider has responded with.
+          schema:
+            $ref: '#/definitions/ResponseMetricsList'
+      x-version: "1"
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":25:{s:21:\"RequestMetaDataUpdate\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"data\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:40:\"#/definitions/RequestMetaDataUpdate_data\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:19:\"ResponseMetricsList\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"data\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"data\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:38:\"#/definitions/ResponseMetricsList_data\";}}}s:19:\"AvailabilityMetrics\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:12:\"currentMonth\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:112:\"Percentage
+  availability of the CDR platform so far for the current calendar month. 0.0 means
+  0%. 1.0 means 100%.\";}s:14:\"previousMonths\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:211:\"Percentage
+  availability of the CDR platform for previous calendar months. The first element
+  indicates the last month and so on. A maximum of twelve entries is required if available.
+  0.0 means 0%. 1.0 means 100%.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:53:\"Percentage
+  availability of the CDR platform over time\";s:13:\"x-conditional\";a:2:{i:0;s:12:\"currentMonth\";i:1;s:14:\"previousMonths\";}}s:18:\"PerformanceMetrics\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:102:\"Percentage
+  of calls within the performance threshold for the current day. 0.0 means 0%. 1.0
+  means 100%\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:202:\"Percentage
+  of calls within the performance threshold for previous days. The first element indicates
+  yesterday and so on. A maximum of seven entries is required if available. 0.0 means
+  0%. 1.0 means 100%\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:53:\"Percentage
+  of calls within the performance thresholds\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:17:\"InvocationMetrics\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"unauthenticated\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/InvocationMetrics_unauthenticated\";}s:12:\"highPriority\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/InvocationMetrics_highPriority\";}s:11:\"lowPriority\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:43:\"#/definitions/InvocationMetrics_lowPriority\";}s:10:\"unattended\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:42:\"#/definitions/InvocationMetrics_unattended\";}s:12:\"largePayload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:44:\"#/definitions/InvocationMetrics_largePayload\";}}s:11:\"description\";s:54:\"Number
+  of API calls in each performance tier over time\";s:13:\"x-conditional\";a:5:{i:0;s:15:\"unauthenticated\";i:1;s:12:\"highPriority\";i:2;s:11:\"lowPriority\";i:3;s:10:\"unattended\";i:4;s:12:\"largePayload\";}}s:22:\"AverageResponseMetrics\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:15:\"unauthenticated\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:52:\"#/definitions/AverageResponseMetrics_unauthenticated\";}s:12:\"highPriority\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/AverageResponseMetrics_highPriority\";}s:11:\"lowPriority\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:48:\"#/definitions/AverageResponseMetrics_lowPriority\";}s:10:\"unattended\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:47:\"#/definitions/AverageResponseMetrics_unattended\";}s:12:\"largePayload\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:49:\"#/definitions/AverageResponseMetrics_largePayload\";}}s:11:\"description\";s:89:\"Average
+  response time in seconds, at millisecond resolution, within each performance tier\";s:13:\"x-conditional\";a:5:{i:0;s:15:\"unauthenticated\";i:1;s:12:\"highPriority\";i:2;s:11:\"lowPriority\";i:3;s:10:\"unattended\";i:4;s:12:\"largePayload\";}}s:19:\"SessionCountMetrics\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:29:\"Session
+  count for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:133:\"Session
+  count for previous days. The first element indicates yesterday and so on. A maximum
+  of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:96:\"Session
+  counts over time. Note that a session is defined as the provisioning of an Access
+  Token.\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:17:\"AverageTPSMetrics\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:27:\"Average
+  TPS for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:131:\"Average
+  TPS for previous days. The first element indicates yesterday and so on. A maximum
+  of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:33:\"Transactions
+  per second over time\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:14:\"PeakTPSMetrics\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:24:\"Peak
+  TPS for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:128:\"Peak
+  TPS for previous days. The first element indicates yesterday and so on. A maximum
+  of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:48:\"Maximum
+  record transactions per second over time\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:12:\"ErrorMetrics\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:32:\"Number
+  of errors for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:136:\"Number
+  of errors for previous days. The first element indicates yesterday and so on. A
+  maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:68:\"Number
+  of calls resulting in error due to server execution over time\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:16:\"RejectionMetrics\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:40:\"Number
+  of calls rejected for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:145:\"Number
+  of calls rejected for previous days. The first element indicates yesterday and so
+  on. A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:60:\"Number
+  of calls rejected due to traffic thresholds over time\";s:13:\"x-conditional\";a:2:{i:0;s:10:\"currentDay\";i:1;s:12:\"previousDays\";}}s:5:\"Links\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"object\";s:8:\"required\";a:1:{i:0;s:4:\"self\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"self\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:37:\"Fully
+  qualified link to this API call\";s:10:\"x-cds-type\";s:9:\"URIString\";}}}s:4:\"Meta\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:26:\"RequestMetaDataUpdate_data\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:6:\"action\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"action\";O:8:\"stdClass\":4:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:165:\"The
+  action to take for the meta data. At the moment the only option is REFRESH which
+  requires the holder to call the ACCC to refresh meta data as soon as practicable\";s:7:\"default\";s:7:\"REFRESH\";s:4:\"enum\";a:1:{i:0;s:7:\"REFRESH\";}}}}s:24:\"ResponseMetricsList_data\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:5:\"links\";i:1;s:11:\"requestTime\";}s:10:\"properties\";O:8:\"stdClass\":14:{s:11:\"requestTime\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:66:\"The
+  date and time that the metrics in this payload were requested.\";s:10:\"x-cds-type\";s:14:\"DateTimeString\";}s:12:\"availability\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/AvailabilityMetrics\";}s:11:\"performance\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:32:\"#/definitions/PerformanceMetrics\";}s:11:\"invocations\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/InvocationMetrics\";}s:15:\"averageResponse\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:36:\"#/definitions/AverageResponseMetrics\";}s:12:\"sessionCount\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:33:\"#/definitions/SessionCountMetrics\";}s:10:\"averageTps\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:31:\"#/definitions/AverageTPSMetrics\";}s:7:\"peakTps\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:28:\"#/definitions/PeakTPSMetrics\";}s:6:\"errors\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:26:\"#/definitions/ErrorMetrics\";}s:10:\"rejections\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/RejectionMetrics\";}s:13:\"customerCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:70:\"Number
+  of customers with active authorisations at the time of the call\";}s:14:\"recipientCount\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:11:\"description\";s:76:\"Number
+  of data recipients with active authorisations at the time of the call\";}s:5:\"links\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/Links\";}s:4:\"meta\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:18:\"#/definitions/Meta\";}}}s:33:\"InvocationMetrics_unauthenticated\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"API
+  call counts for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:135:\"API
+  call counts for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:44:\"API
+  call counts for the unauthenticated tier\";}s:30:\"InvocationMetrics_highPriority\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"API
+  call counts for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:135:\"API
+  call counts for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:42:\"API
+  call counts for the high priority tier\";}s:29:\"InvocationMetrics_lowPriority\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"API
+  call counts for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:135:\"API
+  call counts for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:41:\"API
+  call counts for the low priority tier\";}s:28:\"InvocationMetrics_unattended\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"API
+  call counts for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:135:\"API
+  call counts for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:39:\"API
+  call counts for the unattended tier\";}s:30:\"InvocationMetrics_largePayload\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:31:\"API
+  call counts for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:135:\"API
+  call counts for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:42:\"API
+  call counts for the large payload tier\";}s:38:\"AverageResponseMetrics_unauthenticated\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Average
+  response time for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:142:\"Average
+  response time for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:50:\"Average
+  response time for the unauthenticated tier\";}s:35:\"AverageResponseMetrics_highPriority\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Average
+  response time for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:142:\"Average
+  response time for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:48:\"Average
+  response time for the high priority tier\";}s:34:\"AverageResponseMetrics_lowPriority\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Average
+  response time for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:142:\"Average
+  response time for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:47:\"Average
+  response time for the low priority tier\";}s:33:\"AverageResponseMetrics_unattended\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Average
+  response time for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:142:\"Average
+  response time for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:45:\"Average
+  response time for the unattended tier\";}s:35:\"AverageResponseMetrics_largePayload\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":2:{s:10:\"currentDay\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"number\";s:11:\"description\";s:37:\"Average
+  response time for current day\";}s:12:\"previousDays\";O:8:\"stdClass\":3:{s:4:\"type\";s:5:\"array\";s:11:\"description\";s:142:\"Average
+  response time for previous days. The first element indicates yesterday and so on.
+  A maximum of seven entries is required if available.\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"number\";}}}s:11:\"description\";s:48:\"Average
+  response time for the large payload tier\";}}"
+...

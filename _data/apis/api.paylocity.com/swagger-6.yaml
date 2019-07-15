@@ -1,0 +1,1722 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":11:{s:7:\"contact\";O:8:\"stdClass\":1:{s:5:\"email\";s:29:\"vendorrelations@paylocity.com\";}s:11:\"description\";s:7804:\"For
+  general questions and support of the API, contact: vendorrelations@paylocity.com\n#
+  Overview\n\nPaylocity Web Services API is an externally facing RESTful Internet
+  protocol. The Paylocity API uses HTTP verbs and a RESTful endpoint structure. OAuth
+  2.0 is used as the API Authorization framework. Request and response payloads are
+  formatted as JSON.\nPaylocity supports v1 and v2 versions of its API endpoints.
+  v1, while supported, won't be enhanced with additional functionality. For direct
+  link to v1 documentation, please click [here](https://docs.paylocity.com/weblink/guides/Paylocity_Web_Services_API/v1/Paylocity_Web_Services_API.htm).
+  For additional resources regarding v1/v2 differences and conversion path, please
+  contact vendorrelations@paylocity.com.\n\n##### Setup\n\nPaylocity will provide
+  the secure client credentials and set up the scope (type of requests and allowed
+  company numbers). You will receive the unique client id, secret, and Paylocity public
+  key for the data encryption. The secret will expire in 365 days. \n* Paylocity will
+  send you an e-mail 10 days prior to the expiration date for the current secret.
+  If not renewed, the second e-mail notification will be sent 5 days prior to secret's
+  expiration. Each email will contain the code necessary to renew the client secret.
+  \n* You can obtain the new secret by calling API endpoint using your current not
+  yet expired credentials and the code that was sent with the notification email.
+  For details on API endpoint, please see Client Credentials section. \n* Both the
+  current secret value and the new secret value will be recognized during the transition
+  period. After the current secret expires, you must use the new secret. \n* If you
+  were unable to renew the secret via API endpoint, you can still contact Service
+  and they will email you new secret via secure email.\n\n\nWhen validating the request,
+  Paylocity API will honor the defaults and required fields set up for the company
+  default New Hire Template as defined in Web Pay.\n\n\n# Authorization\n\nPaylocity
+  Web Services API uses OAuth2.0 Authentication with JSON Message Format.\n\n\nAll
+  requests of the Paylocity Web Services API require a bearer token which can be obtained
+  by authenticating the client with the Paylocity Web Services API via OAuth 2.0.\n\n\nThe
+  client must request a bearer token from the authorization endpoint:\n\n\nauth-server
+  for production: https://api.paylocity.com/IdentityServer/connect/token\n\n\nauth-server
+  for testing: https://apisandbox.paylocity.com/IdentityServer/connect/token\n\n#####
+  Authorization Header\n\nThe request is expected to be in the form of a basic authentication
+  request, with the \"Authorization\" header containing the client-id and client-secret.
+  This means the standard base-64 encoded user:password, prefixed with \"Basic\" as
+  the value for the Authorization header, where user is the client-id and password
+  is the client-secret.\n\n##### Content-Type Header\n\nThe \"Content-Type\" header
+  is required to be \"application/x-www-form-urlencoded\".\n\n##### Additional Values\n\nThe
+  request must post the following form encoded values within the request body:\n\n
+  \   grant_type = client_credentials\n    scope = WebLinkAPI\n\n##### Responses\n\nSuccess
+  will return HTTP 200 OK with JSON content:\n\n    {\n      \"access_token\": \"xxx\",\n
+  \     \"expires_in\": 3600,\n      \"token_type\": \"Bearer\"\n    }\n\n# Encryption\n\nPaylocity
+  uses a combination of RSA and AES cryptography. As part of the setup, each client
+  is issued a public RSA key.\n\nPaylocity recommends the encryption of the incoming
+  requests as additional protection of the sensitive data. Clients can opt-out of
+  the encryption during the initial setup process. Opt-out will allow Paylocity to
+  process un-encrypted requests.\n\nThe Paylocity Public Key has the following properties:\n\n*
+  2048 bit key size\n\n* PKCS1 key format\n\n* PEM encoding\n\n##### Properties\n\n*
+  key (base 64 encoded): The AES symmetric key encrypted with the Paylocity Public
+  Key. It is the key used to encrypt the content. Paylocity will decrypt the AES key
+  using RSA decryption and use it to decrypt the content.\n\n* iv (base 64 encoded):
+  The AES IV (Initialization Vector) used when encrypting the content.\n\n* content
+  (base 64 encoded): The AES encrypted request. The key and iv provided in the secureContent
+  request are used by Paylocity for decryption of the content.\n\nWe suggest using
+  the following for the AES:\n\n* CBC cipher mode\n\n* PKCS7 padding\n\n* 128 bit
+  block size\n\n* 256 bit key size\n\n##### Sample Example\n\n    {\n      \"secureContent\":
+  {\n        \"key\": \"eS3aw6H/qzHMJ00gSi6gQ3xa08DPMazk8BFY96Pd99ODA==\",\n        \"iv\":
+  \"NLyXMGq9svw0XO5aI9BzWw==\",\n        \"content\": \"gAEOiQltO1w+LzGUoIK8FiYbU42hug94EasSl7N+Q1w=\"\n
+  \     }\n    }\n\n##### Sample C# Code\n\n    using Newtonsoft.Json;\n    using
+  System;\n    using System.IO;\n    using System.Security.Cryptography;\n    using
+  System.Text;\n\n    public class SecuredContent\n    {\n      [JsonProperty(\"key\")]\n
+  \     public string Key { get; set; }\n\n      [JsonProperty(\"iv\")]\n      public
+  string Iv { get; set; }\n\n      [JsonProperty(\"content\")]\n      public string
+  Content { get; set; }\n\n    }\n\n    public class EndUserSecureRequestExample\n
+  \   {\n      public string CreateSecuredRequest(FileInfo paylocityPublicKey, string
+  unsecuredJsonRequest)\n      {\n        string publicKeyXml = File.ReadAllText(paylocityPublicKey.FullName,
+  Encoding.UTF8);\n\n        SecuredContent secureContent = this.CreateSecuredContent(publicKeyXml,
+  unsecuredJsonRequest);\n\n        string secureRequest = JsonConvert.SerializeObject(new
+  { secureContent });\n\n        return secureRequest;\n      }\n\n      private SecuredContent
+  CreateSecuredContent(string publicKeyXml, string request)\n      {\n        using
+  (AesCryptoServiceProvider aesCsp = new AesCryptoServiceProvider())\n        {\n
+  \         aesCsp.Mode = CipherMode.CBC;\n          aesCsp.Padding = PaddingMode.PKCS7;\n
+  \         aesCsp.BlockSize = 128;\n          aesCsp.KeySize = 256;\n\n          using
+  (ICryptoTransform crt = aesCsp.CreateEncryptor(aesCsp.Key, aesCsp.IV))\n          {\n
+  \           using (MemoryStream outputStream = new MemoryStream())\n            {\n
+  \             using (CryptoStream encryptStream = new CryptoStream(outputStream,
+  crt, CryptoStreamMode.Write))\n              {\n                byte[] encodedRequest
+  = Encoding.UTF8.GetBytes(request);\n                encryptStream.Write(encodedRequest,
+  0, encodedRequest.Length);\n                encryptStream.FlushFinalBlock();\n                byte[]
+  encryptedRequest = outputStream.ToArray();\n\n                using (RSACryptoServiceProvider
+  crp = new RSACryptoServiceProvider())\n                {\n                  crp.FromXmlstring(publicKeyXml);\n
+  \                 byte[] encryptedKey = crp.Encrypt(aesCsp.Key, false);\n\n                  return
+  new SecuredContent()\n                  {\n                    Key = Convert.ToBase64string(encryptedKey),\n
+  \                   Iv = Convert.ToBase64string(aesCsp.IV),\n                    Content
+  = Convert.ToBase64string(encryptedRequest)\n                  };\n                }\n
+  \             }\n            }\n          }\n        }\n      }\n    }\n\n## Support\n\nQuestions
+  about using the Paylocity API? Please contact vendorrelations@paylocity.com.\n\n#
+  Deductions (v1)\n\nDeductions API provides endpoints to retrieve, add, update and
+  delete deductions for a company's employees. For schema details, click <a href=\"https://docs.paylocity.com/weblink/guides/Paylocity_Web_Services_API/v1/Paylocity_Web_Services_API.htm\"
+  target=\"_blank\">here</a>.\n\n# OnBoarding (v1)\n\nOnboarding API sends employee
+  data into Paylocity Onboarding to help ensure an easy and accurate hiring process
+  for subsequent completion into Web Pay. For schema details, click <a href=\"https://docs.paylocity.com/weblink/guides/Paylocity_Web_Services_API/v1/Paylocity_Web_Services_API.htm\"
+  target=\"_blank\">here</a>.\";s:14:\"termsOfService\";s:33:\"WebLink.OpenApiDoc.TermsOfService\";s:5:\"title\";s:9:\"Paylocity\";s:7:\"version\";s:1:\"2\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:9:\"financial\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:82:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_paylocity_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:40:\"https://api.paylocity.com/api/v2/openapi\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:13:\"paylocity.com\";s:10:\"x-datafire\";O:8:\"stdClass\":2:{s:4:\"name\";s:9:\"paylocity\";s:4:\"type\";s:7:\"openapi\";}}"
+host: api.paylocity.com
+basePath: /api
+paths:
+  /v2/companies/{companyId}/customfields/{category}:
+    get:
+      description: Get All Custom Fields for the selected company
+      operationId: v2.companies.companyId.customfields.category.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Custom Fields Category
+        in: path
+        name: category
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/customFieldDefinition'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Invalid Category
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get All Custom Fields
+      tags:
+      - Custom Fields
+  /v2/companies/{companyId}/employees:
+    post:
+      description: New Employee API sends new employee data directly to Web Pay. Companies
+        who use the New Hire Template in Web Pay may require additional fields when
+        hiring employees. New Employee API Requests will honor these required fields.
+      operationId: v2.companies.companyId.employees.post
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Employee Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/employee'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      responses:
+        201:
+          description: Successfully added
+          schema:
+            items:
+              $ref: '#/definitions/employeeIdResponse'
+            type: array
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add new employee
+      tags:
+      - Employee
+  /v2/companies/{companyId}/employees/{employeeId}:
+    get:
+      description: Get Employee API will return employee data currently available
+        in Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully Retrieved
+          schema:
+            items:
+              $ref: '#/definitions/employee'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get employee
+      tags:
+      - Employee
+    patch:
+      description: Update Employee API will update existing employee data in WebPay.
+      operationId: v2.companies.companyId.employees.employeeId.patch
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Employee Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/employee'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully Updated
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Update employee
+      tags:
+      - Employee
+  /v2/companies/{companyId}/employees/{employeeId}/benefitSetup:
+    put:
+      description: Sends new or updated employee benefit setup information directly
+        to Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.benefitSetup.put
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: BenefitSetup Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/benefitSetup'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully added or updated
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add/update employee's benefit setup
+      tags:
+      - Employee Benefit Setup
+  /v2/companies/{companyId}/employees/{employeeId}/earnings:
+    get:
+      description: Get All Earnings returns all earnings for the selected employee.
+      operationId: v2.companies.companyId.employees.employeeId.earnings.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/earning'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get All Earnings
+      tags:
+      - Earnings
+    put:
+      description: Add/Update Earning API sends new or updated employee earnings information
+        directly to Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.earnings.put
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Earning Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/earning'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully added or updated
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add/Update Earning
+      tags:
+      - Earnings
+  /v2/companies/{companyId}/employees/{employeeId}/earnings/{earningCode}:
+    get:
+      description: Get Earnings returns all earnings with the provided earning code
+        for the selected employee.
+      operationId: v2.companies.companyId.employees.employeeId.earnings.earningCode.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      - description: Earning Code
+        in: path
+        name: earningCode
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/earning'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get Earnings by Earning Code
+      tags:
+      - Earnings
+  /v2/companies/{companyId}/employees/{employeeId}/earnings/{earningCode}/{startDate}:
+    delete:
+      description: Delete Earning by Earning Code and Start Date
+      operationId: v2.companies.companyId.employees.employeeId.earnings.earningCode.startDate.delete
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      - description: Earning Code
+        in: path
+        name: earningCode
+        required: true
+        type: string
+      - description: Start Date
+        in: path
+        name: startDate
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successfully deleted
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist, or the specified earningCode-startDate
+            combination does not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Delete Earning by Earning Code and Start Date
+      tags:
+      - Earnings
+    get:
+      description: Get Earnings returns the single earning with the provided earning
+        code and start date for the selected employee.
+      operationId: v2.companies.companyId.employees.employeeId.earnings.earningCode.startDate.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      - description: Earning Code
+        in: path
+        name: earningCode
+        required: true
+        type: string
+      - description: Start Date
+        in: path
+        name: startDate
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            $ref: '#/definitions/earning'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist, or the specified earningCode-startDate
+            combination does not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get Earning by Earning Code and Start Date
+      tags:
+      - Earnings
+  /v2/companies/{companyId}/employees/{employeeId}/localTaxes:
+    get:
+      description: Returns all local taxes for the selected employee.
+      operationId: v2.companies.companyId.employees.employeeId.localTaxes.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/localTax'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get all local taxes
+      tags:
+      - Local Taxes
+    post:
+      description: Sends new employee local tax information directly to Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.localTaxes.post
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: LocalTax Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/localTax'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        201:
+          description: Successfully added
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add new local tax
+      tags:
+      - Local Taxes
+  /v2/companies/{companyId}/employees/{employeeId}/localTaxes/{taxCode}:
+    delete:
+      description: Delete local tax by tax code
+      operationId: v2.companies.companyId.employees.employeeId.localTaxes.taxCode.delete
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      - description: Tax Code
+        in: path
+        name: taxCode
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successfully deleted
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist, or the specified tax code does
+            not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Delete local tax by tax code
+      tags:
+      - Local Taxes
+    get:
+      description: Returns all local taxes with the provided tax code for the selected
+        employee.
+      operationId: v2.companies.companyId.employees.employeeId.localTaxes.taxCode.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      - description: Tax Code
+        in: path
+        name: taxCode
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/localTax'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: The employee does not exist, or the specified tax code does
+            not exist
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get local taxes by tax code
+      tags:
+      - Local Taxes
+  /v2/companies/{companyId}/employees/{employeeId}/nonprimaryStateTax:
+    put:
+      description: Sends new or updated employee non-primary state tax information
+        directly to Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.nonprimaryStateTax.put
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Non-Primary State Tax Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/nonPrimaryStateTax'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully added or updated
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add/update non-primary state tax
+      tags:
+      - Non-Primary State Tax
+  /v2/companies/{companyId}/employees/{employeeId}/primaryStateTax:
+    put:
+      description: Sends new or updated employee primary state tax information directly
+        to Web Pay.
+      operationId: v2.companies.companyId.employees.employeeId.primaryStateTax.put
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Primary State Tax Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/stateTax'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      - description: Employee Id
+        in: path
+        name: employeeId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully added or updated
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add/update primary state tax
+      tags:
+      - Primary State Tax
+  /v2/companies/{companyId}/openapi:
+    get:
+      description: The company-specific Open API endpoint allows the client to GET
+        an Open API document for the Paylocity API that is customized with company-specific
+        resource schemas. These customized resource schemas define certain properties
+        as enumerations of pre-defined values that correspond to the company's setup
+        with Web Pay. The customized schemas also indicate which properties are required
+        by the company within Web Pay.<br  />To learn more about Open API, click [here](https://www.openapis.org/)
+      operationId: v2.companies.companyId.openapi.get
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Get Company-Specific Open API Documentation
+      tags:
+      - Company-Specific Schema
+  /v2/credentials/secrets:
+    post:
+      description: Obtain new client secret for Paylocity-issued client id. See Setup
+        section for details.
+      operationId: v2.credentials.secrets.post
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Add Client Secret Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/addClientSecret'
+      responses:
+        200:
+          description: Successfully added
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Obtain new client secret.
+      tags:
+      - Client Credentials
+  /v2/weblinkstaging/companies/{companyId}/employees/newemployees:
+    post:
+      description: Add new employee to Web Link will send partially completed or potentially
+        erroneous new hire record to Web Link, where it can be corrected and competed
+        by company administrator or authorized Paylocity Service Bureau employee.
+      operationId: v2.weblinkstaging.companies.companyId.employees.newemployees.post
+      parameters:
+      - description: Bearer + JWT
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: StagedEmployee Model
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/stagedEmployee'
+      - description: Company Id
+        in: path
+        name: companyId
+        required: true
+        type: string
+      responses:
+        201:
+          description: Successfully Added
+          schema:
+            items:
+              $ref: '#/definitions/trackingNumberResponse'
+            type: array
+        400:
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+          schema:
+            items:
+              $ref: '#/definitions/error'
+            type: array
+      security:
+      - paylocity_auth:
+        - WebLinkAPI
+      summary: Add new employee to Web Link
+      tags:
+      - Employee Staging
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":12:{s:15:\"addClientSecret\";O:8:\"stdClass\":4:{s:11:\"description\";s:35:\"The
+  Add Client Secret Request Model\";s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"A
+  value sent with the 'ACTION NEEDED: Web Link API Credentials Expiring Soon.' email
+  notification.\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:4:\"code\";}s:4:\"type\";s:6:\"object\";}s:12:\"benefitSetup\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:23:\"The
+  benefit setup model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"benefitClass\";O:8:\"stdClass\":2:{s:11:\"description\";s:111:\"Benefit
+  Class code. Values are configured in Web Pay Company > Setup > Benefits > Classes.<br
+  \ />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:25:\"benefitClassEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"Date
+  when Benefit Class takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"benefitSalary\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Salary
+  used to configure benefits.<br  />Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:26:\"benefitSalaryEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"Date
+  when Benefit Salary takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:30:\"doNotApplyAdministrativePeriod\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Applicable
+  only for HR Enhanced clients and Benefit Classes with ACA Employment Type of Full
+  Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:23:\"isMeasureAcaEligibility\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"Only
+  valid for HR Enhanced clients and Benefit Classes that are ACA Employment Type of
+  Full Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:21:\"customFieldDefinition\";O:8:\"stdClass\":3:{s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":6:{s:8:\"category\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  custom field category.\";s:4:\"type\";s:6:\"string\";}s:12:\"defaultValue\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Specifies
+  the default value of the custom field.\";s:4:\"type\";s:6:\"string\";}s:10:\"isRequired\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Indicates
+  whether the custom field is required.\";s:4:\"type\";s:7:\"boolean\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:23:\"The
+  custom field label.\";s:4:\"type\";s:6:\"string\";}s:4:\"type\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  custom field type.\";s:4:\"type\";s:6:\"string\";}s:6:\"values\";O:8:\"stdClass\":3:{s:11:\"description\";s:56:\"A
+  set of values that are applicable to the custom field.\";s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:22:\"The
+  custom field code.\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"The
+  custom field description.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:7:\"earning\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:26:\"The
+  employee earning model\";s:10:\"properties\";O:8:\"stdClass\":22:{s:6:\"agency\";O:8:\"stdClass\":2:{s:11:\"description\";s:90:\"Third-party
+  agency associated with earning. Must match Company setup.<br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"Value
+  that matches CalculationCode to add to gross wages. For percentage (%), enter whole
+  number (10 = 10%).  <br  />Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:13:\"annualMaximum\";O:8:\"stdClass\":2:{s:11:\"description\";s:143:\"Year
+  to Date dollar amount not to be exceeded for an earning in the calendar year. Used
+  only with company driven maximums. <br  />Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:15:\"calculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:183:\"Defines
+  how earnings are calculated. Common values are *% (percentage of gross), flat (flat
+  dollar amount)*. Defaulted to the Company setup calcCode for earning. <br  />Max
+  length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter1\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"Cost
+  Center associated with earning. Must match Company setup.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter2\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"Cost
+  Center associated with earning. Must match Company setup.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter3\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"Cost
+  Center associated with earning. Must match Company setup.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"earningCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Earning
+  code. Must match Company setup. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:126:\"Date
+  earning is active. Defaulted to run date or check date based on Company setup. Common
+  formats are MM-DD-CCYY, CCYY-MM-DD.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"endDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:67:\"Stop
+  date of an earning. Common formats are MM-DD-CCYY, CCYY-MM-DD.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"frequency\";O:8:\"stdClass\":2:{s:11:\"description\";s:120:\"Needed
+  if earning is applied differently from the payroll frequency (one time earning for
+  example).<br  /> Max length: 5\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:4:\"goal\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"Dollar
+  amount. The employee earning will stop when the goal amount is reached.<br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"hoursOrUnits\";O:8:\"stdClass\":2:{s:11:\"description\";s:197:\"The
+  value is used in conjunction with the Rate field. When entering Group Term Life
+  Insurance (GTL), it should contain the full amount of the group term life insurance
+  policy. <br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:13:\"isSelfInsured\";O:8:\"stdClass\":2:{s:11:\"description\";s:65:\"Used
+  for ACA. If not entered, defaulted to Company earning setup.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:7:\"jobCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Job
+  code associated with earnings. Must match Company setup.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:17:\"miscellaneousInfo\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Information
+  to print on the check stub if agency is set up for this earning. <br  />Max length:
+  50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"paidTowardsGoal\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Amount
+  already paid to employee toward goal. <br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:16:\"payPeriodMaximum\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"Maximum
+  amount of the earning on a single paycheck. <br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:16:\"payPeriodMinimum\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"Minimum
+  amount of the earning on a single paycheck. <br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:4:\"rate\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"Rate
+  is used in conjunction with the hoursOrUnits field. <br  /> Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:8:\"rateCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:115:\"Rate
+  Code applies to additional pay rates entered for an employee. Must match Company
+  setup. <br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"startDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:94:\"Start
+  date of an earning based on payroll calendar. Common formats are MM-DD-CCYY, CCYY-MM-DD.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:2:{i:0;s:11:\"earningCode\";i:1;s:9:\"startDate\";}s:4:\"type\";s:6:\"object\";}s:8:\"employee\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:18:\"The
+  employee model\";s:10:\"properties\";O:8:\"stdClass\":39:{s:23:\"additionalDirectDeposit\";O:8:\"stdClass\":4:{s:11:\"description\";s:347:\"Add
+  up to 19 direct deposit accounts in addition to the main direct deposit account.
+  If an employee already has at least one direct deposit account, users cannot add
+  or update direct deposit information. Direct deposit is only available when inserting
+  the employee's initial direct deposit information. GET API will not return direct
+  deposit data.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:35:\"The
+  additional direct deposit model\";s:10:\"properties\";O:8:\"stdClass\":9:{s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:90:\"Account
+  number, entered without special characters and spaces. <br  />Max length: 17<br
+  />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"accountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"Account
+  type. Valid values are *C* (Checking), *S* (Saving), *P* (Pay Card). <br   />Max
+  length: 1<br />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"Amount
+  value to be deposited to the account.<br  />Decimal (12,2)<br />\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"amountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Amount
+  type to indicate the context of the amount. Common values are *F* (FLAT), *F-* (Net
+  Minus), *P* (Percent). <br  /> Max length: 5<br />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"blockSpecial\";O:8:\"stdClass\":2:{s:11:\"description\";s:150:\"Indicates
+  if direct deposit should be blocked when special check types such as Bonus are processed.<br
+  /><small>new with Web Link 16.6 release</small>\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"isSkipPreNote\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Indicates
+  if account will not pre-note.<br />\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"nameOnAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:127:\"Name
+  on the bank account. Defaults to employee's name. <br  />Max length: 30<br /><small>new
+  with Web Link 16.6 release</small>\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"preNoteDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"Date
+  to end the pre-note of the account. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.<br
+  />\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"routingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:88:\"ABA
+  Transit Routing Number, entered without dashes or spaces. <br  />Max length: 9<br
+  />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:19;s:4:\"type\";s:5:\"array\";}s:12:\"benefitSetup\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:111:\"
+  Add or update setup values used for employee benefits integration, insurance plan
+  settings, and ACA reporting.\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"benefitClass\";O:8:\"stdClass\":2:{s:11:\"description\";s:111:\"Benefit
+  Class code. Values are configured in Web Pay Company > Setup > Benefits > Classes.<br
+  \ />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:25:\"benefitClassEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"Date
+  when Benefit Class takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"benefitSalary\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Salary
+  used to configure benefits.<br  />Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:26:\"benefitSalaryEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"Date
+  when Benefit Salary takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:30:\"doNotApplyAdministrativePeriod\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Applicable
+  only for HR Enhanced clients and Benefit Classes with ACA Employment Type of Full
+  Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:23:\"isMeasureAcaEligibility\";O:8:\"stdClass\":2:{s:11:\"description\";s:97:\"Only
+  valid for HR Enhanced clients and Benefit Classes that are ACA Employment Type of
+  Full Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:9:\"birthDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:70:\"Employee
+  birthdate. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"companyName\";O:8:\"stdClass\":2:{s:11:\"description\";s:92:\"Company
+  name as defined in Web Pay, applicable with GET requests only.<br  /> Max length:
+  50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"customBooleanFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:55:\"Up
+  to 8 custom fields of boolean (checkbox) type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:140:\"The
+  custom field label whose value is to be added/updated. Must match to the label defined
+  in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  custom boolean field value.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:16:\"customDateFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:45:\"Up
+  to 8 custom fields of the date type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:76:\"The
+  custom date field value.  Common formats include MM-DD-CCYY, CCYY-MM-DD.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:20:\"customDropDownFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"Up
+  to 8 custom fields of the dropdown type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:160:\"The
+  custom dropdown field value.  Values are configured in Web Pay Company > Setup >
+  List Values > Lookup Values > Custom Fields: PayrollAndHR.  Max length: 10.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:18:\"customNumberFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"Up
+  to 8 custom fields of numeric type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  custom number field value.  Decimal (18,6).\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:16:\"customTextFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:41:\"Up
+  to 8 custom fields of text type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  custom text field value.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:18:\"departmentPosition\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:139:\"Add
+  or update home department cost center, position, supervisor, reviewer, employment
+  type, EEO class, pay settings, and union information.\";s:10:\"properties\";O:8:\"stdClass\":26:{s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"Employee
+  department/position change reason. Must match Company setup. <br  />Max length:
+  15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"clockBadgeNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"Employee
+  clock badge number. Defaults to employeeId. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter1\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter2\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter3\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"The
+  date the position takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"employeeType\";O:8:\"stdClass\":2:{s:11:\"description\";s:191:\"Employee
+  current employment type. Common values *RFT (Regular Full Time), RPT (Regular Part
+  Time), SNL (Seasonal), TFT (Temporary Full Time), TPT (Temporary Part Time)*. <br
+  \ />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:31:\"equalEmploymentOpportunityClass\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Values
+  are configured in Company > Setup > HR > EEO Classes.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"isMinimumWageExempt\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Indicates
+  if employee is exempt from minimum wage.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:16:\"isOvertimeExempt\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Indicates
+  if employee is exempt from overtime.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:20:\"isSupervisorReviewer\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Indicates
+  if employee is a supervisor or reviewer.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:20:\"isUnionDuesCollected\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Indicates
+  if union dues are collected.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:26:\"isUnionInitiationCollected\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Indicates
+  if initiations fees are collected.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:8:\"jobTitle\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"Employee
+  current job title. <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"payGroup\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  pay group. Must match Company setup. <br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"positionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:70:\"Employee
+  position code. Must match Company setup.<br  />Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:21:\"reviewerCompanyNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Company
+  number of reviewer.<br />Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"reviewerEmployeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Employee
+  id of the reviewer.<br />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"shift\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Employee
+  work shift.<br  />Max length: 255\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:23:\"supervisorCompanyNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Supervisor's
+  company number. Defaults to employee company number.<br  />Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:20:\"supervisorEmployeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"EmployeeId
+  of the supervisor. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"tipped\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Indicates
+  if employee receives tips.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:20:\"unionAffiliationDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"Employee
+  union affiliation effective date. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"unionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  union code. Must match Company setup. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"unionPosition\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"Employee
+  union position. Must match Company setup. <br  />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"workersCompensation\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Employee
+  worker compensation code. Must match Company setup.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:21:\"disabilityDescription\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Indicates
+  if employee has disability status.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"employeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:102:\"Leave
+  blank to have Web Pay automatically assign the next available employee ID.<br  />
+  Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"ethnicity\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Employee
+  ethnicity.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"federalTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:112:\"Add
+  or update federal tax amount type (taxCalculationCode), amount or percentage, filing
+  status, and exemptions.\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Tax
+  amount. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Federal
+  tax exemptions value. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"Employee
+  federal filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Tax
+  percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Employee
+  first name. <br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"gender\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Employee
+  gender. Common values *M* (Male), *F* (Female). <br  />Max length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"homeAddress\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:82:\"Add
+  or update employee's home address, personal phone numbers, and personal email.\";s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"address1\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"1st
+  address line.<br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"address2\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"2nd
+  address line. <br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"City.<br
+  \ /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Country.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"county\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"County.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"emailAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Email.
+  <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"mobilePhone\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Mobile
+  phone number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Phone
+  number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Postal
+  code.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"State
+  or province.<br  /> Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:19:\"isHighlyCompensated\";O:8:\"stdClass\":2:{s:11:\"description\";s:69:\"Indicates
+  if employee meets the highly compensated employee criteria.\";s:4:\"type\";s:7:\"boolean\";}s:8:\"isSmoker\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Indicates
+  if employee is a smoker.\";s:4:\"type\";s:7:\"boolean\";}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Employee
+  last name. <br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"localTax\";O:8:\"stdClass\":4:{s:11:\"description\";s:93:\"Add,
+  update, or delete local tax code, filing status, and exemptions including  PA-PSD
+  taxes.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:19:\"The
+  Local Tax model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Local
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Local
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Employee
+  local tax filing status. Must match specific local tax setup. <br  /> Max length:
+  50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"residentPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:106:\"Resident
+  PSD (political subdivision code) applicable in PA. Must match Company setup.<br
+  \ /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Local
+  tax code.<br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"workPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Work
+  location PSD. Must match Company setup. <br  /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:5;s:4:\"type\";s:5:\"array\";}s:17:\"mainDirectDeposit\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:439:\"Add
+  the main direct deposit account. After deposits are made to any additional direct
+  deposit accounts, the remaining net check is deposited in the main direct deposit
+  account. If an employee already has at least one direct deposit account, users cannot
+  add or update direct deposit information. Direct deposit is only available when
+  inserting the employee's initial direct deposit information. GET API will not return
+  direct deposit data.\";s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"Account
+  number, entered without special characters and spaces. <br  />Max length: 17\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"accountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Account
+  type. Valid values are *C* (Checking), *S* (Saving), *P* (Pay Card). <br   />Max
+  length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"blockSpecial\";O:8:\"stdClass\":2:{s:11:\"description\";s:150:\"Indicates
+  if direct deposit should be blocked when special check types such as Bonus are processed.<br
+  /><small>new with Web Link 16.6 release</small>\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"isSkipPreNote\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Indicates
+  if account will not pre-note.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"nameOnAccount\";O:8:\"stdClass\":2:{s:11:\"description\";s:127:\"Name
+  on the bank account. Defaults to employee's name. <br  />Max length: 30<br /><small>new
+  with Web Link 16.6 release</small>\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"preNoteDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:91:\"Date
+  to end the pre-note of the account. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"routingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"ABA
+  Transit Routing Number, entered without dashes or spaces. <br  />Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:13:\"maritalStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:114:\"Employee
+  marital status. Common values *D (Divorced), M (Married), S (Single), W (Widowed)*.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"middleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Employee
+  middle name.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"nonPrimaryStateTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:197:\"Add
+  or update non-primary state tax code, amount type (taxCalculationCode), amount or
+  percentage, filing status, exemptions, supplemental check (specialCheckCalc), and
+  reciprocity code information.\";s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:15:\"reciprocityCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Non-primary
+  state tax reciprocity code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:12:\"ownerPercent\";O:8:\"stdClass\":2:{s:11:\"description\";s:100:\"Percentage
+  of employee's ownership in the company, entered as a whole number. <br  /> Decimal
+  (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:13:\"preferredName\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Employee
+  preferred display name.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"primaryPayRate\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:75:\"Add
+  or update hourly or salary pay rate, effective date, and pay frequency.\";s:10:\"properties\";O:8:\"stdClass\":13:{s:12:\"annualSalary\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Employee
+  annual salary.<br />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:8:\"baseRate\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  base rate, used for Hourly employees. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:14:\"beginCheckDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:183:\"The
+  date of the first check on which the new pay rate will appear. This value is only
+  applicable when updating an existing employee. Common formats include *MM-DD-CCYY*,
+  *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Pay
+  rate change reason.<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"defaultHours\";O:8:\"stdClass\":2:{s:11:\"description\";s:154:\"Employee
+  default hours consistently worked. If autoPayType is set to D, employee will be
+  paid hourly base rate for the defaultHours. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"The
+  date the employee's pay rate takes effect. Common formats include *MM-DD-CCYY*,
+  *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"isAutoPay\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"If
+  set to *True*, employee will be paid automatically using deafultHours.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:12:\"payFrequency\";O:8:\"stdClass\":2:{s:11:\"description\";s:168:\"Employee
+  current pay frequency. Common values are *A (Annual), B (Bi-Weekly), D (Daily),
+  M (Monthly), S (Semi-Monthly), Q (Quarterly), W (Weekly)*. <br  />Max length: 5\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"payGrade\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  pay grade. Must match Company setup. <br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"payRateNote\";O:8:\"stdClass\":2:{s:11:\"description\";s:57:\"Pay
+  rate notes regarding employee.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"payType\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"Employee
+  pay type (rate code). Valid values are *Hourly* or *Salary*. <br  />Max length:
+  10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"ratePer\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"Employee
+  base rate frequency used with payType Hourly. Common values are *Hour, Week*. Default
+  is Hour. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"salary\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"Employee
+  gross salary per pay period used with payType Salary.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:15:\"primaryStateTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:283:\"Add
+  or update primary state tax code, amount type (taxCalculationCode), amount or percentage,
+  filing status, exemptions, and supplemental check (specialCheckCalc) information.
+  Only one primary state is allowed. Sending an updated primary state will replace
+  the current primary state.\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:13:\"priorLastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Prior
+  last name if applicable.<br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"salutation\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"Employee
+  preferred salutation. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:3:\"ssn\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employee
+  social security number. Leave it blank if valid social security number not available.
+  <br  />Max length: 11\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"status\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:173:\"Add
+  or update employee status, change reason, effective date, and adjusted seniority
+  date. Note that companies that are still in Implementation cannot hire future employees.\";s:10:\"properties\";O:8:\"stdClass\":7:{s:21:\"adjustedSeniorityDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:75:\"Adjusted
+  seniority date. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"Employee
+  status change reason. Must match Company setup.<br  /> Max length: 15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"Common
+  formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"employeeStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"Employee
+  current work status. Common values are *A* (Active), *L* (Leave of Absence), *T*
+  (Terminated). <br  />Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"hireDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:129:\"Employee
+  hired date. Updates to hire date are not allowed and will be ignored. Common formats
+  include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"isEligibleForRehire\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Indicates
+  if employee eligible for rehire.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:10:\"reHireDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:142:\"Rehire
+  date if employee is rehired.  Updates to re-hire date are not allowed and will be
+  ignored. Common formats are *MM-DD-CCYY, CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:6:\"suffix\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"Employee
+  name suffix. Common values are *Jr, Sr, II*.<br  />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"taxSetup\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:230:\"Add
+  tax form, 1099 exempt reasons and notes, and 943 agricultural employee information.
+  Once the employee receives wages, this information cannot be updated. Add or update
+  SUI tax state, retirement plan, and statutory information.\";s:10:\"properties\";O:8:\"stdClass\":18:{s:15:\"fitwExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Notes
+  for FITW exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"fitwExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:124:\"Reason
+  code for FITW exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"futaExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Notes
+  for FUTA exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"futaExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"Reason
+  code for FUTA exemption. Common values are *501* (5019c)(3) Organization), *IC*
+  (Independent Contractor).<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"isEmployee943\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Indicates
+  if employee in agriculture or farming.\";s:4:\"type\";s:7:\"boolean\";}s:9:\"isPension\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Indicates
+  if employee is eligible for pension.\";s:4:\"type\";s:7:\"boolean\";}s:11:\"isStatutory\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Indicates
+  if employee is statutory.\";s:4:\"type\";s:7:\"boolean\";}s:14:\"medExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"Notes
+  for Medicare exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"medExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:138:\"Reason
+  code for Medicare exemption. Common values are *501* (5019c)(3) Organization), *IC*
+  (Independent Contractor).<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"sitwExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Notes
+  for SITW exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"sitwExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:124:\"Reason
+  code for SITW exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"ssExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:59:\"Notes
+  for Social Security exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"ssExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:135:\"Reason
+  code for Social Security exemption. Common values are *SE* (Statutory employee),
+  *CR* (clergy/Religious). <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"suiExemptNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"Notes
+  for SUI exemption.<br  /> Max length: 250\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"suiExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:123:\"Reason
+  code for SUI exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"suiState\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"Employee
+  SUI (State Unemployment Insurance) state. <br  />Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:24:\"taxDistributionCode1099R\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"Employee
+  1099R distribution code. Common values are *7* (Normal Distribution), *F* (Charitable
+  Gift Annuity). <br  />Max length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxForm\";O:8:\"stdClass\":2:{s:11:\"description\";s:113:\"Employee
+  tax form for reporting income. Valid values are *W2, 1099M, 1099R*. Default is W2.
+  <br  />Max length: 15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:18:\"veteranDescription\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Indicates
+  if employee is a veteran.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"webTime\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:103:\"Add
+  or update Web Time badge number and charge rate and synchronize Web Pay and Web
+  Time employee data.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"badgeNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Badge
+  number usually issued for time and attendance system use. <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"chargeRate\";O:8:\"stdClass\":2:{s:11:\"description\";s:237:\"Rate
+  to be charged to third party for time worked by the employee. It is most commonly
+  referenced in the Cost Center Charge, Cost Center Charge vs. Cost Reports, and the
+  Customer Invoice time and attendance reports. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:18:\"isTimeLaborEnabled\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"If
+  set to true, changes to employee data will be reflected in Web Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:11:\"workAddress\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:111:\"Add
+  or update employee's work address, phone numbers, and email. Work Location drop
+  down field is not included.\";s:10:\"properties\";O:8:\"stdClass\":13:{s:8:\"address1\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"1st
+  address line.<br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"address2\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"2nd
+  address line. <br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"City.<br
+  \ /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Country.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"county\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"County.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"emailAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Email.
+  <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"mailStop\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Employee
+  mail stop.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"mobilePhone\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Mobile
+  phone number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"pager\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Employee
+  pager number.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Phone
+  number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"phoneExtension\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Phone
+  number extension.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Postal
+  code.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"State
+  or province.<br  /> Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:15:\"workEligibility\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:49:\"Add
+  or update I-9 work authorization information.\";s:10:\"properties\";O:8:\"stdClass\":14:{s:30:\"alienOrAdmissionDocumentNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Employee
+  USCIS or Admission Number. <br  /> Must be 7-10 characters and may begin with an
+  'A'\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"attestedDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:134:\"The
+  date the I-9 Verification form was attested by Employer or Authorized representative.
+  Common formats are *MM-DD-CCYY, CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:17:\"countryOfIssuance\";O:8:\"stdClass\":2:{s:11:\"description\";s:122:\"If
+  Foreign Passport number is provided, provide its country of issuance. Must match
+  Paylocity setup.<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:21:\"foreignPassportNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Foreign
+  Passport Number.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"i94AdmissionNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Form
+  I-94 admission number.<br  /> Must be 11 numeric characters\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"i9DateVerified\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"Common
+  formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"i9Notes\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Notes
+  regarding employee's i9.<br  /> Max length: 4000\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"isI9Verified\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Indicates
+  if employee I9 is verified.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"isSsnVerified\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Indicates
+  if employee SSN is verified.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:15:\"ssnDateVerified\";O:8:\"stdClass\":3:{s:11:\"description\";s:101:\"The
+  date of employer verification of employee SSN. Common formats include *MM-DD-CCYY*,
+  *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"ssnNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Notes
+  regarding employee's SSN.<br  /> Max length: 4000\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"visaType\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Employee
+  Visa type. Must match one of the system coded values.<br  /> Max length: 100\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:17:\"workAuthorization\";O:8:\"stdClass\":2:{s:11:\"description\";s:94:\"Employee
+  work authorization. Must match one of the system coded values.<br  /> Max length:
+  100\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"workUntil\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"End
+  date of employee work eligibility.  Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}}s:4:\"type\";s:6:\"object\";}s:18:\"employeeIdResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:29:\"The
+  EmployeeId Response Model\";s:10:\"properties\";O:8:\"stdClass\":1:{s:10:\"employeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  EmployeeId\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:5:\"error\";O:8:\"stdClass\":3:{s:11:\"description\";s:15:\"The
+  error model\";s:10:\"properties\";O:8:\"stdClass\":4:{s:5:\"field\";O:8:\"stdClass\":2:{s:11:\"description\";s:81:\"The
+  name of the field, or property in the request message that contains an error.\";s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:18:\"The
+  error message.\";s:4:\"type\";s:6:\"string\";}s:7:\"options\";O:8:\"stdClass\":3:{s:11:\"description\";s:136:\"A
+  list of options associated with this error. These options may indicate valid values
+  for the field, or property that contains an error.\";s:5:\"items\";O:8:\"stdClass\":3:{s:11:\"description\";s:22:\"The
+  error option model\";s:10:\"properties\";O:8:\"stdClass\":2:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  code associated with this option.\";s:4:\"type\";s:6:\"string\";}s:11:\"description\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"The
+  description of the option.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:4:\"type\";s:5:\"array\";}s:4:\"path\";O:8:\"stdClass\":2:{s:11:\"description\";s:87:\"The
+  JSON path of the field, or property, that contains an error in the request message.\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:8:\"localTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:19:\"The
+  Local Tax model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Local
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Local
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Employee
+  local tax filing status. Must match specific local tax setup. <br  /> Max length:
+  50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"residentPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:106:\"Resident
+  PSD (political subdivision code) applicable in PA. Must match Company setup.<br
+  \ /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Local
+  tax code.<br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"workPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Work
+  location PSD. Must match Company setup. <br  /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:18:\"nonPrimaryStateTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:31:\"The
+  Non-Primary State Tax model\";s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:15:\"reciprocityCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Non-primary
+  state tax reciprocity code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:14:\"stagedEmployee\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:25:\"The
+  staged employee model\";s:10:\"properties\";O:8:\"stdClass\":45:{s:23:\"additionalDirectDeposit\";O:8:\"stdClass\":4:{s:11:\"description\";s:182:\"Add
+  up to 4 direct deposit accounts in addition to the main direct deposit account.
+  Direct deposit is only available when inserting the employee's initial direct deposit
+  information.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:35:\"The
+  additional direct deposit model\";s:10:\"properties\";O:8:\"stdClass\":7:{s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:90:\"Account
+  number, entered without special characters and spaces. <br  />Max length: 17<br
+  />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"accountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:104:\"Account
+  type. Valid values are *C* (Checking), *S* (Saving), *P* (Pay Card). <br   />Max
+  length: 1<br />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"Amount
+  value to be deposited to the account.<br  />Decimal (12,2)<br />\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"amountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"Amount
+  type to indicate the context of the amount. Common values are *F* (FLAT), *F-* (Net
+  Minus), *P* (Percent). <br  /> Max length: 5<br />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"isSkipPreNote\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Indicates
+  if account will not pre-note.<br />\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:11:\"preNoteDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"Date
+  to end the pre-note of the account. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.<br
+  />\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"routingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:88:\"ABA
+  Transit Routing Number, entered without dashes or spaces. <br  />Max length: 9<br
+  />\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:4;s:4:\"type\";s:5:\"array\";}s:12:\"benefitSetup\";O:8:\"stdClass\":4:{s:11:\"description\";s:100:\"Add
+  setup values used for employee benefits integration, insurance plan settings, and
+  ACA reporting.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:23:\"The
+  benefit setup model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:12:\"benefitClass\";O:8:\"stdClass\":2:{s:11:\"description\";s:111:\"Benefit
+  Class code. Values are configured in Web Pay Company > Setup > Benefits > Classes.<br
+  \ />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:25:\"benefitClassEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:88:\"Date
+  when Benefit Class takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"benefitSalary\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Salary
+  used to configure benefits.<br  />Decimal(12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:26:\"benefitSalaryEffectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:89:\"Date
+  when Benefit Salary takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:30:\"doNotApplyAdministrativePeriod\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"Applicable
+  only for ACA Enhanced clients and Benefit Classes with ACA Employment Type of Full
+  Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:23:\"isMeasureAcaEligibility\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Only
+  valid for ACA Enhanced clients and Benefit Classes that are ACA Employment Type
+  of Full Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:9:\"birthDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:70:\"Employee
+  birthdate. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"customBooleanFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:55:\"Up
+  to 8 custom fields of boolean (checkbox) type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:140:\"The
+  custom field label whose value is to be added/updated. Must match to the label defined
+  in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:31:\"The
+  custom boolean field value.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:16:\"customDateFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:45:\"Up
+  to 8 custom fields of the date type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":3:{s:11:\"description\";s:76:\"The
+  custom date field value.  Common formats include MM-DD-CCYY, CCYY-MM-DD.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:20:\"customDropDownFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:49:\"Up
+  to 8 custom fields of the dropdown type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:160:\"The
+  custom dropdown field value.  Values are configured in Web Pay Company > Setup >
+  List Values > Lookup Values > Custom Fields: PayrollAndHR.  Max length: 10.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:18:\"customNumberFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:44:\"Up
+  to 8 custom fields of numeric type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:47:\"The
+  custom number field value.  Decimal (18,6).\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:16:\"customTextFields\";O:8:\"stdClass\":4:{s:11:\"description\";s:41:\"Up
+  to 8 custom fields of text type value.\";s:5:\"items\";O:8:\"stdClass\":5:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:0:\"\";s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"category\";O:8:\"stdClass\":3:{s:11:\"description\";s:63:\"The
+  custom field category.  Acceptable value is 'PayrollAndHR'.\";s:4:\"enum\";a:1:{i:0;s:12:\"PayrollAndHR\";}s:4:\"type\";s:6:\"string\";}s:5:\"label\";O:8:\"stdClass\":2:{s:11:\"description\";s:141:\"The
+  custom field label whose value is to be added/updated.  Must match to the label
+  defined in Web Pay Custom Fields setup.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"value\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"The
+  custom text field value.  Max length: 255.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:8:\"required\";a:3:{i:0;s:8:\"category\";i:1;s:5:\"label\";i:2;s:5:\"value\";}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:8;s:4:\"type\";s:5:\"array\";}s:18:\"departmentPosition\";O:8:\"stdClass\":4:{s:11:\"description\";s:129:\"Add
+  home department cost center, position, supervisor, reviewer, employment type, EEO
+  class, pay settings, and union information.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:29:\"The
+  Department Position model\";s:10:\"properties\";O:8:\"stdClass\":24:{s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"Employee
+  department/position change reason. Must match Company setup. <br  />Max length:
+  15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"clockBadgeNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"Employee
+  clock badge number. Defaults to employeeId. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter1\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter2\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"costCenter3\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employer
+  defined location, like *branch, division, department*, etc. Must match Company setup.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:86:\"The
+  date the position takes effect. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"employeeType\";O:8:\"stdClass\":2:{s:11:\"description\";s:191:\"Employee
+  current employment type. Common values *RFT (Regular Full Time), RPT (Regular Part
+  Time), SNL (Seasonal), TFT (Temporary Full Time), TPT (Temporary Part Time)*. <br
+  \ />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:31:\"equalEmploymentOpportunityClass\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Values
+  are configured in Company > Setup > HR > EEO Classes.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"isMinimumWageExempt\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Indicates
+  if employee is exempt from minimum wage.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:16:\"isOvertimeExempt\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Indicates
+  if employee is exempt from overtime.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:20:\"isSupervisorReviewer\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Indicates
+  if employee is a supervisor or reviewer.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:20:\"isUnionDuesCollected\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Indicates
+  if union dues are collected.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:26:\"isUnionInitiationCollected\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Indicates
+  if initiations fees are collected.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:8:\"jobTitle\";O:8:\"stdClass\":2:{s:11:\"description\";s:49:\"Employee
+  current job title. <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"payGroup\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  pay group. Must match Company setup. <br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"positionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:70:\"Employee
+  position code. Must match Company setup.<br  />Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"shift\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Employee
+  work shift.<br  />Max length: 255\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:23:\"supervisorCompanyNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Supervisor's
+  company number. Defaults to employee company number.<br  />Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:20:\"supervisorEmployeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"EmployeeId
+  of the supervisor. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"tipped\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Indicates
+  if employee receives tips.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:20:\"unionAffiliationDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:93:\"Employee
+  union affiliation effective date. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"unionCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  union code. Must match Company setup. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"unionPosition\";O:8:\"stdClass\":2:{s:11:\"description\";s:72:\"Employee
+  union position. Must match Company setup. <br  />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"workersCompensation\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"Employee
+  worker compensation code. Must match Company setup.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:21:\"disabilityDescription\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Indicates
+  if employee has disability status.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"employeeId\";O:8:\"stdClass\":2:{s:11:\"description\";s:102:\"Leave
+  blank to have Web Pay automatically assign the next available employee ID.<br  />
+  Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"ethnicity\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Employee
+  ethnicity.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"federalTax\";O:8:\"stdClass\":4:{s:11:\"description\";s:102:\"Add
+  federal tax amount type (taxCalculationCode), amount or percentage, filing status,
+  and exemptions.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:21:\"The
+  Federal Tax model\";s:10:\"properties\";O:8:\"stdClass\":5:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:33:\"Tax
+  amount. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Federal
+  tax exemptions value. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:99:\"Employee
+  federal filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Tax
+  percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:9:\"firstName\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Employee
+  first name. <br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"fitwExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:124:\"Reason
+  code for FITW exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"futaExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:134:\"Reason
+  code for FUTA exemption. Common values are *501* (5019c)(3) Organization), *IC*
+  (Independent Contractor).<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"gender\";O:8:\"stdClass\":2:{s:11:\"description\";s:77:\"Employee
+  gender. Common values *M* (Male), *F* (Female). <br  />Max length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"homeAddress\";O:8:\"stdClass\":4:{s:11:\"description\";s:72:\"Add
+  employee's home address, personal phone numbers, and personal email.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:17:\"The
+  address model\";s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"address1\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"1st
+  address line.<br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"address2\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"2nd
+  address line. <br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"City.<br
+  \ /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Country.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"county\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"County.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"emailAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Email.
+  <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"mobilePhone\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Mobile
+  phone number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Phone
+  number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Postal
+  code.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"State
+  or province.<br  /> Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:13:\"isEmployee943\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Indicates
+  if employee in agriculture or farming.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:8:\"isSmoker\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Indicates
+  if employee is a smoker.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:8:\"lastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:41:\"Employee
+  last name. <br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"localTax\";O:8:\"stdClass\":4:{s:11:\"description\";s:73:\"Add
+  local tax code, filing status, and exemptions including PA-PSD taxes.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:19:\"The
+  Local Tax model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"Local
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"Local
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Employee
+  local tax filing status. Must match specific local tax setup. <br  /> Max length:
+  50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"residentPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:106:\"Resident
+  PSD (political subdivision code) applicable in PA. Must match Company setup.<br
+  \ /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:36:\"Local
+  tax code.<br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"workPSD\";O:8:\"stdClass\":2:{s:11:\"description\";s:66:\"Work
+  location PSD. Must match Company setup. <br  /> Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:5;s:4:\"type\";s:5:\"array\";}s:17:\"mainDirectDeposit\";O:8:\"stdClass\":4:{s:11:\"description\";s:275:\"Add
+  the main direct deposit account. After deposits are made to any additional direct
+  deposit accounts, the remaining net check is deposited in the main direct deposit
+  account. Direct deposit is only available when inserting the employee's initial
+  direct deposit information.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:29:\"The
+  Main Direct Deposit model\";s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"accountNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:84:\"Account
+  number, entered without special characters and spaces. <br  />Max length: 17\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"accountType\";O:8:\"stdClass\":2:{s:11:\"description\";s:98:\"Account
+  type. Valid values are *C* (Checking), *S* (Saving), *P* (Pay Card). <br   />Max
+  length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"isSkipPreNote\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"Indicates
+  if account will not pre-note.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:11:\"preNoteDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:91:\"Date
+  to end the pre-note of the account. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"routingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:82:\"ABA
+  Transit Routing Number, entered without dashes or spaces. <br  />Max length: 9\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:13:\"maritalStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:114:\"Employee
+  marital status. Common values *D (Divorced), M (Married), S (Single), W (Widowed)*.
+  <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"medExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:138:\"Reason
+  code for Medicare exemption. Common values are *501* (5019c)(3) Organization), *IC*
+  (Independent Contractor).<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"middleName\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"Employee
+  middle name.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"nonPrimaryStateTax\";O:8:\"stdClass\":4:{s:11:\"description\";s:187:\"Add
+  non-primary state tax code, amount type (taxCalculationCode), amount or percentage,
+  filing status, exemptions, supplemental check (specialCheckCalc), and reciprocity
+  code information.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:31:\"The
+  Non-Primary State Tax model\";s:10:\"properties\";O:8:\"stdClass\":9:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:15:\"reciprocityCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:61:\"Non-primary
+  state tax reciprocity code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:13:\"preferredName\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Employee
+  preferred display name.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"primaryPayRate\";O:8:\"stdClass\":4:{s:11:\"description\";s:65:\"Add
+  hourly or salary pay rate, effective date, and pay frequency.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:26:\"The
+  Primary Pay Rate model\";s:10:\"properties\";O:8:\"stdClass\":10:{s:8:\"baseRate\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  base rate, used for Hourly employees. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Pay
+  rate change reason.<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"defaultHours\";O:8:\"stdClass\":2:{s:11:\"description\";s:154:\"Employee
+  default hours consistently worked. If autoPayType is set to D, employee will be
+  paid hourly base rate for the defaultHours. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:97:\"The
+  date the employee's pay rate takes effect. Common formats include *MM-DD-CCYY*,
+  *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"isAutoPay\";O:8:\"stdClass\":2:{s:11:\"description\";s:73:\"If
+  set to *True*, employee will be paid automatically using deafultHours.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:12:\"payFrequency\";O:8:\"stdClass\":2:{s:11:\"description\";s:168:\"Employee
+  current pay frequency. Common values are *A (Annual), B (Bi-Weekly), D (Daily),
+  M (Monthly), S (Semi-Monthly), Q (Quarterly), W (Weekly)*. <br  />Max length: 5\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"payGrade\";O:8:\"stdClass\":2:{s:11:\"description\";s:68:\"Employee
+  pay grade. Must match Company setup. <br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"payType\";O:8:\"stdClass\":2:{s:11:\"description\";s:91:\"Employee
+  pay type (rate code). Valid values are *Hourly* or *Salary*. <br  />Max length:
+  10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"ratePer\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"Employee
+  base rate frequency used with payType Hourly. Common values are *Hour, Week*. Default
+  is Hour. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"salary\";O:8:\"stdClass\":2:{s:11:\"description\";s:83:\"Employee
+  gross salary per pay period used with payType Salary.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:15:\"primaryStateTax\";O:8:\"stdClass\":4:{s:11:\"description\";s:200:\"Add
+  primary state tax code, amount type (taxCalculationCode), amount or percentage,
+  filing status, exemptions, and supplemental check (specialCheckCalc) information.
+  Only one primary state is allowed.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:19:\"The
+  State Tax model\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:13:\"priorLastName\";O:8:\"stdClass\":2:{s:11:\"description\";s:51:\"Prior
+  last name if applicable.<br  />Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"salutation\";O:8:\"stdClass\":2:{s:11:\"description\";s:52:\"Employee
+  preferred salutation. <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:16:\"sitwExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:124:\"Reason
+  code for SITW exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"ssExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:135:\"Reason
+  code for Social Security exemption. Common values are *SE* (Statutory employee),
+  *CR* (clergy/Religious). <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:3:\"ssn\";O:8:\"stdClass\":2:{s:11:\"description\";s:116:\"Employee
+  social security number. Leave it blank if valid social security number not available.
+  <br  />Max length: 11\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"status\";O:8:\"stdClass\":4:{s:11:\"description\";s:163:\"Add
+  employee status, change reason, effective date, and adjusted seniority date. Note
+  that companies that are still in Implementation cannot hire future employees.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:25:\"The
+  employee status model\";s:10:\"properties\";O:8:\"stdClass\":6:{s:21:\"adjustedSeniorityDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:75:\"Adjusted
+  seniority date. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"changeReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:78:\"Employee
+  status change reason. Must match Company setup.<br  /> Max length: 15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:13:\"effectiveDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"Common
+  formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"employeeStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:125:\"Employee
+  current work status. Common values are *A* (Active), *L* (Leave of Absence), *T*
+  (Terminated). <br  />Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"hireDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:71:\"Employee
+  hired date. Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:19:\"isEligibleForRehire\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Indicates
+  if employee eligible for rehire.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:6:\"suffix\";O:8:\"stdClass\":2:{s:11:\"description\";s:74:\"Employee
+  name suffix. Common values are *Jr, Sr, II*.<br  />Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:15:\"suiExemptReason\";O:8:\"stdClass\":2:{s:11:\"description\";s:123:\"Reason
+  code for SUI exemption. Common values are *SE* (Statutory employee), *CR* (clergy/Religious).
+  <br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"suiState\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"Employee
+  SUI (State Unemployment Insurance) state. <br  />Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:24:\"taxDistributionCode1099R\";O:8:\"stdClass\":2:{s:11:\"description\";s:130:\"Employee
+  1099R distribution code. Common values are *7* (Normal Distribution), *F* (Charitable
+  Gift Annuity). <br  />Max length: 1\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxForm\";O:8:\"stdClass\":2:{s:11:\"description\";s:113:\"Employee
+  tax form for reporting income. Valid values are *W2, 1099M, 1099R*. Default is W2.
+  <br  />Max length: 15\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"veteranDescription\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Indicates
+  if employee is a veteran.\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"webTime\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:93:\"Add
+  Web Time badge number and charge rate and synchronize Web Pay and Web Time employee
+  data.\";s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"badgeNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Badge
+  number usually issued for time and attendance system use. <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"chargeRate\";O:8:\"stdClass\":2:{s:11:\"description\";s:237:\"Rate
+  to be charged to third party for time worked by the employee. It is most commonly
+  referenced in the Cost Center Charge, Cost Center Charge vs. Cost Reports, and the
+  Customer Invoice time and attendance reports. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:18:\"isTimeLaborEnabled\";O:8:\"stdClass\":2:{s:11:\"description\";s:71:\"If
+  set to true, changes to employee data will be reflected in Web Time.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:11:\"workAddress\";O:8:\"stdClass\":4:{s:11:\"description\";s:101:\"Add
+  employee's work address, phone numbers, and email. Work Location drop down field
+  is not included.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:17:\"The
+  address model\";s:10:\"properties\";O:8:\"stdClass\":12:{s:8:\"address1\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"1st
+  address line.<br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"address2\";O:8:\"stdClass\":2:{s:11:\"description\";s:40:\"2nd
+  address line. <br  /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:4:\"city\";O:8:\"stdClass\":2:{s:11:\"description\";s:27:\"City.<br
+  \ /> Max length: 40\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"country\";O:8:\"stdClass\":2:{s:11:\"description\";s:30:\"Country.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:6:\"county\";O:8:\"stdClass\":2:{s:11:\"description\";s:29:\"County.<br
+  \ /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"emailAddress\";O:8:\"stdClass\":2:{s:11:\"description\";s:28:\"Email.
+  <br  />Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:11:\"mobilePhone\";O:8:\"stdClass\":2:{s:11:\"description\";s:42:\"Mobile
+  phone number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"pager\";O:8:\"stdClass\":2:{s:11:\"description\";s:44:\"Employee
+  pager number.<br  /> Max length: 20\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"phone\";O:8:\"stdClass\":2:{s:11:\"description\";s:35:\"Phone
+  number.<br  /> Max length: 12\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"phoneExtension\";O:8:\"stdClass\":2:{s:11:\"description\";s:45:\"Phone
+  number extension.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"postalCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:34:\"Postal
+  code.<br  /> Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:5:\"state\";O:8:\"stdClass\":2:{s:11:\"description\";s:39:\"State
+  or province.<br  /> Max length: 2\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}s:15:\"workEligibility\";O:8:\"stdClass\":4:{s:11:\"description\";s:39:\"Add
+  I-9 work authorization information.\";s:5:\"items\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:26:\"The
+  Work Eligibility model\";s:10:\"properties\";O:8:\"stdClass\":14:{s:30:\"alienOrAdmissionDocumentNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:93:\"Employee
+  USCIS or Admission Number. <br  /> Must be 7-10 characters and may begin with an
+  'A'\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"attestedDate\";O:8:\"stdClass\":3:{s:11:\"description\";s:134:\"The
+  date the I-9 Verification form was attested by Employer or Authorized representative.
+  Common formats are *MM-DD-CCYY, CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:17:\"countryOfIssuance\";O:8:\"stdClass\":2:{s:11:\"description\";s:122:\"If
+  Foreign Passport number is provided, provide its country of issuance. Must match
+  Paylocity setup.<br  /> Max length: 30\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:21:\"foreignPassportNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"Foreign
+  Passport Number.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"i94AdmissionNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:64:\"Form
+  I-94 admission number.<br  /> Must be 11 numeric characters\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:14:\"i9DateVerified\";O:8:\"stdClass\":3:{s:11:\"description\";s:50:\"Common
+  formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"i9Notes\";O:8:\"stdClass\":2:{s:11:\"description\";s:54:\"Notes
+  regarding employee's i9.<br  /> Max length: 4000\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:12:\"isI9Verified\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"Indicates
+  if employee I9 is verified.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:13:\"isSsnVerified\";O:8:\"stdClass\":2:{s:11:\"description\";s:38:\"Indicates
+  if employee SSN is verified.\";s:4:\"type\";a:2:{i:0;s:7:\"boolean\";i:1;s:4:\"null\";}}s:15:\"ssnDateVerified\";O:8:\"stdClass\":3:{s:11:\"description\";s:101:\"The
+  date of employer verification of employee SSN. Common formats include *MM-DD-CCYY*,
+  *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"ssnNotes\";O:8:\"stdClass\":2:{s:11:\"description\";s:55:\"Notes
+  regarding employee's SSN.<br  /> Max length: 4000\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:8:\"visaType\";O:8:\"stdClass\":2:{s:11:\"description\";s:85:\"Employee
+  Visa type. Must match one of the system coded values.<br  /> Max length: 100\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:17:\"workAuthorization\";O:8:\"stdClass\":2:{s:11:\"description\";s:94:\"Employee
+  work authorization. Must match one of the system coded values.<br  /> Max length:
+  100\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:9:\"workUntil\";O:8:\"stdClass\":3:{s:11:\"description\";s:90:\"End
+  date of employee work eligibility.  Common formats include *MM-DD-CCYY*, *CCYY-MM-DD*.\";s:6:\"format\";s:14:\"paylocity-date\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:8:\"maxItems\";i:1;s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:8:\"stateTax\";O:8:\"stdClass\":4:{s:20:\"additionalProperties\";b:0;s:11:\"description\";s:19:\"The
+  State Tax model\";s:10:\"properties\";O:8:\"stdClass\":8:{s:6:\"amount\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:10:\"exemptions\";O:8:\"stdClass\":2:{s:11:\"description\";s:48:\"State
+  tax exemptions value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:11:\"exemptions2\";O:8:\"stdClass\":2:{s:11:\"description\";s:50:\"State
+  tax exemptions 2 value.<br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:12:\"filingStatus\";O:8:\"stdClass\":2:{s:11:\"description\";s:101:\"Employee
+  state tax filing status. Common values are *S* (Single), *M* (Married).<br  />Max
+  length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:10:\"percentage\";O:8:\"stdClass\":2:{s:11:\"description\";s:43:\"State
+  Tax percentage. <br  />Decimal (12,2)\";s:4:\"type\";a:2:{i:0;s:6:\"number\";i:1;s:4:\"null\";}}s:16:\"specialCheckCalc\";O:8:\"stdClass\":2:{s:11:\"description\";s:167:\"Supplemental
+  check calculation code. Common values are *Blocked* (Taxes blocked on Supplemental
+  checks), *Supp* (Use supplemental Tax Rate-Code). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:18:\"taxCalculationCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:142:\"Tax
+  calculation code. Common values are *F* (Flat), *P* (Percentage), *FDFP* (Flat Dollar
+  Amount plus Fixed Percentage). <br  />Max length: 10\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}s:7:\"taxCode\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"State
+  tax code.<br  /> Max length: 50\";s:4:\"type\";a:2:{i:0;s:6:\"string\";i:1;s:4:\"null\";}}}s:4:\"type\";s:6:\"object\";}s:22:\"trackingNumberResponse\";O:8:\"stdClass\":3:{s:11:\"description\";s:34:\"The
+  Tracking Number Response model\";s:10:\"properties\";O:8:\"stdClass\":1:{s:14:\"trackingNumber\";O:8:\"stdClass\":2:{s:11:\"description\";s:26:\"The
+  unique tracking number\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}}"
+...

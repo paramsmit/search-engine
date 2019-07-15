@@ -1,0 +1,344 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":10:{s:7:\"contact\";O:8:\"stdClass\":4:{s:5:\"email\";s:24:\"platform@williamhill.com\";s:4:\"name\";s:17:\"William
+  Hill Labs\";s:3:\"url\";s:32:\"http://developer.williamhill.com\";s:9:\"x-twitter\";s:11:\"WilliamHill\";}s:11:\"description\";s:1999:\"The
+  William Hill Sessions API uses a central authentication service (CAS*) on all resources
+  that require access to a customer\u2019s account or betting functionality. To authenticate,
+  you\u2019ll need to supply a sportsbook username and password, in return you will
+  be given an authentication ticket, which you can use on the majority of requests
+  found within our services. <br /><br /><br /> The Sessions API should be used whenever
+  you want to login a customer and:<br /><br /> <ul> <li>continue to use the William
+  Hill API for that customer\u2019s transactions</li> <li>use other CAS-enabled William
+  Hill services outside the suite of APIs</li> </ul> <br /> CAS is an enterprise Single
+  Sign-On solution for web services (see https://wiki.jasig.org/display/CAS/Home).
+  It is used by many William Hill services. <br /> Note: all requests must be executed
+  over HTTPS and include an API key and secret.<br /><br /><br /> <b>Authentication
+  Ticket Expiration Times</b><br /><br /> When a customer is logged in using the Sessions
+  API, they are given an Authentication Ticket; using this ticket on subsequent API
+  requests gives you access to account activities (such as placing a bet, deposits,
+  etc). However, this ticket is only valid for a given period of time depending on
+  how it is used. If the ticket is used and then has a period of inactivity longer
+  than 7,200 seconds (2 hours), then the ticket will expire and further requests using
+  the ticket will be denied - in effect, a customer has been logged out and will need
+  to authenticate again. <br /><br /><br /> Normally, any ticket issued only has a
+  maximum life expectancy of 28,000 seconds (8 hours) after which it can no longer
+  be used, even if it has been used regularly. The customer again will be effectively
+  logged out and will need to authenticate again. If you wish to avoid this, you need
+  to set the query parameter extended to Y, which will enable your application to
+  generate a ticket valid for 60 days without expiring due to inactivity. <br />\";s:5:\"title\";s:8:\"Sessions\";s:7:\"version\";s:5:\"2.0.0\";s:21:\"x-apisguru-categories\";a:1:{i:0;s:13:\"entertainment\";}s:6:\"x-logo\";O:8:\"stdClass\":1:{s:3:\"url\";s:85:\"https://api.apis.guru/v2/cache/logo/https_twitter.com_WillHillHelp_profile_image.jpeg\";}s:8:\"x-origin\";a:1:{i:0;O:8:\"stdClass\":3:{s:6:\"format\";s:7:\"swagger\";s:3:\"url\";s:73:\"https://developer.williamhill.com/wh-docs/docs-sdks/sessions/swagger/docs\";s:7:\"version\";s:3:\"2.0\";}}s:11:\"x-preferred\";b:1;s:14:\"x-providerName\";s:9:\"whapi.com\";s:13:\"x-serviceName\";s:8:\"sessions\";}"
+host: sandbox.whapi.com
+basePath: /v2/sessions
+paths:
+  /tickets:
+    post:
+      consumes:
+      - application/json
+      description: 'Logs in a customer by obtaining an authentication ticket. It can
+        then be used directly with the other William Hill APIs to access a customeru2019s
+        sportsbook account, place a bet, etc. '
+      operationId: logIn
+      parameters:
+      - description: Another unique identifier for your application.
+        in: header
+        name: apiSecret
+        pattern: ^[a-zA-Z0-9]{19,50}$
+        required: true
+        type: string
+        x-eg: l7xxa54460c573b5497c9b24b505xxxxxxxx
+      - collectionFormat: csv
+        description: Specify an absolute field list to return (Comma Separated List)
+        in: query
+        items:
+          type: string
+        name: fields
+        required: false
+        type: array
+        x-eg: extended
+      - collectionFormat: csv
+        description: Specify fields in addition to the default to return (Comma Separated
+          List)
+        in: query
+        items:
+          type: string
+        name: include
+        required: false
+        type: array
+        x-eg: extended
+      - collectionFormat: csv
+        description: Specify fields from the default to exclude (Comma Separated List)
+        in: query
+        items:
+          type: string
+        name: exclude
+        required: false
+        type: array
+        x-eg: expiryDateTime
+      - description: Login request object
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/loginRequest'
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/session'
+        401:
+          description: Login - failed
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+        403:
+          description: Forbidden
+          examples:
+            application/json:
+              errors:
+              - code: "20503"
+                message: Account under self-exclusion
+              - code: "20504"
+                message: Account locked.
+              - code: "20505"
+                message: Account inactive.
+              - code: "20506"
+                message: Account closed.
+              - code: "20507"
+                message: Age verification required.
+              - code: "20508"
+                message: Account under self-exclusion, reactivation available.
+              - code: "20509"
+                message: Timeout applied.
+              - code: "20503"
+                message: Account under self-exclusion
+              - code: "20512"
+                message: Account Suspended
+              - code: "20513"
+                message: Max Linked Accounts
+              - code: "20514"
+                message: Account Closed By Player
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+        404:
+          description: Application metadata not configured correctly
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+      summary: Logs in a customer and obtains an authentication ticket.
+      tags:
+      - Sessions
+      x-canReturnErrors:
+      - 20501
+      - 20503
+      - 20504
+      - 20505
+      - 20506
+      - 20507
+      - 20508
+      - 20509
+      - 20512
+      - 20513
+      - 20514
+  /tickets/{tgt}:
+    delete:
+      description: Logs out a customer.
+      operationId: logOut
+      parameters:
+      - description: Another unique identifier for your application.
+        in: header
+        name: apiSecret
+        pattern: ^[a-zA-Z0-9]{19,50}$
+        required: true
+        type: string
+        x-eg: l7xxa54460c573b5497c9b24b505xxxxxxxx
+      - description: Ticket Granting Ticket obtained from a previous request
+        in: path
+        name: tgt
+        pattern: ^[a-zA-Z][a-zA-Z0-9-]{39,100}$
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success - Logout
+          schema:
+            $ref: '#/definitions/logoutresponse'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+        404:
+          description: Resource Not Found
+          examples:
+            application/json:
+              errors:
+              - code: "20511"
+                field: target
+                message: TGT ticket could not be found.
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+      summary: Log out a customer.
+      tags:
+      - Sessions
+      x-canReturnErrors:
+      - 20511
+    get:
+      description: Checks the validity of a session ticket.
+      operationId: validateSession
+      parameters:
+      - description: Another unique identifier for your application.
+        in: header
+        name: apiSecret
+        pattern: ^[a-zA-Z0-9]{19,50}$
+        required: true
+        type: string
+        x-eg: l7xxa54460c573b5497c9b24b505xxxxxxxx
+      - description: Ticket Granting Ticket obtained from a previous request
+        in: path
+        name: tgt
+        pattern: ^[a-zA-Z][a-zA-Z0-9-]{39,100}$
+        required: true
+        type: string
+      responses:
+        200:
+          description: The validity status of the tgt
+          examples:
+            application/json:
+              valid: true
+          schema:
+            $ref: '#/definitions/ticketvalidityresponse'
+        404:
+          description: Resource Not Found
+          examples:
+            application/json:
+              errors:
+              - code: "20511"
+                field: target
+                message: TGT ticket could not be found.
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+      summary: Checks the validity of a session ticket.
+      tags:
+      - Sessions
+      x-canReturnErrors:
+      - 20511
+  /tickets/{tgt}/serviceTicket:
+    get:
+      description: Obtains a one-time Service Ticket that can be used to access other
+        CAS enabled William Hill services that are not available through the standard
+        suite of APIs. You first need to have logged in a customer to obtain an Authentication
+        Ticket.
+      operationId: getServiceTicket
+      parameters:
+      - description: Another unique identifier for your application.
+        in: header
+        name: apiSecret
+        pattern: ^[a-zA-Z0-9]{19,50}$
+        required: true
+        type: string
+        x-eg: l7xxa54460c573b5497c9b24b505xxxxxxxx
+      - description: Ticket Granting Ticket obtained from a previous request
+        in: path
+        name: tgt
+        pattern: ^[a-zA-Z][a-zA-Z0-9-]{39,100}$
+        required: true
+        type: string
+      - description: The target URL of the CAS enabled service that you want to use
+          with the service ticket.
+        in: query
+        name: target
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: Specify an absolute field list to return (Comma Separated List)
+        in: query
+        items:
+          type: string
+        name: fields
+        required: false
+        type: array
+        x-eg: extended
+      - collectionFormat: csv
+        description: Specify fields in addition to the default to return (Comma Separated
+          List)
+        in: query
+        items:
+          type: string
+        name: include
+        required: false
+        type: array
+        x-eg: extended
+      - collectionFormat: csv
+        description: Specify fields from the default to exclude (Comma Separated List)
+        in: query
+        items:
+          type: string
+        name: exclude
+        required: false
+        type: array
+        x-eg: expiryDateTime
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success - Service Ticket created
+          examples:
+            application/json:
+              location: http://www.example.com/
+              ticket: ST-861-kM1s6zg4QBb6xf4CF4oe-brsux349
+          schema:
+            $ref: '#/definitions/serviceTicket'
+        403:
+          description: Forbidden
+          examples:
+            application/json:
+              errors:
+              - code: "20510"
+                field: target
+                message: Target service not established
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+        404:
+          description: Resource Not Found
+          examples:
+            application/json:
+              errors:
+              - code: "20511"
+                field: target
+                message: TGT ticket could not be found.
+          schema:
+            $ref: '#/definitions/sessionsErrors'
+      summary: Obtains a one-time Service Ticket that can be used to access other
+        William Hill services.
+      tags:
+      - Sessions
+      x-canReturnErrors:
+      - 20501
+      - 20511
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":7:{s:5:\"error\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:11:\"description\";s:46:\"A
+  unique William Hill identifier for the error\";s:4:\"type\";s:6:\"string\";}s:5:\"field\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"To
+  help pinpoint the exact parameter where a request has failed\";s:4:\"type\";s:6:\"string\";}s:7:\"message\";O:8:\"stdClass\":2:{s:11:\"description\";s:69:\"A
+  unique William Hill text string to enable you to identify the error\";s:4:\"type\";s:6:\"string\";}}s:4:\"type\";s:6:\"object\";}s:12:\"loginRequest\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":3:{s:8:\"extended\";O:8:\"stdClass\":3:{s:7:\"default\";b:0;s:11:\"description\";s:443:\"Whether
+  extended login or normal login is required. If the parameter is set to Y your application
+  will generate an authentication ticket valid for a period of 60 days, without expiring
+  due to inactivity. If the parameter is left blank or set to N this means your application
+  will support the normal expiry times for tickets: The ticket expires after 2 hours
+  of inactivity. The ticket is valid for a maximum of 8 hours after it has been issued.\";s:4:\"type\";s:7:\"boolean\";}s:8:\"password\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Customer
+  Password\";s:7:\"pattern\";s:22:\"^[a-zA-Z0-9_\\-]{6,15}$\";s:4:\"type\";s:6:\"string\";}s:8:\"username\";O:8:\"stdClass\":3:{s:11:\"description\";s:17:\"Customer
+  Username\";s:7:\"pattern\";s:25:\"^[A-Za-z0-9_@\\ \\.]{5,15}$\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:8:\"password\";i:1;s:8:\"username\";}s:4:\"type\";s:6:\"object\";}s:14:\"logoutresponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:7:\"success\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}s:13:\"serviceTicket\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":2:{s:8:\"location\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"This
+  is the URL of the target service sent in the request. This is a combination of the
+  endpoint and the ticket for future operations such as DELETE.\";s:4:\"type\";s:6:\"string\";}s:6:\"ticket\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  TGT ticket\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:1:{i:0;s:6:\"ticket\";}s:4:\"type\";s:6:\"object\";}s:7:\"session\";O:8:\"stdClass\":3:{s:10:\"properties\";O:8:\"stdClass\":6:{s:14:\"expiryDateTime\";O:8:\"stdClass\":2:{s:11:\"description\";s:37:\"The
+  UTC time when the ticket expires.\";s:4:\"type\";s:6:\"string\";}s:8:\"extended\";O:8:\"stdClass\":2:{s:11:\"description\";s:186:\"The
+  value you have selected previous to executing the request. If the value is Y, this
+  enables your application to generate a ticket valid for 60 days without expiring
+  due to inactivity.\";s:4:\"type\";s:7:\"boolean\";}s:8:\"location\";O:8:\"stdClass\":2:{s:11:\"description\";s:149:\"This
+  is the URL of the target service sent in the request. This is a combination of the
+  endpoint and the ticket for future operations such as DELETE.\";s:4:\"type\";s:6:\"string\";}s:17:\"temporaryPassword\";O:8:\"stdClass\":2:{s:11:\"description\";s:117:\"Indicates
+  that the account has a temporary password set and hence the user must be prompted
+  to change their password.\";s:4:\"type\";s:7:\"boolean\";}s:20:\"temporaryPasswordUrl\";O:8:\"stdClass\":2:{s:11:\"description\";s:63:\"Url
+  for user to change password. A TGT must be added to the URL\";s:4:\"type\";s:6:\"string\";}s:6:\"ticket\";O:8:\"stdClass\":2:{s:11:\"description\";s:14:\"The
+  TGT ticket\";s:4:\"type\";s:6:\"string\";}}s:8:\"required\";a:2:{i:0;s:14:\"expiryDateTime\";i:1;s:6:\"ticket\";}s:4:\"type\";s:6:\"object\";}s:14:\"sessionsErrors\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:6:\"errors\";O:8:\"stdClass\":2:{s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:19:\"#/definitions/error\";}s:4:\"type\";s:5:\"array\";}}s:4:\"type\";s:6:\"object\";}s:22:\"ticketvalidityresponse\";O:8:\"stdClass\":2:{s:10:\"properties\";O:8:\"stdClass\":1:{s:5:\"valid\";O:8:\"stdClass\":1:{s:4:\"type\";s:7:\"boolean\";}}s:4:\"type\";s:6:\"object\";}}"
+...

@@ -1,0 +1,836 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:5:\"title\";s:10:\"GitHub API\";s:11:\"description\";s:10:\"GitHub
+  API\";s:14:\"termsOfService\";s:5:\"terms\";s:7:\"license\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"proprietary\";}s:7:\"version\";s:1:\"1\";}"
+host: api.github.com
+paths:
+  /graphql:
+    post:
+      tags:
+      - GraphQL
+      summary: Execute GraphQL query
+      description: Execute GraphQL query.
+      operationId: executeGraphQL
+      parameters:
+      - name: query
+        in: formData
+        description: Username who join Organization
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+  /notifications:
+    get:
+      tags:
+      - Notifications
+      summary: List your notifications
+      description: List all notifications for the current user, sorted by most recently
+        updated.
+      operationId: getNotifications
+      parameters:
+      - name: all
+        in: query
+        description: 'If true, show notifications marked as read. Default: false'
+        required: false
+        type: boolean
+        example: false
+      - name: participating
+        in: query
+        description: 'f true, only shows notifications in which the user is directly
+          participating or mentioned. Default: false'
+        required: false
+        type: boolean
+        example: false
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NotificationEntity'
+  /search/issues:
+    get:
+      tags:
+      - Search
+      summary: Search issues
+      operationId: searchIssues
+      parameters:
+      - name: q
+        in: query
+        description: Query
+        required: true
+        type: string
+        example: user:ovr
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            $ref: '#/definitions/SearchIssuesResult'
+  /search/repositories:
+    get:
+      tags:
+      - Search
+      summary: Search repositories
+      operationId: searchRepositories
+      parameters:
+      - name: q
+        in: query
+        description: Query
+        required: true
+        type: string
+        example: user:ovr
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            $ref: '#/definitions/SearchRepositoriesResult'
+  /users/{id}/followers:
+    get:
+      tags:
+      - User
+      summary: Get user's followers
+      operationId: getUserFollowers
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+        format: int64
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /users/{id}/following:
+    get:
+      tags:
+      - User
+      summary: Get users who follow user
+      operationId: getUserFollowing
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+        format: int64
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /events:
+    get:
+      tags:
+      - GitHub
+      summary: List public events
+      operationId: getEvents
+      parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              anyOf:
+              - $ref: '#/definitions/PushEvent'
+              - $ref: '#/definitions/PullRequestEvent'
+              - $ref: '#/definitions/CommitCommentEvent'
+              - $ref: '#/definitions/PullRequestReviewCommentEvent'
+        404:
+          description: Not found
+  /users/{id}/received_events:
+    get:
+      tags:
+      - User
+      summary: List events that a user has received
+      operationId: getUserReceivedEvents
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+        format: int64
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              anyOf:
+              - $ref: '#/definitions/PushEvent'
+              - $ref: '#/definitions/PullRequestEvent'
+        404:
+          description: Not found
+  /users/{username}/events/orgs/{org}:
+    get:
+      tags:
+      - User
+      summary: List events for an organization
+      description: This is the user's organization dashboard. You must be authenticated
+        as the user to view this.
+      operationId: getOrganizationUserEvents
+      parameters:
+      - name: username
+        in: path
+        description: Username who join Organization
+        required: true
+        type: string
+      - name: org
+        in: path
+        description: Organization name
+        required: true
+        type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              anyOf:
+              - $ref: '#/definitions/PushEvent'
+              - $ref: '#/definitions/PullRequestEvent'
+        404:
+          description: Not found
+  /users/{id}:
+    get:
+      tags:
+      - User
+      summary: Get a single user
+      operationId: getUserById
+      parameters:
+      - name: id
+        in: path
+        description: id
+        required: true
+        type: string
+        format: int64
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /user:
+    get:
+      tags:
+      - User
+      summary: Get the authenticated user
+      operationId: getUser
+      parameters: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /users:
+    get:
+      tags:
+      - User
+      summary: Lists all users, in the order that they signed up on GitHub. This list
+        includes personal user accounts and organization accounts.
+      operationId: getUsers
+      parameters:
+      - name: since
+        in: query
+        description: The integer ID of the last User that you've seen.
+        required: true
+        type: string
+        format: int64
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}:
+    get:
+      tags:
+      - Repository
+      summary: Get information about repository by $owner and $repo
+      operationId: getRepository
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/RepositoryEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/issues/{id}:
+    get:
+      tags:
+      - Repository
+      summary: Get a single issue
+      operationId: getRepositoryIssue
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      - name: id
+        in: path
+        description: Issue ID
+        required: true
+        type: integer
+        example: 41
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/RepositoryEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/issues/{number}/comments:
+    get:
+      tags:
+      - Issue
+      summary: List comments on an issueEnabled for GitHub Apps
+      operationId: getIssueComments
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      - name: number
+        in: path
+        description: Issue Number
+        required: true
+        type: integer
+        example: 41
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CommentEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/collaborators:
+    get:
+      tags:
+      - Repository
+      summary: List collaborators by $owner and $repo
+      operationId: getRepositoryCollaborators
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/commits/{sha}:
+    get:
+      tags:
+      - Repository
+      summary: Get a Commit
+      operationId: getRepositoryCommit
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      - name: sha
+        in: path
+        description: Commit's SHA
+        required: true
+        type: string
+        example: 91d8aa09d81efd44931ba8b90a5ae78e317ff027
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            $ref: '#/definitions/CommitEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/git/commits/{sha}:
+    get:
+      tags:
+      - Repository
+      summary: Get a Commit
+      operationId: getRepositoryGitCommit
+      parameters:
+      - name: owner
+        in: path
+        description: Repository owner
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      - name: sha
+        in: path
+        description: Commit's SHA
+        required: true
+        type: string
+        example: 91d8aa09d81efd44931ba8b90a5ae78e317ff027
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            $ref: '#/definitions/GitCommitEntity'
+        404:
+          description: Not found
+  /repos/{owner}/{repo}/issues/{number}/reactions:
+    delete:
+      tags:
+      - Reaction
+      summary: Create reaction for an issue
+      operationId: createReactionOnIssue
+      parameters:
+      - name: owner
+        in: path
+        description: Owner of the repository
+        required: true
+        type: string
+        example: ovr
+      - name: repo
+        in: path
+        description: Repository name
+        required: true
+        type: string
+        example: ghubber
+      - name: number
+        in: path
+        description: ID of the issue
+        required: true
+        type: string
+        example: "60"
+      - name: content
+        in: formData
+        description: The reaction type
+        required: true
+        type: string
+        example: heart
+        enum:
+        - "+1"
+        - "-1"
+        - laugh
+        - confused
+        - heart
+        - hooray
+      responses:
+        204:
+          description: Success
+        404:
+          description: Not found
+  /user/following/{username}:
+    put:
+      tags:
+      - Followers
+      summary: Follow a user
+      operationId: followUser
+      parameters:
+      - name: username
+        in: path
+        description: username
+        required: true
+        type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: Not found
+    delete:
+      tags:
+      - Followers
+      summary: Unfollow a user
+      operationId: unfollowUser
+      parameters:
+      - name: username
+        in: path
+        description: username
+        required: true
+        type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: Not found
+  /reactions/{id}:
+    delete:
+      tags:
+      - Reaction
+      summary: Delete a reaction
+      operationId: deleteReaction
+      parameters:
+      - name: id
+        in: path
+        description: Reaction identifier
+        required: true
+        type: string
+        example: "1111"
+      responses:
+        204:
+          description: Success
+        404:
+          description: Not found
+  /authorizations:
+    post:
+      tags:
+      - Auth
+      summary: Create a new authorization
+      operationId: createAuthorization
+      security: basic
+      parameters:
+      - name: scopes
+        in: body
+        description: A list of scopes that this authorization is in.
+        required: false
+        type: array
+      - name: note
+        in: body
+        description: A note to remind you what the OAuth token is for. Tokens not
+          associated with a specific OAuth application (i.e. personal access tokens)
+          must have a unique note.
+        required: true
+        type: string
+      - name: note_url
+        in: body
+        description: A URL to remind you what app the OAuth token is for.
+        required: false
+        type: string
+      - name: client_id
+        in: body
+        description: The 20 character OAuth app client key for which to create the
+          token.
+        required: false
+        type: string
+      - name: client_secret
+        in: body
+        description: The 40 character OAuth app client secret for which to create
+          the token.
+        required: false
+        type: string
+      - name: fingerprint
+        in: body
+        description: A unique string to distinguish an authorization from others created
+          for the same client ID and user.
+        required: false
+        type: string
+      responses:
+        201:
+          description: Success
+          schema:
+            type: object
+            $ref: '#/definitions/AuthorizationEntity'
+  /authorizations/{id}:
+    delete:
+      tags:
+      - Auth
+      summary: Delete an authorization
+      operationId: deleteAuthorization
+      security: basic
+      parameters:
+      - name: id
+        in: path
+        description: Identifier of authorization
+        required: true
+        type: integer
+        format: int32
+      responses:
+        204:
+          description: Success
+  /users/{username}/repos:
+    get:
+      tags:
+      - User
+      summary: List user repositories
+      operationId: getRepositoriesByUsername
+      parameters:
+      - name: username
+        in: path
+        description: username
+        required: true
+        type: string
+      - name: type
+        in: query
+        description: type
+        required: false
+        type: string
+        default: owner
+        enum:
+        - all
+        - owner
+        - member
+      - name: sort
+        in: query
+        description: sort
+        required: false
+        type: string
+        default: full_name
+        enum:
+        - created
+        - updated
+        - pushed
+        - full_name
+      - name: direction
+        in: query
+        description: direction
+        required: false
+        type: string
+        default: desc
+        enum:
+        - asc
+        - desc
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        description: Limit for page
+        required: false
+        type: integer
+        default: 30
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserEntity'
+        404:
+          description: Not found
+  /user/orgs:
+    get:
+      tags:
+      - User
+      summary: List your organizations
+      description: List organizations for the authenticated user
+      operationId: getUserOrganizations
+      parameters: []
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OrganizationEntity'
+        404:
+          description: Not found
+  /users/{username}/orgs:
+    get:
+      tags:
+      - User
+      summary: List user organizationsIntegrations
+      description: List public organization memberships for the specified user
+      operationId: getOrganizationsByUsername
+      parameters:
+      - name: username
+        in: path
+        description: username
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OrganizationEntity'
+        404:
+          description: Not found
+produces:
+- application/json
+schemes:
+- https
+definitions: !php/object "O:8:\"stdClass\":22:{s:18:\"OrganizationEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:5:\"login\";i:2;s:10:\"avatar_url\";i:3;s:11:\"description\";i:4;s:4:\"name\";i:5;s:4:\"blog\";}s:10:\"properties\";O:8:\"stdClass\":6:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:8386838;}s:5:\"login\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"SocialConnect\";}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:52:\"https://avatars1.githubusercontent.com/u/8386838?v=3\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:31:\"Connect
+  your code with Services\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Social
+  Connect\";}s:4:\"blog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"https://sc.lowl.io/\";}}}s:19:\"AuthorizationEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:2:\"id\";i:1;s:5:\"token\";i:2;s:12:\"hashed_token\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";s:8:\"33387350\";}s:5:\"token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"b4edd09a7cbeebb9a562f69640a5eb17aj158e1d\";}s:12:\"hashed_token\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:64:\"40f5a502d9e2563lcz58dfcade94a9aeb589ac6afd8c453880a70dec31b16144\";}}}s:11:\"LabelEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:4:{i:0;s:2:\"id\";i:1;s:4:\"name\";i:2;s:5:\"color\";i:3;s:7:\"default\";}s:10:\"properties\";O:8:\"stdClass\":4:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:1305162;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"enhancement\";}s:5:\"color\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"84b6eb\";}s:7:\"default\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}}}s:19:\"NotificationSubject\";O:8:\"stdClass\":2:{s:8:\"required\";a:2:{i:0;s:5:\"title\";i:1;s:4:\"type\";}s:10:\"properties\";O:8:\"stdClass\":2:{s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:9:\"Greetings\";}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:5:\"Issue\";}}}s:18:\"NotificationEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:10:\"repository\";i:2;s:7:\"subject\";i:3;s:6:\"reason\";i:4;s:6:\"unread\";i:5;s:10:\"updated_at\";i:6;s:12:\"last_read_at\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:216476314;}s:10:\"repository\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:30:\"#/definitions/RepositoryEntity\";}s:7:\"subject\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:33:\"#/definitions/NotificationSubject\";}s:6:\"reason\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"unread\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2014-11-07T22:01:45Z\";}s:12:\"last_read_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2014-11-07T22:01:45Z\";}}}s:13:\"CommentEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"body\";i:2;s:4:\"user\";i:3;s:10:\"created_at\";i:4;s:10:\"updated_at\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:216476314;}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:6:\"Me
+  too\";}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserEntity\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2014-11-07T22:01:45Z\";}s:10:\"updated_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2014-11-07T22:01:45Z\";}}}s:11:\"IssueEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:11:{i:0;s:2:\"id\";i:1;s:6:\"number\";i:2;s:5:\"title\";i:3;s:5:\"state\";i:4;s:4:\"body\";i:5;s:8:\"comments\";i:6;s:14:\"repository_url\";i:7;s:10:\"created_at\";i:8;s:6:\"labels\";i:9;s:4:\"user\";i:10;s:9:\"milestone\";}s:10:\"properties\";O:8:\"stdClass\":11:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:216476314;}s:6:\"number\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:32;}s:8:\"comments\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:5;}s:5:\"state\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"open\";i:1;s:6:\"closed\";}s:7:\"example\";s:4:\"open\";}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:64:\"mt_rand
+  is a linear alg, will be better to provide more true way\";}s:4:\"body\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"Text
+  of issue\";}s:14:\"repository_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"https://api.github.com/repos/ovr/ghubber\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-05-31T05:50:23Z\";}s:6:\"labels\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/LabelEntity\";}}s:9:\"milestone\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:29:\"#/definitions/MilestoneEntity\";}s:4:\"user\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserEntity\";}}}s:24:\"GitCommitShortUserEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:4:\"date\";i:1;s:4:\"name\";i:2;s:5:\"email\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"date\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:17:\"schacon@gmail.com\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:12:\"Scott
+  Chacon\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"schacon@gmail.com\";}}}s:17:\"CommitStatsEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:9:\"additions\";i:1;s:9:\"deletions\";i:2;s:5:\"total\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:9:\"additions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:104;}s:9:\"deletions\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:104;}s:5:\"total\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"number\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:104;}}}s:24:\"CommitVerificationEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:1:{i:0;s:8:\"verified\";}s:10:\"properties\";O:8:\"stdClass\":1:{s:8:\"verified\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:18:\"CommitCommitEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:3:\"url\";i:1;s:6:\"author\";i:2;s:9:\"committer\";i:3;s:7:\"message\";i:4;s:12:\"verification\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:101:\"https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/GitCommitShortUserEntity\";}s:9:\"committer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/GitCommitShortUserEntity\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:16:\"Fix
+  all the bugs\";}s:12:\"verification\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/CommitVerificationEntity\";}}}s:12:\"CommitEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:3:\"sha\";i:1;s:3:\"url\";i:2;s:6:\"author\";i:3;s:9:\"committer\";i:4;s:5:\"stats\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:101:\"https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd\";}s:3:\"sha\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"7638417db6d59f3c431d3e1f261cc637155684cd\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserEntity\";}s:9:\"committer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserEntity\";}s:5:\"stats\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:31:\"#/definitions/CommitStatsEntity\";}}}s:15:\"GitCommitEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:3:\"sha\";i:1;s:3:\"url\";i:2;s:7:\"message\";i:3;s:6:\"author\";i:4;s:9:\"committer\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:3:\"sha\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"7638417db6d59f3c431d3e1f261cc637155684cd\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:101:\"https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd\";}s:7:\"message\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:46:\"added
+  readme, because im a good github citizen\";}s:6:\"author\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/GitCommitShortUserEntity\";}s:9:\"committer\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:38:\"#/definitions/GitCommitShortUserEntity\";}}}s:15:\"MilestoneEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:6:\"number\";i:2;s:5:\"state\";i:3;s:5:\"title\";i:4;s:11:\"description\";}s:10:\"properties\";O:8:\"stdClass\":5:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:216476314;}s:6:\"number\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:32;}s:5:\"state\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:2:{i:0;s:4:\"open\";i:1;s:6:\"closed\";}}s:5:\"title\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:4:\"v1.0\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:34:\"Tracking
+  milestone for version 1.0\";}}}s:18:\"SearchIssuesResult\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:11:\"total_count\";i:1;s:18:\"incomplete_results\";i:2;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"total_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:107;}s:18:\"incomplete_results\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:25:\"#/definitions/IssueEntity\";}}}}s:24:\"SearchRepositoriesResult\";O:8:\"stdClass\":2:{s:8:\"required\";a:3:{i:0;s:11:\"total_count\";i:1;s:18:\"incomplete_results\";i:2;s:5:\"items\";}s:10:\"properties\";O:8:\"stdClass\":3:{s:11:\"total_count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:107;}s:18:\"incomplete_results\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":1:{s:4:\"$ref\";s:30:\"#/definitions/RepositoryEntity\";}}}}s:9:\"PushEvent\";O:8:\"stdClass\":3:{s:11:\"description\";s:150:\"Triggered
+  when a repository branch is pushed to. In addition to branch pushes, webhook push
+  events are also triggered when repository tags are pushed.\";s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:5:\"actor\";i:3;s:4:\"repo\";i:4;s:7:\"payload\";i:5;s:6:\"public\";i:6;s:10:\"created_at\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:5935151556;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:9:\"PushEvent\";}}s:5:\"actor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"repo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"public\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-05-24T15:42:53Z\";}}}s:16:\"PullRequestEvent\";O:8:\"stdClass\":3:{s:11:\"description\";s:217:\"Triggered
+  when a pull request is assigned, unassigned, labeled, unlabeled, opened, edited,
+  closed, reopened, or synchronized. Also triggered when a pull request review is
+  requested, or when a review request is removed\";s:8:\"required\";a:7:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:5:\"actor\";i:3;s:4:\"repo\";i:4;s:7:\"payload\";i:5;s:6:\"public\";i:6;s:10:\"created_at\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:5935151556;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:16:\"PullRequestEvent\";}}s:5:\"actor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"repo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"public\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-05-24T15:42:53Z\";}}}s:18:\"CommitCommentEvent\";O:8:\"stdClass\":3:{s:11:\"description\";s:43:\"Triggered
+  when a commit comment is created.\";s:8:\"required\";a:5:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:7:\"payload\";i:3;s:5:\"actor\";i:4;s:4:\"repo\";}s:10:\"properties\";O:8:\"stdClass\":7:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:5935151556;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:18:\"CommitCommentEvent\";}}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"actor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"repo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"public\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-05-24T15:42:53Z\";}}}s:29:\"PullRequestReviewCommentEvent\";O:8:\"stdClass\":3:{s:11:\"description\";s:116:\"Triggered
+  when a comment on a pull request's unified diff is created, edited, or deleted (in
+  the Files Changed tab).\";s:8:\"required\";a:6:{i:0;s:2:\"id\";i:1;s:4:\"type\";i:2;s:3:\"org\";i:3;s:7:\"payload\";i:4;s:5:\"actor\";i:5;s:4:\"repo\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:5:\"int64\";s:7:\"example\";i:5935151556;}s:4:\"type\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:4:\"enum\";a:1:{i:0;s:29:\"PullRequestReviewCommentEvent\";}}s:3:\"org\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:7:\"payload\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:5:\"actor\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:4:\"repo\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"object\";}s:6:\"public\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";s:4:\"true\";}s:10:\"created_at\";O:8:\"stdClass\":3:{s:4:\"type\";s:6:\"string\";s:6:\"format\";s:9:\"date-time\";s:7:\"example\";s:20:\"2017-05-24T15:42:53Z\";}}}s:16:\"RepositoryEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:8:{i:0;s:2:\"id\";i:1;s:5:\"owner\";i:2;s:4:\"name\";i:3;s:3:\"url\";i:4;s:3:\"sha\";i:5;s:8:\"html_url\";i:6;s:12:\"comments_url\";i:7;s:4:\"fork\";}s:10:\"properties\";O:8:\"stdClass\":8:{s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";s:8:\"33387350\";}s:5:\"owner\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:4:\"$ref\";s:24:\"#/definitions/UserEntity\";}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:11:\"ovr/ghubber\";}s:3:\"url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:97:\"https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e\";}s:3:\"sha\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:40:\"6dcb09b5b57875f334f61aebed695e2e4193db5e\";}s:8:\"html_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:86:\"https://github.com/octocat/Hello-World/commit/6dcb09b5b57875f334f61aebed695e2e4193db5e\";}s:12:\"comments_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:106:\"https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e/comments\";}s:4:\"fork\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}}}s:10:\"UserEntity\";O:8:\"stdClass\":2:{s:8:\"required\";a:16:{i:0;s:5:\"login\";i:1;s:2:\"id\";i:2;s:10:\"avatar_url\";i:3;s:11:\"gravatar_id\";i:4;s:10:\"site_admin\";i:5;s:4:\"name\";i:6;s:7:\"company\";i:7;s:4:\"blog\";i:8;s:8:\"location\";i:9;s:5:\"email\";i:10;s:8:\"hireable\";i:11;s:3:\"bio\";i:12;s:12:\"public_repos\";i:13;s:12:\"public_gists\";i:14;s:9:\"followers\";i:15;s:9:\"following\";}s:10:\"properties\";O:8:\"stdClass\":16:{s:5:\"login\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:3:\"ovr\";}s:2:\"id\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:572096;}s:10:\"avatar_url\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:1:\"1\";}s:11:\"gravatar_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:0:\"\";}s:10:\"site_admin\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:0;}s:4:\"name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:14:\"Dmitry
+  Patsura\";}s:7:\"company\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:19:\"@lowl-io
+  @interpals\";}s:4:\"blog\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:24:\"https://resume.dmtry.me/\";}s:8:\"location\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:17:\"Docker,
+  Container\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:13:\"talk@dmtry.me\";}s:8:\"hireable\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"boolean\";s:7:\"example\";b:1;}s:3:\"bio\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:7:\"example\";s:152:\"Hey!
+  I am full stack web developer Who loves computer science and hipster technologies.
+  The best way to know me will be researching on Github's profile.\";}s:12:\"public_repos\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:168;}s:12:\"public_gists\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:37;}s:9:\"followers\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:150;}s:9:\"following\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:7:\"example\";i:9;}}}}"
+...

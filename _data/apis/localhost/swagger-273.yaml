@@ -1,0 +1,612 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":5:{s:11:\"description\";s:462:\"# Introduction
+  \n ReST API for Client Portal\n# Authentication\nAuthentication is handled as a
+  stateless process where the initial auth request will return a JSON WebToken. All
+  subsequent operations must include this token in the \"Authorization\" header, the
+  server will test the validity of the token before providing the requested resource
+  or operation. No server session management will be required.header: Authorization.(e.g)
+  Authorization: Bearer \"jwtAuthToken\"\";s:7:\"version\";s:3:\"1.0\";s:5:\"title\";s:13:\"Client
+  Portal\";s:7:\"contact\";O:8:\"stdClass\":3:{s:4:\"name\";s:13:\"KG Hawes, LLC\";s:3:\"url\";s:23:\"http://www.kghawes.com/\";s:5:\"email\";s:17:\"sales@kghawes.com\";}s:7:\"license\";O:8:\"stdClass\":1:{s:4:\"name\";s:11:\"Proprietary\";}}"
+host: localhost:8080
+basePath: /clienttools
+paths:
+  /v1/auth:
+    get:
+      tags:
+      - user-controller
+      summary: Login
+      operationId: authUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Authorization
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+    delete:
+      tags:
+      - user-controller
+      summary: Logout
+      operationId: signoutUsingDELETE
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        204:
+          description: No Content
+        403:
+          description: Forbidden
+    patch:
+      tags:
+      - user-controller
+      summary: Change Password
+      operationId: changePasswordUsingPATCH
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - in: body
+        name: user
+        description: user
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        204:
+          description: No Content
+        403:
+          description: Forbidden
+  /v1/auth/menu:
+    get:
+      tags:
+      - user-controller
+      summary: Available menu's for user
+      description: Menu's which are associated with the user are listed here.  The
+        user context retrived from the token string
+      operationId: usermenupermissionsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/config:
+    get:
+      tags:
+      - look-up-controller
+      summary: Global Config
+      operationId: configUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: ctrCountryCode
+        in: query
+        description: ctrCountryCode
+        required: true
+        type: string
+      - name: postalCode
+        in: query
+        description: postalCode
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/corporate:
+    get:
+      tags:
+      - user-controller
+      summary: Available corporate
+      description: Corporate which are available in the system are listed here
+      operationId: corporateUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/corporate/clients:
+    get:
+      tags:
+      - user-controller
+      summary: Available clients by corporate
+      description: All corporate and clients available in the system
+      operationId: corporateclientsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/menus:
+    get:
+      tags:
+      - user-controller
+      summary: Available menu's with their permissions
+      description: load all available menus inthe system with their pre-defined bitwise
+        controls. User should be mapped with permissions and bit control from this
+      operationId: menupermissionsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/postalCodeInfo/{ctrCountryCode}/{postalCode}:
+    get:
+      tags:
+      - look-up-controller
+      summary: Get Postal info
+      operationId: postalCodeInfoUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: ctrCountryCode
+        in: query
+        description: ctrCountryCode
+        required: true
+        type: string
+      - name: postalCode
+        in: query
+        description: postalCode
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/reports/acknowledgemen/{ackReportId}:
+    get:
+      tags:
+      - report-controller
+      summary: Get Acknowledgement Report by id
+      operationId: acknowledgementByIdUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: ackReportId
+        in: query
+        description: ackReportId
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/reports/acknowledgement:
+    get:
+      tags:
+      - report-controller
+      summary: Get Acknowledgement Report
+      operationId: acknowledgementUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: cltFilter
+        in: query
+        description: cltFilter
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/reports/cancellation:
+    get:
+      tags:
+      - report-controller
+      summary: Get Cancellation Report
+      operationId: cancellationUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: clients
+        in: query
+        description: clients
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/reports/payment:
+    get:
+      tags:
+      - report-controller
+      summary: Get Payment Report
+      operationId: paymentUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: dateRangeBegin
+        in: query
+        description: dateRangeBegin
+        required: false
+        type: string
+      - name: dateRangeEnd
+        in: query
+        description: dateRangeEnd
+        required: false
+        type: string
+      - name: reportType
+        in: query
+        description: reportType
+        required: false
+        type: string
+      - name: clients
+        in: query
+        description: clients
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/search:
+    get:
+      tags:
+      - look-up-controller
+      summary: Account search
+      operationId: accountSearchUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: acoAccountId
+        in: query
+        description: acoAccountId
+        required: false
+        type: integer
+        format: int64
+      - name: acoInvoiceId
+        in: query
+        description: acoInvoiceId
+        required: false
+        type: string
+      - name: conLastName
+        in: query
+        description: conLastName
+        required: false
+        type: string
+      - name: conFirstName
+        in: query
+        description: conFirstName
+        required: false
+        type: string
+      - name: conSsn
+        in: query
+        description: conSsn
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/user:
+    post:
+      tags:
+      - user-controller
+      summary: New user
+      operationId: signupUsingPOST
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - in: body
+        name: user
+        description: user
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        201:
+          description: Created
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/user/corporate:
+    get:
+      tags:
+      - user-controller
+      summary: Available corporate for user
+      description: Corporate which are associated with the user are listed here.  The
+        user context retrived from the token string
+      operationId: usercorporateUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/user/corporate/clients:
+    get:
+      tags:
+      - user-controller
+      summary: Available clients by corporate for user
+      description: All corporate and clients associated with user are listed here.
+        The user context retrived from the token string
+      operationId: usercorporateclientsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+  /v1/user/corporate/{cid}/clients:
+    get:
+      tags:
+      - user-controller
+      summary: Available clients by corporate for user
+      description: Clients associated with corporate by user are listed here.  The
+        user context retrived from the token string
+      operationId: usercorporateandclientsUsingGET
+      consumes:
+      - application/json
+      produces:
+      - '*/*'
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer tokenstring
+        required: true
+        type: string
+      - name: cid
+        in: path
+        description: cid
+        required: true
+        type: integer
+        format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+definitions: !php/object "O:8:\"stdClass\":1:{s:4:\"User\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:10:\"properties\";O:8:\"stdClass\":5:{s:13:\"accessClients\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:2:\"id\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:8:\"password\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:11:\"permissions\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"object\";s:20:\"additionalProperties\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:5:\"items\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}}}s:8:\"username\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...

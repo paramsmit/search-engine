@@ -1,0 +1,192 @@
+---
+swagger: "2.0"
+info: !php/object "O:8:\"stdClass\":3:{s:5:\"title\";s:42:\"URBN Microservices for
+  Client Applications\";s:11:\"description\";s:60:\"Microservices API for building
+  awesome front-end experiences\";s:7:\"version\";s:5:\"0.0.1\";}"
+host: 10.9.1.45
+basePath: /api/v0/{site-id}
+paths:
+  /basket:
+    get:
+      summary: Retrieve Basket
+      description: Basket detail endpoint that returns line items and pricing informationn
+      parameters:
+      - name: X-Urbn-Auth-Token
+        in: header
+        description: Encrypted URBN Auth Token
+        required: true
+        type: string
+      - name: X-Urbn-Site
+        in: header
+        description: URBN Site Id
+        enum:
+        - fp-us
+        - fp-uk
+        - fp-cn
+        required: true
+        type: string
+      tags:
+      - Basket
+      responses:
+        200:
+          description: An array of line items and pricing
+          schema:
+            type: array
+            items:
+              $ref: Product
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+    put:
+      summary: Re-Price Basket
+      description: Force re-pricing of the basket (i.e. cache buster)n
+      parameters:
+      - name: X-Urbn-Auth-Token
+        in: header
+        description: Encrypted URBN Auth Token
+        required: true
+        type: string
+      tags:
+      - Basket
+      responses:
+        200:
+          description: An array of line items and pricing
+          schema:
+            type: array
+            items:
+              $ref: Product
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+  /basket/item:
+    post:
+      summary: Add SKU to Basket
+      description: Basket detail endpoint that returns line items and pricing informationn
+      parameters:
+      - name: latitude
+        in: query
+        description: Latitude component of location.
+        required: true
+        type: number
+        format: double
+      - name: longitude
+        in: query
+        description: Longitude component of location.
+        required: true
+        type: number
+        format: double
+      tags:
+      - Basket
+      responses:
+        200:
+          description: An array of line items and pricing
+          schema:
+            type: array
+            items:
+              $ref: Product
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+  /basket/item/{id}:
+    put:
+      summary: Update line item
+      description: Basket detail endpoint that returns line items and pricing informationn
+      parameters:
+      - name: id
+        in: path
+        description: Line item id
+        required: true
+        type: number
+        format: double
+      - name: longitude
+        in: query
+        description: Longitude component of location.
+        required: true
+        type: number
+        format: double
+      tags:
+      - Basket
+      responses:
+        200:
+          description: An array of line items and pricing
+          schema:
+            type: array
+            items:
+              $ref: Product
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+  /me:
+    get:
+      summary: User Profile
+      description: The User Profile endpoint returns information about the Uber user
+        that has authorized with the application.
+      tags:
+      - User
+      responses:
+        200:
+          description: Profile information for a user
+          schema:
+            $ref: Profile
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+  /history:
+    get:
+      summary: User Activity
+      description: The User Activity endpoint returns data about a user's lifetime
+        activity with Uber. The response will include pickup locations and times,
+        dropoff locations and times, the distance of past requests, and information
+        about which products were requested.<br><br>The history array in the response
+        will have a maximum length based on the limit parameter. The response value
+        count may exceed limit, therefore subsequent API requests may be necessary.
+      parameters:
+      - name: offset
+        in: query
+        type: integer
+        format: int32
+        description: Offset the list of returned results by this amount. Default is
+          zero.
+      - name: limit
+        in: query
+        type: integer
+        format: int32
+        description: Number of items to retrieve. Default is 5, maximum is 100.
+      tags:
+      - User
+      responses:
+        200:
+          description: History information for the given user
+          schema:
+            $ref: Activities
+        default:
+          description: Unexpected error
+          schema:
+            $ref: Error
+produces:
+- application/json
+schemes:
+- http
+definitions: !php/object "O:8:\"stdClass\":5:{s:7:\"Product\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"product_id\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:179:\"Unique
+  identifier representing a specific product for a given latitude & longitude. For
+  example, uberX in San Francisco will have a different product_id than uberX in Los
+  Angeles.\";}s:11:\"description\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:23:\"Description
+  of product.\";}s:12:\"display_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:24:\"Display
+  name of product.\";}s:8:\"capacity\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:43:\"Capacity
+  of product. For example, 4 people.\";}s:5:\"image\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:35:\"Image
+  URL representing the product.\";}}}s:7:\"Profile\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":5:{s:10:\"first_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"First
+  name of the Uber user.\";}s:9:\"last_name\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Last
+  name of the Uber user.\";}s:5:\"email\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:30:\"Email
+  address of the Uber user\";}s:7:\"picture\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:27:\"Image
+  URL of the Uber user.\";}s:10:\"promo_code\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:28:\"Promo
+  code of the Uber user.\";}}}s:8:\"Activity\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":1:{s:4:\"uuid\";O:8:\"stdClass\":2:{s:4:\"type\";s:6:\"string\";s:11:\"description\";s:34:\"Unique
+  identifier for the activity\";}}}s:10:\"Activities\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":4:{s:6:\"offset\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:23:\"Position
+  in pagination.\";}s:5:\"limit\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:38:\"Number
+  of items to retrieve (100 max).\";}s:5:\"count\";O:8:\"stdClass\":3:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";s:11:\"description\";s:32:\"Total
+  number of items available.\";}s:7:\"history\";O:8:\"stdClass\":2:{s:4:\"type\";s:5:\"array\";s:4:\"$ref\";s:8:\"Activity\";}}}s:5:\"Error\";O:8:\"stdClass\":1:{s:10:\"properties\";O:8:\"stdClass\":3:{s:4:\"code\";O:8:\"stdClass\":2:{s:4:\"type\";s:7:\"integer\";s:6:\"format\";s:5:\"int32\";}s:7:\"message\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}s:6:\"fields\";O:8:\"stdClass\":1:{s:4:\"type\";s:6:\"string\";}}}}"
+...
